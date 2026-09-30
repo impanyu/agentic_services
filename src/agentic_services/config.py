@@ -33,6 +33,13 @@ class Settings:
     openai_cached_input_usd_per_million: str = "0.01"
     openai_output_usd_per_million: str = "0.50"
     openai_web_search_usd_per_thousand: str = "10.00"
+    contact_recipient_email: str = "impanyu@gmail.com"
+    contact_smtp_host: str = "smtp.gmail.com"
+    contact_smtp_port: int = 465
+    contact_smtp_username: str | None = None
+    contact_smtp_app_password: str | None = None
+    contact_ip_hash_secret: str | None = None
+    contact_rate_limit_per_hour: int = 5
 
     @classmethod
     def from_environment(cls) -> "Settings":
@@ -69,4 +76,11 @@ class Settings:
             openai_cached_input_usd_per_million=os.getenv("OPENAI_CACHED_INPUT_USD_PER_MILLION", "0.01"),
             openai_output_usd_per_million=os.getenv("OPENAI_OUTPUT_USD_PER_MILLION", "0.50"),
             openai_web_search_usd_per_thousand=os.getenv("OPENAI_WEB_SEARCH_USD_PER_THOUSAND", "10.00"),
+            contact_recipient_email=os.getenv("CONTACT_RECIPIENT_EMAIL", "impanyu@gmail.com"),
+            contact_smtp_host=os.getenv("CONTACT_SMTP_HOST", "smtp.gmail.com"),
+            contact_smtp_port=int(os.getenv("CONTACT_SMTP_PORT", "465")),
+            contact_smtp_username=os.getenv("CONTACT_SMTP_USERNAME") or None,
+            contact_smtp_app_password=os.getenv("CONTACT_SMTP_APP_PASSWORD") or None,
+            contact_ip_hash_secret=os.getenv("CONTACT_IP_HASH_SECRET") or None,
+            contact_rate_limit_per_hour=int(os.getenv("CONTACT_RATE_LIMIT_PER_HOUR", "5")),
         )

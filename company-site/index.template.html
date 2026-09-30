@@ -28,7 +28,7 @@
       <nav aria-label="Main navigation">
         <a href="#work">Work</a>
         <a href="#principles">Principles</a>
-        <a class="nav-cta" href="#work">Our systems <span>↓</span></a>
+        <a class="nav-cta" href="#contact">Contact <span>↓</span></a>
       </nav>
     </header>
 
@@ -110,6 +110,47 @@
           <a class="button" href="#work">Explore systems <span>↑</span></a>
         </div>
         <div class="closing-mark" aria-hidden="true">DW</div>
+      </section>
+
+      <section class="contact" id="contact">
+        <div class="contact-intro reveal">
+          <p class="section-label">04 / Start a conversation</p>
+          <h2>What should<br>we build next?</h2>
+          <p>Tell us about an agent, service, integration, or infrastructure problem. Your message goes directly to Dream Workshop.</p>
+          <div class="contact-paths" aria-label="Ways to contact Dream Workshop">
+            <span><b>People</b> Use this form</span>
+            <span><b>Agents</b> Support API coming next</span>
+          </div>
+        </div>
+
+        <form class="contact-form reveal" id="contact-form" novalidate>
+          <div class="form-row">
+            <label>
+              <span>Your name</span>
+              <input name="name" type="text" autocomplete="name" minlength="2" maxlength="120" required>
+            </label>
+            <label>
+              <span>Reply email</span>
+              <input name="email" type="email" autocomplete="email" maxlength="320" required>
+            </label>
+          </div>
+          <label>
+            <span>Subject</span>
+            <input name="subject" type="text" minlength="3" maxlength="160" value="Project inquiry" required>
+          </label>
+          <label>
+            <span>Message</span>
+            <textarea name="message" rows="7" minlength="20" maxlength="4000" placeholder="What are you building, and where can we help?" required></textarea>
+          </label>
+          <label class="form-trap" aria-hidden="true">
+            <span>Company</span>
+            <input name="company" type="text" tabindex="-1" autocomplete="off">
+          </label>
+          <div class="form-footer">
+            <p class="form-status" id="contact-status" role="status" aria-live="polite">We usually reply within two business days.</p>
+            <button class="button" type="submit">Send message <span>↗</span></button>
+          </div>
+        </form>
       </section>
     </main>
 

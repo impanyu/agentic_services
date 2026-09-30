@@ -179,6 +179,27 @@ class VerificationStore:
                 )
                 """
             )
+            connection.execute(
+                """
+                CREATE TABLE IF NOT EXISTS contact_messages (
+                    message_id TEXT PRIMARY KEY,
+                    service_id TEXT,
+                    sender_name TEXT NOT NULL,
+                    sender_email TEXT NOT NULL,
+                    subject TEXT NOT NULL,
+                    message_text TEXT NOT NULL,
+                    ip_hash TEXT NOT NULL,
+                    user_agent TEXT,
+                    delivery_status TEXT NOT NULL,
+                    delivery_error TEXT,
+                    created_at TEXT NOT NULL,
+                    delivered_at TEXT
+                )
+                """
+            )
+            connection.execute(
+                "CREATE INDEX IF NOT EXISTS contact_messages_ip_created ON contact_messages(ip_hash, created_at DESC)"
+            )
 
     def get(self, verification_id: str) -> ClaimVerificationResult | None:
         with self._connect() as connection:
@@ -281,6 +302,107 @@ class VerificationStore:
         if not path.is_file() or path.parent.resolve() != self.snapshot_directory.resolve():
             return None
         return path.read_bytes(), metadata.content_type or "application/octet-stream"
+
+    def count_recent_contact_messages(self, *, ip_hash: str, since: datetime) -> int:
+        with self._connect() as connection:
+            row = connection.execute(
+                "SELECT COUNT(*) AS count FROM contact_messages WHERE ip_hash=? AND created_at>=?",
+                (ip_hash, since.isoformat()),
+            ).fetchone()
+        return int(row["count"])
+
+    def create_contact_message(
+        self,
+        *,
+        sender_name: str,
+        sender_email: str,
+        subject: str,
+        message_text: str,
+        ip_hash: str,
+        user_agent: str | None,
+        service_id: str | None,
+    ) -> dict[str, str | None]:
+        message_id = f"msg_{uuid.uuid4().hex}"
+        created_at = datetime.now(UTC).isoformat()
+        with self._connect() as connection:
+            connection.execute(
+                """
+                INSERT INTO contact_messages(
+                    message_id,service_id,sender_name,sender_email,subject,message_text,
+                    ip_hash,user_agent,delivery_status,created_at
+                ) VALUES(?,?,?,?,?,?,?,?,?,?)
+                """,
+                (
+                    message_id,
+                    service_id,
+                    sender_name,
+                    sender_email,
+                    subject,
+                    message_text,
+                    ip_hash,
+                    user_agent,
+                    "pending",
+                    created_at,
+                ),
+            )
+        return {"messageId": message_id, "status": "pending", "createdAt": created_at}
+
+    def update_contact_delivery(
+        self, *, message_id: str, status: str, error: str | None = None
+    ) -> None:
+        delivered_at = datetime.now(UTC).isoformat() if status == "sent" else None
+        with self._connect() as connection:
+            connection.execute(
+                """
+                UPDATE contact_messages
+                SET delivery_status=?, delivery_error=?, delivered_at=?
+                WHERE message_id=?
+                """,
+                (status, error, delivered_at, message_id),
+            )
+
+    def list_contact_messages(
+        self,
+        *,
+        limit: int,
+        offset: int,
+        service_id: str | None = None,
+    ) -> list[dict[str, Any]]:
+        where = "WHERE service_id=?" if service_id else ""
+        parameters: tuple[Any, ...] = (service_id, limit, offset) if service_id else (limit, offset)
+        with self._connect() as connection:
+            rows = connection.execute(
+                f"""
+                SELECT message_id,service_id,sender_name,sender_email,subject,message_text,
+                       delivery_status,created_at,delivered_at
+                FROM contact_messages {where}
+                ORDER BY created_at DESC LIMIT ? OFFSET ?
+                """,
+                parameters,
+            ).fetchall()
+        return [
+            {
+                "messageId": row["message_id"],
+                "serviceId": row["service_id"],
+                "name": row["sender_name"],
+                "email": row["sender_email"],
+                "subject": row["subject"],
+                "message": row["message_text"],
+                "deliveryStatus": row["delivery_status"],
+                "createdAt": row["created_at"],
+                "deliveredAt": row["delivered_at"],
+            }
+            for row in rows
+        ]
+
+    def count_contact_messages(self, *, service_id: str | None = None) -> int:
+        where = "WHERE service_id=?" if service_id else ""
+        parameters: tuple[Any, ...] = (service_id,) if service_id else ()
+        with self._connect() as connection:
+            row = connection.execute(
+                f"SELECT COUNT(*) AS count FROM contact_messages {where}", parameters
+            ).fetchone()
+        return int(row["count"])
 
     @staticmethod
     def hash_api_key(value: str) -> str:

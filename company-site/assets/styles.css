@@ -83,7 +83,7 @@ a { color: inherit; text-decoration: none; }
 .connections { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
 .connections path { fill: none; stroke: var(--ink); stroke-width: 1; stroke-dasharray: 4 5; opacity: .45; }
 
-.manifesto, .work, .capabilities { padding: 120px clamp(22px, 6vw, 96px); border-top: 1px solid var(--line); }
+.manifesto, .work, .capabilities, .contact { padding: 120px clamp(22px, 6vw, 96px); border-top: 1px solid var(--line); }
 .manifesto { background: var(--ink); color: var(--paper); }
 .manifesto .section-label { color: var(--lime); }
 .manifesto-grid { margin-top: 72px; display: grid; grid-template-columns: 1.2fr .8fr; gap: 8vw; align-items: end; }
@@ -129,6 +129,33 @@ a { color: inherit; text-decoration: none; }
 .button span { font-size: 18px; }
 .closing-mark { justify-self: end; font: 400 clamp(180px, 27vw, 430px)/.7 var(--serif); letter-spacing: -.12em; opacity: .13; transform: rotate(-7deg); }
 
+.contact { background: var(--paper-2); display: grid; grid-template-columns: .85fr 1.15fr; gap: clamp(56px, 9vw, 150px); align-items: start; }
+.contact-intro { position: sticky; top: 48px; }
+.contact h2 { margin: 34px 0 30px; font: 500 clamp(54px, 6.5vw, 104px)/.9 var(--serif); letter-spacing: -.065em; }
+.contact-intro > p:not(.section-label) { max-width: 520px; color: var(--muted); font-size: 18px; line-height: 1.55; }
+.contact-paths { display: grid; gap: 10px; margin-top: 44px; font: 11px var(--mono); text-transform: uppercase; letter-spacing: .06em; }
+.contact-paths span { border-top: 1px solid var(--line); padding-top: 12px; display: grid; grid-template-columns: 85px 1fr; }
+.contact-paths b { font-weight: 600; color: var(--ink); }
+
+.contact-form { border-top: 1px solid var(--ink); padding-top: 22px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.contact-form label { display: grid; gap: 10px; margin-bottom: 24px; }
+.contact-form label > span { font: 10px var(--mono); text-transform: uppercase; letter-spacing: .1em; }
+.contact-form input, .contact-form textarea {
+  width: 100%; border: 1px solid var(--line); border-radius: 0; background: rgba(241,239,232,.5);
+  color: var(--ink); padding: 15px 16px; font: 16px/1.45 var(--sans); outline: none;
+  transition: border-color .18s, background .18s;
+}
+.contact-form textarea { resize: vertical; min-height: 180px; }
+.contact-form input:focus, .contact-form textarea:focus { border-color: var(--ink); background: var(--paper); }
+.contact-form .form-trap { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+.form-footer { display: flex; gap: 24px; justify-content: space-between; align-items: center; }
+.form-status { margin: 0; max-width: 420px; color: var(--muted); font: 11px/1.5 var(--mono); }
+.form-status--success { color: #20783a; }
+.form-status--error { color: #a32d1f; }
+.contact-form button { border: 0; cursor: pointer; flex: 0 0 auto; }
+.contact-form button:disabled { opacity: .55; cursor: wait; }
+
 footer { background: var(--ink); color: var(--paper); display: grid; grid-template-columns: 1fr 1fr auto; gap: 30px; align-items: end; padding: 60px clamp(22px, 6vw, 96px); }
 .footer-brand { font: 38px var(--serif); }
 .footer-links { display: flex; gap: 24px; font: 11px var(--mono); text-transform: uppercase; }
@@ -143,9 +170,10 @@ footer p { margin: 0; font: 9px var(--mono); color: #8d938e; text-transform: upp
   .hero-copy { min-width: 0; }
   .hero-system { width: min(92vw, 530px); justify-self: center; margin-top: 42px; }
   .hero-meta { display: none; }
-  .manifesto-grid, .closing { grid-template-columns: 1fr; }
+  .manifesto-grid, .closing, .contact { grid-template-columns: 1fr; }
   .manifesto-copy { margin-top: 48px; }
   .closing-mark { display: none; }
+  .contact-intro { position: static; }
   .product-grid { grid-template-columns: 1fr; }
   .product-card, .product-card__link { min-height: 450px; }
   .capability-grid { grid-template-columns: 1fr; }
@@ -168,7 +196,7 @@ footer p { margin: 0; font: 9px var(--mono); color: #8d938e; text-transform: upp
   .hero-system { height: 350px; width: calc(100vw - 44px); }
   .node--core { width: 92px; height: 92px; }
   .node--wiki, .node--evidence, .node--future { padding: 10px; font-size: 8px; }
-  .manifesto, .work, .capabilities { padding-top: 80px; padding-bottom: 80px; }
+  .manifesto, .work, .capabilities, .contact { padding-top: 80px; padding-bottom: 80px; }
   .manifesto-grid { margin-top: 44px; }
   .section-heading { align-items: start; gap: 20px; }
   .section-count { max-width: 150px; text-align: right; }
@@ -178,6 +206,9 @@ footer p { margin: 0; font: 9px var(--mono); color: #8d938e; text-transform: upp
   .product-card__bottom { align-items: end; }
   .closing { min-height: 570px; }
   .closing h2 { font-size: 56px; }
+  .form-row { grid-template-columns: 1fr; gap: 0; }
+  .form-footer { align-items: stretch; flex-direction: column; }
+  .contact-form button { width: 100%; }
   .footer-links { flex-direction: column; }
 }
 

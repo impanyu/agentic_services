@@ -4,6 +4,7 @@ import asyncio
 import hashlib
 import hmac
 import json
+import re
 import secrets
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
@@ -19,6 +20,7 @@ from pydantic import BaseModel, Field
 from . import __version__
 from .admin_dashboard import admin_dashboard_html
 from .config import Settings
+from .contact import send_contact_email
 from .models import (
     CapabilitiesResponse,
     Capability,
@@ -38,6 +40,15 @@ class CustomerCreateRequest(BaseModel):
 
 class QuoteRequest(BaseModel):
     tier: str = "standard"
+
+
+class ContactMessageRequest(BaseModel):
+    name: Annotated[str, Field(min_length=2, max_length=120)]
+    email: Annotated[str, Field(min_length=3, max_length=320)]
+    subject: Annotated[str, Field(min_length=3, max_length=160)] = "General inquiry"
+    message: Annotated[str, Field(min_length=20, max_length=4000)]
+    service_id: Annotated[str | None, Field(alias="serviceId", max_length=100)] = None
+    company: Annotated[str, Field(max_length=200)] = ""
 
 
 @dataclass(frozen=True)
@@ -202,6 +213,18 @@ def create_app(
         canonical = json.dumps(receipt, separators=(",", ":"), sort_keys=True).encode()
         return hmac.new(secret.encode(), canonical, hashlib.sha256).hexdigest()
 
+    def contact_ip_hash(request: Request) -> str:
+        forwarded = request.headers.get("x-forwarded-for", "")
+        address = forwarded.split(",", 1)[0].strip() or (
+            request.client.host if request.client else "unknown"
+        )
+        secret = (
+            resolved_settings.contact_ip_hash_secret
+            or resolved_settings.receipt_signing_secret
+            or "local-contact-rate-limit"
+        )
+        return hmac.new(secret.encode(), address.encode(), hashlib.sha256).hexdigest()
+
     @app.get("/healthz", tags=["operations"])
     def health() -> dict[str, str]:
         return {"status": "ok"}
@@ -222,6 +245,59 @@ def create_app(
                 detail="OPENAI_API_KEY is not configured",
             )
         return {"status": "ready"}
+
+    @app.post("/v1/contact/messages", status_code=201, tags=["contact"])
+    async def create_contact_message(
+        payload: ContactMessageRequest, request: Request
+    ) -> dict[str, str]:
+        if payload.company:
+            return {"messageId": f"msg_{secrets.token_hex(16)}", "status": "received"}
+        email = payload.email.strip().lower()
+        if not re.fullmatch(r"[^\s@]+@[^\s@]+\.[^\s@]+", email):
+            raise HTTPException(status_code=422, detail="A valid email address is required")
+
+        ip_hash = contact_ip_hash(request)
+        since = datetime.now(UTC) - timedelta(hours=1)
+        if store.count_recent_contact_messages(ip_hash=ip_hash, since=since) >= max(
+            1, resolved_settings.contact_rate_limit_per_hour
+        ):
+            raise HTTPException(
+                status_code=429,
+                detail="Too many messages. Please try again later.",
+                headers={"Retry-After": "3600"},
+            )
+
+        record = store.create_contact_message(
+            sender_name=payload.name.strip(),
+            sender_email=email,
+            subject=payload.subject.strip(),
+            message_text=payload.message.strip(),
+            ip_hash=ip_hash,
+            user_agent=request.headers.get("user-agent"),
+            service_id=payload.service_id,
+        )
+        message_id = str(record["messageId"])
+        try:
+            await asyncio.to_thread(
+                send_contact_email,
+                resolved_settings,
+                message_id=message_id,
+                sender_name=payload.name.strip(),
+                sender_email=email,
+                subject=payload.subject.strip(),
+                message_text=payload.message.strip(),
+                service_id=payload.service_id,
+            )
+        except Exception as error:
+            store.update_contact_delivery(
+                message_id=message_id, status="failed", error=str(error)[:500]
+            )
+            raise HTTPException(
+                status_code=503,
+                detail="Your message was saved, but email delivery is temporarily unavailable.",
+            ) from error
+        store.update_contact_delivery(message_id=message_id, status="sent")
+        return {"messageId": message_id, "status": "sent"}
 
     @app.get("/v1/capabilities", response_model=CapabilitiesResponse, tags=["discovery"])
     def capabilities() -> CapabilitiesResponse:
@@ -757,6 +833,24 @@ def create_app(
     def admin_customers(x_admin_key: str | None = Header(default=None)) -> dict[str, object]:
         require_admin_key(x_admin_key)
         return {"customers": store.list_customers()}
+
+    @app.get("/v1/admin/contact-messages", tags=["admin"])
+    def admin_contact_messages(
+        limit: Annotated[int, Query(ge=1, le=200)] = 50,
+        offset: Annotated[int, Query(ge=0)] = 0,
+        service_id: Annotated[str | None, Query(alias="serviceId")] = None,
+        x_admin_key: str | None = Header(default=None),
+    ) -> dict[str, object]:
+        require_admin_key(x_admin_key)
+        return {
+            "messages": store.list_contact_messages(
+                limit=limit, offset=offset, service_id=service_id
+            ),
+            "limit": limit,
+            "offset": offset,
+            "serviceId": service_id,
+            "total": store.count_contact_messages(service_id=service_id),
+        }
 
     @app.post("/v1/admin/customers", tags=["admin"], status_code=201)
     def admin_create_customer(

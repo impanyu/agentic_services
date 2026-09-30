@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 import json
 import hashlib
+import sqlite3
 from datetime import UTC, datetime
 
 from fastapi.testclient import TestClient
@@ -207,6 +208,61 @@ def test_verify_claim_and_retrieve_result(tmp_path: Path) -> None:
     assert metadata.json() == result["snapshots"][0]
     assert content.status_code == 200
     assert hashlib.sha256(content.content).hexdigest() == content.headers["X-Content-SHA256"]
+
+
+def test_contact_message_is_delivered_and_recorded(tmp_path: Path, monkeypatch) -> None:
+    provider = FakeProvider()
+    client = build_client(tmp_path, provider)
+    delivered: list[dict[str, object]] = []
+
+    def fake_send(_settings, **message):
+        delivered.append(message)
+
+    monkeypatch.setattr("agentic_services.main.send_contact_email", fake_send)
+    response = client.post(
+        "/v1/contact/messages",
+        headers={"X-Forwarded-For": "203.0.113.10"},
+        json={
+            "name": "Ada Lovelace",
+            "email": "ada@example.com",
+            "subject": "Agent integration",
+            "message": "We would like to connect our agent to your services.",
+        },
+    )
+
+    assert response.status_code == 201
+    assert response.json()["status"] == "sent"
+    assert delivered[0]["sender_email"] == "ada@example.com"
+    with sqlite3.connect(tmp_path / "evidence.db") as connection:
+        row = connection.execute(
+            "SELECT sender_email,delivery_status FROM contact_messages"
+        ).fetchone()
+    assert row == ("ada@example.com", "sent")
+
+
+def test_contact_honeypot_does_not_send_or_store(tmp_path: Path, monkeypatch) -> None:
+    provider = FakeProvider()
+    client = build_client(tmp_path, provider)
+
+    def unexpected_send(*_args, **_kwargs):
+        raise AssertionError("honeypot submission must not send email")
+
+    monkeypatch.setattr("agentic_services.main.send_contact_email", unexpected_send)
+    response = client.post(
+        "/v1/contact/messages",
+        json={
+            "name": "Robot Sender",
+            "email": "robot@example.com",
+            "subject": "Automated message",
+            "message": "This should be silently accepted and discarded.",
+            "company": "Spam Incorporated",
+        },
+    )
+
+    assert response.status_code == 201
+    with sqlite3.connect(tmp_path / "evidence.db") as connection:
+        count = connection.execute("SELECT COUNT(*) FROM contact_messages").fetchone()[0]
+    assert count == 0
 
 
 def test_idempotency_prevents_duplicate_provider_calls(tmp_path: Path) -> None:
