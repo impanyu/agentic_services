@@ -32,6 +32,11 @@ def product_card(product: dict[str, object]) -> str:
             <ul>{tags}</ul>
             <span class="arrow" aria-hidden="true">↗</span>
           </div>
+          <div class="product-card__action">
+            <span>{html.escape(str(product['cta']))}</span>
+            <code>{html.escape(str(product['domain']))}</code>
+            <b aria-hidden="true">↗</b>
+          </div>
         </a>
       </article>"""
 
@@ -39,7 +44,12 @@ def product_card(product: dict[str, object]) -> str:
 def main() -> None:
     catalog = json.loads((ROOT / "catalog.json").read_text())
     products = catalog["products"]
-    cards = "\n".join(product_card(product) for product in products)
+    human_cards = "\n".join(
+        product_card(product) for product in products if product["audience"] == "human"
+    )
+    agent_cards = "\n".join(
+        product_card(product) for product in products if product["audience"] == "agent"
+    )
 
     template = (ROOT / "index.template.html").read_text()
     website_json_ld = {
@@ -65,8 +75,10 @@ def main() -> None:
             ],
         },
     }
-    page = template.replace("{{PRODUCT_CARDS}}", cards).replace(
-        "{{JSON_LD}}", json.dumps(website_json_ld, ensure_ascii=False)
+    page = (
+        template.replace("{{HUMAN_PRODUCT_CARDS}}", human_cards)
+        .replace("{{AGENT_PRODUCT_CARDS}}", agent_cards)
+        .replace("{{JSON_LD}}", json.dumps(website_json_ld, ensure_ascii=False))
     )
 
     if DIST.exists():

@@ -2,9 +2,11 @@
   "products": [
     {
       "name": "AgenticWiKi",
+      "audience": "human",
       "eyebrow": "Agent workspace",
       "description": "A question is an address. Explore, build, and return to durable knowledge in one browser-like workspace.",
       "url": "https://wiki.aisoup.net",
+      "domain": "wiki.aisoup.net",
       "cta": "Open AgenticWiKi",
       "number": "01",
       "accent": "lime",
@@ -12,9 +14,11 @@
     },
     {
       "name": "Web Evidence",
+      "audience": "agent",
       "eyebrow": "Agent service",
       "description": "Verify claims with cited evidence, complete source provenance, reproducible snapshots, and content hashes.",
       "url": "https://api.aisoup.net/web-evidence/",
+      "domain": "api.aisoup.net/web-evidence/",
       "cta": "Explore Web Evidence",
       "number": "02",
       "accent": "coral",
