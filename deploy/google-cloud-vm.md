@@ -33,8 +33,8 @@ STRIPE_NETWORK_ID=agentic-services
 Start the service:
 
 ```bash
-docker compose up -d --build
-docker compose ps
+docker compose --env-file .env.production up -d --build
+docker compose --env-file .env.production ps
 curl http://127.0.0.1:8010/healthz
 ```
 
