@@ -32,7 +32,7 @@ Exit condition: an agent can repeatedly consume services under a bounded entitle
 - Add provider onboarding and endpoint ownership verification.
 - Add health, latency, freshness, and delivery-quality observations.
 - Add capability-based ranking and policy-aware selection.
-- Add MCP and A2A adapters and external discovery exporters.
+- Extend the live MCP and A2A adapters with additional client conformance tests and directory exporters.
 - Add composition receipts for workflows that purchase from multiple services.
 
 Exit condition: agents can choose among substitutable services and compose multiple paid results with an auditable cost chain.

@@ -22,6 +22,10 @@ Captured snapshots include both `rawSha256` (exact response bytes) and `normaliz
 | `GET` | `/readyz` | Configuration and storage readiness |
 | `GET` | `/v1/capabilities` | Machine-readable operation and lifecycle metadata |
 | `GET` | `/.well-known/agent-service.json` | Canonical agent-service discovery document |
+| `GET` | `/.well-known/mcp/server.json` | MCP Registry-compatible remote-server metadata |
+| `POST` | `/mcp` | MCP Streamable HTTP endpoint; paid tools use x402 |
+| `GET` | `/.well-known/agent-card.json` | A2A 1.0 Agent Card |
+| `POST` | `/a2a` | A2A JSON-RPC `SendMessage`; Standard-tier payment |
 | `POST` | `/v1/claims/verify/quick` | Quick verification: $0.02, 1 tool action, up to 3 cited sources |
 | `POST` | `/v1/claims/verify` | Standard verification: $0.05, 3 tool actions, up to 8 cited sources |
 | `POST` | `/v1/claims/verify/deep` | Deep verification: $0.12, 7 tool actions, up to 15 cited sources |

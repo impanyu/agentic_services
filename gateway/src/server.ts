@@ -2,6 +2,7 @@ import { serve } from '@hono/node-server'
 import { Hono, type MiddlewareHandler } from 'hono'
 import { discovery } from 'mppx/hono'
 import { Mppx, evm, stripe } from 'mppx/server'
+import { createMcpHandler } from './mcp.js'
 
 const recipient = requireEnv('PAYMENT_RECIPIENT') as `0x${string}`
 const secretKey = requireEnv('MPP_SECRET_KEY')
@@ -130,7 +131,63 @@ const evmCharge = evm.charge({
   x402: { facilitator, routeBinding: 'resource' },
 })
 
+const mcpHandler = await createMcpHandler({
+  facilitator,
+  recipient,
+  upstreamUrl,
+  internalApiKey,
+  publicBaseUrl,
+  tiers,
+})
+
 const app = new Hono()
+
+app.all('/mcp', (c) => mcpHandler(withPublicUrl(c.req.raw)))
+
+app.get('/', (c) => c.html(landingPage()))
+
+app.get('/robots.txt', (c) => c.text(`User-agent: *\nAllow: /\nSitemap: ${publicBaseUrl}/sitemap.xml\n`))
+
+app.get('/sitemap.xml', (c) => {
+  c.header('Content-Type', 'application/xml; charset=utf-8')
+  return c.body(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/sitemap/0.9">\n  <url><loc>${publicBaseUrl}/</loc></url>\n  <url><loc>${publicBaseUrl}/openapi.json</loc></url>\n  <url><loc>${publicBaseUrl}/.well-known/agent-service.json</loc></url>\n  <url><loc>${publicBaseUrl}/.well-known/mcp/server.json</loc></url>\n  <url><loc>${publicBaseUrl}/.well-known/agent-card.json</loc></url>\n</urlset>\n`)
+})
+
+app.get('/.well-known/mcp/server.json', (c) => c.json(mcpRegistryDocument()))
+
+app.get('/.well-known/agent-card.json', (c) => {
+  c.header('Cache-Control', 'public, max-age=3600')
+  c.header('ETag', '"web-evidence-a2a-0.3.0"')
+  return c.json(agentCard())
+})
+
+app.get('/.well-known/agent.json', (c) => c.redirect('/.well-known/agent-card.json', 308))
+
+app.use('/.well-known/agent-service.json', async (c, next) => {
+  await next()
+  if (!c.res.ok) return
+  const document = await c.res.json() as Record<string, any>
+  document.service.version = '0.3.0'
+  document.transports = [
+    ...(document.transports ?? []),
+    {
+      id: 'public-mcp',
+      type: 'mcp',
+      url: `${publicBaseUrl}/mcp`,
+      specification: `${publicBaseUrl}/.well-known/mcp/server.json`,
+      authorization: 'x402',
+    },
+    {
+      id: 'public-a2a',
+      type: 'a2a',
+      url: `${publicBaseUrl}/a2a`,
+      specification: `${publicBaseUrl}/.well-known/agent-card.json`,
+      authorization: 'x402-or-mpp',
+    },
+  ]
+  c.res = c.json(document)
+  c.header('Cache-Control', 'public, max-age=300')
+})
 
 app.use('/openapi.json', async (c, next) => {
   await next()
@@ -210,6 +267,10 @@ Base URL: ${publicBaseUrl}
 OpenAPI: ${publicBaseUrl}/openapi.json
 Service manifest: ${publicBaseUrl}/.well-known/agent-service.json
 x402 discovery: ${publicBaseUrl}/.well-known/x402
+MCP Streamable HTTP: ${publicBaseUrl}/mcp
+MCP registry metadata: ${publicBaseUrl}/.well-known/mcp/server.json
+A2A Agent Card: ${publicBaseUrl}/.well-known/agent-card.json
+A2A JSON-RPC: ${publicBaseUrl}/a2a
 
 ## Paid operation
 
@@ -277,7 +338,11 @@ function toHonoPayment(
 ): MiddlewareHandler & { _internal?: unknown } {
   const middleware: MiddlewareHandler = async (c, next) => {
     const result = await handler(withPublicUrl(c.req.raw))
-    if (result.status === 402) return withBazaarSchema(result.challenge, tier)
+    if (result.status === 402) {
+      return new URL(c.req.url).pathname === tier.path
+        ? withBazaarSchema(result.challenge, tier)
+        : result.challenge
+    }
     await next()
     c.res = result.withReceipt(c.res)
   }
@@ -370,9 +435,13 @@ function mountPaidRoutes(
     app.post(tier.path, handler, async (c) => proxyRequest(c.req.raw, tier.path))
   }
 
+  const standard = paidTiers.find(({ tier }) => tier.id === 'standard')
+  if (!standard) throw new Error('Standard verification tier is required')
+  app.post('/a2a', standard.handler, handleA2A)
+
   discovery(app, payments, {
     path: '/openapi.json',
-    info: { title: 'Agentic Services Web Evidence', version: '0.2.0' },
+    info: { title: 'Agentic Services Web Evidence', version: '0.3.0' },
     serviceInfo: {
       description: 'Paid, structured verification of factual claims using current web evidence.',
       name: 'Web Evidence',
@@ -401,6 +470,153 @@ function requireEnv(name: string): string {
   const value = process.env[name]
   if (!value) throw new Error(`${name} is required`)
   return value
+}
+
+function mcpRegistryDocument() {
+  return {
+    $schema: 'https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json',
+    name: 'io.github.impanyu/web-evidence',
+    title: 'Web Evidence',
+    description: 'Paid claim verification with cited web evidence, source provenance, snapshots, and hashes.',
+    websiteUrl: publicBaseUrl,
+    repository: {
+      url: 'https://github.com/impanyu/agentic_services',
+      source: 'github',
+    },
+    version: '0.3.0',
+    remotes: [{ type: 'streamable-http', url: `${publicBaseUrl}/mcp` }],
+  }
+}
+
+function agentCard() {
+  return {
+    name: 'Web Evidence',
+    description: 'Verifies factual claims against current web evidence and returns citations, provenance, snapshots, and hashes.',
+    supportedInterfaces: [{
+      url: `${publicBaseUrl}/a2a`,
+      protocolBinding: 'JSONRPC',
+      protocolVersion: '1.0',
+    }],
+    provider: { organization: 'Agentic Services', url: 'https://aisoup.net' },
+    version: '0.3.0',
+    documentationUrl: `${publicBaseUrl}/`,
+    capabilities: {},
+    defaultInputModes: ['text/plain'],
+    defaultOutputModes: ['application/json', 'text/plain'],
+    skills: [{
+      id: 'verify-factual-claim',
+      name: 'Verify a factual claim',
+      description: 'Researches a claim on the current web and returns a structured verdict with complete source provenance.',
+      tags: ['fact-checking', 'web-research', 'citations', 'evidence'],
+      examples: ['Verify that the Base mainnet chain ID is 8453.'],
+      inputModes: ['text/plain'],
+      outputModes: ['application/json', 'text/plain'],
+    }],
+    extensions: [{
+      uri: 'https://www.x402.org/',
+      description: 'Calls cost $0.05 and accept x402 or MPP payment in USDC on Base.',
+      required: false,
+      params: {
+        discoveryUrl: `${publicBaseUrl}/.well-known/x402`,
+        priceUsd: standardPrice,
+        network: 'eip155:8453',
+        asset: 'USDC',
+      },
+    }],
+  }
+}
+
+async function handleA2A(c: any): Promise<Response> {
+  let request: Record<string, any>
+  try {
+    request = await c.req.json()
+  } catch {
+    return c.json(jsonRpcError(null, -32700, 'Invalid JSON payload'), 400)
+  }
+
+  const id = request.id ?? null
+  if (request.jsonrpc !== '2.0') return c.json(jsonRpcError(id, -32600, 'Request payload validation error'), 400)
+  if (request.method !== 'SendMessage') return c.json(jsonRpcError(id, -32601, 'Method not found'), 404)
+
+  const parts = request.params?.message?.parts
+  const claim = Array.isArray(parts)
+    ? parts.map((part: any) => typeof part?.text === 'string' ? part.text : '').filter(Boolean).join('\n')
+    : ''
+  if (claim.length < 3) return c.json(jsonRpcError(id, -32602, 'Invalid parameters: message.parts must contain text'), 400)
+
+  const verificationResponse = await fetch(new URL('/v1/claims/verify', upstreamUrl), {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${internalApiKey}`,
+      'Content-Type': 'application/json',
+      'Idempotency-Key': request.params?.message?.messageId ?? crypto.randomUUID(),
+    },
+    body: JSON.stringify({ claim, minimumSources: 2, maxSources: 8 }),
+  })
+  if (!verificationResponse.ok) {
+    return c.json(jsonRpcError(id, -32603, `Verification failed (${verificationResponse.status})`), 500)
+  }
+
+  const verification = await verificationResponse.json() as Record<string, unknown>
+  const responseMessage: Record<string, unknown> = {
+    messageId: crypto.randomUUID(),
+    role: 'ROLE_AGENT',
+    parts: [
+      { text: String(verification.conclusion ?? 'Verification completed.') },
+      { data: verification, metadata: { mediaType: 'application/json' } },
+    ],
+  }
+  const contextId = request.params?.message?.contextId
+  if (typeof contextId === 'string') responseMessage.contextId = contextId
+  return c.json({ jsonrpc: '2.0', id, result: { message: responseMessage } })
+}
+
+function jsonRpcError(id: unknown, code: number, message: string) {
+  return { jsonrpc: '2.0', id, error: { code, message } }
+}
+
+function landingPage(): string {
+  const offers = tiers.map((tier) => `
+    <article>
+      <h2>${escapeHtml(tier.id[0].toUpperCase() + tier.id.slice(1))} · $${escapeHtml(tier.price)}</h2>
+      <p>${escapeHtml(tier.summary)}</p>
+      <code>POST ${escapeHtml(tier.path)}</code>
+    </article>`).join('')
+  const structuredData = JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'Web Evidence',
+    serviceType: 'Agent-facing claim verification API and MCP server',
+    description: 'Paid claim verification with cited web evidence, complete provider source provenance, snapshots, and content hashes.',
+    url: publicBaseUrl,
+    provider: { '@type': 'Organization', name: 'Agentic Services', url: 'https://aisoup.net' },
+    offers: tiers.map((tier) => ({
+      '@type': 'Offer',
+      name: `${tier.id} claim verification`,
+      price: tier.price,
+      priceCurrency: 'USD',
+      url: `${publicBaseUrl}${tier.path}`,
+    })),
+  }).replace(/</g, '\\u003c')
+
+  return `<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Web Evidence API and MCP Server</title>
+<meta name="description" content="Agent-facing paid claim verification with cited sources, snapshots, hashes, x402 and MPP payments.">
+<link rel="canonical" href="${publicBaseUrl}/"><script type="application/ld+json">${structuredData}</script>
+<style>body{font:16px/1.55 system-ui,sans-serif;max-width:900px;margin:0 auto;padding:48px 24px;color:#17202a;background:#f7f9fb}header,article,section{background:#fff;border:1px solid #dfe6ee;border-radius:14px;padding:24px;margin:16px 0}h1{margin-top:0}a{color:#075bd8}code{overflow-wrap:anywhere}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}.grid article{margin:0}</style>
+</head><body><header><h1>Web Evidence</h1><p>Verify factual claims against current web evidence. Results include cited evidence, every source reported by the search provider, provenance, tier-dependent snapshots, and SHA-256 hashes.</p><p>Agents can pay per call with x402 or MPP using USDC on Base.</p></header>
+<main><section><h2>Agent discovery</h2><ul><li><a href="/openapi.json">OpenAPI</a></li><li><a href="/.well-known/agent-service.json">Agent service manifest</a></li><li><a href="/.well-known/x402">x402 resources</a></li><li><a href="/.well-known/mcp/server.json">MCP server metadata</a></li><li><a href="/.well-known/agent-card.json">A2A Agent Card</a></li><li><a href="/llms.txt">llms.txt</a></li></ul><p>MCP Streamable HTTP endpoint: <code>${publicBaseUrl}/mcp</code></p><p>A2A JSON-RPC endpoint: <code>${publicBaseUrl}/a2a</code></p></section>
+<section><h2>Pay-per-call tiers</h2><div class="grid">${offers}</div></section>
+<section><h2>Try the protocol</h2><p>An unauthenticated request returns a payment challenge. After payment, retry with the credential supplied by an x402 or MPP client.</p><pre><code>curl -X POST ${publicBaseUrl}/v1/claims/verify/quick \\
+  -H 'content-type: application/json' \\
+  -d '{"claim":"The Base mainnet chain ID is 8453."}'</code></pre></section></main></body></html>`
+}
+
+function escapeHtml(value: string): string {
+  return value.replace(/[&<>"']/g, (character) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+  })[character] ?? character)
 }
 
 async function proxyRequest(request: Request, path: string): Promise<Response> {

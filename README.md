@@ -79,8 +79,13 @@ The API starts at `http://localhost:8000`. Its main endpoints are:
 - `GET /v1/url-snapshots/{snapshot_id}/content` — retrieve the exact captured response bytes.
 - `GET /.well-known/agent-service.json` — discover the service and its schemas.
 - `GET /.well-known/x402` — discover x402-payable resource URLs.
+- `POST /mcp` — MCP Streamable HTTP server with one free discovery tool and four x402-paid verification tools.
+- `GET /.well-known/mcp/server.json` — MCP Registry metadata.
+- `POST /a2a` — A2A 1.0 JSON-RPC `SendMessage`, paid at the Standard tier.
+- `GET /.well-known/agent-card.json` — A2A Agent Card.
 - `GET /openapi.json` — inspect the complete HTTP contract.
 - `GET /llms.txt` — read concise agent integration instructions.
+- `GET /` — human-readable landing page with structured data; `robots.txt` and `sitemap.xml` support web indexing.
 
 Example request:
 
