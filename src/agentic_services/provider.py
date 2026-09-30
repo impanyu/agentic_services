@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 from datetime import UTC, datetime
 from typing import Any, Protocol
 from urllib.parse import urlsplit, urlunsplit
@@ -9,6 +10,7 @@ from openai import OpenAI
 
 from .models import (
     ClaimVerificationRequest,
+    ProviderSource,
     ProviderAnalysis,
     SourcePolicy,
 )
@@ -42,12 +44,13 @@ class ProviderResult:
         analysis: ProviderAnalysis,
         provider_response_id: str,
         model: str,
-        consulted_urls: set[str],
+        provider_sources: list[ProviderSource],
     ) -> None:
         self.analysis = analysis
         self.provider_response_id = provider_response_id
         self.model = model
-        self.consulted_urls = consulted_urls
+        self.provider_sources = provider_sources
+        self.consulted_urls = {normalize_url(item.url) for item in provider_sources}
 
 
 def normalize_url(value: str) -> str:
@@ -61,20 +64,51 @@ def normalize_url(value: str) -> str:
     return urlunsplit((split.scheme.lower(), split.netloc.lower(), path, split.query, ""))
 
 
-def collect_source_urls(value: Any) -> set[str]:
-    urls: set[str] = set()
-    if isinstance(value, dict):
-        candidate = value.get("url")
-        if isinstance(candidate, str):
-            normalized = normalize_url(candidate)
-            if normalized:
-                urls.add(normalized)
-        for child in value.values():
-            urls.update(collect_source_urls(child))
-    elif isinstance(value, list):
-        for child in value:
-            urls.update(collect_source_urls(child))
-    return urls
+def extract_provider_sources(response_data: dict[str, Any]) -> list[ProviderSource]:
+    sources: dict[str, ProviderSource] = {}
+    for item in response_data.get("output", []):
+        if not isinstance(item, dict) or item.get("type") != "web_search_call":
+            continue
+        action = item.get("action") if isinstance(item.get("action"), dict) else {}
+        action_type = str(action.get("type") or "search")
+        call_id = str(item.get("id") or "")
+        raw_queries = action.get("queries", action.get("query", []))
+        if isinstance(raw_queries, str):
+            queries = [raw_queries]
+        elif isinstance(raw_queries, list):
+            queries = [str(value) for value in raw_queries if value]
+        else:
+            queries = []
+
+        candidates = action.get("sources", [])
+        if not isinstance(candidates, list):
+            candidates = []
+        action_url = action.get("url")
+        if isinstance(action_url, str):
+            candidates = [*candidates, {"url": action_url}]
+
+        for candidate in candidates:
+            if not isinstance(candidate, dict) or not isinstance(candidate.get("url"), str):
+                continue
+            normalized = normalize_url(candidate["url"])
+            if not normalized:
+                continue
+            source = sources.get(normalized)
+            if source is None:
+                source = ProviderSource(
+                    source_id=f"src_{hashlib.sha256(normalized.encode()).hexdigest()[:20]}",
+                    url=candidate["url"],
+                    title=candidate.get("title") if isinstance(candidate.get("title"), str) else None,
+                )
+                sources[normalized] = source
+            if call_id and call_id not in source.search_call_ids:
+                source.search_call_ids.append(call_id)
+            if action_type not in source.actions:
+                source.actions.append(action_type)
+            for query in queries:
+                if query not in source.queries:
+                    source.queries.append(query)
+    return list(sources.values())
 
 
 class OpenAIEvidenceProvider:
@@ -134,12 +168,12 @@ class OpenAIEvidenceProvider:
 
         analysis = ProviderAnalysis.model_validate_json(response.output_text)
         response_data = response.model_dump(mode="json")
-        consulted_urls = collect_source_urls(response_data)
+        provider_sources = extract_provider_sources(response_data)
         return ProviderResult(
             analysis=analysis,
             provider_response_id=response.id,
             model=getattr(response, "model", None) or self.model,
-            consulted_urls=consulted_urls,
+            provider_sources=provider_sources,
         )
 
     @staticmethod

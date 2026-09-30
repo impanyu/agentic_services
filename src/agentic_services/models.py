@@ -41,6 +41,14 @@ class EvidenceRelationship(StrEnum):
     CONTEXT = "context"
 
 
+class SnapshotStatus(StrEnum):
+    CAPTURED = "captured"
+    FAILED = "failed"
+    BLOCKED = "blocked"
+    TOO_LARGE = "too_large"
+    UNSUPPORTED = "unsupported"
+
+
 def _validate_domain(value: str) -> str:
     normalized = value.strip().lower().rstrip(".")
     parsed = urlparse(f"//{normalized}")
@@ -57,8 +65,8 @@ class ClaimVerificationRequest(ApiModel):
     source_policy: SourcePolicy = SourcePolicy.AUTHORITATIVE
     minimum_sources: Annotated[int, Field(ge=1, le=10)] = 2
     max_sources: Annotated[int, Field(ge=1, le=20)] = 8
-    allowed_domains: Annotated[list[str], Field(max_length=100)] = []
-    blocked_domains: Annotated[list[str], Field(max_length=100)] = []
+    allowed_domains: Annotated[list[str], Field(max_length=100)] = Field(default_factory=list)
+    blocked_domains: Annotated[list[str], Field(max_length=100)] = Field(default_factory=list)
     include_conflicts: bool = True
     language: Annotated[str, Field(min_length=2, max_length=35)] = "auto"
 
@@ -121,8 +129,39 @@ class Evidence(ApiModel):
     relationship: EvidenceRelationship
     source_type: str
     quality_reason: str
-    consulted: bool
+    provider_source_matched: bool = False
+    cited: bool = False
+    snapshot_id: str | None = None
+    # Deprecated compatibility alias for provider_source_matched.
+    consulted: bool = False
     snapshotted: bool = False
+
+
+class ProviderSource(ApiModel):
+    source_id: str
+    url: str
+    title: str | None = None
+    provider: str = "openai_web_search"
+    search_call_ids: list[str] = Field(default_factory=list)
+    actions: list[str] = Field(default_factory=list)
+    queries: list[str] = Field(default_factory=list)
+    evidence_ids: list[str] = Field(default_factory=list)
+    cited: bool = False
+    snapshot_id: str | None = None
+
+
+class EvidenceSnapshot(ApiModel):
+    snapshot_id: str
+    requested_url: str
+    final_url: str | None = None
+    retrieved_at: datetime
+    status: SnapshotStatus
+    http_status: int | None = None
+    content_type: str | None = None
+    content_length: int | None = None
+    raw_sha256: str | None = None
+    normalized_sha256: str | None = None
+    failure_reason: str | None = None
 
 
 class AtomicFact(ApiModel):
@@ -145,6 +184,9 @@ class VerificationProvenance(ApiModel):
     searched_web: bool
     consulted_source_count: int
     cited_source_count: int
+    provider_source_count: int = 0
+    matched_evidence_count: int = 0
+    snapshotted_source_count: int = 0
 
 
 class ClaimVerificationResult(ApiModel):
@@ -154,7 +196,9 @@ class ClaimVerificationResult(ApiModel):
     observed_at: datetime
     conclusion: str
     atomic_facts: list[AtomicFact]
+    provider_sources: list[ProviderSource] = Field(default_factory=list)
     evidence: list[Evidence]
+    snapshots: list[EvidenceSnapshot] = Field(default_factory=list)
     conflicts: list[Conflict]
     limitations: list[str]
     provenance: VerificationProvenance

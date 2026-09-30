@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from functools import lru_cache
 
 import uvicorn
-from fastapi import FastAPI, Header, HTTPException, Request, status
+from fastapi import FastAPI, Header, HTTPException, Request, Response, status
 
 from . import __version__
 from .config import Settings
@@ -15,6 +15,7 @@ from .models import (
     Capability,
     ClaimVerificationRequest,
     ClaimVerificationResult,
+    EvidenceSnapshot,
 )
 from .provider import OpenAIEvidenceProvider
 from .service import ClaimVerificationService, IdempotencyConflictError
@@ -30,6 +31,8 @@ class VerificationTier:
     max_tool_calls: int
     max_output_tokens: int
     max_sources: int
+    snapshot_mode: str
+    max_snapshots: int
 
 
 def verification_tiers(settings: Settings) -> tuple[VerificationTier, ...]:
@@ -42,6 +45,8 @@ def verification_tiers(settings: Settings) -> tuple[VerificationTier, ...]:
             max_tool_calls=1,
             max_output_tokens=1500,
             max_sources=3,
+            snapshot_mode="none",
+            max_snapshots=0,
         ),
         VerificationTier(
             id="standard",
@@ -51,6 +56,8 @@ def verification_tiers(settings: Settings) -> tuple[VerificationTier, ...]:
             max_tool_calls=settings.max_tool_calls,
             max_output_tokens=settings.max_output_tokens,
             max_sources=8,
+            snapshot_mode="cited",
+            max_snapshots=3,
         ),
         VerificationTier(
             id="deep",
@@ -60,6 +67,8 @@ def verification_tiers(settings: Settings) -> tuple[VerificationTier, ...]:
             max_tool_calls=7,
             max_output_tokens=6000,
             max_sources=15,
+            snapshot_mode="cited",
+            max_snapshots=8,
         ),
         VerificationTier(
             id="research",
@@ -69,6 +78,8 @@ def verification_tiers(settings: Settings) -> tuple[VerificationTier, ...]:
             max_tool_calls=15,
             max_output_tokens=12000,
             max_sources=20,
+            snapshot_mode="all_sources",
+            max_snapshots=20,
         ),
     )
 
@@ -83,7 +94,7 @@ def build_service(settings: Settings) -> ClaimVerificationService | None:
             max_tool_calls=settings.max_tool_calls,
             max_output_tokens=settings.max_output_tokens,
         ),
-        store=VerificationStore(settings.database_path),
+        store=VerificationStore(settings.database_path, settings.snapshot_directory),
     )
 
 
@@ -224,7 +235,7 @@ def create_app(
                 for tier in tiers
             ],
             "provenance": {
-                "summary": "Results identify consulted and cited web sources and the model used for analysis.",
+                "summary": "Results preserve all provider-reported search sources, identify cited evidence, and include tier-dependent URL snapshots with hashes.",
                 "freshness": "Caller-controlled freshness target; retrieval time is returned with every result.",
                 "coverage": "Publicly accessible web sources supported by the upstream search provider.",
             },
@@ -244,6 +255,8 @@ def create_app(
                         "maxToolCalls": tier.max_tool_calls,
                         "maxOutputTokens": tier.max_output_tokens,
                         "maxSources": tier.max_sources,
+                        "snapshotMode": tier.snapshot_mode,
+                        "maxSnapshots": tier.max_snapshots,
                     }
                     for tier in tiers
                 },
@@ -301,6 +314,8 @@ def create_app(
                 idempotency_namespace=tier.id,
                 max_tool_calls=tier.max_tool_calls,
                 max_output_tokens=tier.max_output_tokens,
+                snapshot_mode=tier.snapshot_mode,
+                max_snapshots=tier.max_snapshots,
             )
         except IdempotencyConflictError as error:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(error)) from error
@@ -408,6 +423,53 @@ def create_app(
         if result is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Verification not found")
         return result
+
+    @app.get(
+        "/v1/url-snapshots/{snapshot_id}",
+        response_model=EvidenceSnapshot,
+        tags=["evidence snapshots"],
+    )
+    def get_snapshot(
+        snapshot_id: str,
+        request: Request,
+        authorization: str | None = Header(default=None),
+    ) -> EvidenceSnapshot:
+        require_service_api_key(authorization)
+        verification_service: ClaimVerificationService | None = request.app.state.verification_service
+        if verification_service is None:
+            raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Web Evidence is not configured")
+        snapshot = verification_service.store.get_snapshot(snapshot_id)
+        if snapshot is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Snapshot not found")
+        return snapshot
+
+    @app.get(
+        "/v1/url-snapshots/{snapshot_id}/content",
+        tags=["evidence snapshots"],
+        responses={200: {"content": {"application/octet-stream": {}}}},
+    )
+    def get_snapshot_content(
+        snapshot_id: str,
+        request: Request,
+        authorization: str | None = Header(default=None),
+    ) -> Response:
+        require_service_api_key(authorization)
+        verification_service: ClaimVerificationService | None = request.app.state.verification_service
+        if verification_service is None:
+            raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Web Evidence is not configured")
+        metadata = verification_service.store.get_snapshot(snapshot_id)
+        stored = verification_service.store.get_snapshot_content(snapshot_id)
+        if metadata is None or stored is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Snapshot content not found")
+        content, content_type = stored
+        return Response(
+            content=content,
+            media_type=content_type,
+            headers={
+                "Cache-Control": "public, immutable, max-age=31536000",
+                "X-Content-SHA256": metadata.raw_sha256 or "",
+            },
+        )
 
     return app
 

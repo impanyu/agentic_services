@@ -21,6 +21,8 @@ const tiers = [
     maxToolCalls: 1,
     maxOutputTokens: 1500,
     maxSources: 3,
+    snapshotMode: 'none',
+    maxSnapshots: 0,
     summary: 'Quick verification for a narrow claim using up to 3 cited sources.',
   },
   {
@@ -30,6 +32,8 @@ const tiers = [
     maxToolCalls: 3,
     maxOutputTokens: 3000,
     maxSources: 8,
+    snapshotMode: 'cited',
+    maxSnapshots: 3,
     summary: 'Standard verification with balanced evidence coverage.',
   },
   {
@@ -39,6 +43,8 @@ const tiers = [
     maxToolCalls: 7,
     maxOutputTokens: 6000,
     maxSources: 15,
+    snapshotMode: 'cited',
+    maxSnapshots: 8,
     summary: 'Deep verification for compound or contested claims using up to 15 cited sources.',
   },
   {
@@ -48,6 +54,8 @@ const tiers = [
     maxToolCalls: 15,
     maxOutputTokens: 12000,
     maxSources: 20,
+    snapshotMode: 'all_sources',
+    maxSnapshots: 20,
     summary: 'Research-grade verification with the largest search and evidence budget.',
   },
 ] as const
@@ -75,7 +83,7 @@ const claimRequestSchema = {
 
 const claimResponseSchema = {
   type: 'object',
-  required: ['verificationId', 'claim', 'status', 'observedAt', 'conclusion', 'atomicFacts', 'evidence', 'conflicts', 'limitations', 'provenance'],
+  required: ['verificationId', 'claim', 'status', 'observedAt', 'conclusion', 'atomicFacts', 'providerSources', 'evidence', 'snapshots', 'conflicts', 'limitations', 'provenance'],
   properties: {
     verificationId: { type: 'string' },
     claim: { type: 'string' },
@@ -83,7 +91,9 @@ const claimResponseSchema = {
     observedAt: { type: 'string', format: 'date-time' },
     conclusion: { type: 'string' },
     atomicFacts: { type: 'array', items: { type: 'object' } },
+    providerSources: { type: 'array', items: { type: 'object' } },
     evidence: { type: 'array', items: { type: 'object' } },
+    snapshots: { type: 'array', items: { type: 'object' } },
     conflicts: { type: 'array', items: { type: 'object' } },
     limitations: { type: 'array', items: { type: 'string' } },
     provenance: { type: 'object' },
@@ -106,7 +116,9 @@ const claimResponseExample = {
   observedAt: '2026-01-01T00:00:00Z',
   conclusion: 'Authoritative sources confirm that Base mainnet uses chain ID 8453.',
   atomicFacts: [],
+  providerSources: [],
   evidence: [],
+  snapshots: [],
   conflicts: [],
   limitations: [],
   provenance: {},
@@ -139,6 +151,8 @@ app.use('/openapi.json', async (c, next) => {
       maxToolCalls: tier.maxToolCalls,
       maxOutputTokens: tier.maxOutputTokens,
       maxSources: tier.maxSources,
+      snapshotMode: tier.snapshotMode,
+      maxSnapshots: tier.maxSnapshots,
     }
     operation['x-payment-info'] = {
       ...operation['x-payment-info'],
@@ -156,6 +170,25 @@ app.use('/openapi.json', async (c, next) => {
         },
       },
     }
+  }
+
+  document.paths['/v1/url-snapshots/{snapshot_id}'] = {
+    get: {
+      operationId: 'getEvidenceSnapshot',
+      tags: ['Evidence Snapshots'],
+      summary: 'Retrieve immutable snapshot metadata and content hashes',
+      parameters: [{ name: 'snapshot_id', in: 'path', required: true, schema: { type: 'string' } }],
+      responses: { '200': { description: 'Snapshot metadata' }, '404': { description: 'Snapshot not found' } },
+    },
+  }
+  document.paths['/v1/url-snapshots/{snapshot_id}/content'] = {
+    get: {
+      operationId: 'getEvidenceSnapshotContent',
+      tags: ['Evidence Snapshots'],
+      summary: 'Retrieve the immutable raw bytes for a captured snapshot',
+      parameters: [{ name: 'snapshot_id', in: 'path', required: true, schema: { type: 'string' } }],
+      responses: { '200': { description: 'Raw snapshot content' }, '404': { description: 'Snapshot content not found' } },
+    },
   }
 
   c.res = c.json(document)
@@ -180,13 +213,15 @@ x402 discovery: ${publicBaseUrl}/.well-known/x402
 
 ## Paid operation
 
-${tiers.map((tier) => `POST ${tier.path}\nTier: ${tier.id}\nPrice: $${tier.price}\nMaximum tool actions: ${tier.maxToolCalls}\nMaximum cited sources: ${tier.maxSources}`).join('\n\n')}
+${tiers.map((tier) => `POST ${tier.path}\nTier: ${tier.id}\nPrice: $${tier.price}\nMaximum tool actions: ${tier.maxToolCalls}\nMaximum cited sources: ${tier.maxSources}\nSnapshot policy: ${tier.snapshotMode} (up to ${tier.maxSnapshots})`).join('\n\n')}
 Payment: x402 or MPP using USDC on Base (eip155:8453)${stripeSecretKey ? '; MPP Stripe USD is also accepted' : ''}
 
 Minimum request body:
 {"claim":"A factual statement to verify","minimumSources":1}
 
 The initial unauthenticated request returns HTTP 402. Complete one advertised payment challenge and retry with the resulting payment credential.
+
+Successful Standard, Deep, and Research responses include snapshot IDs. Retrieve metadata at GET /v1/url-snapshots/{snapshot_id} and immutable raw bytes at GET /v1/url-snapshots/{snapshot_id}/content.
 `))
 
 app.get('/healthz', async (c) => {
@@ -337,7 +372,7 @@ function mountPaidRoutes(
 
   discovery(app, payments, {
     path: '/openapi.json',
-    info: { title: 'Agentic Services Web Evidence', version: '0.1.0' },
+    info: { title: 'Agentic Services Web Evidence', version: '0.2.0' },
     serviceInfo: {
       description: 'Paid, structured verification of factual claims using current web evidence.',
       name: 'Web Evidence',

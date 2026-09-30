@@ -17,6 +17,7 @@ class Settings:
     openai_model: str
     database_path: Path
     base_url: str
+    snapshot_directory: Path | None = None
     provider_contact: str = "services@example.com"
     service_api_key: str | None = None
     payment_recipient: str | None = None
@@ -34,11 +35,19 @@ class Settings:
         if not database_path.is_absolute():
             database_path = REPOSITORY_ROOT / database_path
 
+        snapshot_value = os.getenv("WEB_EVIDENCE_SNAPSHOT_DIR")
+        snapshot_directory = (
+            Path(snapshot_value) if snapshot_value else database_path.parent / "snapshots"
+        )
+        if not snapshot_directory.is_absolute():
+            snapshot_directory = REPOSITORY_ROOT / snapshot_directory
+
         return cls(
             openai_api_key=os.getenv("OPENAI_API_KEY") or None,
             openai_model=os.getenv("OPENAI_MODEL", "gpt-6-luna"),
             database_path=database_path,
             base_url=os.getenv("WEB_EVIDENCE_BASE_URL", "http://localhost:8000").rstrip("/"),
+            snapshot_directory=snapshot_directory,
             provider_contact=os.getenv("WEB_EVIDENCE_PROVIDER_CONTACT", "services@example.com"),
             service_api_key=os.getenv("WEB_EVIDENCE_API_KEY") or None,
             payment_recipient=os.getenv("PAYMENT_RECIPIENT") or None,

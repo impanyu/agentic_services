@@ -2,14 +2,17 @@ from __future__ import annotations
 
 from pathlib import Path
 import json
+import hashlib
+from datetime import UTC, datetime
 
 from fastapi.testclient import TestClient
 from jsonschema import Draft202012Validator, FormatChecker
 
 from agentic_services.config import Settings
 from agentic_services.main import create_app
-from agentic_services.models import ProviderAnalysis
-from agentic_services.provider import ProviderResult
+from agentic_services.models import EvidenceSnapshot, ProviderAnalysis, ProviderSource
+from agentic_services.provider import ProviderResult, extract_provider_sources
+from agentic_services.snapshot import SnapshotCapture
 from agentic_services.service import ClaimVerificationService
 from agentic_services.storage import VerificationStore
 
@@ -55,13 +58,90 @@ class FakeProvider:
                 "limitations": [],
             }
         )
-        urls = {"https://example.com/docs"} if self.consulted else set()
+        sources = []
+        if self.consulted:
+            sources = [
+                ProviderSource(
+                    source_id="src_docs",
+                    url="https://example.com/docs",
+                    title="Official documentation",
+                    search_call_ids=["ws_1"],
+                    actions=["search"],
+                    queries=[request.claim],
+                ),
+                ProviderSource(
+                    source_id="src_uncited",
+                    url="https://example.net/background",
+                    title="Background result",
+                    search_call_ids=["ws_1"],
+                    actions=["search"],
+                    queries=[request.claim],
+                ),
+            ]
         return ProviderResult(
             analysis=analysis,
             provider_response_id="resp_test",
             model=self.model,
-            consulted_urls=urls,
+            provider_sources=sources,
         )
+
+
+class FakeSnapshotter:
+    def __init__(self) -> None:
+        self.urls: list[str] = []
+
+    def capture_many(self, urls: list[str]) -> list[SnapshotCapture]:
+        captures = []
+        for index, url in enumerate(urls):
+            self.urls.append(url)
+            content = f"snapshot:{url}".encode()
+            captures.append(
+                SnapshotCapture(
+                    metadata=EvidenceSnapshot(
+                        snapshot_id=f"snap_{len(self.urls)}_{index}",
+                        requested_url=url,
+                        final_url=url,
+                        retrieved_at=datetime.now(UTC),
+                        status="captured",
+                        http_status=200,
+                        content_type="text/plain",
+                        content_length=len(content),
+                        raw_sha256=hashlib.sha256(content).hexdigest(),
+                        normalized_sha256=hashlib.sha256(content).hexdigest(),
+                    ),
+                    content=content,
+                )
+            )
+        return captures
+
+
+def test_provider_sources_come_only_from_web_search_metadata() -> None:
+    sources = extract_provider_sources(
+        {
+            "output": [
+                {
+                    "type": "web_search_call",
+                    "id": "ws_1",
+                    "action": {
+                        "type": "search",
+                        "query": "example claim",
+                        "sources": [
+                            {"url": "https://example.com/a", "title": "A"},
+                            {"url": "https://example.com/b", "title": "B"},
+                        ],
+                    },
+                },
+                {"type": "message", "content": [{"url": "https://invented.example/"}]},
+            ]
+        }
+    )
+
+    assert [source.url for source in sources] == [
+        "https://example.com/a",
+        "https://example.com/b",
+    ]
+    assert sources[0].search_call_ids == ["ws_1"]
+    assert sources[0].queries == ["example claim"]
 
 
 def build_client(
@@ -79,7 +159,8 @@ def build_client(
     )
     service = ClaimVerificationService(
         provider=provider,
-        store=VerificationStore(settings.database_path),
+        store=VerificationStore(settings.database_path, tmp_path / "snapshots"),
+        snapshotter=FakeSnapshotter(),
     )
     return TestClient(create_app(settings=settings, service=service))
 
@@ -101,12 +182,28 @@ def test_verify_claim_and_retrieve_result(tmp_path: Path) -> None:
     result = response.json()
     assert result["status"] == "confirmed"
     assert result["evidence"][0]["consulted"] is True
-    assert result["evidence"][0]["snapshotted"] is False
+    assert result["evidence"][0]["providerSourceMatched"] is True
+    assert result["evidence"][0]["cited"] is True
+    assert result["evidence"][0]["snapshotted"] is True
+    assert len(result["providerSources"]) == 2
+    assert result["providerSources"][0]["cited"] is True
+    assert result["providerSources"][1]["cited"] is False
+    assert len(result["snapshots"]) == 1
     assert result["provenance"]["citedSourceCount"] == 1
+    assert result["provenance"]["providerSourceCount"] == 2
+    assert result["provenance"]["snapshottedSourceCount"] == 1
 
     retrieved = client.get(f"/v1/claims/verifications/{result['verificationId']}")
     assert retrieved.status_code == 200
     assert retrieved.json() == result
+
+    snapshot_id = result["snapshots"][0]["snapshotId"]
+    metadata = client.get(f"/v1/url-snapshots/{snapshot_id}")
+    content = client.get(f"/v1/url-snapshots/{snapshot_id}/content")
+    assert metadata.status_code == 200
+    assert metadata.json() == result["snapshots"][0]
+    assert content.status_code == 200
+    assert hashlib.sha256(content.content).hexdigest() == content.headers["X-Content-SHA256"]
 
 
 def test_idempotency_prevents_duplicate_provider_calls(tmp_path: Path) -> None:
@@ -212,6 +309,7 @@ def test_paid_discovery_advertises_x402_and_mpp(tmp_path: Path) -> None:
     service = ClaimVerificationService(
         provider=provider,
         store=VerificationStore(settings.database_path),
+        snapshotter=FakeSnapshotter(),
     )
     manifest = TestClient(create_app(settings=settings, service=service)).get(
         "/.well-known/agent-service.json"
@@ -242,6 +340,23 @@ def test_verification_tiers_apply_distinct_provider_budgets(tmp_path: Path) -> N
         response = client.post(path, json={"claim": "The feature is supported.", "minimumSources": 1})
         assert response.status_code == 200
         assert provider.budgets[-1] == budget
+
+
+def test_snapshot_policy_varies_by_tier(tmp_path: Path) -> None:
+    provider = FakeProvider()
+    client = build_client(tmp_path, provider)
+
+    quick = client.post(
+        "/v1/claims/verify/quick",
+        json={"claim": "The feature is supported.", "minimumSources": 1},
+    ).json()
+    research = client.post(
+        "/v1/claims/verify/research",
+        json={"claim": "The feature is supported.", "minimumSources": 1},
+    ).json()
+
+    assert quick["snapshots"] == []
+    assert len(research["snapshots"]) == 2
 
 
 def test_quick_tier_rejects_explicit_excess_source_budget(tmp_path: Path) -> None:
