@@ -10,6 +10,7 @@ const secretKey = requireEnv('MPP_SECRET_KEY')
 const internalApiKey = requireEnv('WEB_EVIDENCE_API_KEY')
 const upstreamUrl = process.env.UPSTREAM_URL ?? 'http://web-evidence:8000'
 const publicBaseUrl = process.env.PUBLIC_BASE_URL ?? 'https://api.aisoup.net'
+const serviceBaseUrl = `${publicBaseUrl}/web-evidence`
 const standardPrice = process.env.WEB_EVIDENCE_PRICE_USD ?? '0.05'
 const facilitator = process.env.X402_FACILITATOR_URL ?? 'https://facilitator.openx402.ai'
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY
@@ -176,7 +177,7 @@ app.get('/robots.txt', (c) => c.text(`User-agent: *\nAllow: /\nSitemap: ${public
 
 app.get('/sitemap.xml', (c) => {
   c.header('Content-Type', 'application/xml; charset=utf-8')
-  return c.body(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/sitemap/0.9">\n  <url><loc>${publicBaseUrl}/</loc></url>\n  <url><loc>${publicBaseUrl}/openapi.json</loc></url>\n  <url><loc>${publicBaseUrl}/.well-known/agent-service.json</loc></url>\n  <url><loc>${publicBaseUrl}/.well-known/mcp/server.json</loc></url>\n  <url><loc>${publicBaseUrl}/.well-known/agent-card.json</loc></url>\n</urlset>\n`)
+  return c.body(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/sitemap/0.9">\n  <url><loc>${publicBaseUrl}/</loc></url>\n  <url><loc>${serviceBaseUrl}/</loc></url>\n  <url><loc>${serviceBaseUrl}/openapi.json</loc></url>\n  <url><loc>${serviceBaseUrl}/.well-known/agent-service.json</loc></url>\n  <url><loc>${serviceBaseUrl}/.well-known/mcp/server.json</loc></url>\n  <url><loc>${serviceBaseUrl}/.well-known/agent-card.json</loc></url>\n</urlset>\n`)
 })
 
 app.get('/.well-known/mcp/server.json', (c) => c.json(mcpRegistryDocument()))
@@ -195,9 +196,19 @@ app.get('/.well-known/agent-service.json', async () => {
   })
   if (!upstream.ok) return upstream
   const document = await upstream.json() as Record<string, any>
+  document.service.id = `${serviceBaseUrl}/.well-known/agent-service.json`
   document.service.version = '0.3.0'
   document.service.homepage = `${publicBaseUrl}/web-evidence/`
   document.provider.name = 'Dream Workshop LLC'
+  for (const transport of (document.transports ?? [])) {
+    if (transport.id === 'public-http') {
+      transport.specification = `${serviceBaseUrl}/openapi.json`
+    }
+  }
+  document.extensions = {
+    ...document.extensions,
+    paymentDiscovery: `${serviceBaseUrl}/.well-known/x402`,
+  }
   for (const operation of (document.operations ?? [])) {
     const tier = tiers.find((candidate) => operation.id === `verify-claim-${candidate.id}`)
     if (!tier) continue
@@ -212,15 +223,15 @@ app.get('/.well-known/agent-service.json', async () => {
     {
       id: 'public-mcp',
       type: 'mcp',
-      url: `${publicBaseUrl}/mcp`,
-      specification: `${publicBaseUrl}/.well-known/mcp/server.json`,
+      url: `${serviceBaseUrl}/mcp`,
+      specification: `${serviceBaseUrl}/.well-known/mcp/server.json`,
       authorization: 'x402',
     },
     {
       id: 'public-a2a',
       type: 'a2a',
-      url: `${publicBaseUrl}/a2a`,
-      specification: `${publicBaseUrl}/.well-known/agent-card.json`,
+      url: `${serviceBaseUrl}/a2a`,
+      specification: `${serviceBaseUrl}/.well-known/agent-card.json`,
       authorization: 'x402-or-mpp',
     },
   ]
@@ -384,13 +395,13 @@ app.get('/llms.txt', (c) => c.text(`# Web Evidence
 Web Evidence verifies factual claims against current web sources and returns structured, cited results.
 
 Base URL: ${publicBaseUrl}
-OpenAPI: ${publicBaseUrl}/openapi.json
-Service manifest: ${publicBaseUrl}/.well-known/agent-service.json
-x402 discovery: ${publicBaseUrl}/.well-known/x402
-MCP Streamable HTTP: ${publicBaseUrl}/mcp
-MCP registry metadata: ${publicBaseUrl}/.well-known/mcp/server.json
-A2A Agent Card: ${publicBaseUrl}/.well-known/agent-card.json
-A2A JSON-RPC: ${publicBaseUrl}/a2a
+OpenAPI: ${serviceBaseUrl}/openapi.json
+Service manifest: ${serviceBaseUrl}/.well-known/agent-service.json
+x402 discovery: ${serviceBaseUrl}/.well-known/x402
+MCP Streamable HTTP: ${serviceBaseUrl}/mcp
+MCP registry metadata: ${serviceBaseUrl}/.well-known/mcp/server.json
+A2A Agent Card: ${serviceBaseUrl}/.well-known/agent-card.json
+A2A JSON-RPC: ${serviceBaseUrl}/a2a
 
 ## Paid operation
 
@@ -730,7 +741,7 @@ function mcpRegistryDocument() {
       source: 'github',
     },
     version: '0.3.0',
-    remotes: [{ type: 'streamable-http', url: `${publicBaseUrl}/mcp` }],
+    remotes: [{ type: 'streamable-http', url: `${serviceBaseUrl}/mcp` }],
   }
 }
 
@@ -739,7 +750,7 @@ function agentCard() {
     name: 'Web Evidence',
     description: 'Verifies factual claims against current web evidence and returns citations, provenance, snapshots, and hashes.',
     supportedInterfaces: [{
-      url: `${publicBaseUrl}/a2a`,
+      url: `${serviceBaseUrl}/a2a`,
       protocolBinding: 'JSONRPC',
       protocolVersion: '1.0',
     }],
@@ -753,7 +764,7 @@ function agentCard() {
           description: `Pay $${standardPrice} in USDC on Base before calling this agent.`,
           required: true,
           params: {
-            discoveryUrl: `${publicBaseUrl}/.well-known/x402`,
+            discoveryUrl: `${serviceBaseUrl}/.well-known/x402`,
             priceUsd: standardPrice,
             network: 'eip155:8453',
             asset: 'USDC',
@@ -765,7 +776,7 @@ function agentCard() {
           required: true,
           params: {
             methods: ['evm', ...(stripeSecretKey ? ['stripe'] : [])],
-            endpoint: `${publicBaseUrl}/a2a`,
+            endpoint: `${serviceBaseUrl}/a2a`,
           },
         },
       ],
@@ -840,42 +851,26 @@ function jsonRpcError(id: unknown, code: number, message: string) {
 }
 
 function landingPage(): string {
-  const offers = tiers.map((tier) => `
-    <article>
-      <h2>${escapeHtml(tier.id[0].toUpperCase() + tier.id.slice(1))} · $${escapeHtml(tier.price)}</h2>
-      <p>${escapeHtml(tier.summary)}</p>
-      <code>POST ${escapeHtml(tier.canonicalPath)}</code>
-    </article>`).join('')
   const structuredData = JSON.stringify({
     '@context': 'https://schema.org',
-    '@type': 'Service',
-    name: 'Web Evidence',
-    serviceType: 'Agent-facing claim verification API and MCP server',
-    description: 'Paid claim verification with cited web evidence, complete provider source provenance, snapshots, and content hashes.',
+    '@type': 'ItemList',
+    name: 'Dream Workshop Agent Services',
+    description: 'Machine-discoverable and autonomously purchasable services for AI agents.',
     url: publicBaseUrl,
-    provider: { '@type': 'Organization', name: 'Agentic Services', url: 'https://aisoup.net' },
-    offers: tiers.map((tier) => ({
-      '@type': 'Offer',
-      name: `${tier.id} claim verification`,
-      price: tier.price,
-      priceCurrency: 'USD',
-      url: `${publicBaseUrl}${tier.canonicalPath}`,
-    })),
+    itemListElement: [{ '@type': 'ListItem', position: 1, url: `${serviceBaseUrl}/`, name: 'Web Evidence' }],
   }).replace(/</g, '\\u003c')
 
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Web Evidence API and MCP Server</title>
-<meta name="description" content="Agent-facing paid claim verification with cited sources, snapshots, hashes, x402 and MPP payments.">
-<link rel="icon" href="/favicon.ico">
-<link rel="canonical" href="${publicBaseUrl}/"><script type="application/ld+json">${structuredData}</script>
-<style>body{font:16px/1.55 system-ui,sans-serif;max-width:900px;margin:0 auto;padding:48px 24px;color:#17202a;background:#f7f9fb}header,article,section{background:#fff;border:1px solid #dfe6ee;border-radius:14px;padding:24px;margin:16px 0}h1{margin-top:0}a{color:#075bd8}code{overflow-wrap:anywhere}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}.grid article{margin:0}</style>
-</head><body><header><h1>Web Evidence</h1><p>Verify factual claims against current web evidence. Results include cited evidence, every source reported by the search provider, provenance, tier-dependent snapshots, and SHA-256 hashes.</p><p>Agents can pay per call with x402 or MPP using USDC on Base${stripeSecretKey ? `, or by card through MPP Stripe (minimum $${escapeHtml(stripeMinimumPrice)})` : ''}.</p></header>
-<main><section><h2>Agent discovery</h2><ul><li><a href="/openapi.json">OpenAPI</a></li><li><a href="/.well-known/agent-service.json">Agent service manifest</a></li><li><a href="/.well-known/x402">x402 resources</a></li><li><a href="/.well-known/mcp/server.json">MCP server metadata</a></li><li><a href="/.well-known/agent-card.json">A2A Agent Card</a></li><li><a href="/llms.txt">llms.txt</a></li></ul><p>MCP Streamable HTTP endpoint: <code>${publicBaseUrl}/mcp</code></p><p>A2A JSON-RPC endpoint: <code>${publicBaseUrl}/a2a</code></p></section>
-<section><h2>Pay-per-call tiers</h2><div class="grid">${offers}</div></section>
-<section><h2>Try the protocol</h2><p>An unauthenticated request returns a payment challenge. After payment, retry with the credential supplied by an x402 or MPP client.</p><pre><code>curl -X POST ${publicBaseUrl}/web-evidence/v1/claims/verify/quick \\
-  -H 'content-type: application/json' \\
-  -d '{"claim":"The Base mainnet chain ID is 8453."}'</code></pre></section></main></body></html>`
+<title>Dream Workshop — Agent Service Network</title>
+<meta name="description" content="Machine-discoverable services AI agents can call and purchase autonomously.">
+<link rel="icon" href="/favicon.ico"><link rel="canonical" href="${publicBaseUrl}/"><script type="application/ld+json">${structuredData}</script>
+<style>:root{--ink:#111411;--paper:#f1efe8;--lime:#c7ff68;--coral:#ff7657;--line:rgba(17,20,17,.18);--mono:ui-monospace,SFMono-Regular,Menlo,monospace}*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.5 Inter,system-ui,sans-serif}a{color:inherit;text-decoration:none}.nav{height:78px;padding:0 clamp(22px,5vw,76px);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}.brand{font-weight:700;letter-spacing:-.03em}.nav a:last-child{font:11px var(--mono);text-transform:uppercase}.hero{min-height:560px;padding:90px clamp(22px,7vw,110px);display:grid;align-content:center;background-image:linear-gradient(to right,transparent calc(100% - 1px),var(--line) 1px);background-size:12.5% 100%}.eyebrow{font:11px var(--mono);text-transform:uppercase;letter-spacing:.12em}.eyebrow i{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--coral);margin-right:9px}.hero h1{font-size:clamp(58px,8vw,124px);line-height:.86;letter-spacing:-.07em;margin:28px 0 34px;max-width:1050px}.hero h1 em{font-family:Georgia,serif;font-weight:400}.hero p{font-size:clamp(18px,1.7vw,24px);max-width:740px}.catalog{padding:100px clamp(22px,7vw,110px);border-top:1px solid var(--line)}.section-head{display:flex;justify-content:space-between;margin-bottom:38px;font:11px var(--mono);text-transform:uppercase;letter-spacing:.1em}.service{display:grid;grid-template-columns:1fr 1.25fr;border:1px solid var(--ink);min-height:410px;transition:transform .2s}.service:hover{transform:translateY(-5px)}.service-main{padding:38px;background:var(--coral);display:flex;flex-direction:column}.status{font:10px var(--mono);text-transform:uppercase}.service h2{font:500 clamp(52px,6vw,86px)/.9 Georgia,serif;letter-spacing:-.055em;margin:auto 0 22px}.service-main p{font-size:18px}.service-meta{padding:38px;display:flex;flex-direction:column}.tags{display:flex;gap:8px;flex-wrap:wrap}.tags span{border:1px solid;padding:7px 9px;font:10px var(--mono)}.service-meta p{font-size:18px;max-width:650px;margin:auto 0}.links{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid;margin:28px -38px -38px}.links a{padding:18px;border-right:1px solid;font:10px var(--mono);text-transform:uppercase}.links a:last-child{border-right:0}.contract{background:var(--ink);color:var(--paper);padding:90px clamp(22px,7vw,110px);display:grid;grid-template-columns:1fr 1fr;gap:10vw}.contract h2{font-size:clamp(42px,5vw,72px);line-height:.95;letter-spacing:-.05em;margin:0}.contract ol{margin:0;padding:0;list-style:none}.contract li{border-top:1px solid #4a4e49;padding:18px 0;display:grid;grid-template-columns:50px 1fr}.contract b{color:var(--lime);font:11px var(--mono)}footer{padding:48px clamp(22px,7vw,110px);display:flex;justify-content:space-between;font:11px var(--mono);text-transform:uppercase}@media(max-width:760px){.service,.contract{grid-template-columns:1fr}.hero{min-height:500px}.links{grid-template-columns:1fr}.links a{border-right:0;border-bottom:1px solid}.section-head{gap:20px}}</style>
+</head><body><header class="nav"><a class="brand" href="https://aisoup.net">Dream Workshop</a><a href="https://aisoup.net#agent-services">Company & products ↗</a></header>
+<main><section class="hero"><div class="eyebrow"><i></i> Agent service network</div><h1>Services built<br><em>for agents.</em></h1><p>A growing catalog of APIs, MCP tools, software, and data services that agents can discover, call, and purchase autonomously.</p></section>
+<section class="catalog"><div class="section-head"><span>01 / Live services</span><span>Machine-native · Pay per use</span></div><article class="service"><a class="service-main" href="${serviceBaseUrl}/"><span class="status">● Live · Service 01</span><h2>Web<br>Evidence</h2><p>Verify claims against the current web.</p></a><div class="service-meta"><div class="tags"><span>API</span><span>MCP</span><span>A2A</span><span>x402 + MPP</span></div><p>Cited evidence, complete provider source provenance, reproducible snapshots, content hashes, and signed commercial receipts.</p><div class="links"><a href="${serviceBaseUrl}/">Product page ↗</a><a href="${serviceBaseUrl}/openapi.json">OpenAPI ↗</a><a href="${serviceBaseUrl}/.well-known/agent-service.json">Manifest ↗</a></div></div></article></section>
+<section class="contract"><h2>One pattern for<br>every service.</h2><ol><li><b>01</b><span>Discover the service and its machine-readable contract.</span></li><li><b>02</b><span>Choose a capability, price, and supported payment rail.</span></li><li><b>03</b><span>Pay, execute, and retain a verifiable receipt.</span></li></ol></section></main>
+<footer><span>Dream Workshop LLC · 2026</span><a href="https://aisoup.net#contact">Contact ↗</a></footer></body></html>`
 }
 
 function escapeHtml(value: string): string {

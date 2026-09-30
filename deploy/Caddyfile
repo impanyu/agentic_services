@@ -46,6 +46,14 @@ api.aisoup.net {
 		}
 	}
 
+	@web_evidence_service_protocol path /web-evidence/openapi.json /web-evidence/llms.txt /web-evidence/mcp /web-evidence/a2a /web-evidence/.well-known/*
+	handle @web_evidence_service_protocol {
+		uri strip_prefix /web-evidence
+		reverse_proxy 127.0.0.1:8010 {
+			flush_interval -1
+		}
+	}
+
 	handle_path /web-evidence/* {
 		root * /mnt/disks/agentic-services/app/web-evidence-site
 		encode zstd gzip
