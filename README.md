@@ -126,6 +126,8 @@ Web Evidence is published through the following public discovery surfaces:
 
 The repository also carries `server.json` for MCP Registry publication and `glama.json` for a future Glama submission. The landing page publishes Schema.org service metadata, `robots.txt`, `sitemap.xml`, OpenAPI, `llms.txt`, and well-known manifests for independent crawlers. A directory is only treated as live after its public listing can be retrieved independently.
 
+The `api.aisoup.net` URL-prefix property is verified in Google Search Console and its sitemap has been submitted. Production also exposes a private-key-backed IndexNow ownership file so updated discovery URLs can be sent to participating search engines. Search-engine inclusion remains asynchronous and is not treated as complete until the result is publicly searchable.
+
 ## Status
 
 The repository contains the v0 protocol, a runnable tiered Web Evidence service, full provider-source provenance, URL snapshots with raw and normalized SHA-256 hashes, SQLite persistence, machine-readable discovery, and an x402/MPP dual-protocol payment gateway. Each paid HTTP, MCP, or A2A execution creates an order, signed receipt, and detailed revenue/cost ledger entry. The admin dashboard reports per-order OpenAI token and Web Search costs, gross profit, and margins. Production USDC settlement and public MCP, A2A, x402, and MPP directory discovery have been verified. MPP Stripe has passed an isolated two-account sandbox payment; a real live-mode card charge remains an acceptance requirement. The next milestone is additional evidence operations and ongoing directory health monitoring.
