@@ -14,6 +14,7 @@ const standardPrice = process.env.WEB_EVIDENCE_PRICE_USD ?? '0.05'
 const facilitator = process.env.X402_FACILITATOR_URL ?? 'https://facilitator.openx402.ai'
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY
 const stripeNetworkId = process.env.STRIPE_NETWORK_ID ?? 'agentic-services'
+const stripeMinimumPrice = process.env.STRIPE_MINIMUM_PRICE_USD ?? '0.50'
 
 const tiers = [
   {
@@ -219,6 +220,7 @@ app.use('/openapi.json', async (c, next) => {
       protocols: [
         { x402: {} },
         { mpp: { method: 'evm', intent: 'charge', currency: evm.assets.base.USDC.address } },
+        ...(stripeSecretKey ? [{ mpp: { method: 'stripe', intent: 'charge', currency: 'usd', amount: stripePaymentOptions(tier).amount } }] : []),
       ],
     }
     operation.responses['200'] = {
@@ -322,8 +324,8 @@ A2A JSON-RPC: ${publicBaseUrl}/a2a
 
 ## Paid operation
 
-${tiers.map((tier) => `POST ${tier.path}\nTier: ${tier.id}\nPrice: $${tier.price}\nMaximum tool actions: ${tier.maxToolCalls}\nMaximum cited sources: ${tier.maxSources}\nSnapshot policy: ${tier.snapshotMode} (up to ${tier.maxSnapshots})`).join('\n\n')}
-Payment: x402 or MPP using USDC on Base (eip155:8453)${stripeSecretKey ? '; MPP Stripe USD is also accepted' : ''}
+${tiers.map((tier) => `POST ${tier.path}\nTier: ${tier.id}\nUSDC price: $${tier.price}\n${stripeSecretKey ? `Card price: $${stripePaymentOptions(tier).amount}\n` : ''}Maximum tool actions: ${tier.maxToolCalls}\nMaximum cited sources: ${tier.maxSources}\nSnapshot policy: ${tier.snapshotMode} (up to ${tier.maxSnapshots})`).join('\n\n')}
+Payment: x402 or MPP using USDC on Base (eip155:8453)${stripeSecretKey ? `; MPP Stripe card/USD is also accepted with a $${stripeMinimumPrice} minimum charge` : ''}
 
 Minimum request body:
 {"claim":"A factual statement to verify","minimumSources":1}
@@ -353,7 +355,7 @@ if (stripeSecretKey) {
     tier,
     handler: toHonoPayment(payments.compose(
       [evmCharge, paymentOptions(tier)],
-      [stripeCharge, paymentOptions(tier)],
+      [stripeCharge, stripePaymentOptions(tier)],
     ), tier),
   }))
   mountPaidRoutes(payments, paidTiers)
@@ -374,6 +376,14 @@ function paymentOptions(tier: VerificationTier) {
   return {
     amount: tier.price,
     description: `${tier.id} verification of one factual claim against current web evidence`,
+  }
+}
+
+function stripePaymentOptions(tier: VerificationTier) {
+  const amount = Math.max(Number(tier.price), Number(stripeMinimumPrice)).toFixed(2)
+  return {
+    amount,
+    description: `${tier.id} verification of one factual claim against current web evidence (card price)`,
   }
 }
 
@@ -564,7 +574,7 @@ function agentCard() {
     }],
     extensions: [{
       uri: 'https://www.x402.org/',
-      description: 'Calls cost $0.05 and accept x402 or MPP payment in USDC on Base.',
+      description: `Calls cost $${standardPrice} in USDC on Base; MPP Stripe card payments use a $${stripePaymentOptions(tiers.find((tier) => tier.id === 'standard')!).amount} card price.`,
       required: false,
       params: {
         discoveryUrl: `${publicBaseUrl}/.well-known/x402`,
@@ -594,7 +604,7 @@ async function handleA2A(c: any): Promise<Response> {
     : ''
   if (claim.length < 3) return c.json(jsonRpcError(id, -32602, 'Invalid parameters: message.parts must contain text'), 400)
 
-  const commerce = commerceMetadata(c.req.raw, 'standard')
+  const commerce = commerceMetadata(c.req.raw, tiers.find((tier) => tier.id === 'standard')!)
   const verificationResponse = await fetch(new URL('/v1/claims/verify', upstreamUrl), {
     method: 'POST',
     headers: {
@@ -661,7 +671,7 @@ function landingPage(): string {
 <meta name="description" content="Agent-facing paid claim verification with cited sources, snapshots, hashes, x402 and MPP payments.">
 <link rel="canonical" href="${publicBaseUrl}/"><script type="application/ld+json">${structuredData}</script>
 <style>body{font:16px/1.55 system-ui,sans-serif;max-width:900px;margin:0 auto;padding:48px 24px;color:#17202a;background:#f7f9fb}header,article,section{background:#fff;border:1px solid #dfe6ee;border-radius:14px;padding:24px;margin:16px 0}h1{margin-top:0}a{color:#075bd8}code{overflow-wrap:anywhere}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}.grid article{margin:0}</style>
-</head><body><header><h1>Web Evidence</h1><p>Verify factual claims against current web evidence. Results include cited evidence, every source reported by the search provider, provenance, tier-dependent snapshots, and SHA-256 hashes.</p><p>Agents can pay per call with x402 or MPP using USDC on Base.</p></header>
+</head><body><header><h1>Web Evidence</h1><p>Verify factual claims against current web evidence. Results include cited evidence, every source reported by the search provider, provenance, tier-dependent snapshots, and SHA-256 hashes.</p><p>Agents can pay per call with x402 or MPP using USDC on Base${stripeSecretKey ? `, or by card through MPP Stripe (minimum $${escapeHtml(stripeMinimumPrice)})` : ''}.</p></header>
 <main><section><h2>Agent discovery</h2><ul><li><a href="/openapi.json">OpenAPI</a></li><li><a href="/.well-known/agent-service.json">Agent service manifest</a></li><li><a href="/.well-known/x402">x402 resources</a></li><li><a href="/.well-known/mcp/server.json">MCP server metadata</a></li><li><a href="/.well-known/agent-card.json">A2A Agent Card</a></li><li><a href="/llms.txt">llms.txt</a></li></ul><p>MCP Streamable HTTP endpoint: <code>${publicBaseUrl}/mcp</code></p><p>A2A JSON-RPC endpoint: <code>${publicBaseUrl}/a2a</code></p></section>
 <section><h2>Pay-per-call tiers</h2><div class="grid">${offers}</div></section>
 <section><h2>Try the protocol</h2><p>An unauthenticated request returns a payment challenge. After payment, retry with the credential supplied by an x402 or MPP client.</p><pre><code>curl -X POST ${publicBaseUrl}/v1/claims/verify/quick \\
@@ -708,7 +718,7 @@ async function proxyRequest(request: Request, path: string): Promise<Response> {
 }
 
 async function proxyPaidRequest(request: Request, tier: VerificationTier): Promise<Response> {
-  const commerce = commerceMetadata(request, tier.id)
+  const commerce = commerceMetadata(request, tier)
   const url = new URL(request.url)
   const upstream = new URL(tier.path + url.search, upstreamUrl)
   const headers = new Headers(request.headers)
@@ -740,19 +750,23 @@ async function proxyPaidRequest(request: Request, tier: VerificationTier): Promi
   })
 }
 
-function commerceMetadata(request: Request, tier: string) {
+function commerceMetadata(request: Request, tier: VerificationTier) {
   const orderId = `ord_${randomUUID().replaceAll('-', '')}`
   const orderToken = `ort_${randomBytes(32).toString('base64url')}`
+  const authorization = request.headers.get('Authorization') ?? ''
+  const isStripe = authorization.startsWith('Payment ') && /method="stripe"/i.test(authorization)
   const protocol = request.headers.has('Payment-Signature') || request.headers.has('X-Payment')
     ? 'x402'
-    : request.headers.has('Payment-Authorization') || request.headers.get('Authorization')?.startsWith('Payment ')
-      ? 'mpp'
+    : request.headers.has('Payment-Authorization') || authorization.startsWith('Payment ')
+      ? isStripe ? 'mpp-stripe' : 'mpp'
       : 'paid'
+  const settledPrice = isStripe ? stripePaymentOptions(tier).amount : tier.price
   const headers: Record<string, string> = {
     'X-Agentic-Order-Id': orderId,
     'X-Agentic-Order-Token-Hash': createHash('sha256').update(orderToken).digest('hex'),
     'X-Agentic-Payment-Protocol': protocol,
-    'X-Agentic-Order-Tier': tier,
+    'X-Agentic-Order-Tier': tier.id,
+    'X-Agentic-Order-Amount-Microusd': String(Math.round(Number(settledPrice) * 1_000_000)),
   }
   return { orderId, orderToken, headers }
 }

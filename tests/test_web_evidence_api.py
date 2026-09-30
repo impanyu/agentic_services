@@ -395,7 +395,8 @@ def test_paid_order_is_recorded_with_cost_receipt_and_customer_access(tmp_path: 
             "Authorization": "Bearer internal-secret",
             "X-Agentic-Order-Id": order_id,
             "X-Agentic-Order-Token-Hash": hashlib.sha256(order_token.encode()).hexdigest(),
-            "X-Agentic-Payment-Protocol": "x402",
+            "X-Agentic-Payment-Protocol": "mpp-stripe",
+            "X-Agentic-Order-Amount-Microusd": "500000",
             "X-Agentic-Customer-Key": customer_key,
         },
         json={"claim": "The feature is supported.", "minimumSources": 1},
@@ -407,9 +408,9 @@ def test_paid_order_is_recorded_with_cost_receipt_and_customer_access(tmp_path: 
     summary = client.get(
         "/v1/admin/summary", headers={"X-Admin-Key": "admin-secret"}
     ).json()
-    assert summary["revenueMicrousd"] == 50_000
+    assert summary["revenueMicrousd"] == 500_000
     assert summary["costMicrousd"] == 10_200
-    assert summary["grossProfitMicrousd"] == 39_800
+    assert summary["grossProfitMicrousd"] == 489_800
     assert summary["webSearchCalls"] == 1
 
     all_time_summary = client.get(
@@ -423,9 +424,9 @@ def test_paid_order_is_recorded_with_cost_receipt_and_customer_access(tmp_path: 
         {
             "serviceId": "web-evidence",
             "orderCount": 1,
-            "revenueMicrousd": 50_000,
+            "revenueMicrousd": 500_000,
             "costMicrousd": 10_200,
-            "grossProfitMicrousd": 39_800,
+            "grossProfitMicrousd": 489_800,
         }
     ]
 
@@ -465,6 +466,9 @@ def test_paid_order_is_recorded_with_cost_receipt_and_customer_access(tmp_path: 
         f"/v1/orders/{order_id}", headers={"X-Agentic-Order-Token": order_token}
     )
     assert token_order.status_code == 200
+    assert token_order.json()["amountMicrousd"] == 500_000
+    assert token_order.json()["paymentProtocol"] == "mpp-stripe"
+    assert token_order.json()["receipt"]["amountMicrousd"] == 500_000
     assert token_order.json()["receipt"]["signatureAlgorithm"] == "hmac-sha256"
     assert client.post(f"/v1/receipts/{order_id}/verify").json()["valid"] is True
 

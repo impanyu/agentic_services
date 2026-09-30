@@ -112,7 +112,7 @@ curl http://localhost:8000/v1/claims/verify \
 
 See [`docs/web-evidence-api.md`](docs/web-evidence-api.md) for request semantics, evidence guarantees, and the planned paid-service endpoints.
 
-For the production Docker Compose deployment at `api.aisoup.net`, follow [`deploy/google-cloud-vm.md`](deploy/google-cloud-vm.md). The public gateway accepts both x402 and MPP payments in Base USDC; the Python service remains private behind an internal Bearer credential.
+For the production Docker Compose deployment at `api.aisoup.net`, follow [`deploy/google-cloud-vm.md`](deploy/google-cloud-vm.md). The public gateway accepts x402 and MPP payments in Base USDC at the listed tier prices. It also accepts card/USD payments through MPP Stripe at a $0.50 minimum per call. The Python service remains private behind an internal Bearer credential.
 
 ## Live discovery
 

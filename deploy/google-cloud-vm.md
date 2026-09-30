@@ -40,6 +40,7 @@ X402_FACILITATOR_URL=https://facilitator.openx402.ai
 # Optional MPP card/USD rail:
 STRIPE_SECRET_KEY=<Stripe live secret key>
 STRIPE_NETWORK_ID=agentic-services
+STRIPE_MINIMUM_PRICE_USD=0.50
 ```
 
 Start the service:
@@ -81,7 +82,7 @@ curl https://api.aisoup.net/v1/claims/verify \
   -d '{"claim":"OpenAI publishes an official Responses API reference.","minimumSources":1}'
 ```
 
-Base USDC is always available. When `STRIPE_SECRET_KEY` is configured, the same response also advertises an MPP Stripe card/USD option.
+Base USDC is always available at the listed tier price. When `STRIPE_SECRET_KEY` is configured, the same response also advertises an MPP Stripe card/USD option. Stripe charges at least `STRIPE_MINIMUM_PRICE_USD` per call; the gateway records that actual amount in the order and receipt.
 
 ## Admin key recovery
 

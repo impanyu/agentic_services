@@ -165,6 +165,17 @@ def create_app(
     def price_microusd(value: str) -> int:
         return int((Decimal(value) * Decimal(1_000_000)).quantize(Decimal("1"), rounding=ROUND_HALF_UP))
 
+    def settled_amount_microusd(tier: VerificationTier, value: str | None) -> int:
+        if value is None:
+            return price_microusd(tier.price_usd)
+        try:
+            amount = int(value)
+        except ValueError as error:
+            raise HTTPException(status_code=400, detail="Invalid settled order amount") from error
+        if amount <= 0 or amount > 100_000_000:
+            raise HTTPException(status_code=400, detail="Invalid settled order amount")
+        return amount
+
     def order_cost(result: ClaimVerificationResult) -> dict[str, int]:
         provenance = result.provenance
         if provenance.cache_hit:
@@ -380,10 +391,12 @@ def create_app(
         order_id: str | None,
         order_token_hash: str | None,
         payment_protocol: str | None,
+        order_amount_microusd: str | None,
         customer_key: str | None,
         customer_reference: str | None,
     ) -> ClaimVerificationResult:
         require_service_api_key(authorization)
+        settled_amount = settled_amount_microusd(tier, order_amount_microusd)
         if (
             "minimum_sources" in payload.model_fields_set
             and payload.minimum_sources > tier.max_sources
@@ -406,7 +419,7 @@ def create_app(
                     order_id=order_id,
                     service_id="web-evidence",
                     tier=tier.id,
-                    price_microusd=price_microusd(tier.price_usd),
+                    price_microusd=settled_amount,
                     payment_protocol=payment_protocol or "unknown",
                     order_token_hash=order_token_hash,
                     request_hash=request_hash,
@@ -441,7 +454,7 @@ def create_app(
                     "serviceId": "web-evidence",
                     "verificationId": result.verification_id,
                     "tier": tier.id,
-                    "amountMicrousd": price_microusd(tier.price_usd),
+                    "amountMicrousd": settled_amount,
                     "currency": "USD",
                     "paymentProtocol": payment_protocol or "unknown",
                     "resultSha256": hashlib.sha256(result.model_dump_json(by_alias=True).encode()).hexdigest(),
@@ -491,6 +504,7 @@ def create_app(
         order_id: str | None,
         order_token_hash: str | None,
         payment_protocol: str | None,
+        order_amount_microusd: str | None,
         customer_key: str | None,
         customer_reference: str | None,
     ) -> ClaimVerificationResult:
@@ -505,6 +519,7 @@ def create_app(
             order_id,
             order_token_hash,
             payment_protocol,
+            order_amount_microusd,
             customer_key,
             customer_reference,
         )
@@ -524,12 +539,14 @@ def create_app(
         x_agentic_order_id: str | None = Header(default=None),
         x_agentic_order_token_hash: str | None = Header(default=None),
         x_agentic_payment_protocol: str | None = Header(default=None),
+        x_agentic_order_amount_microusd: str | None = Header(default=None),
         x_agentic_customer_key: str | None = Header(default=None),
         x_agentic_customer_reference: str | None = Header(default=None, max_length=255),
     ) -> ClaimVerificationResult:
         return await verification_endpoint(
             "quick", payload, request, idempotency_key, authorization, response,
             x_agentic_order_id, x_agentic_order_token_hash, x_agentic_payment_protocol,
+            x_agentic_order_amount_microusd,
             x_agentic_customer_key, x_agentic_customer_reference,
         )
 
@@ -548,12 +565,14 @@ def create_app(
         x_agentic_order_id: str | None = Header(default=None),
         x_agentic_order_token_hash: str | None = Header(default=None),
         x_agentic_payment_protocol: str | None = Header(default=None),
+        x_agentic_order_amount_microusd: str | None = Header(default=None),
         x_agentic_customer_key: str | None = Header(default=None),
         x_agentic_customer_reference: str | None = Header(default=None, max_length=255),
     ) -> ClaimVerificationResult:
         return await verification_endpoint(
             "standard", payload, request, idempotency_key, authorization, response,
             x_agentic_order_id, x_agentic_order_token_hash, x_agentic_payment_protocol,
+            x_agentic_order_amount_microusd,
             x_agentic_customer_key, x_agentic_customer_reference,
         )
 
@@ -572,12 +591,14 @@ def create_app(
         x_agentic_order_id: str | None = Header(default=None),
         x_agentic_order_token_hash: str | None = Header(default=None),
         x_agentic_payment_protocol: str | None = Header(default=None),
+        x_agentic_order_amount_microusd: str | None = Header(default=None),
         x_agentic_customer_key: str | None = Header(default=None),
         x_agentic_customer_reference: str | None = Header(default=None, max_length=255),
     ) -> ClaimVerificationResult:
         return await verification_endpoint(
             "deep", payload, request, idempotency_key, authorization, response,
             x_agentic_order_id, x_agentic_order_token_hash, x_agentic_payment_protocol,
+            x_agentic_order_amount_microusd,
             x_agentic_customer_key, x_agentic_customer_reference,
         )
 
@@ -596,12 +617,14 @@ def create_app(
         x_agentic_order_id: str | None = Header(default=None),
         x_agentic_order_token_hash: str | None = Header(default=None),
         x_agentic_payment_protocol: str | None = Header(default=None),
+        x_agentic_order_amount_microusd: str | None = Header(default=None),
         x_agentic_customer_key: str | None = Header(default=None),
         x_agentic_customer_reference: str | None = Header(default=None, max_length=255),
     ) -> ClaimVerificationResult:
         return await verification_endpoint(
             "research", payload, request, idempotency_key, authorization, response,
             x_agentic_order_id, x_agentic_order_token_hash, x_agentic_payment_protocol,
+            x_agentic_order_amount_microusd,
             x_agentic_customer_key, x_agentic_customer_reference,
         )
 
