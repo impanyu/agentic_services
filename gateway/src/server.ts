@@ -49,6 +49,28 @@ const claimResponseSchema = {
   },
 }
 
+const claimRequestExample = {
+  claim: 'The Base mainnet chain ID is 8453.',
+  sourcePolicy: 'authoritative',
+  minimumSources: 2,
+  maxSources: 4,
+  includeConflicts: true,
+  language: 'en',
+}
+
+const claimResponseExample = {
+  verificationId: 'cv_example',
+  claim: 'The Base mainnet chain ID is 8453.',
+  status: 'confirmed',
+  observedAt: '2026-01-01T00:00:00Z',
+  conclusion: 'Authoritative sources confirm that Base mainnet uses chain ID 8453.',
+  atomicFacts: [],
+  evidence: [],
+  conflicts: [],
+  limitations: [],
+  provenance: {},
+}
+
 const evmCharge = evm.charge({
   currency: evm.assets.base.USDC,
   recipient,
@@ -184,12 +206,43 @@ function withBazaarSchema(response: Response): Response {
   payload.extensions = {
     ...payload.extensions,
     bazaar: {
+      info: {
+        input: {
+          type: 'http',
+          method: 'POST',
+          bodyType: 'json',
+          body: claimRequestExample,
+        },
+        output: {
+          type: 'json',
+          example: claimResponseExample,
+        },
+      },
       schema: {
+        $schema: 'https://json-schema.org/draft/2020-12/schema',
         type: 'object',
         properties: {
-          input: { type: 'object', properties: { body: claimRequestSchema } },
-          output: { type: 'object', properties: { example: claimResponseSchema } },
+          input: {
+            type: 'object',
+            properties: {
+              type: { type: 'string', const: 'http' },
+              method: { type: 'string', enum: ['POST', 'PUT', 'PATCH'] },
+              bodyType: { type: 'string', enum: ['json', 'form-data', 'text'] },
+              body: claimRequestSchema,
+            },
+            required: ['type', 'method', 'bodyType', 'body'],
+            additionalProperties: false,
+          },
+          output: {
+            type: 'object',
+            properties: {
+              type: { type: 'string' },
+              example: claimResponseSchema,
+            },
+            required: ['type'],
+          },
         },
+        required: ['input'],
       },
     },
   }
