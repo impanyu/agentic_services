@@ -9,17 +9,17 @@
     <meta property="og:title" content="Web Evidence by Dream Workshop">
     <meta property="og:description" content="Verifiable web research an agent can discover, purchase, and call.">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://evidence.aisoup.net">
-    <link rel="canonical" href="https://evidence.aisoup.net">
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="/styles.css">
+    <meta property="og:url" content="https://api.aisoup.net/web-evidence/">
+    <link rel="canonical" href="https://api.aisoup.net/web-evidence/">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="styles.css">
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@type": "WebAPI",
         "name": "Web Evidence",
         "description": "Agent-facing paid claim verification with cited evidence, source provenance, snapshots, and hashes.",
-        "url": "https://evidence.aisoup.net",
+        "url": "https://api.aisoup.net/web-evidence/",
         "documentation": "https://api.aisoup.net/openapi.json",
         "provider": { "@type": "Organization", "name": "Dream Workshop LLC", "url": "https://aisoup.net" }
       }
@@ -88,9 +88,9 @@
           <a href="https://api.aisoup.net/openapi.json">Read the complete OpenAPI specification ↗</a>
         </div>
         <div class="terminal" aria-label="Example API request">
-          <div class="terminal-bar"><span></span><span></span><span></span><b>POST /v1/services/web-evidence/claims/verify</b></div>
+          <div class="terminal-bar"><span></span><span></span><span></span><b>POST /web-evidence/v1/claims/verify</b></div>
           <pre><code><i>curl</i> -X POST \
-  https://api.aisoup.net/v1/services/web-evidence/claims/verify \
+  https://api.aisoup.net/web-evidence/v1/claims/verify \
   -H <q>"Content-Type: application/json"</q> \
   -d <q>'{</q>
     <q>"claim"</q>: <q>"The Base mainnet chain ID is 8453."</q>,

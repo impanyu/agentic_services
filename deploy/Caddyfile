@@ -23,19 +23,35 @@ aisoup.net, www.aisoup.net {
 }
 
 evidence.aisoup.net {
-	root * /mnt/disks/agentic-services/app/web-evidence-site
-	encode zstd gzip
-	header {
-		Strict-Transport-Security "max-age=31536000; includeSubDomains"
-		X-Content-Type-Options "nosniff"
-		Referrer-Policy "strict-origin-when-cross-origin"
-		Content-Security-Policy "default-src 'self'; style-src 'self'; script-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
-	}
-	file_server
+	redir https://api.aisoup.net/web-evidence{uri} permanent
 }
 
 api.aisoup.net {
-	reverse_proxy 127.0.0.1:8010 {
-		flush_interval -1
+	handle /web-evidence {
+		redir /web-evidence/ permanent
+	}
+
+	handle /web-evidence/v1/* {
+		reverse_proxy 127.0.0.1:8010 {
+			flush_interval -1
+		}
+	}
+
+	handle_path /web-evidence/* {
+		root * /mnt/disks/agentic-services/app/web-evidence-site
+		encode zstd gzip
+		header {
+			Strict-Transport-Security "max-age=31536000; includeSubDomains"
+			X-Content-Type-Options "nosniff"
+			Referrer-Policy "strict-origin-when-cross-origin"
+			Content-Security-Policy "default-src 'self'; style-src 'self'; script-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
+		}
+		file_server
+	}
+
+	handle {
+		reverse_proxy 127.0.0.1:8010 {
+			flush_interval -1
+		}
 	}
 }

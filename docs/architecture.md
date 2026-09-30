@@ -71,8 +71,8 @@ Every quote, order, receipt, ledger projection, and admin aggregate carries a st
 Public presentation and machine invocation are separate layers:
 
 - `aisoup.net` is the company catalog.
-- `<product>.aisoup.net` is the human-readable product page, such as `evidence.aisoup.net`.
-- `api.aisoup.net/v1/services/<service-id>/...` is the canonical HTTP API namespace.
+- `api.aisoup.net/<service-id>/` is the human-readable product page, such as `api.aisoup.net/web-evidence/`.
+- `api.aisoup.net/<service-id>/v1/...` is the canonical HTTP API namespace.
 - `api.aisoup.net/admin` is the shared multi-service commerce dashboard.
 
 Once published, service paths remain callable as compatibility aliases. Discovery documents advertise the canonical service-scoped path and may mark earlier aliases as deprecated. A new service must receive its own product page, stable `serviceId`, API namespace, discovery entries, cost model, and dashboard breakdown before launch.

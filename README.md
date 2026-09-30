@@ -70,12 +70,12 @@ cp .env.example .env.local
 
 The API starts at `http://localhost:8000`. Its main endpoints are:
 
-- `POST /v1/services/web-evidence/claims/verify/quick` — $0.02 quick verification.
-- `POST /v1/services/web-evidence/claims/verify` — $0.05 standard verification.
-- `POST /v1/services/web-evidence/claims/verify/deep` — $0.12 deep verification.
-- `POST /v1/services/web-evidence/claims/verify/research` — $0.25 research-grade verification.
+- `POST /web-evidence/v1/claims/verify/quick` — $0.02 quick verification.
+- `POST /web-evidence/v1/claims/verify` — $0.05 standard verification.
+- `POST /web-evidence/v1/claims/verify/deep` — $0.12 deep verification.
+- `POST /web-evidence/v1/claims/verify/research` — $0.25 research-grade verification.
 
-The original `/v1/claims/verify...` paths remain supported as deprecated compatibility aliases.
+The earlier `/v1/services/web-evidence/claims/verify...` and `/v1/claims/verify...` paths remain supported as deprecated compatibility aliases.
 - `GET /v1/claims/verifications/{verification_id}` — retrieve the immutable result.
 - `GET /v1/url-snapshots/{snapshot_id}` — retrieve snapshot status and content hashes.
 - `GET /v1/url-snapshots/{snapshot_id}/content` — retrieve the exact captured response bytes.

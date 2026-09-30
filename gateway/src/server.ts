@@ -22,7 +22,8 @@ const tiers = [
   {
     id: 'quick',
     path: '/v1/claims/verify/quick',
-    canonicalPath: '/v1/services/web-evidence/claims/verify/quick',
+    servicePath: '/v1/services/web-evidence/claims/verify/quick',
+    canonicalPath: '/web-evidence/v1/claims/verify/quick',
     price: process.env.WEB_EVIDENCE_QUICK_PRICE_USD ?? '0.02',
     maxToolCalls: 1,
     maxOutputTokens: 1500,
@@ -34,7 +35,8 @@ const tiers = [
   {
     id: 'standard',
     path: '/v1/claims/verify',
-    canonicalPath: '/v1/services/web-evidence/claims/verify',
+    servicePath: '/v1/services/web-evidence/claims/verify',
+    canonicalPath: '/web-evidence/v1/claims/verify',
     price: standardPrice,
     maxToolCalls: 3,
     maxOutputTokens: 3000,
@@ -46,7 +48,8 @@ const tiers = [
   {
     id: 'deep',
     path: '/v1/claims/verify/deep',
-    canonicalPath: '/v1/services/web-evidence/claims/verify/deep',
+    servicePath: '/v1/services/web-evidence/claims/verify/deep',
+    canonicalPath: '/web-evidence/v1/claims/verify/deep',
     price: process.env.WEB_EVIDENCE_DEEP_PRICE_USD ?? '0.12',
     maxToolCalls: 7,
     maxOutputTokens: 6000,
@@ -58,7 +61,8 @@ const tiers = [
   {
     id: 'research',
     path: '/v1/claims/verify/research',
-    canonicalPath: '/v1/services/web-evidence/claims/verify/research',
+    servicePath: '/v1/services/web-evidence/claims/verify/research',
+    canonicalPath: '/web-evidence/v1/claims/verify/research',
     price: process.env.WEB_EVIDENCE_RESEARCH_PRICE_USD ?? '0.25',
     maxToolCalls: 15,
     maxOutputTokens: 12000,
@@ -192,7 +196,7 @@ app.get('/.well-known/agent-service.json', async () => {
   if (!upstream.ok) return upstream
   const document = await upstream.json() as Record<string, any>
   document.service.version = '0.3.0'
-  document.service.homepage = 'https://evidence.aisoup.net'
+  document.service.homepage = `${publicBaseUrl}/web-evidence/`
   document.provider.name = 'Dream Workshop LLC'
   for (const operation of (document.operations ?? [])) {
     const tier = tiers.find((candidate) => operation.id === `verify-claim-${candidate.id}`)
@@ -200,7 +204,7 @@ app.get('/.well-known/agent-service.json', async () => {
     operation.path = tier.canonicalPath
     operation.extensions = {
       ...operation.extensions,
-      legacyPaths: [tier.path],
+      legacyPaths: [tier.servicePath, tier.path],
     }
   }
   document.transports = [
@@ -284,6 +288,15 @@ app.use('/openapi.json', async (c, next) => {
         'x-canonical-path': tier.canonicalPath,
       },
     }
+    document.paths[tier.servicePath] = {
+      post: {
+        ...structuredClone(operation),
+        operationId: `${operation.operationId}ServiceNamespaceLegacy`,
+        summary: `${operation.summary ?? tier.summary} (legacy service namespace)`,
+        deprecated: true,
+        'x-canonical-path': tier.canonicalPath,
+      },
+    }
   }
 
   document.paths['/v1/url-snapshots/{snapshot_id}'] = {
@@ -358,7 +371,10 @@ app.use('/openapi.json', async (c, next) => {
 app.get('/.well-known/x402', (c) => c.json({
   version: 1,
   resources: tiers.map((tier) => `${publicBaseUrl}${tier.canonicalPath}`),
-  legacyResources: tiers.map((tier) => `${publicBaseUrl}${tier.path}`),
+  legacyResources: tiers.flatMap((tier) => [
+    `${publicBaseUrl}${tier.servicePath}`,
+    `${publicBaseUrl}${tier.path}`,
+  ]),
   ownershipProofs: [recipient],
   instructions: 'POST a JSON claim-verification request. The endpoint returns x402 and MPP payment challenges before execution.',
 }))
@@ -378,7 +394,7 @@ A2A JSON-RPC: ${publicBaseUrl}/a2a
 
 ## Paid operation
 
-${tiers.map((tier) => `POST ${tier.canonicalPath}\nTier: ${tier.id}\nUSDC price: $${tier.price}\n${stripeSecretKey ? `Card price: $${stripePaymentOptions(tier).amount}\n` : ''}Maximum tool actions: ${tier.maxToolCalls}\nMaximum cited sources: ${tier.maxSources}\nSnapshot policy: ${tier.snapshotMode} (up to ${tier.maxSnapshots})\nLegacy alias: ${tier.path}`).join('\n\n')}
+${tiers.map((tier) => `POST ${tier.canonicalPath}\nTier: ${tier.id}\nUSDC price: $${tier.price}\n${stripeSecretKey ? `Card price: $${stripePaymentOptions(tier).amount}\n` : ''}Maximum tool actions: ${tier.maxToolCalls}\nMaximum cited sources: ${tier.maxSources}\nSnapshot policy: ${tier.snapshotMode} (up to ${tier.maxSnapshots})\nLegacy aliases: ${tier.servicePath}, ${tier.path}`).join('\n\n')}
 Payment: x402 or MPP using USDC on Base (eip155:8453)${stripeSecretKey ? `; MPP Stripe card/USD is also accepted with a $${stripeMinimumPrice} minimum charge` : ''}
 
 Minimum request body:
@@ -483,7 +499,7 @@ function toHonoPayment(
     // the original remains available to the upstream service after payment.
     const result = await handler(withPublicUrl(c.req.raw.clone()))
     if (result.status === 402) {
-      return ([tier.path, tier.canonicalPath] as readonly string[]).includes(new URL(c.req.url).pathname)
+      return ([tier.path, tier.servicePath, tier.canonicalPath] as readonly string[]).includes(new URL(c.req.url).pathname)
         ? withBazaarSchema(result.challenge, tier)
         : result.challenge
     }
@@ -661,6 +677,7 @@ function mountPaidRoutes(
 ): void {
   for (const { tier, handler } of paidTiers) {
     app.post(tier.path, handler, async (c) => proxyPaidRequest(c.req.raw, tier))
+    app.post(tier.servicePath, handler, async (c) => proxyPaidRequest(c.req.raw, tier))
     app.post(tier.canonicalPath, handler, async (c) => proxyPaidRequest(c.req.raw, tier))
   }
 
@@ -707,7 +724,7 @@ function mcpRegistryDocument() {
     name: 'io.github.impanyu/web-evidence',
     title: 'Web Evidence',
     description: 'Paid claim verification with cited web evidence, source provenance, snapshots, and hashes.',
-    websiteUrl: publicBaseUrl,
+    websiteUrl: `${publicBaseUrl}/web-evidence/`,
     repository: {
       url: 'https://github.com/impanyu/agentic_services',
       source: 'github',
@@ -728,7 +745,7 @@ function agentCard() {
     }],
     provider: { organization: 'Agentic Services', url: 'https://aisoup.net' },
     version: '0.3.0',
-    documentationUrl: `${publicBaseUrl}/`,
+    documentationUrl: `${publicBaseUrl}/web-evidence/`,
     capabilities: {
       extensions: [
         {
@@ -856,7 +873,7 @@ function landingPage(): string {
 </head><body><header><h1>Web Evidence</h1><p>Verify factual claims against current web evidence. Results include cited evidence, every source reported by the search provider, provenance, tier-dependent snapshots, and SHA-256 hashes.</p><p>Agents can pay per call with x402 or MPP using USDC on Base${stripeSecretKey ? `, or by card through MPP Stripe (minimum $${escapeHtml(stripeMinimumPrice)})` : ''}.</p></header>
 <main><section><h2>Agent discovery</h2><ul><li><a href="/openapi.json">OpenAPI</a></li><li><a href="/.well-known/agent-service.json">Agent service manifest</a></li><li><a href="/.well-known/x402">x402 resources</a></li><li><a href="/.well-known/mcp/server.json">MCP server metadata</a></li><li><a href="/.well-known/agent-card.json">A2A Agent Card</a></li><li><a href="/llms.txt">llms.txt</a></li></ul><p>MCP Streamable HTTP endpoint: <code>${publicBaseUrl}/mcp</code></p><p>A2A JSON-RPC endpoint: <code>${publicBaseUrl}/a2a</code></p></section>
 <section><h2>Pay-per-call tiers</h2><div class="grid">${offers}</div></section>
-<section><h2>Try the protocol</h2><p>An unauthenticated request returns a payment challenge. After payment, retry with the credential supplied by an x402 or MPP client.</p><pre><code>curl -X POST ${publicBaseUrl}/v1/services/web-evidence/claims/verify/quick \\
+<section><h2>Try the protocol</h2><p>An unauthenticated request returns a payment challenge. After payment, retry with the credential supplied by an x402 or MPP client.</p><pre><code>curl -X POST ${publicBaseUrl}/web-evidence/v1/claims/verify/quick \\
   -H 'content-type: application/json' \\
   -d '{"claim":"The Base mainnet chain ID is 8453."}'</code></pre></section></main></body></html>`
 }
