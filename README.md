@@ -105,6 +105,18 @@ See [`docs/web-evidence-api.md`](docs/web-evidence-api.md) for request semantics
 
 For the production Docker Compose deployment at `api.aisoup.net`, follow [`deploy/google-cloud-vm.md`](deploy/google-cloud-vm.md). The public gateway accepts both x402 and MPP payments in Base USDC; the Python service remains private behind an internal Bearer credential.
 
+## Live discovery
+
+Web Evidence is published through the following public discovery surfaces:
+
+- [Official MCP Registry](https://registry.modelcontextprotocol.io/v0/servers/io.github.impanyu%2Fweb-evidence/versions/0.3.0) as `io.github.impanyu/web-evidence`.
+- [OpenX402 Bazaar](https://facilitator.openx402.ai/discovery/resources?type=mcp) as the paid MCP resource `mcp://api.aisoup.net/verify_claim_quick`.
+- [x402Scan](https://www.x402scan.com/server/131c08a0-027b-4f28-afe6-2a72fdbac7dc) with all four paid HTTP tiers and both public snapshot routes.
+- [MPPScan](https://www.mppscan.com/server/b915b7bda6517cd0e47f1cfaca657b4a4f7b268093117889d34b31bad1915664) with the same six HTTP routes.
+- [Global A2A Registry](https://www.a2a-registry.org/agent/net.aisoup.web_evidence) and the [open-source A2A Registry](https://a2aregistry.org) via the public A2A 1.0 Agent Card.
+
+The repository also carries `server.json` for MCP Registry publication and `glama.json` for downstream MCP directory indexing. The landing page publishes Schema.org service metadata, `robots.txt`, `sitemap.xml`, OpenAPI, `llms.txt`, and well-known manifests for independent crawlers.
+
 ## Status
 
-The repository contains the v0 protocol, a runnable tiered Web Evidence service, full provider-source provenance, URL snapshots with raw and normalized SHA-256 hashes, SQLite persistence, machine-readable discovery, and an x402/MPP dual-protocol payment gateway. Production payment settlement has been verified; the next milestone is broader external catalog indexing and additional evidence operations.
+The repository contains the v0 protocol, a runnable tiered Web Evidence service, full provider-source provenance, URL snapshots with raw and normalized SHA-256 hashes, SQLite persistence, machine-readable discovery, and an x402/MPP dual-protocol payment gateway. Production payment settlement and public MCP, A2A, x402, and MPP directory discovery have been verified. The next milestone is additional evidence operations and ongoing directory health monitoring.
