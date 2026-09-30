@@ -16,6 +16,7 @@ const stripeSecretKey = process.env.STRIPE_SECRET_KEY
 const stripeNetworkId = process.env.STRIPE_NETWORK_ID ?? 'agentic-services'
 const stripeMinimumPrice = process.env.STRIPE_MINIMUM_PRICE_USD ?? '0.50'
 const providerContact = process.env.WEB_EVIDENCE_PROVIDER_CONTACT ?? 'services@example.com'
+const indexNowKey = process.env.INDEXNOW_KEY
 
 const tiers = [
   {
@@ -157,6 +158,10 @@ app.get('/favicon.ico', (c) => c.body(faviconSvg(), 200, {
 app.get('/googlebcb2306719d8bc8d.html', (c) => c.text(
   'google-site-verification: googlebcb2306719d8bc8d.html',
 ))
+
+if (indexNowKey) {
+  app.get('/.well-known/indexnow-key.txt', (c) => c.text(indexNowKey))
+}
 
 app.get('/robots.txt', (c) => c.text(`User-agent: *\nAllow: /\nSitemap: ${publicBaseUrl}/sitemap.xml\n`))
 
