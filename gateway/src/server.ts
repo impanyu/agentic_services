@@ -15,6 +15,7 @@ const facilitator = process.env.X402_FACILITATOR_URL ?? 'https://facilitator.ope
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY
 const stripeNetworkId = process.env.STRIPE_NETWORK_ID ?? 'agentic-services'
 const stripeMinimumPrice = process.env.STRIPE_MINIMUM_PRICE_USD ?? '0.50'
+const providerContact = process.env.WEB_EVIDENCE_PROVIDER_CONTACT ?? 'services@example.com'
 
 const tiers = [
   {
@@ -148,6 +149,11 @@ app.all('/mcp', (c) => mcpHandler(withPublicUrl(c.req.raw)))
 
 app.get('/', (c) => c.html(landingPage()))
 
+app.get('/favicon.ico', (c) => c.body(faviconSvg(), 200, {
+  'Content-Type': 'image/svg+xml; charset=UTF-8',
+  'Cache-Control': 'public, max-age=86400',
+}))
+
 app.get('/robots.txt', (c) => c.text(`User-agent: *\nAllow: /\nSitemap: ${publicBaseUrl}/sitemap.xml\n`))
 
 app.get('/sitemap.xml', (c) => {
@@ -189,6 +195,19 @@ app.get('/.well-known/agent-service.json', async () => {
       authorization: 'x402-or-mpp',
     },
   ]
+  if (stripeSecretKey) {
+    for (const offer of (document.offers ?? [])) {
+      const tier = tiers.find((candidate) => offer.operation === `verify-claim-${candidate.id}`)
+      if (!tier || !Array.isArray(offer.paymentMethods)) continue
+      if (!offer.paymentMethods.some((method: Record<string, unknown>) => method.protocol === 'mpp' && method.network === 'stripe')) {
+        offer.paymentMethods.push({ protocol: 'mpp', network: 'stripe', asset: 'USD', payTo: stripeNetworkId })
+      }
+    }
+    document.extensions = {
+      ...document.extensions,
+      paymentOptions: tiers.flatMap((tier) => paymentOptionsForTier(tier)),
+    }
+  }
   return jsonDocumentResponse(document, 'public, max-age=300')
 })
 
@@ -199,7 +218,7 @@ app.use('/openapi.json', async (c, next) => {
   const document = await c.res.json() as Record<string, any>
   document.info['x-guidance'] =
     'Use POST /v1/claims/verify to verify one factual claim against current web evidence. Send a JSON body with claim and optional source, freshness, jurisdiction, and language constraints.'
-  document.info.contact = { url: 'https://aisoup.net' }
+  document.info.contact = { url: 'https://aisoup.net', email: providerContact }
 
   for (const tier of tiers) {
     const operation = document.paths[tier.path]?.post
@@ -342,10 +361,20 @@ app.get('/healthz', async (c) => {
   return c.json({ status: upstream.ok ? 'ok' : 'degraded', upstream: upstream.status }, upstream.ok ? 200 : 503)
 })
 
+app.post('/v1/quotes', async (c) => {
+  const upstream = await proxyRequest(c.req.raw, '/v1/quotes')
+  if (!upstream.ok) return upstream
+  const quote = await upstream.json() as Record<string, any>
+  const tier = tiers.find((candidate) => candidate.id === quote.tier)
+  if (tier) quote.paymentOptions = paymentOptionsForTier(tier)
+  return jsonDocumentResponse(quote, 'private, no-store')
+})
+
 if (stripeSecretKey) {
   const stripeCharge = stripe.charge({
     secretKey: stripeSecretKey,
     networkId: stripeNetworkId,
+    recipient: stripeNetworkId,
     currency: 'usd',
     decimals: 2,
     paymentMethodTypes: ['card'],
@@ -385,6 +414,25 @@ function stripePaymentOptions(tier: VerificationTier) {
     amount,
     description: `${tier.id} verification of one factual claim against current web evidence (card price)`,
   }
+}
+
+function paymentOptionsForTier(tier: VerificationTier) {
+  const baseOptions = [
+    {
+      protocol: 'x402', method: 'evm', network: 'eip155:8453', asset: 'USDC',
+      amount: tier.price, amountMicrousd: Math.round(Number(tier.price) * 1_000_000), payTo: recipient,
+    },
+    {
+      protocol: 'mpp', method: 'evm', network: 'eip155:8453', asset: 'USDC',
+      amount: tier.price, amountMicrousd: Math.round(Number(tier.price) * 1_000_000), payTo: recipient,
+    },
+  ]
+  if (!stripeSecretKey) return baseOptions
+  const stripeAmount = stripePaymentOptions(tier).amount
+  return [...baseOptions, {
+    protocol: 'mpp', method: 'stripe', network: 'stripe', asset: 'USD',
+    amount: stripeAmount, amountMicrousd: Math.round(Number(stripeAmount) * 1_000_000), payTo: stripeNetworkId,
+  }]
 }
 
 type PaymentHandler = ((request: Request) => Promise<
@@ -669,6 +717,7 @@ function landingPage(): string {
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Web Evidence API and MCP Server</title>
 <meta name="description" content="Agent-facing paid claim verification with cited sources, snapshots, hashes, x402 and MPP payments.">
+<link rel="icon" href="/favicon.ico">
 <link rel="canonical" href="${publicBaseUrl}/"><script type="application/ld+json">${structuredData}</script>
 <style>body{font:16px/1.55 system-ui,sans-serif;max-width:900px;margin:0 auto;padding:48px 24px;color:#17202a;background:#f7f9fb}header,article,section{background:#fff;border:1px solid #dfe6ee;border-radius:14px;padding:24px;margin:16px 0}h1{margin-top:0}a{color:#075bd8}code{overflow-wrap:anywhere}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}.grid article{margin:0}</style>
 </head><body><header><h1>Web Evidence</h1><p>Verify factual claims against current web evidence. Results include cited evidence, every source reported by the search provider, provenance, tier-dependent snapshots, and SHA-256 hashes.</p><p>Agents can pay per call with x402 or MPP using USDC on Base${stripeSecretKey ? `, or by card through MPP Stripe (minimum $${escapeHtml(stripeMinimumPrice)})` : ''}.</p></header>
@@ -683,6 +732,10 @@ function escapeHtml(value: string): string {
   return value.replace(/[&<>"']/g, (character) => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
   })[character] ?? character)
+}
+
+function faviconSvg(): string {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#075bd8"/><path d="M17 19h30v7H25v9h19v7H25v10h-8z" fill="white"/><circle cx="47" cy="48" r="5" fill="#70e1b1"/></svg>`
 }
 
 function jsonDocumentResponse(document: Record<string, any>, cacheControl: string): Response {

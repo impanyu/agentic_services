@@ -58,7 +58,7 @@
           "type": { "enum": ["http", "mcp", "a2a"] },
           "url": { "type": "string", "format": "uri", "pattern": "^https://" },
           "specification": { "type": "string", "format": "uri" },
-          "authorization": { "enum": ["none", "oauth2", "bearer", "signed-request"] }
+          "authorization": { "enum": ["none", "oauth2", "bearer", "signed-request", "x402", "mpp", "x402-or-mpp"] }
         }
       }
     },
