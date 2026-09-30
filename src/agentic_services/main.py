@@ -206,6 +206,14 @@ def create_app(
     def health() -> dict[str, str]:
         return {"status": "ok"}
 
+    @app.get("/.well-known/glama.json", tags=["discovery"])
+    def glama_domain_claim() -> dict[str, str]:
+        """Publish Glama's public domain-ownership proof for this connector."""
+        return {
+            "$schema": "https://glama.ai/mcp/schemas/connector.json",
+            "claim": "glama_claim_UOohXzLBOuUu_N1G6EmoqEJWd388-E7c",
+        }
+
     @app.get("/readyz", tags=["operations"])
     def readiness(request: Request) -> dict[str, str]:
         if request.app.state.verification_service is None:

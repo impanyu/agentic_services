@@ -298,6 +298,18 @@ def test_discovery_document_matches_manifest_schema(tmp_path: Path) -> None:
     Draft202012Validator(schema, format_checker=FormatChecker()).validate(manifest.json())
 
 
+def test_glama_domain_claim_is_public(tmp_path: Path) -> None:
+    client = build_client(tmp_path, FakeProvider())
+
+    response = client.get("/.well-known/glama.json")
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "$schema": "https://glama.ai/mcp/schemas/connector.json",
+        "claim": "glama_claim_UOohXzLBOuUu_N1G6EmoqEJWd388-E7c",
+    }
+
+
 def test_paid_discovery_advertises_x402_and_mpp(tmp_path: Path) -> None:
     settings = Settings(
         openai_api_key="test-only",
