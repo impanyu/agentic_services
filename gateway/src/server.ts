@@ -3,6 +3,7 @@ import { createHash, randomBytes, randomUUID } from 'node:crypto'
 import { Hono, type MiddlewareHandler } from 'hono'
 import { discovery } from 'mppx/hono'
 import { Mppx, evm, stripe } from 'mppx/server'
+import { Challenge } from 'mppx'
 import { createMcpHandler } from './mcp.js'
 
 const recipient = requireEnv('PAYMENT_RECIPIENT') as `0x${string}`
@@ -13,6 +14,7 @@ const publicBaseUrl = process.env.PUBLIC_BASE_URL ?? 'https://api.aisoup.net'
 const standardPrice = process.env.WEB_EVIDENCE_PRICE_USD ?? '0.05'
 const facilitator = process.env.X402_FACILITATOR_URL ?? 'https://facilitator.openx402.ai'
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY
+const stripePublishableKey = process.env.STRIPE_PUBLISHABLE_KEY
 const stripeNetworkId = process.env.STRIPE_NETWORK_ID ?? 'agentic-services'
 const stripeMinimumPrice = process.env.STRIPE_MINIMUM_PRICE_USD ?? '0.50'
 
@@ -342,6 +344,10 @@ app.get('/healthz', async (c) => {
   return c.json({ status: upstream.ok ? 'ok' : 'degraded', upstream: upstream.status }, upstream.ok ? 200 : 503)
 })
 
+if (stripeSecretKey && stripePublishableKey) {
+  app.post('/v1/payments/stripe/spt', async (c) => createStripeSharedPaymentToken(c))
+}
+
 if (stripeSecretKey) {
   const stripeCharge = stripe.charge({
     secretKey: stripeSecretKey,
@@ -349,6 +355,12 @@ if (stripeSecretKey) {
     currency: 'usd',
     decimals: 2,
     paymentMethodTypes: ['card'],
+    ...(stripePublishableKey ? {
+      html: {
+        publishableKey: stripePublishableKey,
+        createTokenUrl: '/v1/payments/stripe/spt',
+      },
+    } : {}),
   })
   const payments = Mppx.create({ methods: [evmCharge, stripeCharge], secretKey })
   const paidTiers = tiers.map((tier) => ({
@@ -359,6 +371,10 @@ if (stripeSecretKey) {
     ), tier),
   }))
   mountPaidRoutes(payments, paidTiers)
+  if (stripePublishableKey) {
+    const quick = tiers.find((tier) => tier.id === 'quick')!
+    mountStripeTestRoute(toHonoPayment(payments.stripe.charge(stripePaymentOptions(quick)), quick), quick)
+  }
 } else {
   const payments = Mppx.create({ methods: [evmCharge], secretKey })
   const paidTiers = tiers.map((tier) => ({
@@ -385,6 +401,67 @@ function stripePaymentOptions(tier: VerificationTier) {
     amount,
     description: `${tier.id} verification of one factual claim against current web evidence (card price)`,
   }
+}
+
+async function createStripeSharedPaymentToken(c: any): Promise<Response> {
+  let body: Record<string, any>
+  try {
+    body = await c.req.json()
+  } catch {
+    return c.json({ error: 'Invalid JSON payload' }, 400)
+  }
+
+  const parsed = Challenge.Schema.safeParse(body.challenge)
+  if (!parsed.success || !Challenge.verify(parsed.data, { secretKey })) {
+    return c.json({ error: 'Invalid payment challenge' }, 400)
+  }
+  const challenge = parsed.data
+  const request = challenge.request as Record<string, any>
+  const expiresAt = challenge.expires ? Math.floor(new Date(challenge.expires).getTime() / 1000) : 0
+  const now = Math.floor(Date.now() / 1000)
+  if (
+    challenge.method !== 'stripe'
+    || challenge.intent !== 'charge'
+    || challenge.realm !== new URL(publicBaseUrl).host
+    || body.amount !== request.amount
+    || body.currency !== request.currency
+    || body.networkId !== request.methodDetails?.networkId
+    || body.expiresAt !== expiresAt
+    || !/^pm_[A-Za-z0-9]+$/.test(body.paymentMethod ?? '')
+    || request.currency !== 'usd'
+    || request.methodDetails?.networkId !== stripeNetworkId
+    || !Number.isInteger(expiresAt)
+    || expiresAt <= now
+    || expiresAt > now + 600
+    || !/^\d+$/.test(request.amount ?? '')
+    || BigInt(request.amount) < 50n
+    || BigInt(request.amount) > 10000n
+  ) {
+    return c.json({ error: 'Payment token request does not match the challenge' }, 400)
+  }
+
+  const form = new URLSearchParams({
+    payment_method: body.paymentMethod,
+    'usage_limits[currency]': request.currency,
+    'usage_limits[max_amount]': request.amount,
+    'usage_limits[expires_at]': String(expiresAt),
+    'seller_details[network_business_profile]': stripeNetworkId,
+  })
+  const stripeResponse = await fetch('https://api.stripe.com/v1/shared_payment/issued_tokens', {
+    method: 'POST',
+    headers: {
+      Authorization: `Basic ${Buffer.from(`${stripeSecretKey}:`).toString('base64')}`,
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Stripe-Version': '2026-07-29.preview',
+    },
+    body: form,
+  })
+  const result = await stripeResponse.json() as Record<string, any>
+  if (!stripeResponse.ok || typeof result.id !== 'string' || !result.id.startsWith('spt_')) {
+    const message = typeof result.error?.message === 'string' ? result.error.message : 'Stripe rejected the payment token'
+    return c.json({ error: message }, 502)
+  }
+  return c.json({ spt: result.id })
 }
 
 type PaymentHandler = ((request: Request) => Promise<
@@ -523,6 +600,36 @@ function mountPaidRoutes(
         },
       }
     )),
+  })
+}
+
+function mountStripeTestRoute(handler: MiddlewareHandler, tier: VerificationTier): void {
+  app.get('/pay/stripe-test', handler, async (c) => {
+    const commerce = commerceMetadata(c.req.raw, tier)
+    const upstreamResponse = await fetch(new URL(tier.path, upstreamUrl), {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${internalApiKey}`,
+        'Content-Type': 'application/json',
+        'Idempotency-Key': `stripe-e2e-${randomUUID()}`,
+        ...commerce.headers,
+      },
+      body: JSON.stringify({
+        claim: 'The Base mainnet chain ID is 8453.',
+        sourcePolicy: 'authoritative',
+        minimumSources: 1,
+        maxSources: tier.maxSources,
+      }),
+    })
+    const responseHeaders = new Headers(upstreamResponse.headers)
+    responseHeaders.set('X-Agentic-Order-Id', commerce.orderId)
+    responseHeaders.set('X-Agentic-Order-Token', commerce.orderToken)
+    responseHeaders.set('Access-Control-Expose-Headers', 'X-Agentic-Order-Id, X-Agentic-Order-Token, X-Agentic-Receipt-Id')
+    return new Response(upstreamResponse.body, {
+      status: upstreamResponse.status,
+      statusText: upstreamResponse.statusText,
+      headers: responseHeaders,
+    })
   })
 }
 
