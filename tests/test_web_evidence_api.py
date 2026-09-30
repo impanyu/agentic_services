@@ -412,6 +412,22 @@ def test_paid_order_is_recorded_with_cost_receipt_and_customer_access(tmp_path: 
     assert summary["grossProfitMicrousd"] == 39_800
     assert summary["webSearchCalls"] == 1
 
+    all_time_summary = client.get(
+        "/v1/admin/summary?days=0", headers={"X-Admin-Key": "admin-secret"}
+    )
+    assert all_time_summary.status_code == 200
+    assert all_time_summary.json()["periodDays"] is None
+    assert all_time_summary.json()["since"] is None
+    assert all_time_summary.json()["orderCount"] == 1
+
+    admin_orders = client.get(
+        "/v1/admin/orders?limit=1&offset=0",
+        headers={"X-Admin-Key": "admin-secret"},
+    )
+    assert admin_orders.status_code == 200
+    assert admin_orders.json()["total"] == 1
+    assert len(admin_orders.json()["orders"]) == 1
+
     customer_orders = client.get(
         "/v1/customer/orders", headers={"X-Agentic-Customer-Key": customer_key}
     )

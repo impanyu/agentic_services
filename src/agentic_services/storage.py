@@ -381,10 +381,21 @@ class VerificationStore:
             rows = connection.execute(query, params).fetchall()
         return [self._order_row(row, customer_view=customer_id is not None) for row in rows]
 
-    def admin_summary(self, since: str) -> dict[str, Any]:
+    def count_orders(self, *, customer_id: str | None = None) -> int:
+        query = "SELECT COUNT(*) FROM orders"
+        params: list[Any] = []
+        if customer_id:
+            query += " WHERE customer_id=?"
+            params.append(customer_id)
+        with self._connect() as connection:
+            return int(connection.execute(query, params).fetchone()[0])
+
+    def admin_summary(self, since: str | None = None) -> dict[str, Any]:
+        where = " WHERE created_at>=?" if since else ""
+        params = (since,) if since else ()
         with self._connect() as connection:
             totals = connection.execute(
-                """
+                f"""
                 SELECT COUNT(*) order_count,
                   SUM(CASE WHEN status='completed' THEN 1 ELSE 0 END) completed_count,
                   SUM(CASE WHEN status='failed' THEN 1 ELSE 0 END) failed_count,
@@ -393,16 +404,16 @@ class VerificationStore:
                   COALESCE(SUM(web_search_calls),0) web_search_calls,
                   COALESCE(SUM(input_tokens),0) input_tokens,
                   COALESCE(SUM(output_tokens),0) output_tokens
-                FROM orders WHERE created_at>=?
-                """, (since,),
+                FROM orders{where}
+                """, params,
             ).fetchone()
             tiers = connection.execute(
-                """
+                f"""
                 SELECT tier,COUNT(*) order_count,
                   COALESCE(SUM(CASE WHEN status='completed' THEN price_microusd ELSE 0 END),0) revenue_microusd,
                   COALESCE(SUM(CASE WHEN status='completed' THEN total_cost_microusd ELSE 0 END),0) cost_microusd
-                FROM orders WHERE created_at>=? GROUP BY tier ORDER BY revenue_microusd DESC
-                """, (since,),
+                FROM orders{where} GROUP BY tier ORDER BY revenue_microusd DESC
+                """, params,
             ).fetchall()
         revenue = int(totals["revenue_microusd"])
         cost = int(totals["cost_microusd"])

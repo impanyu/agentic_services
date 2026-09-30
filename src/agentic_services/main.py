@@ -670,12 +670,12 @@ def create_app(
 
     @app.get("/v1/admin/summary", tags=["admin"])
     def admin_summary(
-        days: Annotated[int, Query(ge=1, le=3650)] = 30,
+        days: Annotated[int, Query(ge=0, le=3650)] = 30,
         x_admin_key: str | None = Header(default=None),
     ) -> dict[str, object]:
         require_admin_key(x_admin_key)
-        since = (datetime.now(UTC) - timedelta(days=days)).isoformat()
-        return {"periodDays": days, "since": since, **store.admin_summary(since)}
+        since = (datetime.now(UTC) - timedelta(days=days)).isoformat() if days else None
+        return {"periodDays": days or None, "since": since, **store.admin_summary(since)}
 
     @app.get("/v1/admin/orders", tags=["admin"])
     def admin_orders(
@@ -685,7 +685,12 @@ def create_app(
     ) -> dict[str, object]:
         require_admin_key(x_admin_key)
         orders = store.list_orders(limit=limit, offset=offset)
-        return {"orders": orders, "limit": limit, "offset": offset}
+        return {
+            "orders": orders,
+            "limit": limit,
+            "offset": offset,
+            "total": store.count_orders(),
+        }
 
     @app.get("/v1/admin/orders/{order_id}", tags=["admin"])
     def admin_order(order_id: str, x_admin_key: str | None = Header(default=None)) -> dict[str, object]:

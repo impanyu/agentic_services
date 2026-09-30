@@ -82,3 +82,13 @@ curl https://api.aisoup.net/v1/claims/verify \
 ```
 
 Base USDC is always available. When `STRIPE_SECRET_KEY` is configured, the same response also advertises an MPP Stripe card/USD option.
+
+## Admin key recovery
+
+The admin dashboard is available at `https://api.aisoup.net/admin`. On the operator Mac, run the following helper to copy the production `ADMIN_API_KEY` directly from the VM to the clipboard without displaying it:
+
+```bash
+./deploy/copy-admin-key.sh
+```
+
+If the key might have been exposed, replace `ADMIN_API_KEY` in `.env.production` with a new random value and recreate the containers. The old key stops working after the restart.
