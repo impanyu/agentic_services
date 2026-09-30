@@ -220,6 +220,11 @@ def create_app(
             ],
         )
 
+    @app.get("/v1/services", tags=["discovery"])
+    def service_catalog() -> dict[str, object]:
+        """List platform services without requiring payment or an API key."""
+        return {"services": store.list_services()}
+
     @app.get("/.well-known/agent-service.json", tags=["discovery"])
     def discovery() -> dict[str, object]:
         base_url = resolved_settings.base_url
@@ -399,6 +404,7 @@ def create_app(
             try:
                 store.create_order(
                     order_id=order_id,
+                    service_id="web-evidence",
                     tier=tier.id,
                     price_microusd=price_microusd(tier.price_usd),
                     payment_protocol=payment_protocol or "unknown",
@@ -432,6 +438,7 @@ def create_app(
                 receipt = {
                     "receiptId": f"rcpt_{secrets.token_hex(16)}",
                     "orderId": order_id,
+                    "serviceId": "web-evidence",
                     "verificationId": result.verification_id,
                     "tier": tier.id,
                     "amountMicrousd": price_microusd(tier.price_usd),
@@ -671,25 +678,40 @@ def create_app(
     @app.get("/v1/admin/summary", tags=["admin"])
     def admin_summary(
         days: Annotated[int, Query(ge=0, le=3650)] = 30,
+        service_id: Annotated[str | None, Query(alias="serviceId")] = None,
         x_admin_key: str | None = Header(default=None),
     ) -> dict[str, object]:
         require_admin_key(x_admin_key)
         since = (datetime.now(UTC) - timedelta(days=days)).isoformat() if days else None
-        return {"periodDays": days or None, "since": since, **store.admin_summary(since)}
+        return {
+            "periodDays": days or None,
+            "since": since,
+            "serviceId": service_id,
+            **store.admin_summary(since, service_id),
+        }
+
+    @app.get("/v1/admin/services", tags=["admin"])
+    def admin_services(
+        x_admin_key: str | None = Header(default=None),
+    ) -> dict[str, object]:
+        require_admin_key(x_admin_key)
+        return {"services": store.list_services()}
 
     @app.get("/v1/admin/orders", tags=["admin"])
     def admin_orders(
         limit: Annotated[int, Query(ge=1, le=500)] = 100,
         offset: Annotated[int, Query(ge=0)] = 0,
+        service_id: Annotated[str | None, Query(alias="serviceId")] = None,
         x_admin_key: str | None = Header(default=None),
     ) -> dict[str, object]:
         require_admin_key(x_admin_key)
-        orders = store.list_orders(limit=limit, offset=offset)
+        orders = store.list_orders(service_id=service_id, limit=limit, offset=offset)
         return {
             "orders": orders,
             "limit": limit,
             "offset": offset,
-            "total": store.count_orders(),
+            "serviceId": service_id,
+            "total": store.count_orders(service_id=service_id),
         }
 
     @app.get("/v1/admin/orders/{order_id}", tags=["admin"])

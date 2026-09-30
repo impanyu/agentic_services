@@ -419,6 +419,15 @@ def test_paid_order_is_recorded_with_cost_receipt_and_customer_access(tmp_path: 
     assert all_time_summary.json()["periodDays"] is None
     assert all_time_summary.json()["since"] is None
     assert all_time_summary.json()["orderCount"] == 1
+    assert all_time_summary.json()["byService"] == [
+        {
+            "serviceId": "web-evidence",
+            "orderCount": 1,
+            "revenueMicrousd": 50_000,
+            "costMicrousd": 10_200,
+            "grossProfitMicrousd": 39_800,
+        }
+    ]
 
     admin_orders = client.get(
         "/v1/admin/orders?limit=1&offset=0",
@@ -427,6 +436,23 @@ def test_paid_order_is_recorded_with_cost_receipt_and_customer_access(tmp_path: 
     assert admin_orders.status_code == 200
     assert admin_orders.json()["total"] == 1
     assert len(admin_orders.json()["orders"]) == 1
+    assert admin_orders.json()["orders"][0]["serviceId"] == "web-evidence"
+
+    filtered_orders = client.get(
+        "/v1/admin/orders?serviceId=another-service",
+        headers={"X-Admin-Key": "admin-secret"},
+    )
+    assert filtered_orders.json()["total"] == 0
+
+    public_catalog = client.get("/v1/services")
+    assert public_catalog.status_code == 200
+    assert public_catalog.json()["services"][0]["serviceId"] == "web-evidence"
+
+    admin_catalog = client.get(
+        "/v1/admin/services", headers={"X-Admin-Key": "admin-secret"}
+    )
+    assert admin_catalog.status_code == 200
+    assert admin_catalog.json()["services"][0]["name"] == "Web Evidence"
 
     customer_orders = client.get(
         "/v1/customer/orders", headers={"X-Agentic-Customer-Key": customer_key}
@@ -449,6 +475,7 @@ def test_quote_lists_price_and_payment_methods(tmp_path: Path) -> None:
     assert quote.status_code == 200
     assert quote.json()["amountMicrousd"] == 120_000
     assert quote.json()["paymentMethods"] == ["x402", "mpp"]
+    assert quote.json()["serviceId"] == "web-evidence"
 
 
 def test_quick_tier_rejects_explicit_excess_source_budget(tmp_path: Path) -> None:

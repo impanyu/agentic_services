@@ -13,6 +13,8 @@ from .models import ClaimVerificationResult, EvidenceSnapshot
 
 
 class VerificationStore:
+    DEFAULT_SERVICE_ID = "web-evidence"
+
     def __init__(self, database_path: Path, snapshot_directory: Path | None = None) -> None:
         self.database_path = database_path
         self.snapshot_directory = snapshot_directory or database_path.parent / "snapshots"
@@ -27,6 +29,38 @@ class VerificationStore:
 
     def _initialize(self) -> None:
         with self._connect() as connection:
+            connection.execute(
+                """
+                CREATE TABLE IF NOT EXISTS services (
+                    service_id TEXT PRIMARY KEY,
+                    name TEXT NOT NULL,
+                    description TEXT NOT NULL,
+                    status TEXT NOT NULL,
+                    version TEXT NOT NULL,
+                    manifest_url TEXT,
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL
+                )
+                """
+            )
+            now = datetime.now(UTC).isoformat()
+            connection.execute(
+                """
+                INSERT OR IGNORE INTO services(
+                    service_id,name,description,status,version,manifest_url,created_at,updated_at
+                ) VALUES(?,?,?,?,?,?,?,?)
+                """,
+                (
+                    self.DEFAULT_SERVICE_ID,
+                    "Web Evidence",
+                    "Current web claim verification with cited evidence and snapshots.",
+                    "active",
+                    "0.3.0",
+                    "/.well-known/agent-service.json",
+                    now,
+                    now,
+                ),
+            )
             connection.execute(
                 """
                 CREATE TABLE IF NOT EXISTS claim_verifications (
@@ -55,6 +89,7 @@ class VerificationStore:
                 """
                 CREATE TABLE IF NOT EXISTS orders (
                     order_id TEXT PRIMARY KEY,
+                    service_id TEXT NOT NULL DEFAULT 'web-evidence',
                     customer_id TEXT,
                     customer_reference TEXT,
                     tier TEXT NOT NULL,
@@ -84,11 +119,21 @@ class VerificationStore:
                 )
                 """
             )
+            order_columns = {
+                row["name"] for row in connection.execute("PRAGMA table_info(orders)").fetchall()
+            }
+            if "service_id" not in order_columns:
+                connection.execute(
+                    "ALTER TABLE orders ADD COLUMN service_id TEXT NOT NULL DEFAULT 'web-evidence'"
+                )
             connection.execute(
                 "CREATE INDEX IF NOT EXISTS orders_customer_created ON orders(customer_id, created_at DESC)"
             )
             connection.execute(
                 "CREATE INDEX IF NOT EXISTS orders_created ON orders(created_at DESC)"
+            )
+            connection.execute(
+                "CREATE INDEX IF NOT EXISTS orders_service_created ON orders(service_id, created_at DESC)"
             )
             connection.execute(
                 """
@@ -108,6 +153,7 @@ class VerificationStore:
                 """
                 CREATE TABLE IF NOT EXISTS quotes (
                     quote_id TEXT PRIMARY KEY,
+                    service_id TEXT NOT NULL DEFAULT 'web-evidence',
                     tier TEXT NOT NULL,
                     amount_microusd INTEGER NOT NULL,
                     currency TEXT NOT NULL,
@@ -116,6 +162,13 @@ class VerificationStore:
                 )
                 """
             )
+            quote_columns = {
+                row["name"] for row in connection.execute("PRAGMA table_info(quotes)").fetchall()
+            }
+            if "service_id" not in quote_columns:
+                connection.execute(
+                    "ALTER TABLE quotes ADD COLUMN service_id TEXT NOT NULL DEFAULT 'web-evidence'"
+                )
             connection.execute(
                 """
                 CREATE TABLE IF NOT EXISTS evidence_snapshots (
@@ -284,17 +337,19 @@ class VerificationStore:
         request_hash: str,
         customer_key: str | None,
         customer_reference: str | None,
+        service_id: str = DEFAULT_SERVICE_ID,
     ) -> None:
         customer = self.customer_for_key(customer_key)
         with self._connect() as connection:
             connection.execute(
                 """
-                INSERT INTO orders(order_id,customer_id,customer_reference,tier,status,currency,
+                INSERT INTO orders(order_id,service_id,customer_id,customer_reference,tier,status,currency,
                     price_microusd,payment_protocol,order_token_hash,request_hash,created_at)
-                VALUES(?,?,?,?,?,?,?,?,?,?,?)
+                VALUES(?,?,?,?,?,?,?,?,?,?,?,?)
                 """,
                 (
                     order_id,
+                    service_id,
                     customer["customer_id"] if customer else None,
                     customer_reference,
                     tier,
@@ -369,30 +424,60 @@ class VerificationStore:
             return None
         return self._order_row(row, customer_view=True)
 
-    def list_orders(self, *, customer_id: str | None = None, limit: int = 100, offset: int = 0) -> list[dict[str, Any]]:
+    def list_orders(
+        self,
+        *,
+        customer_id: str | None = None,
+        service_id: str | None = None,
+        limit: int = 100,
+        offset: int = 0,
+    ) -> list[dict[str, Any]]:
         query = "SELECT * FROM orders"
         params: list[Any] = []
+        filters: list[str] = []
         if customer_id:
-            query += " WHERE customer_id=?"
+            filters.append("customer_id=?")
             params.append(customer_id)
+        if service_id:
+            filters.append("service_id=?")
+            params.append(service_id)
+        if filters:
+            query += " WHERE " + " AND ".join(filters)
         query += " ORDER BY created_at DESC LIMIT ? OFFSET ?"
         params.extend([limit, offset])
         with self._connect() as connection:
             rows = connection.execute(query, params).fetchall()
         return [self._order_row(row, customer_view=customer_id is not None) for row in rows]
 
-    def count_orders(self, *, customer_id: str | None = None) -> int:
+    def count_orders(
+        self, *, customer_id: str | None = None, service_id: str | None = None
+    ) -> int:
         query = "SELECT COUNT(*) FROM orders"
         params: list[Any] = []
+        filters: list[str] = []
         if customer_id:
-            query += " WHERE customer_id=?"
+            filters.append("customer_id=?")
             params.append(customer_id)
+        if service_id:
+            filters.append("service_id=?")
+            params.append(service_id)
+        if filters:
+            query += " WHERE " + " AND ".join(filters)
         with self._connect() as connection:
             return int(connection.execute(query, params).fetchone()[0])
 
-    def admin_summary(self, since: str | None = None) -> dict[str, Any]:
-        where = " WHERE created_at>=?" if since else ""
-        params = (since,) if since else ()
+    def admin_summary(
+        self, since: str | None = None, service_id: str | None = None
+    ) -> dict[str, Any]:
+        filters: list[str] = []
+        params: list[Any] = []
+        if since:
+            filters.append("created_at>=?")
+            params.append(since)
+        if service_id:
+            filters.append("service_id=?")
+            params.append(service_id)
+        where = " WHERE " + " AND ".join(filters) if filters else ""
         with self._connect() as connection:
             totals = connection.execute(
                 f"""
@@ -405,7 +490,7 @@ class VerificationStore:
                   COALESCE(SUM(input_tokens),0) input_tokens,
                   COALESCE(SUM(output_tokens),0) output_tokens
                 FROM orders{where}
-                """, params,
+                """, tuple(params),
             ).fetchone()
             tiers = connection.execute(
                 f"""
@@ -413,7 +498,15 @@ class VerificationStore:
                   COALESCE(SUM(CASE WHEN status='completed' THEN price_microusd ELSE 0 END),0) revenue_microusd,
                   COALESCE(SUM(CASE WHEN status='completed' THEN total_cost_microusd ELSE 0 END),0) cost_microusd
                 FROM orders{where} GROUP BY tier ORDER BY revenue_microusd DESC
-                """, params,
+                """, tuple(params),
+            ).fetchall()
+            services = connection.execute(
+                f"""
+                SELECT service_id,COUNT(*) order_count,
+                  COALESCE(SUM(CASE WHEN status='completed' THEN price_microusd ELSE 0 END),0) revenue_microusd,
+                  COALESCE(SUM(CASE WHEN status='completed' THEN total_cost_microusd ELSE 0 END),0) cost_microusd
+                FROM orders{where} GROUP BY service_id ORDER BY revenue_microusd DESC
+                """, tuple(params),
             ).fetchall()
         revenue = int(totals["revenue_microusd"])
         cost = int(totals["cost_microusd"])
@@ -436,17 +529,53 @@ class VerificationStore:
                 }
                 for row in tiers
             ],
+            "byService": [
+                {
+                    "serviceId": row["service_id"], "orderCount": row["order_count"],
+                    "revenueMicrousd": row["revenue_microusd"], "costMicrousd": row["cost_microusd"],
+                    "grossProfitMicrousd": row["revenue_microusd"] - row["cost_microusd"],
+                }
+                for row in services
+            ],
         }
 
-    def create_quote(self, *, tier: str, amount_microusd: int, expires_at: str) -> dict[str, Any]:
+    def list_services(self) -> list[dict[str, Any]]:
+        with self._connect() as connection:
+            rows = connection.execute(
+                "SELECT * FROM services ORDER BY created_at"
+            ).fetchall()
+        return [
+            {
+                "serviceId": row["service_id"],
+                "name": row["name"],
+                "description": row["description"],
+                "status": row["status"],
+                "version": row["version"],
+                "manifestUrl": row["manifest_url"],
+            }
+            for row in rows
+        ]
+
+    def create_quote(
+        self,
+        *,
+        tier: str,
+        amount_microusd: int,
+        expires_at: str,
+        service_id: str = DEFAULT_SERVICE_ID,
+    ) -> dict[str, Any]:
         quote_id = f"quo_{uuid.uuid4().hex}"
         created_at = datetime.now(UTC).isoformat()
         with self._connect() as connection:
             connection.execute(
-                "INSERT INTO quotes VALUES(?,?,?,?,?,?)",
-                (quote_id, tier, amount_microusd, "USD", expires_at, created_at),
+                """
+                INSERT INTO quotes(
+                    quote_id,service_id,tier,amount_microusd,currency,expires_at,created_at
+                ) VALUES(?,?,?,?,?,?,?)
+                """,
+                (quote_id, service_id, tier, amount_microusd, "USD", expires_at, created_at),
             )
-        return {"quoteId": quote_id, "tier": tier, "amountMicrousd": amount_microusd, "currency": "USD", "expiresAt": expires_at, "createdAt": created_at}
+        return {"quoteId": quote_id, "serviceId": service_id, "tier": tier, "amountMicrousd": amount_microusd, "currency": "USD", "expiresAt": expires_at, "createdAt": created_at}
 
     @staticmethod
     def _customer_row(row: sqlite3.Row) -> dict[str, Any]:
@@ -459,7 +588,7 @@ class VerificationStore:
     @staticmethod
     def _order_row(row: sqlite3.Row, customer_view: bool = False) -> dict[str, Any]:
         result = {
-            "orderId": row["order_id"], "customerId": row["customer_id"],
+            "orderId": row["order_id"], "serviceId": row["service_id"], "customerId": row["customer_id"],
             "customerReference": row["customer_reference"], "tier": row["tier"],
             "status": row["status"], "currency": row["currency"],
             "amountMicrousd": row["price_microusd"], "paymentProtocol": row["payment_protocol"],

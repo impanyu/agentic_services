@@ -84,6 +84,7 @@ The API starts at `http://localhost:8000`. Its main endpoints are:
 - `POST /a2a` — A2A 1.0 JSON-RPC `SendMessage`, paid at the Standard tier.
 - `GET /.well-known/agent-card.json` — A2A Agent Card.
 - `GET /openapi.json` — inspect the complete HTTP contract.
+- `GET /v1/services` — list every service in the platform catalog.
 - `GET /llms.txt` — read concise agent integration instructions.
 - `GET /` — human-readable landing page with structured data; `robots.txt` and `sitemap.xml` support web indexing.
 - `POST /v1/quotes` — create a 15-minute machine-readable tier quote.
@@ -91,7 +92,8 @@ The API starts at `http://localhost:8000`. Its main endpoints are:
 - `GET /v1/customer/orders` — list a registered customer's orders with `X-Agentic-Customer-Key`.
 - `POST /v1/receipts/{order_id}/verify` — verify the server signature on an issued receipt.
 - `GET /admin` — private commerce dashboard for revenue, OpenAI cost, gross profit, and individual orders.
-- `GET /v1/admin/summary`, `GET /v1/admin/orders` — dashboard APIs authenticated with `X-Admin-Key`.
+- `GET /v1/admin/services` — list services available to the commerce dashboard.
+- `GET /v1/admin/summary`, `GET /v1/admin/orders` — dashboard APIs authenticated with `X-Admin-Key`; both support platform-wide reporting and `serviceId` filtering.
 - `POST /v1/admin/customers` — issue a customer API key; plaintext is returned once and only its SHA-256 hash is stored.
 
 Example request:

@@ -64,6 +64,12 @@ Each service publishes a canonical manifest at `/.well-known/agent-service.json`
 
 The platform registry stores a normalized projection of the manifest. Exporters may translate compatible offers into other discovery formats, including x402 Bazaar resources. The canonical manifest stays payment-rail neutral.
 
+### Multi-service commerce identity
+
+Every quote, order, receipt, ledger projection, and admin aggregate carries a stable `serviceId`. The first service uses `web-evidence`; future services register a new identifier instead of introducing service-specific commerce tables or response shapes.
+
+The public `GET /v1/services` endpoint exposes the platform catalog. Admin summary and order APIs accept an optional `serviceId` query parameter. Omitting it returns platform-wide totals, while `byService` preserves the per-service breakdown. Pagination uses `limit`, `offset`, and `total`, so the dashboard and external admin clients share the same contract.
+
 ## Invocation flow
 
 1. The buyer searches the registry or resolves the well-known manifest.
