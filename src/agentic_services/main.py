@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import hmac
 from functools import lru_cache
 
 import uvicorn
@@ -45,6 +46,18 @@ def create_app(
     app.state.settings = resolved_settings
     app.state.verification_service = service or build_service(resolved_settings)
 
+    def require_service_api_key(authorization: str | None) -> None:
+        expected = resolved_settings.service_api_key
+        if expected is None:
+            return
+        scheme, _, credential = (authorization or "").partition(" ")
+        if scheme.lower() != "bearer" or not hmac.compare_digest(credential, expected):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="A valid Bearer API key is required",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
     @app.get("/healthz", tags=["operations"])
     def health() -> dict[str, str]:
         return {"status": "ok"}
@@ -77,6 +90,23 @@ def create_app(
     @app.get("/.well-known/agent-service.json", tags=["discovery"])
     def discovery() -> dict[str, object]:
         base_url = resolved_settings.base_url
+        is_paid = resolved_settings.payment_recipient is not None
+        payment_methods: list[dict[str, str]] = [{"protocol": "credit"}]
+        if is_paid:
+            payment_methods = [
+                {
+                    "protocol": "x402",
+                    "network": "eip155:8453",
+                    "asset": "USDC",
+                    "payTo": resolved_settings.payment_recipient or "",
+                },
+                {
+                    "protocol": "mpp",
+                    "network": "eip155:8453",
+                    "asset": "USDC",
+                    "payTo": resolved_settings.payment_recipient or "",
+                },
+            ]
         return {
             "manifestVersion": "0.1",
             "service": {
@@ -105,7 +135,9 @@ def create_app(
                     "type": "http",
                     "url": base_url,
                     "specification": f"{base_url}/openapi.json",
-                    "authorization": "none",
+                    "authorization": "signed-request" if is_paid else (
+                        "bearer" if resolved_settings.service_api_key else "none"
+                    ),
                 }
             ],
             "operations": [
@@ -124,13 +156,13 @@ def create_app(
             ],
             "offers": [
                 {
-                    "id": "preview",
+                    "id": "verify-claim-call",
                     "operation": "verify-claim",
                     "model": "per_call",
-                    "amount": "0",
+                    "amount": resolved_settings.price_usd if is_paid else "0",
                     "currency": "USD",
                     "unit": "request",
-                    "paymentMethods": [{"protocol": "credit"}],
+                    "paymentMethods": payment_methods,
                 }
             ],
             "provenance": {
@@ -145,7 +177,10 @@ def create_app(
                 "allowedUse": ["Research and decision support"],
                 "prohibitedUse": ["Representing the result as a guarantee of absolute truth"],
             },
-            "extensions": {"lifecycle": "preview"},
+            "extensions": {
+                "lifecycle": "paid-preview" if is_paid else "preview",
+                "paymentDiscovery": f"{base_url}/openapi.json",
+            },
         }
 
     @app.get("/terms", tags=["legal"])
@@ -172,7 +207,9 @@ def create_app(
         payload: ClaimVerificationRequest,
         request: Request,
         idempotency_key: str | None = Header(default=None, max_length=255),
+        authorization: str | None = Header(default=None),
     ) -> ClaimVerificationResult:
+        require_service_api_key(authorization)
         verification_service: ClaimVerificationService | None = request.app.state.verification_service
         if verification_service is None:
             raise HTTPException(
@@ -198,7 +235,12 @@ def create_app(
         response_model=ClaimVerificationResult,
         tags=["claim verification"],
     )
-    def get_verification(verification_id: str, request: Request) -> ClaimVerificationResult:
+    def get_verification(
+        verification_id: str,
+        request: Request,
+        authorization: str | None = Header(default=None),
+    ) -> ClaimVerificationResult:
+        require_service_api_key(authorization)
         verification_service: ClaimVerificationService | None = request.app.state.verification_service
         if verification_service is None:
             raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Web Evidence is not configured")

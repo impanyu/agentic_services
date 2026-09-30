@@ -91,6 +91,8 @@ curl http://localhost:8000/v1/claims/verify \
 
 See [`docs/web-evidence-api.md`](docs/web-evidence-api.md) for request semantics, evidence guarantees, and the planned paid-service endpoints.
 
+For the production Docker Compose deployment at `api.aisoup.net`, follow [`deploy/google-cloud-vm.md`](deploy/google-cloud-vm.md). The public gateway accepts both x402 and MPP payments in Base USDC; the Python service remains private behind an internal Bearer credential.
+
 ## Status
 
-The repository contains the v0 protocol, a runnable Web Evidence reference service, SQLite persistence, machine-readable discovery, and contract tests. Payment is still in preview mode at zero price; the next milestone is an x402 gateway adapter, signed delivery receipts, and deployment.
+The repository contains the v0 protocol, a runnable Web Evidence service, SQLite persistence, machine-readable discovery, and an x402/MPP dual-protocol payment gateway. The next milestone is external catalog registration, paid-flow production verification, and additional evidence operations.

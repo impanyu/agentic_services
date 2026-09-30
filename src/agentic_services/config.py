@@ -18,6 +18,9 @@ class Settings:
     database_path: Path
     base_url: str
     provider_contact: str = "services@example.com"
+    service_api_key: str | None = None
+    payment_recipient: str | None = None
+    price_usd: str = "0.05"
 
     @classmethod
     def from_environment(cls) -> "Settings":
@@ -32,4 +35,7 @@ class Settings:
             database_path=database_path,
             base_url=os.getenv("WEB_EVIDENCE_BASE_URL", "http://localhost:8000").rstrip("/"),
             provider_contact=os.getenv("WEB_EVIDENCE_PROVIDER_CONTACT", "services@example.com"),
+            service_api_key=os.getenv("WEB_EVIDENCE_API_KEY") or None,
+            payment_recipient=os.getenv("PAYMENT_RECIPIENT") or None,
+            price_usd=os.getenv("WEB_EVIDENCE_PRICE_USD", "0.05"),
         )

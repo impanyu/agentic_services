@@ -107,7 +107,7 @@
               "additionalProperties": false,
               "required": ["protocol"],
               "properties": {
-                "protocol": { "enum": ["x402", "ap2", "credit", "subscription", "invoice"] },
+                "protocol": { "enum": ["x402", "mpp", "ap2", "credit", "subscription", "invoice"] },
                 "network": { "type": "string", "maxLength": 128 },
                 "asset": { "type": "string", "maxLength": 256 },
                 "payTo": { "type": "string", "maxLength": 256 }

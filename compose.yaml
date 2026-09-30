@@ -1,0 +1,42 @@
+services:
+  web-evidence:
+    build: .
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    environment:
+      WEB_EVIDENCE_DB: /data/web-evidence.db
+      WEB_EVIDENCE_BASE_URL: https://api.aisoup.net
+    volumes:
+      - evidence-data:/data
+    expose:
+      - "8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  payment-gateway:
+    build: ./gateway
+    restart: unless-stopped
+    depends_on:
+      web-evidence:
+        condition: service_healthy
+    env_file:
+      - .env.production
+    environment:
+      UPSTREAM_URL: http://web-evidence:8000
+      PUBLIC_BASE_URL: https://api.aisoup.net
+    ports:
+      - "127.0.0.1:8010:8010"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:8010/healthz').then(r=>{if(!r.ok)process.exit(1)})"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+volumes:
+  evidence-data:

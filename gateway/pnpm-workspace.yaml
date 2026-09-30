@@ -1,0 +1,3 @@
+minimumReleaseAgeExclude:
+  - mppx@0.12.0
+  - viem@2.57.1

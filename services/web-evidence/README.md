@@ -6,4 +6,4 @@ The HTTP implementation lives in `src/agentic_services`. The API contract, evide
 
 The first operation is `POST /v1/claims/verify`. It supports source policy, domain allow and block lists, freshness targets, minimum evidence counts, conflict reporting, durable result retrieval, and idempotent retries.
 
-The discovery document at `/.well-known/agent-service.json` embeds the operation's input and output JSON Schemas. The current offer is a free preview; it must not advertise paid x402 settlement until payment verification and signed receipts are implemented.
+The discovery document at `/.well-known/agent-service.json` embeds the operation's input and output JSON Schemas. The production gateway advertises x402 and MPP payment options for the same operation and forwards a request to the evidence service only after payment settlement.

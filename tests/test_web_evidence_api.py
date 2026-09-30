@@ -62,12 +62,18 @@ class FakeProvider:
         )
 
 
-def build_client(tmp_path: Path, provider: FakeProvider) -> TestClient:
+def build_client(
+    tmp_path: Path,
+    provider: FakeProvider,
+    *,
+    service_api_key: str | None = None,
+) -> TestClient:
     settings = Settings(
         openai_api_key="test-only",
         openai_model=provider.model,
         database_path=tmp_path / "evidence.db",
         base_url="https://testserver",
+        service_api_key=service_api_key,
     )
     service = ClaimVerificationService(
         provider=provider,
@@ -188,3 +194,52 @@ def test_discovery_document_matches_manifest_schema(tmp_path: Path) -> None:
     schema_path = Path(__file__).parents[1] / "schemas" / "service-manifest.schema.json"
     schema = json.loads(schema_path.read_text())
     Draft202012Validator(schema, format_checker=FormatChecker()).validate(manifest.json())
+
+
+def test_paid_discovery_advertises_x402_and_mpp(tmp_path: Path) -> None:
+    settings = Settings(
+        openai_api_key="test-only",
+        openai_model="fake-evidence-model",
+        database_path=tmp_path / "evidence.db",
+        base_url="https://api.example.com",
+        service_api_key="internal-secret",
+        payment_recipient="0x1111111111111111111111111111111111111111",
+        price_usd="0.05",
+    )
+    provider = FakeProvider()
+    service = ClaimVerificationService(
+        provider=provider,
+        store=VerificationStore(settings.database_path),
+    )
+    manifest = TestClient(create_app(settings=settings, service=service)).get(
+        "/.well-known/agent-service.json"
+    ).json()
+
+    offer = manifest["offers"][0]
+    assert offer["amount"] == "0.05"
+    assert offer["currency"] == "USD"
+    assert {method["protocol"] for method in offer["paymentMethods"]} == {"x402", "mpp"}
+    assert all(method["network"] == "eip155:8453" for method in offer["paymentMethods"])
+
+
+def test_protected_service_requires_valid_bearer_key(tmp_path: Path) -> None:
+    client = build_client(tmp_path, FakeProvider(), service_api_key="preview-secret")
+    payload = {"claim": "The feature is supported.", "minimumSources": 1}
+
+    missing = client.post("/v1/claims/verify", json=payload)
+    invalid = client.post(
+        "/v1/claims/verify",
+        headers={"Authorization": "Bearer wrong"},
+        json=payload,
+    )
+    valid = client.post(
+        "/v1/claims/verify",
+        headers={"Authorization": "Bearer preview-secret"},
+        json=payload,
+    )
+
+    assert missing.status_code == 401
+    assert invalid.status_code == 401
+    assert valid.status_code == 200
+    manifest = client.get("/.well-known/agent-service.json").json()
+    assert manifest["transports"][0]["authorization"] == "bearer"

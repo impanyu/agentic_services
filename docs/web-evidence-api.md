@@ -78,4 +78,4 @@ These operations should be added only when their evidence guarantees are impleme
 
 ## Commercial boundary
 
-Payment enforcement belongs at the gateway. The verification implementation receives a normalized authorization context and never handles wallet keys or raw payment credentials. The preview manifest advertises a zero-price internal-credit offer until an x402 adapter and settlement receipt are operational.
+Payment enforcement belongs at the Node payment gateway. The verification implementation receives a private Bearer credential and never handles wallet keys or raw payment credentials. The public `POST /v1/claims/verify` route advertises both x402 and MPP challenges and settles Base USDC before forwarding the request to the Python service.
