@@ -1,14 +1,23 @@
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import hmac
+import json
+import secrets
 from dataclasses import dataclass
+from datetime import UTC, datetime, timedelta
+from decimal import Decimal, ROUND_HALF_UP
 from functools import lru_cache
+from typing import Annotated
 
 import uvicorn
-from fastapi import FastAPI, Header, HTTPException, Request, Response, status
+from fastapi import FastAPI, Header, HTTPException, Query, Request, Response, status
+from fastapi.responses import HTMLResponse
+from pydantic import BaseModel, Field
 
 from . import __version__
+from .admin_dashboard import admin_dashboard_html
 from .config import Settings
 from .models import (
     CapabilitiesResponse,
@@ -20,6 +29,15 @@ from .models import (
 from .provider import OpenAIEvidenceProvider
 from .service import ClaimVerificationService, IdempotencyConflictError
 from .storage import VerificationStore
+
+
+class CustomerCreateRequest(BaseModel):
+    name: Annotated[str, Field(min_length=1, max_length=200)]
+    email: Annotated[str | None, Field(max_length=320)] = None
+
+
+class QuoteRequest(BaseModel):
+    tier: str = "standard"
 
 
 @dataclass(frozen=True)
@@ -112,6 +130,12 @@ def create_app(
     app.state.settings = resolved_settings
     app.state.verification_service = service or build_service(resolved_settings)
     tiers = verification_tiers(resolved_settings)
+    store = (
+        app.state.verification_service.store
+        if app.state.verification_service is not None
+        else VerificationStore(resolved_settings.database_path, resolved_settings.snapshot_directory)
+    )
+    app.state.store = store
 
     def require_service_api_key(authorization: str | None) -> None:
         expected = resolved_settings.service_api_key
@@ -124,6 +148,48 @@ def create_app(
                 detail="A valid Bearer API key is required",
                 headers={"WWW-Authenticate": "Bearer"},
             )
+
+    def require_admin_key(admin_key: str | None) -> None:
+        expected = resolved_settings.admin_api_key
+        if not expected:
+            raise HTTPException(status_code=503, detail="ADMIN_API_KEY is not configured")
+        if not admin_key or not hmac.compare_digest(admin_key, expected):
+            raise HTTPException(status_code=401, detail="A valid X-Admin-Key is required")
+
+    def require_customer(customer_key: str | None) -> dict[str, object]:
+        customer = store.customer_for_key(customer_key)
+        if customer is None:
+            raise HTTPException(status_code=401, detail="A valid X-Agentic-Customer-Key is required")
+        return customer
+
+    def price_microusd(value: str) -> int:
+        return int((Decimal(value) * Decimal(1_000_000)).quantize(Decimal("1"), rounding=ROUND_HALF_UP))
+
+    def order_cost(result: ClaimVerificationResult) -> dict[str, int]:
+        provenance = result.provenance
+        if provenance.cache_hit:
+            return {"model": 0, "search": 0, "total": 0}
+        uncached = max(0, provenance.input_tokens - provenance.cached_input_tokens)
+        model_usd = (
+            Decimal(uncached) * Decimal(resolved_settings.openai_input_usd_per_million)
+            + Decimal(provenance.cached_input_tokens) * Decimal(resolved_settings.openai_cached_input_usd_per_million)
+            + Decimal(provenance.output_tokens) * Decimal(resolved_settings.openai_output_usd_per_million)
+        ) / Decimal(1_000_000)
+        search_usd = (
+            Decimal(provenance.web_search_call_count)
+            * Decimal(resolved_settings.openai_web_search_usd_per_thousand)
+            / Decimal(1000)
+        )
+        model = int((model_usd * Decimal(1_000_000)).quantize(Decimal("1"), rounding=ROUND_HALF_UP))
+        search = int((search_usd * Decimal(1_000_000)).quantize(Decimal("1"), rounding=ROUND_HALF_UP))
+        return {"model": model, "search": search, "total": model + search}
+
+    def sign_receipt(receipt: dict[str, object]) -> str:
+        secret = resolved_settings.receipt_signing_secret or resolved_settings.service_api_key
+        if not secret:
+            raise RuntimeError("RECEIPT_SIGNING_SECRET is not configured")
+        canonical = json.dumps(receipt, separators=(",", ":"), sort_keys=True).encode()
+        return hmac.new(secret.encode(), canonical, hashlib.sha256).hexdigest()
 
     @app.get("/healthz", tags=["operations"])
     def health() -> dict[str, str]:
@@ -249,6 +315,12 @@ def create_app(
             "extensions": {
                 "lifecycle": "paid-preview" if is_paid else "preview",
                 "paymentDiscovery": f"{base_url}/openapi.json",
+                "commerce": {
+                    "quote": f"{base_url}/v1/quotes",
+                    "orderByAccessToken": f"{base_url}/v1/orders/{{order_id}}",
+                    "customerOrders": f"{base_url}/v1/customer/orders",
+                    "receiptVerification": f"{base_url}/v1/receipts/{{order_id}}/verify",
+                },
                 "verificationTiers": {
                     tier.id: {
                         "path": tier.path,
@@ -278,12 +350,33 @@ def create_app(
             "retentionDays": 30,
         }
 
+    @app.post("/v1/quotes", tags=["commerce"])
+    def create_quote(payload: QuoteRequest) -> dict[str, object]:
+        tier = next((item for item in tiers if item.id == payload.tier), None)
+        if tier is None:
+            raise HTTPException(status_code=422, detail="Unknown verification tier")
+        expires_at = datetime.now(UTC) + timedelta(minutes=15)
+        quote = store.create_quote(
+            tier=tier.id,
+            amount_microusd=price_microusd(tier.price_usd),
+            expires_at=expires_at.isoformat(),
+        )
+        quote["operation"] = tier.path
+        quote["paymentMethods"] = ["x402", "mpp"]
+        return quote
+
     async def run_verification(
         tier: VerificationTier,
         payload: ClaimVerificationRequest,
         request: Request,
         idempotency_key: str | None,
         authorization: str | None,
+        response: Response,
+        order_id: str | None,
+        order_token_hash: str | None,
+        payment_protocol: str | None,
+        customer_key: str | None,
+        customer_reference: str | None,
     ) -> ClaimVerificationResult:
         require_service_api_key(authorization)
         if (
@@ -300,6 +393,22 @@ def create_app(
         effective_payload = payload.model_copy(
             update={"max_sources": min(payload.max_sources, tier.max_sources)}
         )
+        request_json = effective_payload.model_dump_json(by_alias=True, exclude_none=True)
+        request_hash = hashlib.sha256(request_json.encode()).hexdigest()
+        if order_id:
+            try:
+                store.create_order(
+                    order_id=order_id,
+                    tier=tier.id,
+                    price_microusd=price_microusd(tier.price_usd),
+                    payment_protocol=payment_protocol or "unknown",
+                    order_token_hash=order_token_hash,
+                    request_hash=request_hash,
+                    customer_key=customer_key,
+                    customer_reference=customer_reference,
+                )
+            except Exception as error:
+                raise HTTPException(status_code=409, detail="Order identifier already exists") from error
         verification_service: ClaimVerificationService | None = request.app.state.verification_service
         if verification_service is None:
             raise HTTPException(
@@ -307,7 +416,7 @@ def create_app(
                 detail="Web Evidence is not configured",
             )
         try:
-            return await asyncio.to_thread(
+            result = await asyncio.to_thread(
                 verification_service.verify,
                 effective_payload,
                 idempotency_key=idempotency_key,
@@ -317,9 +426,49 @@ def create_app(
                 snapshot_mode=tier.snapshot_mode,
                 max_snapshots=tier.max_snapshots,
             )
+            if order_id:
+                costs = order_cost(result)
+                issued_at = datetime.now(UTC).isoformat()
+                receipt = {
+                    "receiptId": f"rcpt_{secrets.token_hex(16)}",
+                    "orderId": order_id,
+                    "verificationId": result.verification_id,
+                    "tier": tier.id,
+                    "amountMicrousd": price_microusd(tier.price_usd),
+                    "currency": "USD",
+                    "paymentProtocol": payment_protocol or "unknown",
+                    "resultSha256": hashlib.sha256(result.model_dump_json(by_alias=True).encode()).hexdigest(),
+                    "issuedAt": issued_at,
+                    "signatureAlgorithm": "hmac-sha256",
+                }
+                signature = sign_receipt(receipt)
+                store.complete_order(
+                    order_id=order_id,
+                    values={
+                        "verification_id": result.verification_id,
+                        "provider_response_id": result.provenance.provider_response_id,
+                        "model": result.provenance.model,
+                        "input_tokens": result.provenance.input_tokens,
+                        "cached_input_tokens": result.provenance.cached_input_tokens,
+                        "output_tokens": result.provenance.output_tokens,
+                        "web_search_calls": result.provenance.web_search_call_count,
+                        "model_cost_microusd": costs["model"],
+                        "search_cost_microusd": costs["search"],
+                        "total_cost_microusd": costs["total"],
+                    },
+                    receipt=receipt,
+                    signature=signature,
+                )
+                response.headers["X-Agentic-Order-Id"] = order_id
+                response.headers["X-Agentic-Receipt-Id"] = str(receipt["receiptId"])
+            return result
         except IdempotencyConflictError as error:
+            if order_id:
+                store.fail_order(order_id, "idempotency_conflict")
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(error)) from error
         except Exception as error:
+            if order_id:
+                store.fail_order(order_id, type(error).__name__)
             raise HTTPException(
                 status_code=status.HTTP_502_BAD_GATEWAY,
                 detail=f"Evidence provider failed: {type(error).__name__}",
@@ -331,6 +480,12 @@ def create_app(
         request: Request,
         idempotency_key: str | None,
         authorization: str | None,
+        response: Response,
+        order_id: str | None,
+        order_token_hash: str | None,
+        payment_protocol: str | None,
+        customer_key: str | None,
+        customer_reference: str | None,
     ) -> ClaimVerificationResult:
         tier = next(item for item in tiers if item.id == tier_id)
         return await run_verification(
@@ -339,6 +494,12 @@ def create_app(
             request,
             idempotency_key,
             authorization,
+            response,
+            order_id,
+            order_token_hash,
+            payment_protocol,
+            customer_key,
+            customer_reference,
         )
 
     @app.post(
@@ -350,11 +511,19 @@ def create_app(
     async def verify_claim_quick(
         payload: ClaimVerificationRequest,
         request: Request,
+        response: Response,
         idempotency_key: str | None = Header(default=None, max_length=255),
         authorization: str | None = Header(default=None),
+        x_agentic_order_id: str | None = Header(default=None),
+        x_agentic_order_token_hash: str | None = Header(default=None),
+        x_agentic_payment_protocol: str | None = Header(default=None),
+        x_agentic_customer_key: str | None = Header(default=None),
+        x_agentic_customer_reference: str | None = Header(default=None, max_length=255),
     ) -> ClaimVerificationResult:
         return await verification_endpoint(
-            "quick", payload, request, idempotency_key, authorization
+            "quick", payload, request, idempotency_key, authorization, response,
+            x_agentic_order_id, x_agentic_order_token_hash, x_agentic_payment_protocol,
+            x_agentic_customer_key, x_agentic_customer_reference,
         )
 
     @app.post(
@@ -366,11 +535,19 @@ def create_app(
     async def verify_claim(
         payload: ClaimVerificationRequest,
         request: Request,
+        response: Response,
         idempotency_key: str | None = Header(default=None, max_length=255),
         authorization: str | None = Header(default=None),
+        x_agentic_order_id: str | None = Header(default=None),
+        x_agentic_order_token_hash: str | None = Header(default=None),
+        x_agentic_payment_protocol: str | None = Header(default=None),
+        x_agentic_customer_key: str | None = Header(default=None),
+        x_agentic_customer_reference: str | None = Header(default=None, max_length=255),
     ) -> ClaimVerificationResult:
         return await verification_endpoint(
-            "standard", payload, request, idempotency_key, authorization
+            "standard", payload, request, idempotency_key, authorization, response,
+            x_agentic_order_id, x_agentic_order_token_hash, x_agentic_payment_protocol,
+            x_agentic_customer_key, x_agentic_customer_reference,
         )
 
     @app.post(
@@ -382,11 +559,19 @@ def create_app(
     async def verify_claim_deep(
         payload: ClaimVerificationRequest,
         request: Request,
+        response: Response,
         idempotency_key: str | None = Header(default=None, max_length=255),
         authorization: str | None = Header(default=None),
+        x_agentic_order_id: str | None = Header(default=None),
+        x_agentic_order_token_hash: str | None = Header(default=None),
+        x_agentic_payment_protocol: str | None = Header(default=None),
+        x_agentic_customer_key: str | None = Header(default=None),
+        x_agentic_customer_reference: str | None = Header(default=None, max_length=255),
     ) -> ClaimVerificationResult:
         return await verification_endpoint(
-            "deep", payload, request, idempotency_key, authorization
+            "deep", payload, request, idempotency_key, authorization, response,
+            x_agentic_order_id, x_agentic_order_token_hash, x_agentic_payment_protocol,
+            x_agentic_customer_key, x_agentic_customer_reference,
         )
 
     @app.post(
@@ -398,11 +583,19 @@ def create_app(
     async def verify_claim_research(
         payload: ClaimVerificationRequest,
         request: Request,
+        response: Response,
         idempotency_key: str | None = Header(default=None, max_length=255),
         authorization: str | None = Header(default=None),
+        x_agentic_order_id: str | None = Header(default=None),
+        x_agentic_order_token_hash: str | None = Header(default=None),
+        x_agentic_payment_protocol: str | None = Header(default=None),
+        x_agentic_customer_key: str | None = Header(default=None),
+        x_agentic_customer_reference: str | None = Header(default=None, max_length=255),
     ) -> ClaimVerificationResult:
         return await verification_endpoint(
-            "research", payload, request, idempotency_key, authorization
+            "research", payload, request, idempotency_key, authorization, response,
+            x_agentic_order_id, x_agentic_order_token_hash, x_agentic_payment_protocol,
+            x_agentic_customer_key, x_agentic_customer_reference,
         )
 
     @app.get(
@@ -470,6 +663,101 @@ def create_app(
                 "X-Content-SHA256": metadata.raw_sha256 or "",
             },
         )
+
+    @app.get("/admin", response_class=HTMLResponse, include_in_schema=False)
+    def admin_dashboard() -> str:
+        return admin_dashboard_html()
+
+    @app.get("/v1/admin/summary", tags=["admin"])
+    def admin_summary(
+        days: Annotated[int, Query(ge=1, le=3650)] = 30,
+        x_admin_key: str | None = Header(default=None),
+    ) -> dict[str, object]:
+        require_admin_key(x_admin_key)
+        since = (datetime.now(UTC) - timedelta(days=days)).isoformat()
+        return {"periodDays": days, "since": since, **store.admin_summary(since)}
+
+    @app.get("/v1/admin/orders", tags=["admin"])
+    def admin_orders(
+        limit: Annotated[int, Query(ge=1, le=500)] = 100,
+        offset: Annotated[int, Query(ge=0)] = 0,
+        x_admin_key: str | None = Header(default=None),
+    ) -> dict[str, object]:
+        require_admin_key(x_admin_key)
+        orders = store.list_orders(limit=limit, offset=offset)
+        return {"orders": orders, "limit": limit, "offset": offset}
+
+    @app.get("/v1/admin/orders/{order_id}", tags=["admin"])
+    def admin_order(order_id: str, x_admin_key: str | None = Header(default=None)) -> dict[str, object]:
+        require_admin_key(x_admin_key)
+        order = store.get_order(order_id)
+        if order is None:
+            raise HTTPException(status_code=404, detail="Order not found")
+        return order
+
+    @app.get("/v1/admin/customers", tags=["admin"])
+    def admin_customers(x_admin_key: str | None = Header(default=None)) -> dict[str, object]:
+        require_admin_key(x_admin_key)
+        return {"customers": store.list_customers()}
+
+    @app.post("/v1/admin/customers", tags=["admin"], status_code=201)
+    def admin_create_customer(
+        payload: CustomerCreateRequest,
+        x_admin_key: str | None = Header(default=None),
+    ) -> dict[str, object]:
+        require_admin_key(x_admin_key)
+        customer, api_key = store.create_customer(name=payload.name, email=payload.email)
+        return {**customer, "apiKey": api_key, "apiKeyShownOnce": True}
+
+    @app.get("/v1/customer/orders", tags=["customer commerce"])
+    def customer_orders(
+        limit: Annotated[int, Query(ge=1, le=200)] = 50,
+        offset: Annotated[int, Query(ge=0)] = 0,
+        x_agentic_customer_key: str | None = Header(default=None),
+    ) -> dict[str, object]:
+        customer = require_customer(x_agentic_customer_key)
+        orders = store.list_orders(
+            customer_id=str(customer["customer_id"]), limit=limit, offset=offset
+        )
+        return {"customerId": customer["customer_id"], "orders": orders, "limit": limit, "offset": offset}
+
+    @app.get("/v1/customer/orders/{order_id}", tags=["customer commerce"])
+    def customer_order(
+        order_id: str,
+        x_agentic_customer_key: str | None = Header(default=None),
+    ) -> dict[str, object]:
+        customer = require_customer(x_agentic_customer_key)
+        order = store.get_order_for_customer(order_id, str(customer["customer_id"]))
+        if order is None:
+            raise HTTPException(status_code=404, detail="Order not found")
+        return order
+
+    @app.get("/v1/orders/{order_id}", tags=["customer commerce"])
+    def order_by_access_token(
+        order_id: str,
+        x_agentic_order_token: str | None = Header(default=None),
+    ) -> dict[str, object]:
+        if not x_agentic_order_token:
+            raise HTTPException(status_code=401, detail="X-Agentic-Order-Token is required")
+        order = store.get_order_with_token(order_id, x_agentic_order_token)
+        if order is None:
+            raise HTTPException(status_code=404, detail="Order not found")
+        return order
+
+    @app.post("/v1/receipts/{order_id}/verify", tags=["commerce"])
+    def verify_receipt(order_id: str) -> dict[str, object]:
+        order = store.get_order(order_id)
+        receipt = order.get("receipt") if order else None
+        if not isinstance(receipt, dict):
+            raise HTTPException(status_code=404, detail="Receipt not found")
+        supplied_signature = str(receipt.pop("signature"))
+        expected = sign_receipt(receipt)
+        return {
+            "valid": hmac.compare_digest(supplied_signature, expected),
+            "orderId": order_id,
+            "receiptId": receipt["receiptId"],
+            "signatureAlgorithm": receipt["signatureAlgorithm"],
+        }
 
     return app
 

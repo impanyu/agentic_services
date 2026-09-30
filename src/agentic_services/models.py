@@ -187,6 +187,11 @@ class VerificationProvenance(ApiModel):
     provider_source_count: int = 0
     matched_evidence_count: int = 0
     snapshotted_source_count: int = 0
+    web_search_call_count: int = 0
+    input_tokens: int = 0
+    cached_input_tokens: int = 0
+    output_tokens: int = 0
+    cache_hit: bool = False
 
 
 class ClaimVerificationResult(ApiModel):

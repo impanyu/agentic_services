@@ -5,6 +5,7 @@ import { ExactEvmScheme } from '@x402/evm/exact/server'
 import { bazaarResourceServerExtension, declareDiscoveryExtension } from '@x402/extensions/bazaar'
 import { createPaymentWrapper } from '@x402/mcp'
 import { z } from 'zod'
+import { createHash, randomBytes, randomUUID } from 'node:crypto'
 
 export interface McpTier {
   id: string
@@ -157,12 +158,18 @@ async function callVerification(
     requestBody.maxSources = Math.min(requestBody.maxSources, tier.maxSources)
   }
 
+  const orderId = `ord_${randomUUID().replaceAll('-', '')}`
+  const orderToken = `ort_${randomBytes(32).toString('base64url')}`
   const response = await fetch(new URL(tier.path, options.upstreamUrl), {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${options.internalApiKey}`,
       'Content-Type': 'application/json',
       'Idempotency-Key': crypto.randomUUID(),
+      'X-Agentic-Order-Id': orderId,
+      'X-Agentic-Order-Token-Hash': createHash('sha256').update(orderToken).digest('hex'),
+      'X-Agentic-Payment-Protocol': 'x402-mcp',
+      'X-Agentic-Order-Tier': tier.id,
     },
     body: JSON.stringify(requestBody),
   })
@@ -178,6 +185,12 @@ async function callVerification(
   let structuredContent: Record<string, unknown> | undefined
   try {
     structuredContent = JSON.parse(body) as Record<string, unknown>
+    structuredContent.commerce = {
+      orderId,
+      orderToken,
+      receiptId: response.headers.get('X-Agentic-Receipt-Id'),
+      orderUrl: `${options.publicBaseUrl}/v1/orders/${orderId}`,
+    }
   } catch {
     structuredContent = undefined
   }

@@ -45,11 +45,19 @@ class ProviderResult:
         provider_response_id: str,
         model: str,
         provider_sources: list[ProviderSource],
+        input_tokens: int = 0,
+        cached_input_tokens: int = 0,
+        output_tokens: int = 0,
+        web_search_call_count: int = 0,
     ) -> None:
         self.analysis = analysis
         self.provider_response_id = provider_response_id
         self.model = model
         self.provider_sources = provider_sources
+        self.input_tokens = input_tokens
+        self.cached_input_tokens = cached_input_tokens
+        self.output_tokens = output_tokens
+        self.web_search_call_count = web_search_call_count
         self.consulted_urls = {normalize_url(item.url) for item in provider_sources}
 
 
@@ -169,11 +177,22 @@ class OpenAIEvidenceProvider:
         analysis = ProviderAnalysis.model_validate_json(response.output_text)
         response_data = response.model_dump(mode="json")
         provider_sources = extract_provider_sources(response_data)
+        usage = response_data.get("usage") if isinstance(response_data.get("usage"), dict) else {}
+        input_details = usage.get("input_tokens_details") if isinstance(usage.get("input_tokens_details"), dict) else {}
+        search_calls = sum(
+            1
+            for item in response_data.get("output", [])
+            if isinstance(item, dict) and item.get("type") == "web_search_call"
+        )
         return ProviderResult(
             analysis=analysis,
             provider_response_id=response.id,
             model=getattr(response, "model", None) or self.model,
             provider_sources=provider_sources,
+            input_tokens=int(usage.get("input_tokens") or 0),
+            cached_input_tokens=int(input_details.get("cached_tokens") or 0),
+            output_tokens=int(usage.get("output_tokens") or 0),
+            web_search_call_count=search_calls,
         )
 
     @staticmethod

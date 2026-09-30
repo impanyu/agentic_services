@@ -1,4 +1,5 @@
 import { serve } from '@hono/node-server'
+import { createHash, randomBytes, randomUUID } from 'node:crypto'
 import { Hono, type MiddlewareHandler } from 'hono'
 import { discovery } from 'mppx/hono'
 import { Mppx, evm, stripe } from 'mppx/server'
@@ -285,6 +286,8 @@ Minimum request body:
 The initial unauthenticated request returns HTTP 402. Complete one advertised payment challenge and retry with the resulting payment credential.
 
 Successful Standard, Deep, and Research responses include snapshot IDs. Retrieve metadata at GET /v1/url-snapshots/{snapshot_id} and immutable raw bytes at GET /v1/url-snapshots/{snapshot_id}/content.
+
+Commerce: POST /v1/quotes returns a 15-minute quote. Successful paid HTTP and A2A calls return X-Agentic-Order-Id, X-Agentic-Order-Token, and X-Agentic-Receipt-Id headers. Query one order with GET /v1/orders/{order_id} and the X-Agentic-Order-Token header. Registered customers can query GET /v1/customer/orders with X-Agentic-Customer-Key.
 `))
 
 app.get('/healthz', async (c) => {
@@ -434,7 +437,7 @@ function mountPaidRoutes(
   paidTiers: Array<{ tier: VerificationTier; handler: MiddlewareHandler }>,
 ): void {
   for (const { tier, handler } of paidTiers) {
-    app.post(tier.path, handler, async (c) => proxyRequest(c.req.raw, tier.path))
+    app.post(tier.path, handler, async (c) => proxyPaidRequest(c.req.raw, tier))
   }
 
   const standard = paidTiers.find(({ tier }) => tier.id === 'standard')
@@ -546,12 +549,14 @@ async function handleA2A(c: any): Promise<Response> {
     : ''
   if (claim.length < 3) return c.json(jsonRpcError(id, -32602, 'Invalid parameters: message.parts must contain text'), 400)
 
+  const commerce = commerceMetadata(c.req.raw, 'standard')
   const verificationResponse = await fetch(new URL('/v1/claims/verify', upstreamUrl), {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${internalApiKey}`,
       'Content-Type': 'application/json',
       'Idempotency-Key': request.params?.message?.messageId ?? crypto.randomUUID(),
+      ...commerce.headers,
     },
     body: JSON.stringify({ claim, minimumSources: 2, maxSources: 8 }),
   })
@@ -570,6 +575,10 @@ async function handleA2A(c: any): Promise<Response> {
   }
   const contextId = request.params?.message?.contextId
   if (typeof contextId === 'string') responseMessage.contextId = contextId
+  c.header('X-Agentic-Order-Id', commerce.orderId)
+  c.header('X-Agentic-Order-Token', commerce.orderToken)
+  const upstreamReceipt = verificationResponse.headers.get('X-Agentic-Receipt-Id')
+  if (upstreamReceipt) c.header('X-Agentic-Receipt-Id', upstreamReceipt)
   return c.json({ jsonrpc: '2.0', id, result: { message: responseMessage } })
 }
 
@@ -629,6 +638,12 @@ async function proxyRequest(request: Request, path: string): Promise<Response> {
   headers.set('Host', upstream.host)
   headers.delete('Payment-Signature')
   headers.delete('Payment-Authorization')
+  headers.delete('X-Payment')
+  for (const name of [...headers.keys()]) {
+    if (name.toLowerCase().startsWith('x-agentic-order-') || name.toLowerCase() === 'x-agentic-payment-protocol') {
+      headers.delete(name)
+    }
+  }
 
   return fetch(upstream, {
     method: request.method,
@@ -636,4 +651,54 @@ async function proxyRequest(request: Request, path: string): Promise<Response> {
     body: ['GET', 'HEAD'].includes(request.method) ? undefined : request.body,
     duplex: 'half',
   } as RequestInit)
+}
+
+async function proxyPaidRequest(request: Request, tier: VerificationTier): Promise<Response> {
+  const commerce = commerceMetadata(request, tier.id)
+  const url = new URL(request.url)
+  const upstream = new URL(tier.path + url.search, upstreamUrl)
+  const headers = new Headers(request.headers)
+  headers.set('Authorization', `Bearer ${internalApiKey}`)
+  headers.set('Host', upstream.host)
+  headers.delete('Payment-Signature')
+  headers.delete('Payment-Authorization')
+  headers.delete('X-Payment')
+  for (const name of [...headers.keys()]) {
+    if (name.toLowerCase().startsWith('x-agentic-order-') || name.toLowerCase() === 'x-agentic-payment-protocol') {
+      headers.delete(name)
+    }
+  }
+  for (const [name, value] of Object.entries(commerce.headers)) headers.set(name, value)
+  const upstreamResponse = await fetch(upstream, {
+    method: request.method,
+    headers,
+    body: request.body,
+    duplex: 'half',
+  } as RequestInit)
+  const responseHeaders = new Headers(upstreamResponse.headers)
+  responseHeaders.set('X-Agentic-Order-Id', commerce.orderId)
+  responseHeaders.set('X-Agentic-Order-Token', commerce.orderToken)
+  responseHeaders.set('Access-Control-Expose-Headers', 'X-Agentic-Order-Id, X-Agentic-Order-Token, X-Agentic-Receipt-Id')
+  return new Response(upstreamResponse.body, {
+    status: upstreamResponse.status,
+    statusText: upstreamResponse.statusText,
+    headers: responseHeaders,
+  })
+}
+
+function commerceMetadata(request: Request, tier: string) {
+  const orderId = `ord_${randomUUID().replaceAll('-', '')}`
+  const orderToken = `ort_${randomBytes(32).toString('base64url')}`
+  const protocol = request.headers.has('Payment-Signature') || request.headers.has('X-Payment')
+    ? 'x402'
+    : request.headers.has('Payment-Authorization') || request.headers.get('Authorization')?.startsWith('Payment ')
+      ? 'mpp'
+      : 'paid'
+  const headers: Record<string, string> = {
+    'X-Agentic-Order-Id': orderId,
+    'X-Agentic-Order-Token-Hash': createHash('sha256').update(orderToken).digest('hex'),
+    'X-Agentic-Payment-Protocol': protocol,
+    'X-Agentic-Order-Tier': tier,
+  }
+  return { orderId, orderToken, headers }
 }

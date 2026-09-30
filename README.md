@@ -86,6 +86,13 @@ The API starts at `http://localhost:8000`. Its main endpoints are:
 - `GET /openapi.json` — inspect the complete HTTP contract.
 - `GET /llms.txt` — read concise agent integration instructions.
 - `GET /` — human-readable landing page with structured data; `robots.txt` and `sitemap.xml` support web indexing.
+- `POST /v1/quotes` — create a 15-minute machine-readable tier quote.
+- `GET /v1/orders/{order_id}` — retrieve one paid order and signed receipt with its one-time order token.
+- `GET /v1/customer/orders` — list a registered customer's orders with `X-Agentic-Customer-Key`.
+- `POST /v1/receipts/{order_id}/verify` — verify the server signature on an issued receipt.
+- `GET /admin` — private commerce dashboard for revenue, OpenAI cost, gross profit, and individual orders.
+- `GET /v1/admin/summary`, `GET /v1/admin/orders` — dashboard APIs authenticated with `X-Admin-Key`.
+- `POST /v1/admin/customers` — issue a customer API key; plaintext is returned once and only its SHA-256 hash is stored.
 
 Example request:
 
@@ -119,4 +126,4 @@ The repository also carries `server.json` for MCP Registry publication and `glam
 
 ## Status
 
-The repository contains the v0 protocol, a runnable tiered Web Evidence service, full provider-source provenance, URL snapshots with raw and normalized SHA-256 hashes, SQLite persistence, machine-readable discovery, and an x402/MPP dual-protocol payment gateway. Production payment settlement and public MCP, A2A, x402, and MPP directory discovery have been verified. The next milestone is additional evidence operations and ongoing directory health monitoring.
+The repository contains the v0 protocol, a runnable tiered Web Evidence service, full provider-source provenance, URL snapshots with raw and normalized SHA-256 hashes, SQLite persistence, machine-readable discovery, and an x402/MPP dual-protocol payment gateway. Each paid HTTP, MCP, or A2A execution creates an order, signed receipt, and detailed revenue/cost ledger entry. The admin dashboard reports per-order OpenAI token and Web Search costs, gross profit, and margins. Production payment settlement and public MCP, A2A, x402, and MPP directory discovery have been verified. The next milestone is additional evidence operations and ongoing directory health monitoring.

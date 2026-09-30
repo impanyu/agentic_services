@@ -27,6 +27,12 @@ class Settings:
     quick_price_usd: str = "0.02"
     deep_price_usd: str = "0.12"
     research_price_usd: str = "0.25"
+    admin_api_key: str | None = None
+    receipt_signing_secret: str | None = None
+    openai_input_usd_per_million: str = "0.10"
+    openai_cached_input_usd_per_million: str = "0.01"
+    openai_output_usd_per_million: str = "0.50"
+    openai_web_search_usd_per_thousand: str = "10.00"
 
     @classmethod
     def from_environment(cls) -> "Settings":
@@ -57,4 +63,10 @@ class Settings:
             quick_price_usd=os.getenv("WEB_EVIDENCE_QUICK_PRICE_USD", "0.02"),
             deep_price_usd=os.getenv("WEB_EVIDENCE_DEEP_PRICE_USD", "0.12"),
             research_price_usd=os.getenv("WEB_EVIDENCE_RESEARCH_PRICE_USD", "0.25"),
+            admin_api_key=os.getenv("ADMIN_API_KEY") or None,
+            receipt_signing_secret=os.getenv("RECEIPT_SIGNING_SECRET") or None,
+            openai_input_usd_per_million=os.getenv("OPENAI_INPUT_USD_PER_MILLION", "0.10"),
+            openai_cached_input_usd_per_million=os.getenv("OPENAI_CACHED_INPUT_USD_PER_MILLION", "0.01"),
+            openai_output_usd_per_million=os.getenv("OPENAI_OUTPUT_USD_PER_MILLION", "0.50"),
+            openai_web_search_usd_per_thousand=os.getenv("OPENAI_WEB_SEARCH_USD_PER_THOUSAND", "10.00"),
         )

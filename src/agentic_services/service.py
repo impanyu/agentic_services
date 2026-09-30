@@ -67,7 +67,13 @@ class ClaimVerificationService:
                     raise IdempotencyConflictError(
                         "Idempotency-Key was already used for a different request"
                     )
-                return stored_result
+                return stored_result.model_copy(
+                    update={
+                        "provenance": stored_result.provenance.model_copy(
+                            update={"cache_hit": True}
+                        )
+                    }
+                )
 
         observed_at = datetime.now(UTC)
         provider_result = self.provider.analyze(
@@ -258,6 +264,10 @@ class ClaimVerificationService:
                 snapshotted_source_count=sum(
                     item.status is SnapshotStatus.CAPTURED for item in snapshots
                 ),
+                web_search_call_count=provider_result.web_search_call_count,
+                input_tokens=provider_result.input_tokens,
+                cached_input_tokens=provider_result.cached_input_tokens,
+                output_tokens=provider_result.output_tokens,
             ),
         )
 

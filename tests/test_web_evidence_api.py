@@ -83,6 +83,9 @@ class FakeProvider:
             provider_response_id="resp_test",
             model=self.model,
             provider_sources=sources,
+            input_tokens=1000,
+            output_tokens=200,
+            web_search_call_count=1,
         )
 
 
@@ -357,6 +360,79 @@ def test_snapshot_policy_varies_by_tier(tmp_path: Path) -> None:
 
     assert quick["snapshots"] == []
     assert len(research["snapshots"]) == 2
+
+
+def test_paid_order_is_recorded_with_cost_receipt_and_customer_access(tmp_path: Path) -> None:
+    provider = FakeProvider()
+    settings = Settings(
+        openai_api_key="test-only",
+        openai_model=provider.model,
+        database_path=tmp_path / "evidence.db",
+        base_url="https://testserver",
+        service_api_key="internal-secret",
+        admin_api_key="admin-secret",
+        receipt_signing_secret="receipt-secret",
+    )
+    service = ClaimVerificationService(
+        provider=provider,
+        store=VerificationStore(settings.database_path, tmp_path / "snapshots"),
+        snapshotter=FakeSnapshotter(),
+    )
+    client = TestClient(create_app(settings=settings, service=service))
+
+    created = client.post(
+        "/v1/admin/customers",
+        headers={"X-Admin-Key": "admin-secret"},
+        json={"name": "Test Agent", "email": "agent@example.com"},
+    )
+    assert created.status_code == 201
+    customer_key = created.json()["apiKey"]
+    order_token = "ort_test_secret"
+    order_id = "ord_test"
+    paid = client.post(
+        "/v1/claims/verify",
+        headers={
+            "Authorization": "Bearer internal-secret",
+            "X-Agentic-Order-Id": order_id,
+            "X-Agentic-Order-Token-Hash": hashlib.sha256(order_token.encode()).hexdigest(),
+            "X-Agentic-Payment-Protocol": "x402",
+            "X-Agentic-Customer-Key": customer_key,
+        },
+        json={"claim": "The feature is supported.", "minimumSources": 1},
+    )
+    assert paid.status_code == 200
+    assert paid.headers["X-Agentic-Order-Id"] == order_id
+    assert paid.headers["X-Agentic-Receipt-Id"].startswith("rcpt_")
+
+    summary = client.get(
+        "/v1/admin/summary", headers={"X-Admin-Key": "admin-secret"}
+    ).json()
+    assert summary["revenueMicrousd"] == 50_000
+    assert summary["costMicrousd"] == 10_200
+    assert summary["grossProfitMicrousd"] == 39_800
+    assert summary["webSearchCalls"] == 1
+
+    customer_orders = client.get(
+        "/v1/customer/orders", headers={"X-Agentic-Customer-Key": customer_key}
+    )
+    assert customer_orders.status_code == 200
+    assert customer_orders.json()["orders"][0]["orderId"] == order_id
+    assert "totalCostMicrousd" not in customer_orders.json()["orders"][0]
+
+    token_order = client.get(
+        f"/v1/orders/{order_id}", headers={"X-Agentic-Order-Token": order_token}
+    )
+    assert token_order.status_code == 200
+    assert token_order.json()["receipt"]["signatureAlgorithm"] == "hmac-sha256"
+    assert client.post(f"/v1/receipts/{order_id}/verify").json()["valid"] is True
+
+
+def test_quote_lists_price_and_payment_methods(tmp_path: Path) -> None:
+    client = build_client(tmp_path, FakeProvider())
+    quote = client.post("/v1/quotes", json={"tier": "deep"})
+    assert quote.status_code == 200
+    assert quote.json()["amountMicrousd"] == 120_000
+    assert quote.json()["paymentMethods"] == ["x402", "mpp"]
 
 
 def test_quick_tier_rejects_explicit_excess_source_budget(tmp_path: Path) -> None:
