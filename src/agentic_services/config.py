@@ -23,6 +23,9 @@ class Settings:
     price_usd: str = "0.05"
     max_tool_calls: int = 3
     max_output_tokens: int = 3000
+    quick_price_usd: str = "0.02"
+    deep_price_usd: str = "0.12"
+    research_price_usd: str = "0.25"
 
     @classmethod
     def from_environment(cls) -> "Settings":
@@ -42,4 +45,7 @@ class Settings:
             price_usd=os.getenv("WEB_EVIDENCE_PRICE_USD", "0.05"),
             max_tool_calls=int(os.getenv("OPENAI_MAX_TOOL_CALLS", "3")),
             max_output_tokens=int(os.getenv("OPENAI_MAX_OUTPUT_TOKENS", "3000")),
+            quick_price_usd=os.getenv("WEB_EVIDENCE_QUICK_PRICE_USD", "0.02"),
+            deep_price_usd=os.getenv("WEB_EVIDENCE_DEEP_PRICE_USD", "0.12"),
+            research_price_usd=os.getenv("WEB_EVIDENCE_RESEARCH_PRICE_USD", "0.25"),
         )

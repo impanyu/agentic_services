@@ -8,10 +8,51 @@ const secretKey = requireEnv('MPP_SECRET_KEY')
 const internalApiKey = requireEnv('WEB_EVIDENCE_API_KEY')
 const upstreamUrl = process.env.UPSTREAM_URL ?? 'http://web-evidence:8000'
 const publicBaseUrl = process.env.PUBLIC_BASE_URL ?? 'https://api.aisoup.net'
-const price = process.env.WEB_EVIDENCE_PRICE_USD ?? '0.05'
+const standardPrice = process.env.WEB_EVIDENCE_PRICE_USD ?? '0.05'
 const facilitator = process.env.X402_FACILITATOR_URL ?? 'https://facilitator.openx402.ai'
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY
 const stripeNetworkId = process.env.STRIPE_NETWORK_ID ?? 'agentic-services'
+
+const tiers = [
+  {
+    id: 'quick',
+    path: '/v1/claims/verify/quick',
+    price: process.env.WEB_EVIDENCE_QUICK_PRICE_USD ?? '0.02',
+    maxToolCalls: 1,
+    maxOutputTokens: 1500,
+    maxSources: 3,
+    summary: 'Quick verification for a narrow claim using up to 3 cited sources.',
+  },
+  {
+    id: 'standard',
+    path: '/v1/claims/verify',
+    price: standardPrice,
+    maxToolCalls: 3,
+    maxOutputTokens: 3000,
+    maxSources: 8,
+    summary: 'Standard verification with balanced evidence coverage.',
+  },
+  {
+    id: 'deep',
+    path: '/v1/claims/verify/deep',
+    price: process.env.WEB_EVIDENCE_DEEP_PRICE_USD ?? '0.12',
+    maxToolCalls: 7,
+    maxOutputTokens: 6000,
+    maxSources: 15,
+    summary: 'Deep verification for compound or contested claims using up to 15 cited sources.',
+  },
+  {
+    id: 'research',
+    path: '/v1/claims/verify/research',
+    price: process.env.WEB_EVIDENCE_RESEARCH_PRICE_USD ?? '0.25',
+    maxToolCalls: 15,
+    maxOutputTokens: 12000,
+    maxSources: 20,
+    summary: 'Research-grade verification with the largest search and evidence budget.',
+  },
+] as const
+
+type VerificationTier = (typeof tiers)[number]
 
 const claimRequestSchema = {
   type: 'object',
@@ -88,24 +129,33 @@ app.use('/openapi.json', async (c, next) => {
     'Use POST /v1/claims/verify to verify one factual claim against current web evidence. Send a JSON body with claim and optional source, freshness, jurisdiction, and language constraints.'
   document.info.contact = { url: 'https://aisoup.net' }
 
-  const operation = document.paths['/v1/claims/verify'].post
-  operation.operationId = 'verifyClaim'
-  operation.tags = ['Web Evidence']
-  operation['x-payment-info'] = {
-    ...operation['x-payment-info'],
-    price: { mode: 'fixed', currency: 'USD', amount: price },
-    protocols: [
-      { x402: {} },
-      { mpp: { method: 'evm', intent: 'charge', currency: evm.assets.base.USDC.address } },
-    ],
-  }
-  operation.responses['200'] = {
-    description: 'Structured claim-verification result with cited evidence',
-    content: {
-      'application/json': {
-        schema: claimResponseSchema,
+  for (const tier of tiers) {
+    const operation = document.paths[tier.path]?.post
+    if (!operation) continue
+    operation.operationId = `verifyClaim${tier.id[0].toUpperCase()}${tier.id.slice(1)}`
+    operation.tags = ['Web Evidence']
+    operation['x-verification-tier'] = {
+      id: tier.id,
+      maxToolCalls: tier.maxToolCalls,
+      maxOutputTokens: tier.maxOutputTokens,
+      maxSources: tier.maxSources,
+    }
+    operation['x-payment-info'] = {
+      ...operation['x-payment-info'],
+      price: { mode: 'fixed', currency: 'USD', amount: tier.price },
+      protocols: [
+        { x402: {} },
+        { mpp: { method: 'evm', intent: 'charge', currency: evm.assets.base.USDC.address } },
+      ],
+    }
+    operation.responses['200'] = {
+      description: 'Structured claim-verification result with cited evidence',
+      content: {
+        'application/json': {
+          schema: claimResponseSchema,
+        },
       },
-    },
+    }
   }
 
   c.res = c.json(document)
@@ -114,7 +164,7 @@ app.use('/openapi.json', async (c, next) => {
 
 app.get('/.well-known/x402', (c) => c.json({
   version: 1,
-  resources: [`${publicBaseUrl}/v1/claims/verify`],
+  resources: tiers.map((tier) => `${publicBaseUrl}${tier.path}`),
   ownershipProofs: [recipient],
   instructions: 'POST a JSON claim-verification request. The endpoint returns x402 and MPP payment challenges before execution.',
 }))
@@ -130,8 +180,7 @@ x402 discovery: ${publicBaseUrl}/.well-known/x402
 
 ## Paid operation
 
-POST /v1/claims/verify
-Price: $${price} per request
+${tiers.map((tier) => `POST ${tier.path}\nTier: ${tier.id}\nPrice: $${tier.price}\nMaximum tool actions: ${tier.maxToolCalls}\nMaximum cited sources: ${tier.maxSources}`).join('\n\n')}
 Payment: x402 or MPP using USDC on Base (eip155:8453)${stripeSecretKey ? '; MPP Stripe USD is also accepted' : ''}
 
 Minimum request body:
@@ -154,25 +203,31 @@ if (stripeSecretKey) {
     paymentMethodTypes: ['card'],
   })
   const payments = Mppx.create({ methods: [evmCharge, stripeCharge], secretKey })
-  const paidVerify = toHonoPayment(payments.compose(
-    [evmCharge, paymentOptions()],
-    [stripeCharge, paymentOptions()],
-  ))
-  mountPaidRoute(payments, paidVerify)
+  const paidTiers = tiers.map((tier) => ({
+    tier,
+    handler: toHonoPayment(payments.compose(
+      [evmCharge, paymentOptions(tier)],
+      [stripeCharge, paymentOptions(tier)],
+    ), tier),
+  }))
+  mountPaidRoutes(payments, paidTiers)
 } else {
   const payments = Mppx.create({ methods: [evmCharge], secretKey })
-  const paidVerify = toHonoPayment(payments.evm.charge(paymentOptions()))
-  mountPaidRoute(payments, paidVerify)
+  const paidTiers = tiers.map((tier) => ({
+    tier,
+    handler: toHonoPayment(payments.evm.charge(paymentOptions(tier)), tier),
+  }))
+  mountPaidRoutes(payments, paidTiers)
 }
 
 app.all('*', async (c) => proxyRequest(c.req.raw, new URL(c.req.url).pathname))
 
 serve({ fetch: app.fetch, hostname: '0.0.0.0', port: 8010 })
 
-function paymentOptions() {
+function paymentOptions(tier: VerificationTier) {
   return {
-    amount: price,
-    description: 'Verify one factual claim against current web evidence',
+    amount: tier.price,
+    description: `${tier.id} verification of one factual claim against current web evidence`,
   }
 }
 
@@ -181,10 +236,13 @@ type PaymentHandler = ((request: Request) => Promise<
   | { status: 200; withReceipt(response?: Response): Response }
 >) & { _internal?: unknown }
 
-function toHonoPayment(handler: PaymentHandler): MiddlewareHandler & { _internal?: unknown } {
+function toHonoPayment(
+  handler: PaymentHandler,
+  tier: VerificationTier,
+): MiddlewareHandler & { _internal?: unknown } {
   const middleware: MiddlewareHandler = async (c, next) => {
     const result = await handler(withPublicUrl(c.req.raw))
-    if (result.status === 402) return withBazaarSchema(result.challenge)
+    if (result.status === 402) return withBazaarSchema(result.challenge, tier)
     await next()
     c.res = result.withReceipt(c.res)
   }
@@ -198,7 +256,7 @@ function withPublicUrl(request: Request): Request {
   return new Request(publicUrl, request)
 }
 
-function withBazaarSchema(response: Response): Response {
+function withBazaarSchema(response: Response, tier: VerificationTier): Response {
   const encoded = response.headers.get('Payment-Required')
   if (!encoded) return response
 
@@ -211,7 +269,7 @@ function withBazaarSchema(response: Response): Response {
           type: 'http',
           method: 'POST',
           bodyType: 'json',
-          body: claimRequestExample,
+          body: { ...claimRequestExample, maxSources: tier.maxSources },
         },
         output: {
           type: 'json',
@@ -228,7 +286,7 @@ function withBazaarSchema(response: Response): Response {
               type: { type: 'string', const: 'http' },
               method: { type: 'string', enum: ['POST', 'PUT', 'PATCH'] },
               bodyType: { type: 'string', enum: ['json', 'form-data', 'text'] },
-              body: claimRequestSchema,
+              body: requestSchemaForTier(tier),
             },
             required: ['type', 'method', 'bodyType', 'body'],
             additionalProperties: false,
@@ -256,13 +314,26 @@ function withBazaarSchema(response: Response): Response {
   })
 }
 
-function mountPaidRoute(
+function requestSchemaForTier(tier: VerificationTier) {
+  return {
+    ...claimRequestSchema,
+    properties: {
+      ...claimRequestSchema.properties,
+      maxSources: {
+        ...claimRequestSchema.properties.maxSources,
+        maximum: tier.maxSources,
+      },
+    },
+  }
+}
+
+function mountPaidRoutes(
   payments: Parameters<typeof discovery>[1],
-  paidVerify: MiddlewareHandler,
+  paidTiers: Array<{ tier: VerificationTier; handler: MiddlewareHandler }>,
 ): void {
-  app.post('/v1/claims/verify', paidVerify, async (c) => {
-    return proxyRequest(c.req.raw, '/v1/claims/verify')
-  })
+  for (const { tier, handler } of paidTiers) {
+    app.post(tier.path, handler, async (c) => proxyRequest(c.req.raw, tier.path))
+  }
 
   discovery(app, payments, {
     path: '/openapi.json',
@@ -272,22 +343,22 @@ function mountPaidRoute(
       name: 'Web Evidence',
       url: publicBaseUrl,
     },
-    routes: [
+    routes: paidTiers.map(({ tier, handler }) => (
       {
-        handler: paidVerify,
+        handler,
         method: 'POST',
-        path: '/v1/claims/verify',
-        summary: 'Verify one claim and return atomic facts with cited evidence.',
+        path: tier.path,
+        summary: tier.summary,
         requestBody: {
           required: true,
           content: {
             'application/json': {
-              schema: claimRequestSchema,
+              schema: requestSchemaForTier(tier),
             },
           },
         },
-      },
-    ],
+      }
+    )),
   })
 }
 

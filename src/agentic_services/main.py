@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import hmac
+from dataclasses import dataclass
 from functools import lru_cache
 
 import uvicorn
@@ -18,6 +19,58 @@ from .models import (
 from .provider import OpenAIEvidenceProvider
 from .service import ClaimVerificationService, IdempotencyConflictError
 from .storage import VerificationStore
+
+
+@dataclass(frozen=True)
+class VerificationTier:
+    id: str
+    path: str
+    summary: str
+    price_usd: str
+    max_tool_calls: int
+    max_output_tokens: int
+    max_sources: int
+
+
+def verification_tiers(settings: Settings) -> tuple[VerificationTier, ...]:
+    return (
+        VerificationTier(
+            id="quick",
+            path="/v1/claims/verify/quick",
+            summary="Quick verification for a narrow claim using up to 3 cited sources.",
+            price_usd=settings.quick_price_usd,
+            max_tool_calls=1,
+            max_output_tokens=1500,
+            max_sources=3,
+        ),
+        VerificationTier(
+            id="standard",
+            path="/v1/claims/verify",
+            summary="Standard verification with balanced evidence coverage.",
+            price_usd=settings.price_usd,
+            max_tool_calls=settings.max_tool_calls,
+            max_output_tokens=settings.max_output_tokens,
+            max_sources=8,
+        ),
+        VerificationTier(
+            id="deep",
+            path="/v1/claims/verify/deep",
+            summary="Deep verification for compound or contested claims using up to 15 cited sources.",
+            price_usd=settings.deep_price_usd,
+            max_tool_calls=7,
+            max_output_tokens=6000,
+            max_sources=15,
+        ),
+        VerificationTier(
+            id="research",
+            path="/v1/claims/verify/research",
+            summary="Research-grade verification with the largest search and evidence budget.",
+            price_usd=settings.research_price_usd,
+            max_tool_calls=15,
+            max_output_tokens=12000,
+            max_sources=20,
+        ),
+    )
 
 
 def build_service(settings: Settings) -> ClaimVerificationService | None:
@@ -47,6 +100,7 @@ def create_app(
     )
     app.state.settings = resolved_settings
     app.state.verification_service = service or build_service(resolved_settings)
+    tiers = verification_tiers(resolved_settings)
 
     def require_service_api_key(authorization: str | None) -> None:
         expected = resolved_settings.service_api_key
@@ -144,28 +198,30 @@ def create_app(
             ],
             "operations": [
                 {
-                    "id": "verify-claim",
+                    "id": f"verify-claim-{tier.id}",
                     "capability": "web.evidence.verify-claim",
                     "transport": "public-http",
-                    "summary": "Verify one claim and persist the time-stamped result.",
+                    "summary": tier.summary,
                     "method": "POST",
-                    "path": "/v1/claims/verify",
+                    "path": tier.path,
                     "inputSchema": ClaimVerificationRequest.model_json_schema(by_alias=True),
                     "outputSchema": ClaimVerificationResult.model_json_schema(by_alias=True),
                     "timeoutSeconds": 120,
                     "idempotent": True,
                 }
+                for tier in tiers
             ],
             "offers": [
                 {
-                    "id": "verify-claim-call",
-                    "operation": "verify-claim",
+                    "id": f"verify-claim-{tier.id}-call",
+                    "operation": f"verify-claim-{tier.id}",
                     "model": "per_call",
-                    "amount": resolved_settings.price_usd if is_paid else "0",
+                    "amount": tier.price_usd if is_paid else "0",
                     "currency": "USD",
                     "unit": "request",
                     "paymentMethods": payment_methods,
                 }
+                for tier in tiers
             ],
             "provenance": {
                 "summary": "Results identify consulted and cited web sources and the model used for analysis.",
@@ -182,6 +238,15 @@ def create_app(
             "extensions": {
                 "lifecycle": "paid-preview" if is_paid else "preview",
                 "paymentDiscovery": f"{base_url}/openapi.json",
+                "verificationTiers": {
+                    tier.id: {
+                        "path": tier.path,
+                        "maxToolCalls": tier.max_tool_calls,
+                        "maxOutputTokens": tier.max_output_tokens,
+                        "maxSources": tier.max_sources,
+                    }
+                    for tier in tiers
+                },
             },
         }
 
@@ -200,18 +265,28 @@ def create_app(
             "retentionDays": 30,
         }
 
-    @app.post(
-        "/v1/claims/verify",
-        response_model=ClaimVerificationResult,
-        tags=["claim verification"],
-    )
-    async def verify_claim(
+    async def run_verification(
+        tier: VerificationTier,
         payload: ClaimVerificationRequest,
         request: Request,
-        idempotency_key: str | None = Header(default=None, max_length=255),
-        authorization: str | None = Header(default=None),
+        idempotency_key: str | None,
+        authorization: str | None,
     ) -> ClaimVerificationResult:
         require_service_api_key(authorization)
+        if (
+            "minimum_sources" in payload.model_fields_set
+            and payload.minimum_sources > tier.max_sources
+        ) or (
+            "max_sources" in payload.model_fields_set
+            and payload.max_sources > tier.max_sources
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+                detail=f"The {tier.id} tier supports at most {tier.max_sources} cited sources",
+            )
+        effective_payload = payload.model_copy(
+            update={"max_sources": min(payload.max_sources, tier.max_sources)}
+        )
         verification_service: ClaimVerificationService | None = request.app.state.verification_service
         if verification_service is None:
             raise HTTPException(
@@ -221,8 +296,11 @@ def create_app(
         try:
             return await asyncio.to_thread(
                 verification_service.verify,
-                payload,
+                effective_payload,
                 idempotency_key=idempotency_key,
+                idempotency_namespace=tier.id,
+                max_tool_calls=tier.max_tool_calls,
+                max_output_tokens=tier.max_output_tokens,
             )
         except IdempotencyConflictError as error:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(error)) from error
@@ -231,6 +309,86 @@ def create_app(
                 status_code=status.HTTP_502_BAD_GATEWAY,
                 detail=f"Evidence provider failed: {type(error).__name__}",
             ) from error
+
+    async def verification_endpoint(
+        tier_id: str,
+        payload: ClaimVerificationRequest,
+        request: Request,
+        idempotency_key: str | None,
+        authorization: str | None,
+    ) -> ClaimVerificationResult:
+        tier = next(item for item in tiers if item.id == tier_id)
+        return await run_verification(
+            tier,
+            payload,
+            request,
+            idempotency_key,
+            authorization,
+        )
+
+    @app.post(
+        "/v1/claims/verify/quick",
+        response_model=ClaimVerificationResult,
+        tags=["claim verification"],
+        summary="Quick claim verification",
+    )
+    async def verify_claim_quick(
+        payload: ClaimVerificationRequest,
+        request: Request,
+        idempotency_key: str | None = Header(default=None, max_length=255),
+        authorization: str | None = Header(default=None),
+    ) -> ClaimVerificationResult:
+        return await verification_endpoint(
+            "quick", payload, request, idempotency_key, authorization
+        )
+
+    @app.post(
+        "/v1/claims/verify",
+        response_model=ClaimVerificationResult,
+        tags=["claim verification"],
+        summary="Standard claim verification",
+    )
+    async def verify_claim(
+        payload: ClaimVerificationRequest,
+        request: Request,
+        idempotency_key: str | None = Header(default=None, max_length=255),
+        authorization: str | None = Header(default=None),
+    ) -> ClaimVerificationResult:
+        return await verification_endpoint(
+            "standard", payload, request, idempotency_key, authorization
+        )
+
+    @app.post(
+        "/v1/claims/verify/deep",
+        response_model=ClaimVerificationResult,
+        tags=["claim verification"],
+        summary="Deep claim verification",
+    )
+    async def verify_claim_deep(
+        payload: ClaimVerificationRequest,
+        request: Request,
+        idempotency_key: str | None = Header(default=None, max_length=255),
+        authorization: str | None = Header(default=None),
+    ) -> ClaimVerificationResult:
+        return await verification_endpoint(
+            "deep", payload, request, idempotency_key, authorization
+        )
+
+    @app.post(
+        "/v1/claims/verify/research",
+        response_model=ClaimVerificationResult,
+        tags=["claim verification"],
+        summary="Research-grade claim verification",
+    )
+    async def verify_claim_research(
+        payload: ClaimVerificationRequest,
+        request: Request,
+        idempotency_key: str | None = Header(default=None, max_length=255),
+        authorization: str | None = Header(default=None),
+    ) -> ClaimVerificationResult:
+        return await verification_endpoint(
+            "research", payload, request, idempotency_key, authorization
+        )
 
     @app.get(
         "/v1/claims/verifications/{verification_id}",

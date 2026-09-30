@@ -20,9 +20,11 @@ class FakeProvider:
     def __init__(self, *, consulted: bool = True) -> None:
         self.calls = 0
         self.consulted = consulted
+        self.budgets: list[tuple[int | None, int | None]] = []
 
-    def analyze(self, request):
+    def analyze(self, request, *, max_tool_calls=None, max_output_tokens=None):
         self.calls += 1
+        self.budgets.append((max_tool_calls, max_output_tokens))
         analysis = ProviderAnalysis.model_validate(
             {
                 "status": "confirmed",
@@ -215,11 +217,40 @@ def test_paid_discovery_advertises_x402_and_mpp(tmp_path: Path) -> None:
         "/.well-known/agent-service.json"
     ).json()
 
-    offer = manifest["offers"][0]
-    assert offer["amount"] == "0.05"
-    assert offer["currency"] == "USD"
-    assert {method["protocol"] for method in offer["paymentMethods"]} == {"x402", "mpp"}
-    assert all(method["network"] == "eip155:8453" for method in offer["paymentMethods"])
+    offers = {offer["operation"]: offer for offer in manifest["offers"]}
+    assert offers["verify-claim-quick"]["amount"] == "0.02"
+    assert offers["verify-claim-standard"]["amount"] == "0.05"
+    assert offers["verify-claim-deep"]["amount"] == "0.12"
+    assert offers["verify-claim-research"]["amount"] == "0.25"
+    for offer in offers.values():
+        assert offer["currency"] == "USD"
+        assert {method["protocol"] for method in offer["paymentMethods"]} == {"x402", "mpp"}
+        assert all(method["network"] == "eip155:8453" for method in offer["paymentMethods"])
+
+
+def test_verification_tiers_apply_distinct_provider_budgets(tmp_path: Path) -> None:
+    provider = FakeProvider()
+    client = build_client(tmp_path, provider)
+
+    expected = {
+        "/v1/claims/verify/quick": (1, 1500),
+        "/v1/claims/verify": (3, 3000),
+        "/v1/claims/verify/deep": (7, 6000),
+        "/v1/claims/verify/research": (15, 12000),
+    }
+    for path, budget in expected.items():
+        response = client.post(path, json={"claim": "The feature is supported.", "minimumSources": 1})
+        assert response.status_code == 200
+        assert provider.budgets[-1] == budget
+
+
+def test_quick_tier_rejects_explicit_excess_source_budget(tmp_path: Path) -> None:
+    client = build_client(tmp_path, FakeProvider())
+    response = client.post(
+        "/v1/claims/verify/quick",
+        json={"claim": "The feature is supported.", "maxSources": 4},
+    )
+    assert response.status_code == 422
 
 
 def test_protected_service_requires_valid_bearer_key(tmp_path: Path) -> None:

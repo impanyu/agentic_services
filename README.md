@@ -70,7 +70,10 @@ cp .env.example .env.local
 
 The API starts at `http://localhost:8000`. Its main endpoints are:
 
-- `POST /v1/claims/verify` — verify and persist a claim.
+- `POST /v1/claims/verify/quick` — $0.02 quick verification.
+- `POST /v1/claims/verify` — $0.05 standard verification.
+- `POST /v1/claims/verify/deep` — $0.12 deep verification.
+- `POST /v1/claims/verify/research` — $0.25 research-grade verification.
 - `GET /v1/claims/verifications/{verification_id}` — retrieve the immutable result.
 - `GET /.well-known/agent-service.json` — discover the service and its schemas.
 - `GET /.well-known/x402` — discover x402-payable resource URLs.
@@ -97,4 +100,4 @@ For the production Docker Compose deployment at `api.aisoup.net`, follow [`deplo
 
 ## Status
 
-The repository contains the v0 protocol, a runnable Web Evidence service, SQLite persistence, machine-readable discovery, and an x402/MPP dual-protocol payment gateway. The next milestone is external catalog registration, paid-flow production verification, and additional evidence operations.
+The repository contains the v0 protocol, a runnable tiered Web Evidence service, SQLite persistence, machine-readable discovery, and an x402/MPP dual-protocol payment gateway. Production payment settlement has been verified; the next milestone is broader external catalog indexing and additional evidence operations.

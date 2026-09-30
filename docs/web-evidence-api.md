@@ -20,10 +20,15 @@ The MVP returns consulted and cited sources. It must not claim a content hash or
 | `GET` | `/readyz` | Configuration and storage readiness |
 | `GET` | `/v1/capabilities` | Machine-readable operation and lifecycle metadata |
 | `GET` | `/.well-known/agent-service.json` | Canonical agent-service discovery document |
-| `POST` | `/v1/claims/verify` | Verify a claim synchronously and persist the result |
+| `POST` | `/v1/claims/verify/quick` | Quick verification: $0.02, 1 tool action, up to 3 cited sources |
+| `POST` | `/v1/claims/verify` | Standard verification: $0.05, 3 tool actions, up to 8 cited sources |
+| `POST` | `/v1/claims/verify/deep` | Deep verification: $0.12, 7 tool actions, up to 15 cited sources |
+| `POST` | `/v1/claims/verify/research` | Research verification: $0.25, 15 tool actions, up to 20 cited sources |
 | `GET` | `/v1/claims/verifications/{verification_id}` | Retrieve an immutable prior result |
 
 `POST /v1/claims/verify` accepts an optional `Idempotency-Key` header. The same key and request return the stored result without repeating search or model charges. Reusing the key with a different request returns `409 Conflict`.
+
+The four paid paths return the same response schema. Their separate URLs make the price and search budget deterministic and independently discoverable. Tool actions include web searches, page opens, and find-in-page operations; cited-source limits control the evidence returned in the final result rather than the search engine's internal result count.
 
 ## Claim verification request
 

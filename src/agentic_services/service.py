@@ -33,12 +33,18 @@ class ClaimVerificationService:
         request: ClaimVerificationRequest,
         *,
         idempotency_key: str | None = None,
+        idempotency_namespace: str = "standard",
+        max_tool_calls: int | None = None,
+        max_output_tokens: int | None = None,
     ) -> ClaimVerificationResult:
         request_json = request.model_dump_json(by_alias=True, exclude_none=True)
         request_hash = hashlib.sha256(request_json.encode("utf-8")).hexdigest()
 
-        if idempotency_key:
-            stored = self.store.get_by_idempotency_key(idempotency_key)
+        scoped_idempotency_key = (
+            f"{idempotency_namespace}:{idempotency_key}" if idempotency_key else None
+        )
+        if scoped_idempotency_key:
+            stored = self.store.get_by_idempotency_key(scoped_idempotency_key)
             if stored:
                 stored_hash, stored_result = stored
                 if stored_hash != request_hash:
@@ -48,13 +54,17 @@ class ClaimVerificationService:
                 return stored_result
 
         observed_at = datetime.now(UTC)
-        provider_result = self.provider.analyze(request)
+        provider_result = self.provider.analyze(
+            request,
+            max_tool_calls=max_tool_calls,
+            max_output_tokens=max_output_tokens,
+        )
         result = self._build_result(request, provider_result, observed_at)
         self.store.save(
             result=result,
             request_hash=request_hash,
             request_json=request_json,
-            idempotency_key=idempotency_key,
+            idempotency_key=scoped_idempotency_key,
         )
         return result
 

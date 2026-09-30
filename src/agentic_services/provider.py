@@ -26,7 +26,13 @@ Return only data matching the supplied JSON schema. Use an empty array when ther
 class EvidenceProvider(Protocol):
     model: str
 
-    def analyze(self, request: ClaimVerificationRequest) -> "ProviderResult": ...
+    def analyze(
+        self,
+        request: ClaimVerificationRequest,
+        *,
+        max_tool_calls: int | None = None,
+        max_output_tokens: int | None = None,
+    ) -> "ProviderResult": ...
 
 
 class ProviderResult:
@@ -85,7 +91,13 @@ class OpenAIEvidenceProvider:
         self.max_tool_calls = max_tool_calls
         self.max_output_tokens = max_output_tokens
 
-    def analyze(self, request: ClaimVerificationRequest) -> ProviderResult:
+    def analyze(
+        self,
+        request: ClaimVerificationRequest,
+        *,
+        max_tool_calls: int | None = None,
+        max_output_tokens: int | None = None,
+    ) -> ProviderResult:
         tool: dict[str, Any] = {"type": "web_search"}
         filters: dict[str, list[str]] = {}
         if request.allowed_domains:
@@ -100,8 +112,8 @@ class OpenAIEvidenceProvider:
             reasoning={"effort": "low"},
             tools=[tool],
             tool_choice="required",
-            max_tool_calls=self.max_tool_calls,
-            max_output_tokens=self.max_output_tokens,
+            max_tool_calls=max_tool_calls or self.max_tool_calls,
+            max_output_tokens=max_output_tokens or self.max_output_tokens,
             include=["web_search_call.action.sources"],
             input=[
                 {"role": "system", "content": SYSTEM_INSTRUCTIONS},
