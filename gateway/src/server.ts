@@ -453,7 +453,9 @@ function toHonoPayment(
   tier: VerificationTier,
 ): MiddlewareHandler & { _internal?: unknown } {
   const middleware: MiddlewareHandler = async (c, next) => {
-    const result = await handler(withPublicUrl(c.req.raw))
+    // MPP validates a digest of the request body. Give it a cloned stream so
+    // the original remains available to the upstream service after payment.
+    const result = await handler(withPublicUrl(c.req.raw.clone()))
     if (result.status === 402) {
       return new URL(c.req.url).pathname === tier.path
         ? withBazaarSchema(result.challenge, tier)
