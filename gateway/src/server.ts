@@ -92,13 +92,19 @@ type PaymentHandler = ((request: Request) => Promise<
 
 function toHonoPayment(handler: PaymentHandler): MiddlewareHandler & { _internal?: unknown } {
   const middleware: MiddlewareHandler = async (c, next) => {
-    const result = await handler(c.req.raw)
+    const result = await handler(withPublicUrl(c.req.raw))
     if (result.status === 402) return result.challenge
     await next()
     c.res = result.withReceipt(c.res)
   }
   Object.assign(middleware, { _internal: handler._internal })
   return middleware
+}
+
+function withPublicUrl(request: Request): Request {
+  const incoming = new URL(request.url)
+  const publicUrl = new URL(incoming.pathname + incoming.search, publicBaseUrl)
+  return new Request(publicUrl, request)
 }
 
 function mountPaidRoute(
