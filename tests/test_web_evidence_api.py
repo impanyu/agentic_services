@@ -153,6 +153,7 @@ def build_client(
     provider: FakeProvider,
     *,
     service_api_key: str | None = None,
+    admin_api_key: str | None = None,
 ) -> TestClient:
     settings = Settings(
         openai_api_key="test-only",
@@ -160,6 +161,7 @@ def build_client(
         database_path=tmp_path / "evidence.db",
         base_url="https://testserver",
         service_api_key=service_api_key,
+        admin_api_key=admin_api_key,
     )
     service = ClaimVerificationService(
         provider=provider,
@@ -291,6 +293,70 @@ def test_contact_message_remains_saved_when_email_is_unavailable(
             "SELECT delivery_status FROM contact_messages"
         ).fetchone()[0]
     assert status_value == "failed"
+
+
+def test_agent_support_ticket_lifecycle(tmp_path: Path, monkeypatch) -> None:
+    client = build_client(tmp_path, FakeProvider())
+    customer, customer_key = client.app.state.store.create_customer(
+        name="Agent Customer", email="agent@example.com"
+    )
+    monkeypatch.setattr("agentic_services.main.send_email", lambda *_args, **_kwargs: None)
+
+    created = client.post(
+        "/support/v1/tickets",
+        headers={"X-Agentic-Customer-Key": customer_key},
+        json={
+            "subject": "Verification response question",
+            "message": "The agent needs clarification about one evidence item.",
+            "serviceId": "web-evidence",
+            "priority": "normal",
+        },
+    )
+    assert created.status_code == 201
+    ticket = created.json()
+    assert ticket["customerId"] == customer["customerId"]
+    assert ticket["accessTokenShownOnce"] is True
+
+    retrieved = client.get(
+        f"/support/v1/tickets/{ticket['ticketId']}",
+        headers={"X-Support-Token": ticket["accessToken"]},
+    )
+    assert retrieved.status_code == 200
+    assert retrieved.json()["messages"][0]["authorType"] == "customer"
+
+    update = client.post(
+        f"/support/v1/tickets/{ticket['ticketId']}/messages",
+        headers={"X-Support-Token": ticket["accessToken"]},
+        json={"message": "Here is the request identifier."},
+    )
+    assert update.status_code == 201
+
+
+def test_public_status_json_rss_and_admin_incident(tmp_path: Path, monkeypatch) -> None:
+    client = build_client(tmp_path, FakeProvider(), admin_api_key="admin-test")
+    monkeypatch.setattr(
+        "agentic_services.main.notify_status_subscribers", lambda *_args, **_kwargs: []
+    )
+    initial = client.get("/status/index.json")
+    assert initial.status_code == 200
+    assert initial.json()["page"]["aggregateStatus"] == "operational"
+    assert len(initial.json()["components"]) == 4
+
+    incident = client.post(
+        "/v1/admin/status/incidents",
+        headers={"X-Admin-Key": "admin-test"},
+        json={
+            "title": "Evidence API latency",
+            "message": "Requests are slower than normal.",
+            "severity": "minor",
+            "affectedComponents": ["web-evidence-api"],
+        },
+    )
+    assert incident.status_code == 201
+    assert client.get("/status/index.json").json()["page"]["aggregateStatus"] == "degraded"
+    feed = client.get("/status/feed.rss")
+    assert feed.status_code == 200
+    assert "Evidence API latency" in feed.text
 
 
 def test_idempotency_prevents_duplicate_provider_calls(tmp_path: Path) -> None:

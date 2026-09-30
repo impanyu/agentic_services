@@ -3,9 +3,12 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import hmac
+import ipaddress
 import json
 import re
 import secrets
+import socket
+from urllib.parse import urlparse
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal, ROUND_HALF_UP
@@ -20,7 +23,7 @@ from pydantic import BaseModel, Field
 from . import __version__
 from .admin_dashboard import admin_dashboard_html
 from .config import Settings
-from .contact import send_contact_email
+from .contact import send_contact_email, send_email
 from .models import (
     CapabilitiesResponse,
     Capability,
@@ -31,6 +34,12 @@ from .models import (
 from .provider import OpenAIEvidenceProvider
 from .service import ClaimVerificationService, IdempotencyConflictError
 from .storage import VerificationStore
+from .status_page import (
+    notify_status_subscribers,
+    send_subscription_verification,
+    status_page_html,
+    status_rss,
+)
 
 
 class CustomerCreateRequest(BaseModel):
@@ -49,6 +58,41 @@ class ContactMessageRequest(BaseModel):
     message: Annotated[str, Field(min_length=20, max_length=4000)]
     service_id: Annotated[str | None, Field(alias="serviceId", max_length=100)] = None
     company: Annotated[str, Field(max_length=200)] = ""
+
+
+class SupportTicketCreateRequest(BaseModel):
+    subject: Annotated[str, Field(min_length=3, max_length=160)]
+    message: Annotated[str, Field(min_length=10, max_length=8000)]
+    service_id: Annotated[str | None, Field(alias="serviceId", max_length=100)] = None
+    order_id: Annotated[str | None, Field(alias="orderId", max_length=100)] = None
+    priority: str = "normal"
+
+
+class SupportMessageRequest(BaseModel):
+    message: Annotated[str, Field(min_length=2, max_length=8000)]
+
+
+class SupportTicketUpdateRequest(BaseModel):
+    status: str
+    message: Annotated[str | None, Field(max_length=8000)] = None
+
+
+class StatusSubscriptionRequest(BaseModel):
+    channel: str
+    target: Annotated[str, Field(min_length=3, max_length=2000)]
+    verification_email: Annotated[str | None, Field(alias="verificationEmail", max_length=320)] = None
+
+
+class StatusIncidentCreateRequest(BaseModel):
+    title: Annotated[str, Field(min_length=3, max_length=200)]
+    message: Annotated[str, Field(min_length=3, max_length=8000)]
+    severity: str
+    affected_components: Annotated[list[str], Field(alias="affectedComponents", min_length=1, max_length=20)]
+
+
+class StatusIncidentUpdateRequest(BaseModel):
+    status: str
+    message: Annotated[str, Field(min_length=3, max_length=8000)]
 
 
 @dataclass(frozen=True)
@@ -225,6 +269,57 @@ def create_app(
         )
         return hmac.new(secret.encode(), address.encode(), hashlib.sha256).hexdigest()
 
+    def support_identity(
+        *,
+        customer_key: str | None,
+        order_id: str | None,
+        order_token: str | None,
+    ) -> tuple[str | None, str | None]:
+        customer = store.customer_for_key(customer_key)
+        if customer is not None:
+            return str(customer["customer_id"]), order_id
+        if order_id and order_token:
+            order = store.get_order_with_token(order_id, order_token)
+            if order is not None:
+                customer_id = order.get("customerId")
+                return str(customer_id) if customer_id else None, order_id
+        raise HTTPException(
+            status_code=401,
+            detail="Use X-Agentic-Customer-Key or a valid orderId with X-Agentic-Order-Token",
+        )
+
+    def require_ticket_access(
+        ticket_id: str, support_token: str | None, customer_key: str | None
+    ) -> dict[str, object]:
+        ticket = store.support_ticket_for_token(ticket_id, support_token)
+        if ticket is not None:
+            return ticket
+        customer = store.customer_for_key(customer_key)
+        ticket = store.get_support_ticket(ticket_id)
+        if (
+            customer is not None
+            and ticket is not None
+            and ticket.get("customerId") == customer.get("customer_id")
+        ):
+            return ticket
+        raise HTTPException(status_code=404, detail="Support ticket not found")
+
+    def validate_public_webhook(value: str) -> str:
+        parsed = urlparse(value)
+        if parsed.scheme != "https" or not parsed.hostname or parsed.username or parsed.password:
+            raise HTTPException(status_code=422, detail="Webhook target must be a public HTTPS URL")
+        try:
+            addresses = {
+                item[4][0] for item in socket.getaddrinfo(parsed.hostname, parsed.port or 443)
+            }
+        except socket.gaierror as error:
+            raise HTTPException(status_code=422, detail="Webhook hostname could not be resolved") from error
+        if not addresses or any(
+            not ipaddress.ip_address(address).is_global for address in addresses
+        ):
+            raise HTTPException(status_code=422, detail="Webhook target must resolve to public addresses")
+        return value
+
     @app.get("/healthz", tags=["operations"])
     def health() -> dict[str, str]:
         return {"status": "ok"}
@@ -296,6 +391,113 @@ def create_app(
             return {"messageId": message_id, "status": "saved"}
         store.update_contact_delivery(message_id=message_id, status="sent")
         return {"messageId": message_id, "status": "sent"}
+
+    @app.post("/support/v1/tickets", status_code=201, tags=["support"])
+    async def create_support_ticket(
+        payload: SupportTicketCreateRequest,
+        x_agentic_customer_key: str | None = Header(default=None),
+        x_agentic_order_token: str | None = Header(default=None),
+    ) -> dict[str, object]:
+        if payload.priority not in {"low", "normal", "high", "urgent"}:
+            raise HTTPException(status_code=422, detail="Unsupported priority")
+        customer_id, order_id = support_identity(
+            customer_key=x_agentic_customer_key,
+            order_id=payload.order_id,
+            order_token=x_agentic_order_token,
+        )
+        ticket, access_token = store.create_support_ticket(
+            subject=payload.subject.strip(), message_text=payload.message.strip(),
+            service_id=payload.service_id, customer_id=customer_id, order_id=order_id,
+            priority=payload.priority,
+        )
+        try:
+            await asyncio.to_thread(
+                send_email, resolved_settings,
+                recipient=resolved_settings.contact_recipient_email,
+                subject=f"[Agent support] {payload.subject.strip()}",
+                body=(f"Ticket: {ticket['ticketId']}\nService: {payload.service_id or 'Platform'}\n"
+                      f"Order: {order_id or 'n/a'}\nPriority: {payload.priority}\n\n{payload.message.strip()}"),
+            )
+        except Exception:
+            pass
+        return {**ticket, "accessToken": access_token, "accessTokenShownOnce": True}
+
+    @app.get("/support/v1/tickets/{ticket_id}", tags=["support"])
+    def get_support_ticket(
+        ticket_id: str,
+        x_support_token: str | None = Header(default=None),
+        x_agentic_customer_key: str | None = Header(default=None),
+    ) -> dict[str, object]:
+        return require_ticket_access(ticket_id, x_support_token, x_agentic_customer_key)
+
+    @app.post("/support/v1/tickets/{ticket_id}/messages", status_code=201, tags=["support"])
+    async def add_support_ticket_message(
+        ticket_id: str,
+        payload: SupportMessageRequest,
+        x_support_token: str | None = Header(default=None),
+        x_agentic_customer_key: str | None = Header(default=None),
+    ) -> dict[str, object]:
+        ticket = require_ticket_access(ticket_id, x_support_token, x_agentic_customer_key)
+        message = store.add_support_message(
+            ticket_id=ticket_id, author_type="customer", message_text=payload.message.strip()
+        )
+        try:
+            await asyncio.to_thread(
+                send_email, resolved_settings,
+                recipient=resolved_settings.contact_recipient_email,
+                subject=f"[Agent support update] {ticket['subject']}",
+                body=f"Ticket: {ticket_id}\n\n{payload.message.strip()}",
+            )
+        except Exception:
+            pass
+        return message
+
+    @app.get("/status/", response_class=HTMLResponse, include_in_schema=False)
+    def public_status_page() -> str:
+        return status_page_html()
+
+    @app.get("/status/index.json", tags=["status"])
+    def public_status_json() -> dict[str, object]:
+        return store.status_document()
+
+    @app.get("/status/feed.rss", tags=["status"])
+    def public_status_feed() -> Response:
+        return Response(content=status_rss(store.status_document()), media_type="application/rss+xml")
+
+    @app.post("/status/v1/subscriptions", status_code=202, tags=["status"])
+    async def create_status_subscription(payload: StatusSubscriptionRequest) -> dict[str, object]:
+        if payload.channel not in {"email", "webhook"}:
+            raise HTTPException(status_code=422, detail="channel must be email or webhook")
+        verification_email = (payload.verification_email or payload.target).strip().lower()
+        if not re.fullmatch(r"[^\s@]+@[^\s@]+\.[^\s@]+", verification_email):
+            raise HTTPException(status_code=422, detail="A valid verification email is required")
+        target = payload.target.strip()
+        if payload.channel == "email":
+            target = target.lower()
+            if not re.fullmatch(r"[^\s@]+@[^\s@]+\.[^\s@]+", target):
+                raise HTTPException(status_code=422, detail="A valid email target is required")
+        else:
+            target = validate_public_webhook(target)
+        subscriber, token = store.create_status_subscriber(
+            channel=payload.channel, target=target, verification_email=verification_email
+        )
+        try:
+            await asyncio.to_thread(
+                send_subscription_verification, resolved_settings,
+                verification_email=verification_email, channel=payload.channel, token=token,
+            )
+        except Exception as error:
+            raise HTTPException(
+                status_code=503,
+                detail="Subscription was saved, but confirmation email delivery is not configured yet.",
+            ) from error
+        return subscriber
+
+    @app.get("/status/v1/subscriptions/verify", response_class=HTMLResponse, include_in_schema=False)
+    def verify_status_subscription(token: Annotated[str, Query(min_length=20, max_length=200)]) -> str:
+        if not store.verify_status_subscriber(token):
+            raise HTTPException(status_code=404, detail="Confirmation link is invalid or already used")
+        return "<h1>Status subscription confirmed</h1><p>You will receive Dream Workshop service updates.</p>"
 
     @app.get("/v1/capabilities", response_model=CapabilitiesResponse, tags=["discovery"])
     def capabilities() -> CapabilitiesResponse:
@@ -849,6 +1051,75 @@ def create_app(
             "serviceId": service_id,
             "total": store.count_contact_messages(service_id=service_id),
         }
+
+    @app.get("/v1/admin/support-tickets", tags=["admin"])
+    def admin_support_tickets(
+        limit: Annotated[int, Query(ge=1, le=200)] = 50,
+        offset: Annotated[int, Query(ge=0)] = 0,
+        ticket_status: Annotated[str | None, Query(alias="status")] = None,
+        x_admin_key: str | None = Header(default=None),
+    ) -> dict[str, object]:
+        require_admin_key(x_admin_key)
+        return {
+            "tickets": store.list_support_tickets(limit=limit, offset=offset, status=ticket_status),
+            "limit": limit, "offset": offset, "status": ticket_status,
+            "total": store.count_support_tickets(status=ticket_status),
+        }
+
+    @app.patch("/v1/admin/support-tickets/{ticket_id}", tags=["admin"])
+    def admin_update_support_ticket(
+        ticket_id: str,
+        payload: SupportTicketUpdateRequest,
+        x_admin_key: str | None = Header(default=None),
+    ) -> dict[str, object]:
+        require_admin_key(x_admin_key)
+        if payload.status not in {"open", "pending", "resolved"}:
+            raise HTTPException(status_code=422, detail="Unsupported ticket status")
+        ticket = store.update_support_ticket(
+            ticket_id=ticket_id, status=payload.status,
+            message_text=payload.message.strip() if payload.message else None,
+        )
+        if ticket is None:
+            raise HTTPException(status_code=404, detail="Support ticket not found")
+        return ticket
+
+    @app.post("/v1/admin/status/incidents", status_code=201, tags=["admin status"])
+    async def admin_create_status_incident(
+        payload: StatusIncidentCreateRequest,
+        x_admin_key: str | None = Header(default=None),
+    ) -> dict[str, object]:
+        require_admin_key(x_admin_key)
+        if payload.severity not in {"minor", "major", "maintenance"}:
+            raise HTTPException(status_code=422, detail="Unsupported severity")
+        incident = store.create_status_incident(
+            title=payload.title.strip(), message_text=payload.message.strip(),
+            severity=payload.severity, component_ids=payload.affected_components,
+        )
+        failures = await asyncio.to_thread(
+            notify_status_subscribers, resolved_settings,
+            subscribers=store.active_status_subscribers(), incident=incident,
+        )
+        return {**incident, "notificationFailures": failures}
+
+    @app.patch("/v1/admin/status/incidents/{incident_id}", tags=["admin status"])
+    async def admin_update_status_incident(
+        incident_id: str,
+        payload: StatusIncidentUpdateRequest,
+        x_admin_key: str | None = Header(default=None),
+    ) -> dict[str, object]:
+        require_admin_key(x_admin_key)
+        if payload.status not in {"investigating", "identified", "monitoring", "resolved"}:
+            raise HTTPException(status_code=422, detail="Unsupported incident status")
+        incident = store.update_status_incident(
+            incident_id=incident_id, status=payload.status, message_text=payload.message.strip()
+        )
+        if incident is None:
+            raise HTTPException(status_code=404, detail="Incident not found")
+        failures = await asyncio.to_thread(
+            notify_status_subscribers, resolved_settings,
+            subscribers=store.active_status_subscribers(), incident=incident,
+        )
+        return {**incident, "notificationFailures": failures}
 
     @app.post("/v1/admin/customers", tags=["admin"], status_code=201)
     def admin_create_customer(

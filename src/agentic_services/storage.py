@@ -5,7 +5,7 @@ import hashlib
 import json
 import secrets
 import uuid
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -199,6 +199,102 @@ class VerificationStore:
             )
             connection.execute(
                 "CREATE INDEX IF NOT EXISTS contact_messages_ip_created ON contact_messages(ip_hash, created_at DESC)"
+            )
+            connection.execute(
+                """
+                CREATE TABLE IF NOT EXISTS support_tickets (
+                    ticket_id TEXT PRIMARY KEY,
+                    service_id TEXT,
+                    customer_id TEXT,
+                    order_id TEXT,
+                    subject TEXT NOT NULL,
+                    status TEXT NOT NULL,
+                    priority TEXT NOT NULL,
+                    access_token_hash TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL,
+                    resolved_at TEXT
+                )
+                """
+            )
+            support_ticket_columns = {
+                row["name"] for row in connection.execute("PRAGMA table_info(support_tickets)").fetchall()
+            }
+            if "resolved_at" not in support_ticket_columns:
+                connection.execute("ALTER TABLE support_tickets ADD COLUMN resolved_at TEXT")
+            connection.execute(
+                """
+                CREATE TABLE IF NOT EXISTS support_messages (
+                    message_id TEXT PRIMARY KEY,
+                    ticket_id TEXT NOT NULL,
+                    author_type TEXT NOT NULL,
+                    message_text TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    FOREIGN KEY(ticket_id) REFERENCES support_tickets(ticket_id)
+                )
+                """
+            )
+            connection.execute(
+                "CREATE INDEX IF NOT EXISTS support_tickets_created ON support_tickets(created_at DESC)"
+            )
+            connection.execute(
+                "CREATE INDEX IF NOT EXISTS support_messages_ticket_created ON support_messages(ticket_id, created_at)"
+            )
+            connection.execute(
+                """
+                CREATE TABLE IF NOT EXISTS status_components (
+                    component_id TEXT PRIMARY KEY,
+                    name TEXT NOT NULL,
+                    description TEXT NOT NULL,
+                    status TEXT NOT NULL,
+                    sort_order INTEGER NOT NULL,
+                    updated_at TEXT NOT NULL
+                )
+                """
+            )
+            for component in (
+                ("web-evidence-api", "Web Evidence API", "HTTP claim verification API", 10),
+                ("web-evidence-mcp", "Web Evidence MCP", "Model Context Protocol endpoint", 20),
+                ("web-evidence-a2a", "Web Evidence A2A", "Agent-to-Agent endpoint", 30),
+                ("payments", "Payment rails", "x402, MPP, USDC, and card payments", 40),
+            ):
+                connection.execute(
+                    """
+                    INSERT OR IGNORE INTO status_components(
+                        component_id,name,description,status,sort_order,updated_at
+                    ) VALUES(?,?,?,?,?,?)
+                    """,
+                    (*component[:3], "operational", component[3], now),
+                )
+            connection.execute(
+                """
+                CREATE TABLE IF NOT EXISTS status_incidents (
+                    incident_id TEXT PRIMARY KEY,
+                    title TEXT NOT NULL,
+                    message_text TEXT NOT NULL,
+                    severity TEXT NOT NULL,
+                    status TEXT NOT NULL,
+                    affected_components_json TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL,
+                    resolved_at TEXT
+                )
+                """
+            )
+            connection.execute(
+                """
+                CREATE TABLE IF NOT EXISTS status_subscribers (
+                    subscriber_id TEXT PRIMARY KEY,
+                    channel TEXT NOT NULL,
+                    target TEXT NOT NULL,
+                    verification_email TEXT NOT NULL,
+                    verification_token_hash TEXT NOT NULL UNIQUE,
+                    signing_secret TEXT,
+                    status TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    verified_at TEXT
+                )
+                """
             )
 
     def get(self, verification_id: str) -> ClaimVerificationResult | None:
@@ -403,6 +499,244 @@ class VerificationStore:
                 f"SELECT COUNT(*) AS count FROM contact_messages {where}", parameters
             ).fetchone()
         return int(row["count"])
+
+    def create_support_ticket(
+        self,
+        *,
+        subject: str,
+        message_text: str,
+        service_id: str | None,
+        customer_id: str | None,
+        order_id: str | None,
+        priority: str,
+    ) -> tuple[dict[str, Any], str]:
+        ticket_id = f"tkt_{uuid.uuid4().hex}"
+        message_id = f"tmsg_{uuid.uuid4().hex}"
+        access_token = f"tsk_{secrets.token_urlsafe(32)}"
+        now = datetime.now(UTC).isoformat()
+        with self._connect() as connection:
+            connection.execute(
+                """
+                INSERT INTO support_tickets(
+                    ticket_id,service_id,customer_id,order_id,subject,status,priority,
+                    access_token_hash,created_at,updated_at
+                ) VALUES(?,?,?,?,?,?,?,?,?,?)
+                """,
+                (
+                    ticket_id, service_id, customer_id, order_id, subject, "open", priority,
+                    self.hash_api_key(access_token), now, now,
+                ),
+            )
+            connection.execute(
+                """
+                INSERT INTO support_messages(message_id,ticket_id,author_type,message_text,created_at)
+                VALUES(?,?,?,?,?)
+                """,
+                (message_id, ticket_id, "customer", message_text, now),
+            )
+        ticket = self.get_support_ticket(ticket_id)
+        if ticket is None:
+            raise RuntimeError("Support ticket could not be created")
+        return ticket, access_token
+
+    def get_support_ticket(self, ticket_id: str) -> dict[str, Any] | None:
+        with self._connect() as connection:
+            row = connection.execute(
+                """
+                SELECT ticket_id,service_id,customer_id,order_id,subject,status,priority,
+                       created_at,updated_at,resolved_at
+                FROM support_tickets WHERE ticket_id=?
+                """,
+                (ticket_id,),
+            ).fetchone()
+            if not row:
+                return None
+            messages = connection.execute(
+                """
+                SELECT message_id,author_type,message_text,created_at
+                FROM support_messages WHERE ticket_id=? ORDER BY created_at
+                """,
+                (ticket_id,),
+            ).fetchall()
+        return {
+            "ticketId": row["ticket_id"], "serviceId": row["service_id"],
+            "customerId": row["customer_id"], "orderId": row["order_id"],
+            "subject": row["subject"], "status": row["status"], "priority": row["priority"],
+            "createdAt": row["created_at"], "updatedAt": row["updated_at"],
+            "resolvedAt": row["resolved_at"],
+            "messages": [
+                {"messageId": item["message_id"], "authorType": item["author_type"],
+                 "message": item["message_text"], "createdAt": item["created_at"]}
+                for item in messages
+            ],
+        }
+
+    def support_ticket_for_token(self, ticket_id: str, token: str | None) -> dict[str, Any] | None:
+        if not token:
+            return None
+        with self._connect() as connection:
+            row = connection.execute(
+                "SELECT access_token_hash FROM support_tickets WHERE ticket_id=?",
+                (ticket_id,),
+            ).fetchone()
+        if not row or not secrets.compare_digest(row["access_token_hash"], self.hash_api_key(token)):
+            return None
+        return self.get_support_ticket(ticket_id)
+
+    def add_support_message(self, *, ticket_id: str, author_type: str, message_text: str) -> dict[str, Any]:
+        message_id = f"tmsg_{uuid.uuid4().hex}"
+        now = datetime.now(UTC).isoformat()
+        with self._connect() as connection:
+            connection.execute(
+                """
+                INSERT INTO support_messages(message_id,ticket_id,author_type,message_text,created_at)
+                VALUES(?,?,?,?,?)
+                """,
+                (message_id, ticket_id, author_type, message_text, now),
+            )
+            connection.execute(
+                "UPDATE support_tickets SET updated_at=?,status=CASE WHEN ?='customer' AND status='resolved' THEN 'open' ELSE status END WHERE ticket_id=?",
+                (now, author_type, ticket_id),
+            )
+        return {"messageId": message_id, "authorType": author_type, "message": message_text, "createdAt": now}
+
+    def list_support_tickets(self, *, limit: int, offset: int, status: str | None = None) -> list[dict[str, Any]]:
+        where = "WHERE status=?" if status else ""
+        parameters: tuple[Any, ...] = (status, limit, offset) if status else (limit, offset)
+        with self._connect() as connection:
+            rows = connection.execute(
+                f"SELECT ticket_id FROM support_tickets {where} ORDER BY updated_at DESC LIMIT ? OFFSET ?",
+                parameters,
+            ).fetchall()
+        return [ticket for row in rows if (ticket := self.get_support_ticket(row["ticket_id"]))]
+
+    def count_support_tickets(self, *, status: str | None = None) -> int:
+        where = "WHERE status=?" if status else ""
+        parameters: tuple[Any, ...] = (status,) if status else ()
+        with self._connect() as connection:
+            row = connection.execute(
+                f"SELECT COUNT(*) AS count FROM support_tickets {where}", parameters
+            ).fetchone()
+        return int(row["count"])
+
+    def update_support_ticket(self, *, ticket_id: str, status: str, message_text: str | None) -> dict[str, Any] | None:
+        now = datetime.now(UTC).isoformat()
+        resolved_at = now if status == "resolved" else None
+        with self._connect() as connection:
+            result = connection.execute(
+                "UPDATE support_tickets SET status=?,updated_at=?,resolved_at=? WHERE ticket_id=?",
+                (status, now, resolved_at, ticket_id),
+            )
+        if result.rowcount == 0:
+            return None
+        if message_text:
+            self.add_support_message(ticket_id=ticket_id, author_type="support", message_text=message_text)
+        return self.get_support_ticket(ticket_id)
+
+    def status_document(self) -> dict[str, Any]:
+        with self._connect() as connection:
+            components = connection.execute(
+                "SELECT component_id,name,description,status,updated_at FROM status_components ORDER BY sort_order"
+            ).fetchall()
+            incidents = connection.execute(
+                """
+                SELECT * FROM status_incidents
+                WHERE status!='resolved' OR resolved_at>=?
+                ORDER BY created_at DESC LIMIT 50
+                """,
+                ((datetime.now(UTC) - timedelta(days=30)).isoformat(),),
+            ).fetchall()
+        component_items = [
+            {"componentId": row["component_id"], "name": row["name"],
+             "description": row["description"], "status": row["status"], "updatedAt": row["updated_at"]}
+            for row in components
+        ]
+        active = [row for row in incidents if row["status"] != "resolved"]
+        aggregate = "operational"
+        if any(row["severity"] == "major" for row in active): aggregate = "downtime"
+        elif active: aggregate = "degraded"
+        return {
+            "page": {"name": "Dream Workshop Status", "url": "https://status.aisoup.net", "aggregateStatus": aggregate,
+                     "updatedAt": max((row["updated_at"] for row in components), default=datetime.now(UTC).isoformat())},
+            "components": component_items,
+            "incidents": [self._incident_row(row) for row in incidents],
+        }
+
+    def create_status_incident(self, *, title: str, message_text: str, severity: str, component_ids: list[str]) -> dict[str, Any]:
+        incident_id = f"inc_{uuid.uuid4().hex}"
+        now = datetime.now(UTC).isoformat()
+        with self._connect() as connection:
+            connection.execute(
+                """
+                INSERT INTO status_incidents(incident_id,title,message_text,severity,status,affected_components_json,created_at,updated_at)
+                VALUES(?,?,?,?,?,?,?,?)
+                """,
+                (incident_id, title, message_text, severity, "investigating", json.dumps(component_ids), now, now),
+            )
+            for component_id in component_ids:
+                connection.execute(
+                    "UPDATE status_components SET status=?,updated_at=? WHERE component_id=?",
+                    ("downtime" if severity == "major" else "degraded", now, component_id),
+                )
+        return self.get_status_incident(incident_id) or {}
+
+    def get_status_incident(self, incident_id: str) -> dict[str, Any] | None:
+        with self._connect() as connection:
+            row = connection.execute("SELECT * FROM status_incidents WHERE incident_id=?", (incident_id,)).fetchone()
+        return self._incident_row(row) if row else None
+
+    def update_status_incident(self, *, incident_id: str, status: str, message_text: str) -> dict[str, Any] | None:
+        now = datetime.now(UTC).isoformat()
+        resolved_at = now if status == "resolved" else None
+        with self._connect() as connection:
+            row = connection.execute("SELECT affected_components_json FROM status_incidents WHERE incident_id=?", (incident_id,)).fetchone()
+            if not row: return None
+            connection.execute(
+                "UPDATE status_incidents SET status=?,message_text=?,updated_at=?,resolved_at=? WHERE incident_id=?",
+                (status, message_text, now, resolved_at, incident_id),
+            )
+            if status == "resolved":
+                for component_id in json.loads(row["affected_components_json"]):
+                    connection.execute("UPDATE status_components SET status='operational',updated_at=? WHERE component_id=?", (now, component_id))
+        return self.get_status_incident(incident_id)
+
+    def create_status_subscriber(self, *, channel: str, target: str, verification_email: str) -> tuple[dict[str, Any], str]:
+        subscriber_id = f"sub_{uuid.uuid4().hex}"
+        token = secrets.token_urlsafe(32)
+        signing_secret = secrets.token_urlsafe(32) if channel == "webhook" else None
+        now = datetime.now(UTC).isoformat()
+        with self._connect() as connection:
+            connection.execute(
+                """
+                INSERT INTO status_subscribers(subscriber_id,channel,target,verification_email,verification_token_hash,signing_secret,status,created_at)
+                VALUES(?,?,?,?,?,?,?,?)
+                """,
+                (subscriber_id, channel, target, verification_email, self.hash_api_key(token), signing_secret, "pending", now),
+            )
+        return {"subscriberId": subscriber_id, "channel": channel, "status": "pending", "signingSecret": signing_secret}, token
+
+    def verify_status_subscriber(self, token: str) -> bool:
+        now = datetime.now(UTC).isoformat()
+        with self._connect() as connection:
+            result = connection.execute(
+                "UPDATE status_subscribers SET status='active',verified_at=? WHERE verification_token_hash=? AND status='pending'",
+                (now, self.hash_api_key(token)),
+            )
+        return result.rowcount > 0
+
+    def active_status_subscribers(self) -> list[dict[str, Any]]:
+        with self._connect() as connection:
+            rows = connection.execute(
+                "SELECT subscriber_id,channel,target,verification_email,signing_secret FROM status_subscribers WHERE status='active'"
+            ).fetchall()
+        return [dict(row) for row in rows]
+
+    @staticmethod
+    def _incident_row(row: sqlite3.Row) -> dict[str, Any]:
+        return {"incidentId": row["incident_id"], "title": row["title"], "message": row["message_text"],
+                "severity": row["severity"], "status": row["status"],
+                "affectedComponents": json.loads(row["affected_components_json"]),
+                "createdAt": row["created_at"], "updatedAt": row["updated_at"], "resolvedAt": row["resolved_at"]}
 
     @staticmethod
     def hash_api_key(value: str) -> str:

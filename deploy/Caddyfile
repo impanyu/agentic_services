@@ -10,6 +10,13 @@ adma.aisoup.net {
 	}
 }
 
+status.aisoup.net {
+	rewrite * /status{uri}
+	reverse_proxy 127.0.0.1:8010 {
+		flush_interval -1
+	}
+}
+
 aisoup.net, www.aisoup.net {
 	handle /contact/messages {
 		rewrite * /v1/contact/messages
