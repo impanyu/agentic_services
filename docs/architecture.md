@@ -68,6 +68,15 @@ The platform registry stores a normalized projection of the manifest. Exporters 
 
 Every quote, order, receipt, ledger projection, and admin aggregate carries a stable `serviceId`. The first service uses `web-evidence`; future services register a new identifier instead of introducing service-specific commerce tables or response shapes.
 
+Public presentation and machine invocation are separate layers:
+
+- `aisoup.net` is the company catalog.
+- `<product>.aisoup.net` is the human-readable product page, such as `evidence.aisoup.net`.
+- `api.aisoup.net/v1/services/<service-id>/...` is the canonical HTTP API namespace.
+- `api.aisoup.net/admin` is the shared multi-service commerce dashboard.
+
+Once published, service paths remain callable as compatibility aliases. Discovery documents advertise the canonical service-scoped path and may mark earlier aliases as deprecated. A new service must receive its own product page, stable `serviceId`, API namespace, discovery entries, cost model, and dashboard breakdown before launch.
+
 The public `GET /v1/services` endpoint exposes the platform catalog. Admin summary and order APIs accept an optional `serviceId` query parameter. Omitting it returns platform-wide totals, while `byService` preserves the per-service breakdown. Pagination uses `limit`, `offset`, and `total`, so the dashboard and external admin clients share the same contract.
 
 ## Invocation flow

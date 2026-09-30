@@ -14,8 +14,8 @@
       "name": "Web Evidence",
       "eyebrow": "Agent service",
       "description": "Verify claims with cited evidence, complete source provenance, reproducible snapshots, and content hashes.",
-      "url": "https://api.aisoup.net",
-      "cta": "View the API",
+      "url": "https://evidence.aisoup.net",
+      "cta": "Explore Web Evidence",
       "number": "02",
       "accent": "coral",
       "capabilities": ["API", "MCP", "x402 + MPP"]

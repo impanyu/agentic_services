@@ -26,15 +26,15 @@ Captured snapshots include both `rawSha256` (exact response bytes) and `normaliz
 | `POST` | `/mcp` | MCP Streamable HTTP endpoint; paid tools use x402 |
 | `GET` | `/.well-known/agent-card.json` | A2A 1.0 Agent Card |
 | `POST` | `/a2a` | A2A JSON-RPC `SendMessage`; Standard-tier payment |
-| `POST` | `/v1/claims/verify/quick` | Quick verification: $0.02, 1 tool action, up to 3 cited sources |
-| `POST` | `/v1/claims/verify` | Standard verification: $0.05, 3 tool actions, up to 8 cited sources |
-| `POST` | `/v1/claims/verify/deep` | Deep verification: $0.12, 7 tool actions, up to 15 cited sources |
-| `POST` | `/v1/claims/verify/research` | Research verification: $0.25, 15 tool actions, up to 20 cited sources |
+| `POST` | `/v1/services/web-evidence/claims/verify/quick` | Quick verification: $0.02, 1 tool action, up to 3 cited sources |
+| `POST` | `/v1/services/web-evidence/claims/verify` | Standard verification: $0.05, 3 tool actions, up to 8 cited sources |
+| `POST` | `/v1/services/web-evidence/claims/verify/deep` | Deep verification: $0.12, 7 tool actions, up to 15 cited sources |
+| `POST` | `/v1/services/web-evidence/claims/verify/research` | Research verification: $0.25, 15 tool actions, up to 20 cited sources |
 | `GET` | `/v1/claims/verifications/{verification_id}` | Retrieve an immutable prior result |
 | `GET` | `/v1/url-snapshots/{snapshot_id}` | Retrieve snapshot metadata, status, and hashes |
 | `GET` | `/v1/url-snapshots/{snapshot_id}/content` | Retrieve exact captured bytes and `X-Content-SHA256` |
 
-`POST /v1/claims/verify` accepts an optional `Idempotency-Key` header. The same key and request return the stored result without repeating search or model charges. Reusing the key with a different request returns `409 Conflict`.
+`POST /v1/services/web-evidence/claims/verify` accepts an optional `Idempotency-Key` header. The same key and request return the stored result without repeating search or model charges. Reusing the key with a different request returns `409 Conflict`. The earlier `/v1/claims/verify...` paths remain supported as deprecated compatibility aliases.
 
 The four paid paths return the same response schema. Their separate URLs make the price, search budget, and snapshot policy deterministic and independently discoverable. Tool actions include web searches, page opens, and find-in-page operations; cited-source limits control the evidence returned in the final result rather than the search engine's internal result count.
 

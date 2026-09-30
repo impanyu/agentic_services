@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Web Evidence — Verifiable research for agents</title>
+    <meta name="description" content="Verify factual claims with cited evidence, complete source provenance, snapshots, hashes, and agent-native payments.">
+    <meta name="theme-color" content="#11110f">
+    <meta property="og:title" content="Web Evidence by Dream Workshop">
+    <meta property="og:description" content="Verifiable web research an agent can discover, purchase, and call.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://evidence.aisoup.net">
+    <link rel="canonical" href="https://evidence.aisoup.net">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/styles.css">
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebAPI",
+        "name": "Web Evidence",
+        "description": "Agent-facing paid claim verification with cited evidence, source provenance, snapshots, and hashes.",
+        "url": "https://evidence.aisoup.net",
+        "documentation": "https://api.aisoup.net/openapi.json",
+        "provider": { "@type": "Organization", "name": "Dream Workshop LLC", "url": "https://aisoup.net" }
+      }
+    </script>
+  </head>
+  <body>
+    <header class="nav">
+      <a class="company" href="https://aisoup.net" aria-label="Dream Workshop home">
+        <svg viewBox="0 0 38 38" aria-hidden="true"><path d="M3 3h13c10.5 0 19 6.7 19 16s-8.5 16-19 16H3V3Z"/><path d="m10 11 5.2 16L20 14l4.8 13L29 11"/></svg>
+        <span>Dream Workshop</span>
+      </a>
+      <div class="nav-links">
+        <a href="#pricing">Pricing</a>
+        <a href="https://api.aisoup.net/openapi.json">OpenAPI ↗</a>
+        <a class="nav-button" href="https://api.aisoup.net">API console ↗</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="hero-grid" aria-hidden="true"></div>
+        <div class="signal" aria-hidden="true">
+          <div class="signal-ring signal-ring--1"></div>
+          <div class="signal-ring signal-ring--2"></div>
+          <div class="signal-ring signal-ring--3"></div>
+          <div class="signal-core">E</div>
+          <span class="signal-label signal-label--a">SOURCE</span>
+          <span class="signal-label signal-label--b">CLAIM</span>
+          <span class="signal-label signal-label--c">PROOF</span>
+        </div>
+        <div class="hero-copy">
+          <div class="eyebrow"><span></span> Live agent service · v0.3</div>
+          <h1>Give agents<br><em>evidence,</em><br>not answers.</h1>
+          <p>Web Evidence verifies factual claims against the current web and returns the source trail needed to inspect, reproduce, and trust the result.</p>
+          <div class="hero-actions">
+            <a class="button button--primary" href="https://api.aisoup.net">Explore the API <span>↗</span></a>
+            <a class="button button--ghost" href="https://api.aisoup.net/.well-known/agent-service.json">Machine manifest <span>↗</span></a>
+          </div>
+        </div>
+        <div class="hero-foot">
+          <span>API · MCP · A2A</span>
+          <span>x402 · MPP</span>
+          <span>USDC · USD</span>
+        </div>
+      </section>
+
+      <section class="proof">
+        <div class="section-index">01 / Output</div>
+        <div class="proof-heading">
+          <h2>One claim in.<br>A verifiable record out.</h2>
+          <p>The result separates what the search provider surfaced, what the model cited, and what the service independently preserved.</p>
+        </div>
+        <div class="proof-flow">
+          <article><span>01</span><h3>Conclusion</h3><p>A bounded verdict with conflicts and limitations, rather than a free-form answer.</p></article>
+          <article><span>02</span><h3>Sources</h3><p>Every provider-reported source, with citations mapped to individual evidence items.</p></article>
+          <article><span>03</span><h3>Snapshots</h3><p>Stored HTML, capture timestamps, and raw plus normalized SHA-256 hashes.</p></article>
+          <article><span>04</span><h3>Receipt</h3><p>A signed commercial record tying the request, payment, and delivered result together.</p></article>
+        </div>
+      </section>
+
+      <section class="demo">
+        <div class="demo-copy">
+          <div class="section-index">02 / Request</div>
+          <h2>A small contract<br>for a hard problem.</h2>
+          <p>Choose a research depth. Send one claim plus optional source, freshness, language, or jurisdiction constraints.</p>
+          <a href="https://api.aisoup.net/openapi.json">Read the complete OpenAPI specification ↗</a>
+        </div>
+        <div class="terminal" aria-label="Example API request">
+          <div class="terminal-bar"><span></span><span></span><span></span><b>POST /v1/services/web-evidence/claims/verify</b></div>
+          <pre><code><i>curl</i> -X POST \
+  https://api.aisoup.net/v1/services/web-evidence/claims/verify \
+  -H <q>"Content-Type: application/json"</q> \
+  -d <q>'{</q>
+    <q>"claim"</q>: <q>"The Base mainnet chain ID is 8453."</q>,
+    <q>"sourcePolicy"</q>: <q>"authoritative"</q>,
+    <q>"minimumSources"</q>: <b>2</b>,
+    <q>"includeConflicts"</q>: <b>true</b>
+  <q>}'</q></code></pre>
+          <div class="terminal-note"><span>402</span> Payment challenge returned before execution</div>
+        </div>
+      </section>
+
+      <section class="pricing" id="pricing">
+        <div class="section-index">03 / Pay per verification</div>
+        <div class="pricing-heading">
+          <h2>Buy the depth<br>the claim deserves.</h2>
+          <p>USDC prices are deterministic per call. Card payments through MPP Stripe use a $0.50 minimum charge.</p>
+        </div>
+        <div class="tiers">
+          <a href="https://api.aisoup.net/#pricing" class="tier">
+            <div><span>Quick</span><strong>$0.02</strong></div>
+            <p>1 tool action · up to 3 cited sources · no snapshots</p><i>↗</i>
+          </a>
+          <a href="https://api.aisoup.net/#pricing" class="tier featured">
+            <div><span>Standard</span><strong>$0.05</strong></div>
+            <p>3 tool actions · up to 8 cited sources · 3 snapshots</p><i>↗</i>
+          </a>
+          <a href="https://api.aisoup.net/#pricing" class="tier">
+            <div><span>Deep</span><strong>$0.12</strong></div>
+            <p>7 tool actions · up to 15 cited sources · 8 snapshots</p><i>↗</i>
+          </a>
+          <a href="https://api.aisoup.net/#pricing" class="tier">
+            <div><span>Research</span><strong>$0.25</strong></div>
+            <p>15 tool actions · up to 20 cited sources · all-source snapshots</p><i>↗</i>
+          </a>
+        </div>
+      </section>
+
+      <section class="rails">
+        <div class="section-index">04 / Agent native</div>
+        <div class="rails-grid">
+          <h2>Discover.<br>Pay.<br>Verify.</h2>
+          <div class="rail-list">
+            <a href="https://api.aisoup.net/.well-known/agent-service.json"><span>Agent service manifest</span><b>JSON ↗</b></a>
+            <a href="https://api.aisoup.net/.well-known/mcp/server.json"><span>MCP server metadata</span><b>MCP ↗</b></a>
+            <a href="https://api.aisoup.net/.well-known/agent-card.json"><span>Agent-to-Agent card</span><b>A2A ↗</b></a>
+            <a href="https://api.aisoup.net/.well-known/x402"><span>Payment discovery</span><b>x402 ↗</b></a>
+            <a href="https://api.aisoup.net/llms.txt"><span>Plain-text agent guide</span><b>LLMS.TXT ↗</b></a>
+          </div>
+        </div>
+      </section>
+
+      <section class="closing">
+        <div>
+          <span>Web Evidence by Dream Workshop</span>
+          <h2>Make the next answer<br>inspectable.</h2>
+        </div>
+        <a class="button button--light" href="https://api.aisoup.net">Open API console <span>↗</span></a>
+      </section>
+    </main>
+
+    <footer>
+      <a href="https://aisoup.net">Dream Workshop LLC</a>
+      <div><a href="https://wiki.aisoup.net">AgenticWiKi ↗</a><a href="https://api.aisoup.net">API ↗</a></div>
+      <span>© 2026</span>
+    </footer>
+  </body>
+</html>

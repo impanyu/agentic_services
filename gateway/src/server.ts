@@ -22,6 +22,7 @@ const tiers = [
   {
     id: 'quick',
     path: '/v1/claims/verify/quick',
+    canonicalPath: '/v1/services/web-evidence/claims/verify/quick',
     price: process.env.WEB_EVIDENCE_QUICK_PRICE_USD ?? '0.02',
     maxToolCalls: 1,
     maxOutputTokens: 1500,
@@ -33,6 +34,7 @@ const tiers = [
   {
     id: 'standard',
     path: '/v1/claims/verify',
+    canonicalPath: '/v1/services/web-evidence/claims/verify',
     price: standardPrice,
     maxToolCalls: 3,
     maxOutputTokens: 3000,
@@ -44,6 +46,7 @@ const tiers = [
   {
     id: 'deep',
     path: '/v1/claims/verify/deep',
+    canonicalPath: '/v1/services/web-evidence/claims/verify/deep',
     price: process.env.WEB_EVIDENCE_DEEP_PRICE_USD ?? '0.12',
     maxToolCalls: 7,
     maxOutputTokens: 6000,
@@ -55,6 +58,7 @@ const tiers = [
   {
     id: 'research',
     path: '/v1/claims/verify/research',
+    canonicalPath: '/v1/services/web-evidence/claims/verify/research',
     price: process.env.WEB_EVIDENCE_RESEARCH_PRICE_USD ?? '0.25',
     maxToolCalls: 15,
     maxOutputTokens: 12000,
@@ -88,6 +92,7 @@ const claimRequestSchema = {
 
 const claimResponseSchema = {
   type: 'object',
+  additionalProperties: false,
   required: ['verificationId', 'claim', 'status', 'observedAt', 'conclusion', 'atomicFacts', 'providerSources', 'evidence', 'snapshots', 'conflicts', 'limitations', 'provenance'],
   properties: {
     verificationId: { type: 'string' },
@@ -95,13 +100,13 @@ const claimResponseSchema = {
     status: { enum: ['confirmed', 'partially_confirmed', 'contradicted', 'insufficient_evidence', 'ambiguous'] },
     observedAt: { type: 'string', format: 'date-time' },
     conclusion: { type: 'string' },
-    atomicFacts: { type: 'array', items: { type: 'object' } },
-    providerSources: { type: 'array', items: { type: 'object' } },
-    evidence: { type: 'array', items: { type: 'object' } },
-    snapshots: { type: 'array', items: { type: 'object' } },
-    conflicts: { type: 'array', items: { type: 'object' } },
+    atomicFacts: { type: 'array', items: atomicFactSchema() },
+    providerSources: { type: 'array', items: providerSourceSchema() },
+    evidence: { type: 'array', items: evidenceSchema() },
+    snapshots: { type: 'array', items: snapshotSchema() },
+    conflicts: { type: 'array', items: conflictSchema() },
     limitations: { type: 'array', items: { type: 'string' } },
-    provenance: { type: 'object' },
+    provenance: provenanceSchema(),
   },
 }
 
@@ -187,6 +192,17 @@ app.get('/.well-known/agent-service.json', async () => {
   if (!upstream.ok) return upstream
   const document = await upstream.json() as Record<string, any>
   document.service.version = '0.3.0'
+  document.service.homepage = 'https://evidence.aisoup.net'
+  document.provider.name = 'Dream Workshop LLC'
+  for (const operation of (document.operations ?? [])) {
+    const tier = tiers.find((candidate) => operation.id === `verify-claim-${candidate.id}`)
+    if (!tier) continue
+    operation.path = tier.canonicalPath
+    operation.extensions = {
+      ...operation.extensions,
+      legacyPaths: [tier.path],
+    }
+  }
   document.transports = [
     ...(document.transports ?? []),
     {
@@ -230,7 +246,7 @@ app.use('/openapi.json', async (c, next) => {
   document.info.contact = { url: 'https://aisoup.net', email: providerContact }
 
   for (const tier of tiers) {
-    const operation = document.paths[tier.path]?.post
+    const operation = document.paths[tier.canonicalPath]?.post
     if (!operation) continue
     operation.operationId = `verifyClaim${tier.id[0].toUpperCase()}${tier.id.slice(1)}`
     operation.tags = ['Web Evidence']
@@ -257,6 +273,15 @@ app.use('/openapi.json', async (c, next) => {
         'application/json': {
           schema: claimResponseSchema,
         },
+      },
+    }
+    document.paths[tier.path] = {
+      post: {
+        ...structuredClone(operation),
+        operationId: `${operation.operationId}Legacy`,
+        summary: `${operation.summary ?? tier.summary} (legacy path)`,
+        deprecated: true,
+        'x-canonical-path': tier.canonicalPath,
       },
     }
   }
@@ -332,7 +357,8 @@ app.use('/openapi.json', async (c, next) => {
 
 app.get('/.well-known/x402', (c) => c.json({
   version: 1,
-  resources: tiers.map((tier) => `${publicBaseUrl}${tier.path}`),
+  resources: tiers.map((tier) => `${publicBaseUrl}${tier.canonicalPath}`),
+  legacyResources: tiers.map((tier) => `${publicBaseUrl}${tier.path}`),
   ownershipProofs: [recipient],
   instructions: 'POST a JSON claim-verification request. The endpoint returns x402 and MPP payment challenges before execution.',
 }))
@@ -352,7 +378,7 @@ A2A JSON-RPC: ${publicBaseUrl}/a2a
 
 ## Paid operation
 
-${tiers.map((tier) => `POST ${tier.path}\nTier: ${tier.id}\nUSDC price: $${tier.price}\n${stripeSecretKey ? `Card price: $${stripePaymentOptions(tier).amount}\n` : ''}Maximum tool actions: ${tier.maxToolCalls}\nMaximum cited sources: ${tier.maxSources}\nSnapshot policy: ${tier.snapshotMode} (up to ${tier.maxSnapshots})`).join('\n\n')}
+${tiers.map((tier) => `POST ${tier.canonicalPath}\nTier: ${tier.id}\nUSDC price: $${tier.price}\n${stripeSecretKey ? `Card price: $${stripePaymentOptions(tier).amount}\n` : ''}Maximum tool actions: ${tier.maxToolCalls}\nMaximum cited sources: ${tier.maxSources}\nSnapshot policy: ${tier.snapshotMode} (up to ${tier.maxSnapshots})\nLegacy alias: ${tier.path}`).join('\n\n')}
 Payment: x402 or MPP using USDC on Base (eip155:8453)${stripeSecretKey ? `; MPP Stripe card/USD is also accepted with a $${stripeMinimumPrice} minimum charge` : ''}
 
 Minimum request body:
@@ -457,7 +483,7 @@ function toHonoPayment(
     // the original remains available to the upstream service after payment.
     const result = await handler(withPublicUrl(c.req.raw.clone()))
     if (result.status === 402) {
-      return new URL(c.req.url).pathname === tier.path
+      return ([tier.path, tier.canonicalPath] as readonly string[]).includes(new URL(c.req.url).pathname)
         ? withBazaarSchema(result.challenge, tier)
         : result.challenge
     }
@@ -545,12 +571,97 @@ function requestSchemaForTier(tier: VerificationTier) {
   }
 }
 
+function atomicFactSchema() {
+  return {
+    type: 'object', additionalProperties: false,
+    required: ['statement', 'status', 'confidence', 'explanation', 'evidenceIds'],
+    properties: {
+      statement: { type: 'string' },
+      status: verificationStatusSchema(),
+      confidence: { type: 'number', minimum: 0, maximum: 1 },
+      explanation: { type: 'string' },
+      evidenceIds: { type: 'array', items: { type: 'string' } },
+    },
+  }
+}
+
+function providerSourceSchema() {
+  return {
+    type: 'object', additionalProperties: false,
+    required: ['sourceId', 'url', 'title', 'provider', 'searchCallIds', 'actions', 'queries', 'evidenceIds', 'cited', 'snapshotId'],
+    properties: {
+      sourceId: { type: 'string' }, url: { type: 'string', format: 'uri' },
+      title: { type: ['string', 'null'] }, provider: { type: 'string' },
+      searchCallIds: { type: 'array', items: { type: 'string' } },
+      actions: { type: 'array', items: { type: 'string' } },
+      queries: { type: 'array', items: { type: 'string' } },
+      evidenceIds: { type: 'array', items: { type: 'string' } },
+      cited: { type: 'boolean' }, snapshotId: { type: ['string', 'null'] },
+    },
+  }
+}
+
+function evidenceSchema() {
+  return {
+    type: 'object', additionalProperties: false,
+    required: ['id', 'url', 'title', 'publisher', 'publishedAt', 'retrievedAt', 'excerpt', 'relationship', 'sourceType', 'qualityReason', 'providerSourceMatched', 'cited', 'snapshotId', 'consulted', 'snapshotted'],
+    properties: {
+      id: { type: 'string' }, url: { type: 'string', format: 'uri' }, title: { type: 'string' }, publisher: { type: 'string' },
+      publishedAt: { type: ['string', 'null'] }, retrievedAt: { type: 'string', format: 'date-time' }, excerpt: { type: 'string' },
+      relationship: { enum: ['supports', 'contradicts', 'context'] }, sourceType: { type: 'string' }, qualityReason: { type: 'string' },
+      providerSourceMatched: { type: 'boolean' }, cited: { type: 'boolean' }, snapshotId: { type: ['string', 'null'] },
+      consulted: { type: 'boolean', deprecated: true, description: 'Compatibility alias for providerSourceMatched.' },
+      snapshotted: { type: 'boolean' },
+    },
+  }
+}
+
+function snapshotSchema() {
+  return {
+    type: 'object', additionalProperties: false,
+    required: ['snapshotId', 'requestedUrl', 'finalUrl', 'retrievedAt', 'status', 'httpStatus', 'contentType', 'contentLength', 'rawSha256', 'normalizedSha256', 'failureReason'],
+    properties: {
+      snapshotId: { type: 'string' }, requestedUrl: { type: 'string', format: 'uri' }, finalUrl: { type: ['string', 'null'], format: 'uri' },
+      retrievedAt: { type: 'string', format: 'date-time' }, status: { enum: ['captured', 'failed', 'blocked', 'too_large', 'unsupported'] },
+      httpStatus: { type: ['integer', 'null'] }, contentType: { type: ['string', 'null'] }, contentLength: { type: ['integer', 'null'] },
+      rawSha256: { type: ['string', 'null'] }, normalizedSha256: { type: ['string', 'null'] }, failureReason: { type: ['string', 'null'] },
+    },
+  }
+}
+
+function conflictSchema() {
+  return {
+    type: 'object', additionalProperties: false, required: ['summary', 'evidenceIds'],
+    properties: { summary: { type: 'string' }, evidenceIds: { type: 'array', items: { type: 'string' } } },
+  }
+}
+
+function provenanceSchema() {
+  return {
+    type: 'object', additionalProperties: false,
+    required: ['provider', 'model', 'providerResponseId', 'searchedWeb', 'consultedSourceCount', 'citedSourceCount', 'providerSourceCount', 'matchedEvidenceCount', 'snapshottedSourceCount', 'webSearchCallCount', 'inputTokens', 'cachedInputTokens', 'outputTokens', 'cacheHit'],
+    properties: {
+      provider: { type: 'string' }, model: { type: 'string' }, providerResponseId: { type: 'string' }, searchedWeb: { type: 'boolean' },
+      consultedSourceCount: { type: 'integer', minimum: 0 }, citedSourceCount: { type: 'integer', minimum: 0 },
+      providerSourceCount: { type: 'integer', minimum: 0 }, matchedEvidenceCount: { type: 'integer', minimum: 0 },
+      snapshottedSourceCount: { type: 'integer', minimum: 0 }, webSearchCallCount: { type: 'integer', minimum: 0 },
+      inputTokens: { type: 'integer', minimum: 0 }, cachedInputTokens: { type: 'integer', minimum: 0 },
+      outputTokens: { type: 'integer', minimum: 0 }, cacheHit: { type: 'boolean' },
+    },
+  }
+}
+
+function verificationStatusSchema() {
+  return { enum: ['confirmed', 'partially_confirmed', 'contradicted', 'insufficient_evidence', 'ambiguous'] }
+}
+
 function mountPaidRoutes(
   payments: Parameters<typeof discovery>[1],
   paidTiers: Array<{ tier: VerificationTier; handler: MiddlewareHandler }>,
 ): void {
   for (const { tier, handler } of paidTiers) {
     app.post(tier.path, handler, async (c) => proxyPaidRequest(c.req.raw, tier))
+    app.post(tier.canonicalPath, handler, async (c) => proxyPaidRequest(c.req.raw, tier))
   }
 
   const standard = paidTiers.find(({ tier }) => tier.id === 'standard')
@@ -569,7 +680,7 @@ function mountPaidRoutes(
       {
         handler,
         method: 'POST',
-        path: tier.path,
+        path: tier.canonicalPath,
         summary: tier.summary,
         requestBody: {
           required: true,
@@ -716,7 +827,7 @@ function landingPage(): string {
     <article>
       <h2>${escapeHtml(tier.id[0].toUpperCase() + tier.id.slice(1))} · $${escapeHtml(tier.price)}</h2>
       <p>${escapeHtml(tier.summary)}</p>
-      <code>POST ${escapeHtml(tier.path)}</code>
+      <code>POST ${escapeHtml(tier.canonicalPath)}</code>
     </article>`).join('')
   const structuredData = JSON.stringify({
     '@context': 'https://schema.org',
@@ -731,7 +842,7 @@ function landingPage(): string {
       name: `${tier.id} claim verification`,
       price: tier.price,
       priceCurrency: 'USD',
-      url: `${publicBaseUrl}${tier.path}`,
+      url: `${publicBaseUrl}${tier.canonicalPath}`,
     })),
   }).replace(/</g, '\\u003c')
 
@@ -745,7 +856,7 @@ function landingPage(): string {
 </head><body><header><h1>Web Evidence</h1><p>Verify factual claims against current web evidence. Results include cited evidence, every source reported by the search provider, provenance, tier-dependent snapshots, and SHA-256 hashes.</p><p>Agents can pay per call with x402 or MPP using USDC on Base${stripeSecretKey ? `, or by card through MPP Stripe (minimum $${escapeHtml(stripeMinimumPrice)})` : ''}.</p></header>
 <main><section><h2>Agent discovery</h2><ul><li><a href="/openapi.json">OpenAPI</a></li><li><a href="/.well-known/agent-service.json">Agent service manifest</a></li><li><a href="/.well-known/x402">x402 resources</a></li><li><a href="/.well-known/mcp/server.json">MCP server metadata</a></li><li><a href="/.well-known/agent-card.json">A2A Agent Card</a></li><li><a href="/llms.txt">llms.txt</a></li></ul><p>MCP Streamable HTTP endpoint: <code>${publicBaseUrl}/mcp</code></p><p>A2A JSON-RPC endpoint: <code>${publicBaseUrl}/a2a</code></p></section>
 <section><h2>Pay-per-call tiers</h2><div class="grid">${offers}</div></section>
-<section><h2>Try the protocol</h2><p>An unauthenticated request returns a payment challenge. After payment, retry with the credential supplied by an x402 or MPP client.</p><pre><code>curl -X POST ${publicBaseUrl}/v1/claims/verify/quick \\
+<section><h2>Try the protocol</h2><p>An unauthenticated request returns a payment challenge. After payment, retry with the credential supplied by an x402 or MPP client.</p><pre><code>curl -X POST ${publicBaseUrl}/v1/services/web-evidence/claims/verify/quick \\
   -H 'content-type: application/json' \\
   -d '{"claim":"The Base mainnet chain ID is 8453."}'</code></pre></section></main></body></html>`
 }
