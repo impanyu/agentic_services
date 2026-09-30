@@ -754,7 +754,9 @@ function commerceMetadata(request: Request, tier: VerificationTier) {
   const orderId = `ord_${randomUUID().replaceAll('-', '')}`
   const orderToken = `ort_${randomBytes(32).toString('base64url')}`
   const authorization = request.headers.get('Authorization') ?? ''
-  const isStripe = authorization.startsWith('Payment ') && /method="stripe"/i.test(authorization)
+  const paymentAuthorization = request.headers.get('Payment-Authorization') ?? ''
+  const mppMethod = paymentCredentialMethod(authorization) ?? paymentCredentialMethod(paymentAuthorization)
+  const isStripe = mppMethod === 'stripe'
   const protocol = request.headers.has('Payment-Signature') || request.headers.has('X-Payment')
     ? 'x402'
     : request.headers.has('Payment-Authorization') || authorization.startsWith('Payment ')
@@ -769,4 +771,17 @@ function commerceMetadata(request: Request, tier: VerificationTier) {
     'X-Agentic-Order-Amount-Microusd': String(Math.round(Number(settledPrice) * 1_000_000)),
   }
   return { orderId, orderToken, headers }
+}
+
+function paymentCredentialMethod(value: string): string | undefined {
+  const encoded = value.match(/^Payment\s+([A-Za-z0-9_-]+)$/i)?.[1]
+  if (!encoded) return undefined
+  try {
+    const credential = JSON.parse(Buffer.from(encoded, 'base64url').toString('utf8'))
+    return typeof credential?.challenge?.method === 'string'
+      ? credential.challenge.method.toLowerCase()
+      : undefined
+  } catch {
+    return undefined
+  }
 }
