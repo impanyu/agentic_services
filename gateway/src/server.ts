@@ -164,10 +164,12 @@ app.get('/.well-known/agent-card.json', (c) => {
 
 app.get('/.well-known/agent.json', (c) => c.redirect('/.well-known/agent-card.json', 308))
 
-app.use('/.well-known/agent-service.json', async (c, next) => {
-  await next()
-  if (!c.res.ok) return
-  const document = await c.res.json() as Record<string, any>
+app.get('/.well-known/agent-service.json', async () => {
+  const upstream = await fetch(new URL('/.well-known/agent-service.json', upstreamUrl), {
+    headers: { Authorization: `Bearer ${internalApiKey}` },
+  })
+  if (!upstream.ok) return upstream
+  const document = await upstream.json() as Record<string, any>
   document.service.version = '0.3.0'
   document.transports = [
     ...(document.transports ?? []),
@@ -186,7 +188,7 @@ app.use('/.well-known/agent-service.json', async (c, next) => {
       authorization: 'x402-or-mpp',
     },
   ]
-  c.res = jsonDocumentResponse(document, 'public, max-age=300')
+  return jsonDocumentResponse(document, 'public, max-age=300')
 })
 
 app.use('/openapi.json', async (c, next) => {
