@@ -374,7 +374,6 @@ if (stripeSecretKey) {
   const stripeCharge = stripe.charge({
     secretKey: stripeSecretKey,
     networkId: stripeNetworkId,
-    recipient: stripeNetworkId,
     currency: 'usd',
     decimals: 2,
     paymentMethodTypes: ['card'],
