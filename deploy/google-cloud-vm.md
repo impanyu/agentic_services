@@ -39,8 +39,7 @@ MPP_SECRET_KEY=<at least 32 random bytes>
 X402_FACILITATOR_URL=https://facilitator.openx402.ai
 # Optional MPP card/USD rail:
 STRIPE_SECRET_KEY=<Stripe live secret key>
-STRIPE_PUBLISHABLE_KEY=<matching Stripe live publishable key>
-STRIPE_NETWORK_ID=<Stripe profile network ID beginning with profile_>
+STRIPE_NETWORK_ID=agentic-services
 STRIPE_MINIMUM_PRICE_USD=0.50
 ```
 
