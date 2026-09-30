@@ -1,0 +1,35 @@
+from __future__ import annotations
+
+import os
+from dataclasses import dataclass
+from pathlib import Path
+
+from dotenv import load_dotenv
+
+
+REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
+load_dotenv(REPOSITORY_ROOT / ".env.local")
+
+
+@dataclass(frozen=True)
+class Settings:
+    openai_api_key: str | None
+    openai_model: str
+    database_path: Path
+    base_url: str
+    provider_contact: str = "services@example.com"
+
+    @classmethod
+    def from_environment(cls) -> "Settings":
+        database_value = os.getenv("WEB_EVIDENCE_DB", "data/web-evidence.db")
+        database_path = Path(database_value)
+        if not database_path.is_absolute():
+            database_path = REPOSITORY_ROOT / database_path
+
+        return cls(
+            openai_api_key=os.getenv("OPENAI_API_KEY") or None,
+            openai_model=os.getenv("OPENAI_MODEL", "gpt-6-luna"),
+            database_path=database_path,
+            base_url=os.getenv("WEB_EVIDENCE_BASE_URL", "http://localhost:8000").rstrip("/"),
+            provider_contact=os.getenv("WEB_EVIDENCE_PROVIDER_CONTACT", "services@example.com"),
+        )

@@ -1,0 +1,106 @@
+{
+  "manifestVersion": "0.1",
+  "service": {
+    "id": "https://example.agentic.services/services/weather-risk",
+    "name": "Field Weather Risk",
+    "description": "Scores near-term field-operation risk from forecast weather and explains the limiting conditions.",
+    "version": "0.1.0",
+    "homepage": "https://example.agentic.services/weather-risk",
+    "tags": ["agriculture", "weather", "risk"]
+  },
+  "provider": {
+    "id": "https://example.agentic.services/providers/agentic-services",
+    "name": "Agentic Services",
+    "contact": "services@example.agentic.services",
+    "signingKey": "https://example.agentic.services/.well-known/jwks.json"
+  },
+  "capabilities": [
+    {
+      "id": "agriculture.weather.operation-risk",
+      "summary": "Evaluate whether forecast conditions are suitable for a specified field operation.",
+      "domains": ["agriculture", "weather"]
+    }
+  ],
+  "transports": [
+    {
+      "id": "public-http",
+      "type": "http",
+      "url": "https://api.example.agentic.services",
+      "specification": "https://api.example.agentic.services/openapi.json",
+      "authorization": "none"
+    }
+  ],
+  "operations": [
+    {
+      "id": "score-field-operation",
+      "capability": "agriculture.weather.operation-risk",
+      "transport": "public-http",
+      "summary": "Return a 0-100 risk score, limiting weather factors, and an evidence window.",
+      "method": "POST",
+      "path": "/v1/weather-risk/score",
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["latitude", "longitude", "operation", "startTime", "endTime"],
+        "properties": {
+          "latitude": { "type": "number", "minimum": -90, "maximum": 90 },
+          "longitude": { "type": "number", "minimum": -180, "maximum": 180 },
+          "operation": { "enum": ["planting", "spraying", "harvesting", "irrigating"] },
+          "startTime": { "type": "string", "format": "date-time" },
+          "endTime": { "type": "string", "format": "date-time" }
+        }
+      },
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["riskScore", "recommendation", "factors", "observedAt"],
+        "properties": {
+          "riskScore": { "type": "integer", "minimum": 0, "maximum": 100 },
+          "recommendation": { "enum": ["proceed", "use-caution", "delay"] },
+          "factors": { "type": "array", "items": { "type": "string" } },
+          "observedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "timeoutSeconds": 15,
+      "idempotent": true
+    }
+  ],
+  "offers": [
+    {
+      "id": "single-score",
+      "operation": "score-field-operation",
+      "model": "per_call",
+      "amount": "0.01",
+      "currency": "USDC",
+      "unit": "request",
+      "paymentMethods": [
+        {
+          "protocol": "x402",
+          "network": "eip155:8453",
+          "asset": "USDC",
+          "payTo": "0x0000000000000000000000000000000000000000"
+        }
+      ],
+      "limits": { "requests": 60, "periodSeconds": 60 }
+    }
+  ],
+  "provenance": {
+    "summary": "Forecast inputs and operation thresholds are returned with each result.",
+    "sources": ["https://www.weather.gov/documentation/services-web-api"],
+    "freshness": "Forecast inputs no older than 30 minutes at execution time.",
+    "coverage": "United States"
+  },
+  "serviceLevel": {
+    "availabilityTarget": 0.995,
+    "p95LatencyMs": 2000,
+    "statusUrl": "https://status.example.agentic.services"
+  },
+  "policies": {
+    "terms": "https://example.agentic.services/terms",
+    "privacy": "https://example.agentic.services/privacy",
+    "dataRetentionDays": 30,
+    "allowedUse": ["Operational planning and decision support"],
+    "prohibitedUse": ["Safety-critical decisions without independent verification"]
+  },
+  "extensions": { "example": true }
+}

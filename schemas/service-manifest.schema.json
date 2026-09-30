@@ -1,0 +1,165 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentic.services/schemas/service-manifest-v0.1.json",
+  "title": "Agentic Service Manifest",
+  "description": "Machine-readable description of a discoverable and purchasable agent service.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["manifestVersion", "service", "provider", "capabilities", "transports", "operations", "offers", "provenance", "policies"],
+  "properties": {
+    "manifestVersion": { "const": "0.1" },
+    "service": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "description", "version", "homepage"],
+      "properties": {
+        "id": { "type": "string", "format": "uri", "pattern": "^https://" },
+        "name": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "description": { "type": "string", "minLength": 1, "maxLength": 1000 },
+        "version": { "type": "string", "minLength": 1, "maxLength": 64 },
+        "homepage": { "type": "string", "format": "uri", "pattern": "^https://" },
+        "tags": { "type": "array", "items": { "type": "string", "minLength": 1, "maxLength": 64 }, "uniqueItems": true, "maxItems": 32 }
+      }
+    },
+    "provider": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "contact"],
+      "properties": {
+        "id": { "type": "string", "format": "uri" },
+        "name": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "contact": { "type": "string", "format": "email" },
+        "signingKey": { "type": "string", "format": "uri" }
+      }
+    },
+    "capabilities": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "summary"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$" },
+          "summary": { "type": "string", "minLength": 1, "maxLength": 500 },
+          "domains": { "type": "array", "items": { "type": "string", "minLength": 1, "maxLength": 100 }, "uniqueItems": true }
+        }
+      }
+    },
+    "transports": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "type", "url"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+          "type": { "enum": ["http", "mcp", "a2a"] },
+          "url": { "type": "string", "format": "uri", "pattern": "^https://" },
+          "specification": { "type": "string", "format": "uri" },
+          "authorization": { "enum": ["none", "oauth2", "bearer", "signed-request"] }
+        }
+      }
+    },
+    "operations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "capability", "transport", "summary", "inputSchema", "outputSchema"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z][a-z0-9_.-]*$" },
+          "capability": { "type": "string" },
+          "transport": { "type": "string" },
+          "summary": { "type": "string", "minLength": 1, "maxLength": 500 },
+          "method": { "enum": ["GET", "POST", "PUT", "PATCH", "DELETE"] },
+          "path": { "type": "string", "pattern": "^/" },
+          "tool": { "type": "string" },
+          "inputSchema": { "$ref": "#/$defs/jsonSchema" },
+          "outputSchema": { "$ref": "#/$defs/jsonSchema" },
+          "timeoutSeconds": { "type": "integer", "minimum": 1, "maximum": 3600 },
+          "idempotent": { "type": "boolean", "default": true }
+        },
+        "allOf": [{ "if": { "required": ["method"] }, "then": { "required": ["path"] } }]
+      }
+    },
+    "offers": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "operation", "model", "amount", "currency", "paymentMethods"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+          "operation": { "type": "string" },
+          "model": { "enum": ["per_call", "metered", "prepaid", "subscription", "quote"] },
+          "amount": { "type": "string", "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$" },
+          "currency": { "type": "string", "pattern": "^[A-Z0-9:_-]{2,64}$" },
+          "unit": { "type": "string", "minLength": 1, "maxLength": 64 },
+          "paymentMethods": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["protocol"],
+              "properties": {
+                "protocol": { "enum": ["x402", "ap2", "credit", "subscription", "invoice"] },
+                "network": { "type": "string", "maxLength": 128 },
+                "asset": { "type": "string", "maxLength": 256 },
+                "payTo": { "type": "string", "maxLength": 256 }
+              }
+            }
+          },
+          "limits": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "requests": { "type": "integer", "minimum": 1 },
+              "periodSeconds": { "type": "integer", "minimum": 1 }
+            }
+          }
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["summary", "freshness"],
+      "properties": {
+        "summary": { "type": "string", "minLength": 1, "maxLength": 1000 },
+        "sources": { "type": "array", "items": { "type": "string", "format": "uri" }, "uniqueItems": true },
+        "freshness": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "coverage": { "type": "string", "maxLength": 500 }
+      }
+    },
+    "serviceLevel": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "availabilityTarget": { "type": "number", "minimum": 0, "maximum": 1 },
+        "p95LatencyMs": { "type": "integer", "minimum": 1 },
+        "statusUrl": { "type": "string", "format": "uri" }
+      }
+    },
+    "policies": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["terms", "privacy", "dataRetentionDays"],
+      "properties": {
+        "terms": { "type": "string", "format": "uri" },
+        "privacy": { "type": "string", "format": "uri" },
+        "dataRetentionDays": { "type": "integer", "minimum": 0 },
+        "allowedUse": { "type": "array", "items": { "type": "string", "minLength": 1, "maxLength": 200 }, "uniqueItems": true },
+        "prohibitedUse": { "type": "array", "items": { "type": "string", "minLength": 1, "maxLength": 200 }, "uniqueItems": true }
+      }
+    },
+    "extensions": { "type": "object", "additionalProperties": true }
+  },
+  "$defs": {
+    "jsonSchema": { "type": "object", "required": ["type"], "additionalProperties": true }
+  }
+}

@@ -1,0 +1,33 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "agentic-services"
+version = "0.1.0"
+description = "Machine-discoverable, purchasable information services for agents"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115,<1",
+  "openai>=2,<3",
+  "pydantic>=2.10,<3",
+  "python-dotenv>=1,<2",
+  "uvicorn[standard]>=0.34,<1"
+]
+
+[project.optional-dependencies]
+dev = [
+  "httpx>=0.28,<1",
+  "jsonschema>=4.23,<5",
+  "pytest>=8,<9"
+]
+
+[project.scripts]
+agentic-services = "agentic_services.main:run"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/agentic_services"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
