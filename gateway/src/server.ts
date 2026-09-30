@@ -13,6 +13,42 @@ const facilitator = process.env.X402_FACILITATOR_URL ?? 'https://facilitator.ope
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY
 const stripeNetworkId = process.env.STRIPE_NETWORK_ID ?? 'agentic-services'
 
+const claimRequestSchema = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['claim'],
+  properties: {
+    claim: { type: 'string', minLength: 3, maxLength: 4000 },
+    asOf: { type: ['string', 'null'], format: 'date' },
+    jurisdiction: { type: ['string', 'null'] },
+    freshnessHours: { type: ['integer', 'null'], minimum: 1, maximum: 8760 },
+    sourcePolicy: { enum: ['official_only', 'authoritative', 'open_web'] },
+    minimumSources: { type: 'integer', minimum: 1, maximum: 10 },
+    maxSources: { type: 'integer', minimum: 1, maximum: 20 },
+    allowedDomains: { type: 'array', items: { type: 'string' } },
+    blockedDomains: { type: 'array', items: { type: 'string' } },
+    includeConflicts: { type: 'boolean' },
+    language: { type: 'string' },
+  },
+}
+
+const claimResponseSchema = {
+  type: 'object',
+  required: ['verificationId', 'claim', 'status', 'observedAt', 'conclusion', 'atomicFacts', 'evidence', 'conflicts', 'limitations', 'provenance'],
+  properties: {
+    verificationId: { type: 'string' },
+    claim: { type: 'string' },
+    status: { enum: ['confirmed', 'partially_confirmed', 'contradicted', 'insufficient_evidence', 'ambiguous'] },
+    observedAt: { type: 'string', format: 'date-time' },
+    conclusion: { type: 'string' },
+    atomicFacts: { type: 'array', items: { type: 'object' } },
+    evidence: { type: 'array', items: { type: 'object' } },
+    conflicts: { type: 'array', items: { type: 'object' } },
+    limitations: { type: 'array', items: { type: 'string' } },
+    provenance: { type: 'object' },
+  },
+}
+
 const evmCharge = evm.charge({
   currency: evm.assets.base.USDC,
   recipient,
@@ -20,6 +56,39 @@ const evmCharge = evm.charge({
 })
 
 const app = new Hono()
+
+app.use('/openapi.json', async (c, next) => {
+  await next()
+  if (!c.res.ok) return
+
+  const document = await c.res.json() as Record<string, any>
+  document.info['x-guidance'] =
+    'Use POST /v1/claims/verify to verify one factual claim against current web evidence. Send a JSON body with claim and optional source, freshness, jurisdiction, and language constraints.'
+  document.info.contact = { url: 'https://aisoup.net' }
+
+  const operation = document.paths['/v1/claims/verify'].post
+  operation.operationId = 'verifyClaim'
+  operation.tags = ['Web Evidence']
+  operation['x-payment-info'] = {
+    ...operation['x-payment-info'],
+    price: { mode: 'fixed', currency: 'USD', amount: price },
+    protocols: [
+      { x402: {} },
+      { mpp: { method: 'evm', intent: 'charge', currency: evm.assets.base.USDC.address } },
+    ],
+  }
+  operation.responses['200'] = {
+    description: 'Structured claim-verification result with cited evidence',
+    content: {
+      'application/json': {
+        schema: claimResponseSchema,
+      },
+    },
+  }
+
+  c.res = c.json(document)
+  c.header('Cache-Control', 'public, max-age=300')
+})
 
 app.get('/.well-known/x402', (c) => c.json({
   version: 1,
@@ -93,7 +162,7 @@ type PaymentHandler = ((request: Request) => Promise<
 function toHonoPayment(handler: PaymentHandler): MiddlewareHandler & { _internal?: unknown } {
   const middleware: MiddlewareHandler = async (c, next) => {
     const result = await handler(withPublicUrl(c.req.raw))
-    if (result.status === 402) return result.challenge
+    if (result.status === 402) return withBazaarSchema(result.challenge)
     await next()
     c.res = result.withReceipt(c.res)
   }
@@ -105,6 +174,33 @@ function withPublicUrl(request: Request): Request {
   const incoming = new URL(request.url)
   const publicUrl = new URL(incoming.pathname + incoming.search, publicBaseUrl)
   return new Request(publicUrl, request)
+}
+
+function withBazaarSchema(response: Response): Response {
+  const encoded = response.headers.get('Payment-Required')
+  if (!encoded) return response
+
+  const payload = JSON.parse(Buffer.from(encoded, 'base64').toString('utf8'))
+  payload.extensions = {
+    ...payload.extensions,
+    bazaar: {
+      schema: {
+        type: 'object',
+        properties: {
+          input: { type: 'object', properties: { body: claimRequestSchema } },
+          output: { type: 'object', properties: { example: claimResponseSchema } },
+        },
+      },
+    },
+  }
+
+  const headers = new Headers(response.headers)
+  headers.set('Payment-Required', Buffer.from(JSON.stringify(payload)).toString('base64'))
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  })
 }
 
 function mountPaidRoute(
@@ -133,24 +229,7 @@ function mountPaidRoute(
           required: true,
           content: {
             'application/json': {
-              schema: {
-                type: 'object',
-                additionalProperties: false,
-                required: ['claim'],
-                properties: {
-                  claim: { type: 'string', minLength: 3, maxLength: 4000 },
-                  asOf: { type: ['string', 'null'], format: 'date' },
-                  jurisdiction: { type: ['string', 'null'] },
-                  freshnessHours: { type: ['integer', 'null'], minimum: 1, maximum: 8760 },
-                  sourcePolicy: { enum: ['official_only', 'authoritative', 'open_web'] },
-                  minimumSources: { type: 'integer', minimum: 1, maximum: 10 },
-                  maxSources: { type: 'integer', minimum: 1, maximum: 20 },
-                  allowedDomains: { type: 'array', items: { type: 'string' } },
-                  blockedDomains: { type: 'array', items: { type: 'string' } },
-                  includeConflicts: { type: 'boolean' },
-                  language: { type: 'string' },
-                },
-              },
+              schema: claimRequestSchema,
             },
           },
         },
