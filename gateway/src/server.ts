@@ -779,9 +779,13 @@ async function proxyRequest(request: Request, path: string): Promise<Response> {
   headers.delete('Payment-Authorization')
   headers.delete('X-Payment')
   for (const name of [...headers.keys()]) {
-    if (name.toLowerCase().startsWith('x-agentic-order-') || name.toLowerCase() === 'x-agentic-payment-protocol') {
-      headers.delete(name)
-    }
+    const lowerName = name.toLowerCase()
+    if (
+      lowerName === 'x-agentic-order-id'
+      || lowerName === 'x-agentic-order-token-hash'
+      || lowerName === 'x-agentic-order-amount-microusd'
+      || lowerName === 'x-agentic-payment-protocol'
+    ) headers.delete(name)
   }
 
   return fetch(upstream, {
