@@ -265,6 +265,34 @@ def test_contact_honeypot_does_not_send_or_store(tmp_path: Path, monkeypatch) ->
     assert count == 0
 
 
+def test_contact_message_remains_saved_when_email_is_unavailable(
+    tmp_path: Path, monkeypatch
+) -> None:
+    client = build_client(tmp_path, FakeProvider())
+
+    def unavailable(*_args, **_kwargs):
+        raise RuntimeError("SMTP unavailable")
+
+    monkeypatch.setattr("agentic_services.main.send_contact_email", unavailable)
+    response = client.post(
+        "/v1/contact/messages",
+        json={
+            "name": "Grace Hopper",
+            "email": "grace@example.com",
+            "subject": "Service question",
+            "message": "I have a question about your agent-oriented services.",
+        },
+    )
+
+    assert response.status_code == 202
+    assert response.json()["status"] == "saved"
+    with sqlite3.connect(tmp_path / "evidence.db") as connection:
+        status_value = connection.execute(
+            "SELECT delivery_status FROM contact_messages"
+        ).fetchone()[0]
+    assert status_value == "failed"
+
+
 def test_idempotency_prevents_duplicate_provider_calls(tmp_path: Path) -> None:
     provider = FakeProvider()
     client = build_client(tmp_path, provider)

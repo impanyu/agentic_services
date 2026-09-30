@@ -248,7 +248,7 @@ def create_app(
 
     @app.post("/v1/contact/messages", status_code=201, tags=["contact"])
     async def create_contact_message(
-        payload: ContactMessageRequest, request: Request
+        payload: ContactMessageRequest, request: Request, response: Response
     ) -> dict[str, str]:
         if payload.company:
             return {"messageId": f"msg_{secrets.token_hex(16)}", "status": "received"}
@@ -292,10 +292,8 @@ def create_app(
             store.update_contact_delivery(
                 message_id=message_id, status="failed", error=str(error)[:500]
             )
-            raise HTTPException(
-                status_code=503,
-                detail="Your message was saved, but email delivery is temporarily unavailable.",
-            ) from error
+            response.status_code = 202
+            return {"messageId": message_id, "status": "saved"}
         store.update_contact_delivery(message_id=message_id, status="sent")
         return {"messageId": message_id, "status": "sent"}
 

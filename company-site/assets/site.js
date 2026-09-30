@@ -49,7 +49,9 @@ if (contactForm && contactStatus) {
 
       contactForm.reset();
       contactStatus.className = "form-status form-status--success";
-      contactStatus.textContent = `Message received · ${result.messageId}`;
+      contactStatus.textContent = result.status === "sent"
+        ? `Message sent · ${result.messageId}`
+        : `Message safely received · ${result.messageId}`;
     } catch (error) {
       contactStatus.className = "form-status form-status--error";
       contactStatus.textContent = error.message || "Message could not be sent. Please try again.";
