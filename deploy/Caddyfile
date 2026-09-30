@@ -1,3 +1,15 @@
+wiki.aisoup.net {
+	reverse_proxy 127.0.0.1:3000 {
+		flush_interval -1
+	}
+}
+
+adma.aisoup.net {
+	reverse_proxy 127.0.0.1:3001 {
+		flush_interval -1
+	}
+}
+
 aisoup.net, www.aisoup.net {
 	root * /mnt/disks/agentic-services/app/company-site/dist
 	encode zstd gzip
