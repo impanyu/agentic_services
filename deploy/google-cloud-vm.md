@@ -41,7 +41,7 @@ X402_FACILITATOR_URL=https://facilitator.openx402.ai
 STRIPE_SECRET_KEY=<Stripe live secret key>
 STRIPE_NETWORK_ID=agentic-services
 STRIPE_MINIMUM_PRICE_USD=0.50
-# Optional; enables /.well-known/indexnow-key.txt for IndexNow submissions:
+# Optional; enables the root key file required for IndexNow submissions:
 INDEXNOW_KEY=<8-128 character private IndexNow key>
 ```
 

@@ -160,7 +160,7 @@ app.get('/googlebcb2306719d8bc8d.html', (c) => c.text(
 ))
 
 if (indexNowKey) {
-  app.get('/.well-known/indexnow-key.txt', (c) => c.text(indexNowKey))
+  app.get(`/${indexNowKey}.txt`, (c) => c.text(indexNowKey))
 }
 
 app.get('/robots.txt', (c) => c.text(`User-agent: *\nAllow: /\nSitemap: ${publicBaseUrl}/sitemap.xml\n`))
