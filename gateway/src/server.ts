@@ -154,6 +154,10 @@ app.get('/favicon.ico', (c) => c.body(faviconSvg(), 200, {
   'Cache-Control': 'public, max-age=86400',
 }))
 
+app.get('/googlebcb2306719d8bc8d.html', (c) => c.text(
+  'google-site-verification: googlebcb2306719d8bc8d.html',
+))
+
 app.get('/robots.txt', (c) => c.text(`User-agent: *\nAllow: /\nSitemap: ${publicBaseUrl}/sitemap.xml\n`))
 
 app.get('/sitemap.xml', (c) => {
