@@ -616,7 +616,30 @@ function agentCard() {
     provider: { organization: 'Agentic Services', url: 'https://aisoup.net' },
     version: '0.3.0',
     documentationUrl: `${publicBaseUrl}/`,
-    capabilities: {},
+    capabilities: {
+      extensions: [
+        {
+          uri: 'https://www.x402.org/',
+          description: `Pay $${standardPrice} in USDC on Base before calling this agent.`,
+          required: true,
+          params: {
+            discoveryUrl: `${publicBaseUrl}/.well-known/x402`,
+            priceUsd: standardPrice,
+            network: 'eip155:8453',
+            asset: 'USDC',
+          },
+        },
+        {
+          uri: 'https://paymentauth.org/',
+          description: `Complete an MPP charge using Base USDC at $${standardPrice} or MPP Stripe at $${stripePaymentOptions(tiers.find((tier) => tier.id === 'standard')!).amount}.`,
+          required: true,
+          params: {
+            methods: ['evm', ...(stripeSecretKey ? ['stripe'] : [])],
+            endpoint: `${publicBaseUrl}/a2a`,
+          },
+        },
+      ],
+    },
     defaultInputModes: ['text/plain'],
     defaultOutputModes: ['application/json', 'text/plain'],
     skills: [{
@@ -627,17 +650,6 @@ function agentCard() {
       examples: ['Verify that the Base mainnet chain ID is 8453.'],
       inputModes: ['text/plain'],
       outputModes: ['application/json', 'text/plain'],
-    }],
-    extensions: [{
-      uri: 'https://www.x402.org/',
-      description: `Calls cost $${standardPrice} in USDC on Base; MPP Stripe card payments use a $${stripePaymentOptions(tiers.find((tier) => tier.id === 'standard')!).amount} card price.`,
-      required: false,
-      params: {
-        discoveryUrl: `${publicBaseUrl}/.well-known/x402`,
-        priceUsd: standardPrice,
-        network: 'eip155:8453',
-        asset: 'USDC',
-      },
     }],
   }
 }
