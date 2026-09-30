@@ -1,3 +1,15 @@
+aisoup.net, www.aisoup.net {
+	root * /mnt/disks/agentic-services/app/company-site/dist
+	encode zstd gzip
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Content-Security-Policy "default-src 'self'; style-src 'self'; script-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
+	}
+	file_server
+}
+
 api.aisoup.net {
 	reverse_proxy 127.0.0.1:8010 {
 		flush_interval -1

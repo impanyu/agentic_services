@@ -1,0 +1,24 @@
+{
+  "products": [
+    {
+      "name": "AgenticWiKi",
+      "eyebrow": "Agent workspace",
+      "description": "A question is an address. Explore, build, and return to durable knowledge in one browser-like workspace.",
+      "url": "https://wiki.aisoup.net",
+      "cta": "Open AgenticWiKi",
+      "number": "01",
+      "accent": "lime",
+      "capabilities": ["Research", "Knowledge", "Workspace"]
+    },
+    {
+      "name": "Web Evidence",
+      "eyebrow": "Agent service",
+      "description": "Verify claims with cited evidence, complete source provenance, reproducible snapshots, and content hashes.",
+      "url": "https://api.aisoup.net",
+      "cta": "View the API",
+      "number": "02",
+      "accent": "coral",
+      "capabilities": ["API", "MCP", "x402 + MPP"]
+    }
+  ]
+}
