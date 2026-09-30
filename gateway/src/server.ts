@@ -21,6 +21,34 @@ const evmCharge = evm.charge({
 
 const app = new Hono()
 
+app.get('/.well-known/x402', (c) => c.json({
+  version: 1,
+  resources: [`${publicBaseUrl}/v1/claims/verify`],
+  ownershipProofs: [recipient],
+  instructions: 'POST a JSON claim-verification request. The endpoint returns x402 and MPP payment challenges before execution.',
+}))
+
+app.get('/llms.txt', (c) => c.text(`# Web Evidence
+
+Web Evidence verifies factual claims against current web sources and returns structured, cited results.
+
+Base URL: ${publicBaseUrl}
+OpenAPI: ${publicBaseUrl}/openapi.json
+Service manifest: ${publicBaseUrl}/.well-known/agent-service.json
+x402 discovery: ${publicBaseUrl}/.well-known/x402
+
+## Paid operation
+
+POST /v1/claims/verify
+Price: $${price} per request
+Payment: x402 or MPP using USDC on Base (eip155:8453)${stripeSecretKey ? '; MPP Stripe USD is also accepted' : ''}
+
+Minimum request body:
+{"claim":"A factual statement to verify","minimumSources":1}
+
+The initial unauthenticated request returns HTTP 402. Complete one advertised payment challenge and retry with the resulting payment credential.
+`))
+
 app.get('/healthz', async (c) => {
   const upstream = await fetch(`${upstreamUrl}/healthz`)
   return c.json({ status: upstream.ok ? 'ok' : 'degraded', upstream: upstream.status }, upstream.ok ? 200 : 503)

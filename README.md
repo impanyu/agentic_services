@@ -73,7 +73,9 @@ The API starts at `http://localhost:8000`. Its main endpoints are:
 - `POST /v1/claims/verify` — verify and persist a claim.
 - `GET /v1/claims/verifications/{verification_id}` — retrieve the immutable result.
 - `GET /.well-known/agent-service.json` — discover the service and its schemas.
+- `GET /.well-known/x402` — discover x402-payable resource URLs.
 - `GET /openapi.json` — inspect the complete HTTP contract.
+- `GET /llms.txt` — read concise agent integration instructions.
 
 Example request:
 
