@@ -1,10 +1,10 @@
 # Google Cloud VM deployment
 
-The production hostname is `api.aisoup.net`. The existing `soup` VM uses host Nginx and Certbot, so the Web Evidence container binds only to `127.0.0.1:8010` and cannot bypass the reverse proxy.
+The production hostname is `api.aisoup.net`. It runs on the existing `agentic-wiki` VM in project `impanyu`, zone `us-central1-a`. The host uses Caddy, so the Web Evidence container binds only to `127.0.0.1:8010` and cannot bypass the reverse proxy.
 
 ## VM preparation
 
-The current VM is Ubuntu 22.04 LTS with Docker Engine, Docker Compose, Nginx, and Certbot. Its reserved static address is `34.28.188.78`.
+The VM has Docker Engine, Docker Compose, and Caddy. Its reserved static address is `136.64.166.13`.
 
 Clone the repository on the VM:
 
@@ -37,14 +37,12 @@ docker compose ps
 curl http://127.0.0.1:8010/healthz
 ```
 
-Install the Nginx virtual host and request TLS after DNS resolves:
+Append the API site block from `deploy/Caddyfile` to `/etc/caddy/Caddyfile`, validate it, and reload Caddy. Caddy obtains and renews TLS automatically after DNS resolves:
 
 ```bash
-sudo cp deploy/nginx-api.conf /etc/nginx/sites-available/agentic-services-api
-sudo ln -s /etc/nginx/sites-available/agentic-services-api /etc/nginx/sites-enabled/agentic-services-api
-sudo nginx -t
-sudo systemctl reload nginx
-sudo certbot --nginx -d api.aisoup.net --non-interactive --agree-tos --redirect -m "$WEB_EVIDENCE_PROVIDER_CONTACT"
+cat deploy/Caddyfile | sudo tee -a /etc/caddy/Caddyfile
+sudo caddy validate --config /etc/caddy/Caddyfile
+sudo systemctl reload caddy
 ```
 
 ## DNS
@@ -53,7 +51,7 @@ In Squarespace DNS, create an `A` record:
 
 | Host | Type | Value |
 | --- | --- | --- |
-| `api` | `A` | `34.28.188.78` |
+| `api` | `A` | `136.64.166.13` |
 
 After DNS resolves, verify:
 

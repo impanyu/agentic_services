@@ -1,0 +1,5 @@
+api.aisoup.net {
+	reverse_proxy 127.0.0.1:8010 {
+		flush_interval -1
+	}
+}
