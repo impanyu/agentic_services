@@ -9,7 +9,7 @@ services:
       WEB_EVIDENCE_SNAPSHOT_DIR: /data/snapshots
       WEB_EVIDENCE_BASE_URL: https://api.aisoup.net
     volumes:
-      - ${WEB_EVIDENCE_DATA_DIR:-./data}:/data
+      - ${WEB_EVIDENCE_DATA_DIR:?Set WEB_EVIDENCE_DATA_DIR or pass --env-file .env.production}:/data
     expose:
       - "8000"
     healthcheck:

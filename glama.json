@@ -1,0 +1,23 @@
+{
+  "$schema": "https://glama.ai/mcp/schemas/server.json",
+  "maintainers": ["impanyu"],
+  "name": "web-evidence",
+  "description": "Paid claim verification for agents with cited web evidence, full provider-source provenance, snapshots, and hashes.",
+  "type": "mcp_server",
+  "status": "beta",
+  "transport": ["http"],
+  "keywords": [
+    "web-evidence",
+    "fact-checking",
+    "research",
+    "citations",
+    "x402",
+    "agent-payments"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/impanyu/agentic_services.git"
+  },
+  "homepage": "https://api.aisoup.net",
+  "license": "MIT"
+}
