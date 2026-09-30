@@ -16,7 +16,6 @@ const facilitator = process.env.X402_FACILITATOR_URL ?? 'https://facilitator.ope
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY
 const stripeNetworkId = process.env.STRIPE_NETWORK_ID ?? 'agentic-services'
 const stripeMinimumPrice = process.env.STRIPE_MINIMUM_PRICE_USD ?? '0.50'
-const providerContact = process.env.WEB_EVIDENCE_PROVIDER_CONTACT ?? 'services@example.com'
 const indexNowKey = process.env.INDEXNOW_KEY
 
 const tiers = [
@@ -200,6 +199,7 @@ app.get('/.well-known/agent-service.json', async () => {
   document.service.version = '0.3.0'
   document.service.homepage = `${publicBaseUrl}/web-evidence/`
   document.provider.name = 'Dream Workshop LLC'
+  document.provider.contact = 'https://aisoup.net/#contact'
   for (const transport of (document.transports ?? [])) {
     if (transport.id === 'public-http') {
       transport.specification = `${serviceBaseUrl}/openapi.json`
@@ -258,7 +258,7 @@ app.use('/openapi.json', async (c, next) => {
   const document = await c.res.json() as Record<string, any>
   document.info['x-guidance'] =
     'Use POST /v1/claims/verify to verify one factual claim against current web evidence. Send a JSON body with claim and optional source, freshness, jurisdiction, and language constraints.'
-  document.info.contact = { url: 'https://aisoup.net', email: providerContact }
+  document.info.contact = { url: 'https://aisoup.net/#contact' }
 
   for (const tier of tiers) {
     const operation = document.paths[tier.canonicalPath]?.post
@@ -754,7 +754,7 @@ function agentCard() {
       protocolBinding: 'JSONRPC',
       protocolVersion: '1.0',
     }],
-    provider: { organization: 'Agentic Services', url: 'https://aisoup.net' },
+    provider: { organization: 'Dream Workshop LLC', url: 'https://aisoup.net' },
     version: '0.3.0',
     documentationUrl: `${publicBaseUrl}/web-evidence/`,
     capabilities: {
