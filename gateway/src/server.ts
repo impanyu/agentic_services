@@ -250,6 +250,51 @@ app.use('/openapi.json', async (c, next) => {
       responses: { '200': { description: 'Raw snapshot content' }, '404': { description: 'Snapshot content not found' } },
     },
   }
+  document.paths['/v1/quotes'] = {
+    post: {
+      operationId: 'createVerificationQuote', tags: ['Commerce'],
+      summary: 'Create a 15-minute machine-readable quote for a verification tier', security: [],
+      requestBody: { required: true, content: { 'application/json': { schema: {
+        type: 'object', properties: { tier: { enum: tiers.map((tier) => tier.id), default: 'standard' } }, additionalProperties: false,
+      } } } },
+      responses: { '200': { description: 'Quote with price, expiry, operation, and supported payment methods' } },
+    },
+  }
+  document.paths['/v1/orders/{order_id}'] = {
+    get: {
+      operationId: 'getOrderByAccessToken', tags: ['Commerce'], summary: 'Retrieve one order and receipt with its order access token',
+      parameters: [
+        { name: 'order_id', in: 'path', required: true, schema: { type: 'string' } },
+        { name: 'X-Agentic-Order-Token', in: 'header', required: true, schema: { type: 'string' } },
+      ], responses: { '200': { description: 'Customer-safe order and signed receipt' }, '404': { description: 'Order not found' } },
+    },
+  }
+  document.paths['/v1/customer/orders'] = {
+    get: {
+      operationId: 'listCustomerOrders', tags: ['Commerce'], summary: 'List orders owned by a registered customer',
+      parameters: [
+        { name: 'X-Agentic-Customer-Key', in: 'header', required: true, schema: { type: 'string' } },
+        { name: 'limit', in: 'query', schema: { type: 'integer', minimum: 1, maximum: 200, default: 50 } },
+        { name: 'offset', in: 'query', schema: { type: 'integer', minimum: 0, default: 0 } },
+      ], responses: { '200': { description: 'Customer order list' }, '401': { description: 'Invalid customer key' } },
+    },
+  }
+  document.paths['/v1/customer/orders/{order_id}'] = {
+    get: {
+      operationId: 'getCustomerOrder', tags: ['Commerce'], summary: 'Retrieve one order owned by a registered customer',
+      parameters: [
+        { name: 'order_id', in: 'path', required: true, schema: { type: 'string' } },
+        { name: 'X-Agentic-Customer-Key', in: 'header', required: true, schema: { type: 'string' } },
+      ], responses: { '200': { description: 'Customer-safe order and signed receipt' }, '404': { description: 'Order not found' } },
+    },
+  }
+  document.paths['/v1/receipts/{order_id}/verify'] = {
+    post: {
+      operationId: 'verifyOrderReceipt', tags: ['Commerce'], summary: 'Verify the server signature on an issued receipt', security: [],
+      parameters: [{ name: 'order_id', in: 'path', required: true, schema: { type: 'string' } }],
+      responses: { '200': { description: 'Receipt signature verification result' }, '404': { description: 'Receipt not found' } },
+    },
+  }
 
   c.res = c.json(document)
   c.header('Cache-Control', 'public, max-age=300')
