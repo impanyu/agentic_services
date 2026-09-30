@@ -8,7 +8,7 @@ services:
       WEB_EVIDENCE_DB: /data/web-evidence.db
       WEB_EVIDENCE_BASE_URL: https://api.aisoup.net
     volumes:
-      - evidence-data:/data
+      - ${WEB_EVIDENCE_DATA_DIR:-./data}:/data
     expose:
       - "8000"
     healthcheck:
@@ -37,6 +37,3 @@ services:
       timeout: 5s
       retries: 3
       start_period: 20s
-
-volumes:
-  evidence-data:

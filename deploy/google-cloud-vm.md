@@ -4,13 +4,13 @@ The production hostname is `api.aisoup.net`. It runs on the existing `agentic-wi
 
 ## VM preparation
 
-The VM has Docker Engine, Docker Compose, and Caddy. Its reserved static address is `136.64.166.13`.
+The VM has Docker Engine, Docker Compose, and Caddy. Its reserved static address is `136.64.166.13`. A dedicated 100 GB balanced persistent disk named `agentic-services-data` is mounted at `/mnt/disks/agentic-services`.
 
 Clone the repository on the VM:
 
 ```bash
-git clone https://github.com/impanyu/agentic_services.git
-cd agentic_services
+git clone https://github.com/impanyu/agentic_services.git /mnt/disks/agentic-services/app
+cd /mnt/disks/agentic-services/app
 ```
 
 Create `.env.production` on the VM. Never commit this file:
@@ -20,6 +20,7 @@ OPENAI_API_KEY=<OpenAI project key>
 OPENAI_MODEL=gpt-6-luna
 WEB_EVIDENCE_PROVIDER_CONTACT=<operator email>
 WEB_EVIDENCE_API_KEY=<long random internal gateway key>
+WEB_EVIDENCE_DATA_DIR=/mnt/disks/agentic-services/data
 WEB_EVIDENCE_PRICE_USD=0.05
 PAYMENT_RECIPIENT=<Base-compatible 0x address>
 MPP_SECRET_KEY=<at least 32 random bytes>
