@@ -27,6 +27,8 @@ def build_service(settings: Settings) -> ClaimVerificationService | None:
         provider=OpenAIEvidenceProvider(
             api_key=settings.openai_api_key,
             model=settings.openai_model,
+            max_tool_calls=settings.max_tool_calls,
+            max_output_tokens=settings.max_output_tokens,
         ),
         store=VerificationStore(settings.database_path),
     )

@@ -21,6 +21,8 @@ class Settings:
     service_api_key: str | None = None
     payment_recipient: str | None = None
     price_usd: str = "0.05"
+    max_tool_calls: int = 3
+    max_output_tokens: int = 3000
 
     @classmethod
     def from_environment(cls) -> "Settings":
@@ -38,4 +40,6 @@ class Settings:
             service_api_key=os.getenv("WEB_EVIDENCE_API_KEY") or None,
             payment_recipient=os.getenv("PAYMENT_RECIPIENT") or None,
             price_usd=os.getenv("WEB_EVIDENCE_PRICE_USD", "0.05"),
+            max_tool_calls=int(os.getenv("OPENAI_MAX_TOOL_CALLS", "3")),
+            max_output_tokens=int(os.getenv("OPENAI_MAX_OUTPUT_TOKENS", "3000")),
         )

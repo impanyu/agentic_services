@@ -18,6 +18,8 @@ Create `.env.production` on the VM. Never commit this file:
 ```dotenv
 OPENAI_API_KEY=<OpenAI project key>
 OPENAI_MODEL=gpt-6-luna
+OPENAI_MAX_TOOL_CALLS=3
+OPENAI_MAX_OUTPUT_TOKENS=3000
 WEB_EVIDENCE_PROVIDER_CONTACT=<operator email>
 WEB_EVIDENCE_API_KEY=<long random internal gateway key>
 WEB_EVIDENCE_DATA_DIR=/mnt/disks/agentic-services/services/web-evidence

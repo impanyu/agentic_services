@@ -72,9 +72,18 @@ def collect_source_urls(value: Any) -> set[str]:
 
 
 class OpenAIEvidenceProvider:
-    def __init__(self, *, api_key: str, model: str) -> None:
+    def __init__(
+        self,
+        *,
+        api_key: str,
+        model: str,
+        max_tool_calls: int = 3,
+        max_output_tokens: int = 3000,
+    ) -> None:
         self.client = OpenAI(api_key=api_key)
         self.model = model
+        self.max_tool_calls = max_tool_calls
+        self.max_output_tokens = max_output_tokens
 
     def analyze(self, request: ClaimVerificationRequest) -> ProviderResult:
         tool: dict[str, Any] = {"type": "web_search"}
@@ -91,6 +100,8 @@ class OpenAIEvidenceProvider:
             reasoning={"effort": "low"},
             tools=[tool],
             tool_choice="required",
+            max_tool_calls=self.max_tool_calls,
+            max_output_tokens=self.max_output_tokens,
             include=["web_search_call.action.sources"],
             input=[
                 {"role": "system", "content": SYSTEM_INSTRUCTIONS},
