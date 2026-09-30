@@ -186,8 +186,7 @@ app.use('/.well-known/agent-service.json', async (c, next) => {
       authorization: 'x402-or-mpp',
     },
   ]
-  c.res = c.json(document)
-  c.header('Cache-Control', 'public, max-age=300')
+  c.res = jsonDocumentResponse(document, 'public, max-age=300')
 })
 
 app.use('/openapi.json', async (c, next) => {
@@ -296,8 +295,7 @@ app.use('/openapi.json', async (c, next) => {
     },
   }
 
-  c.res = c.json(document)
-  c.header('Cache-Control', 'public, max-age=300')
+  c.res = jsonDocumentResponse(document, 'public, max-age=300')
 })
 
 app.get('/.well-known/x402', (c) => c.json({
@@ -673,6 +671,15 @@ function escapeHtml(value: string): string {
   return value.replace(/[&<>"']/g, (character) => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
   })[character] ?? character)
+}
+
+function jsonDocumentResponse(document: Record<string, any>, cacheControl: string): Response {
+  return new Response(JSON.stringify(document), {
+    headers: {
+      'Content-Type': 'application/json; charset=UTF-8',
+      'Cache-Control': cacheControl,
+    },
+  })
 }
 
 async function proxyRequest(request: Request, path: string): Promise<Response> {
