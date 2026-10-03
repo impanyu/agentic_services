@@ -6,10 +6,8 @@ on:
       service:
         description: Service to publish
         required: true
-        type: choice
-        options:
-          - contractor-check
-          - web-evidence
+        type: string
+        default: contractor-check
 
 permissions:
   contents: read
@@ -28,9 +26,12 @@ jobs:
           SERVICE: ${{ inputs.service }}
         run: |
           case "$SERVICE" in
-            contractor-check) echo "SERVER_JSON=services/contractor-check/server.json" >> "$GITHUB_ENV" ;;
             web-evidence) echo "SERVER_JSON=server.json" >> "$GITHUB_ENV" ;;
-            *) exit 1 ;;
+            *)
+              [[ "$SERVICE" =~ ^[a-z][a-z0-9-]*$ ]] || exit 1
+              [[ -f "services/$SERVICE/server.json" ]] || exit 1
+              echo "SERVER_JSON=services/$SERVICE/server.json" >> "$GITHUB_ENV"
+              ;;
           esac
       - name: Install verified MCP publisher
         shell: bash
