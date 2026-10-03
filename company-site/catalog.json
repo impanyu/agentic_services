@@ -23,6 +23,18 @@
       "number": "02",
       "accent": "coral",
       "capabilities": ["API", "MCP", "x402 + MPP"]
+    },
+    {
+      "name": "California C-10 Contractor Check",
+      "audience": "both",
+      "eyebrow": "Human + agent service",
+      "description": "Review California electrical contractor license, bond, and workers' compensation records with a source-linked report.",
+      "url": "https://api.aisoup.net/contractor-check/",
+      "domain": "api.aisoup.net/contractor-check/",
+      "cta": "Check a contractor",
+      "number": "03",
+      "accent": "lime",
+      "capabilities": ["Stripe Checkout", "API", "CSLB source"]
     }
   ]
 }

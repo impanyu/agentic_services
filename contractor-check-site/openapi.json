@@ -1,0 +1,25 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "California C-10 Contractor Check API",
+    "version": "0.1.0",
+    "description": "Paid source-linked preflight of one California contractor license. Human reports are sold separately through Stripe Checkout."
+  },
+  "servers": [{"url": "https://api.aisoup.net"}],
+  "paths": {
+    "/contractor-check/v1/check": {
+      "post": {
+        "summary": "Check one contractor license",
+        "description": "The first call returns HTTP 402 with an x402 or MPP challenge. Pay and retry to receive the CSLB-based report.",
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"type": "object", "additionalProperties": false, "required": ["licenseNumber"], "properties": {"licenseNumber": {"type": "string", "pattern": "^[0-9]{1,8}$"}}}}}},
+        "responses": {
+          "200": {"description": "Source-linked report"},
+          "402": {"description": "Payment required; challenge in response headers"},
+          "404": {"description": "No matching CSLB license detail"},
+          "503": {"description": "CSLB source unavailable"}
+        },
+        "x-payment-info": {"amount": "1.00", "currency": "USD", "methods": ["x402 Base USDC", "MPP Base USDC", "MPP Stripe if configured"]}
+      }
+    }
+  }
+}

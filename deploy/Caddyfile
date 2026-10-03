@@ -43,6 +43,28 @@ evidence.aisoup.net {
 }
 
 api.aisoup.net {
+	handle /contractor-check {
+		redir /contractor-check/ permanent
+	}
+
+	handle /contractor-check/v1/* {
+		reverse_proxy 127.0.0.1:8010 {
+			flush_interval -1
+		}
+	}
+
+	handle_path /contractor-check/* {
+		root * /mnt/disks/agentic-services/app/contractor-check-site
+		encode zstd gzip
+		header {
+			Strict-Transport-Security "max-age=31536000; includeSubDomains"
+			X-Content-Type-Options "nosniff"
+			Referrer-Policy "strict-origin-when-cross-origin"
+			Content-Security-Policy "default-src 'self'; style-src 'self'; script-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
+		}
+		file_server
+	}
+
 	handle /web-evidence {
 		redir /web-evidence/ permanent
 	}

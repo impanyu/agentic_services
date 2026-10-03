@@ -63,6 +63,40 @@ class VerificationStore:
             )
             connection.execute(
                 """
+                INSERT OR IGNORE INTO services(
+                    service_id,name,description,status,version,manifest_url,created_at,updated_at
+                ) VALUES(?,?,?,?,?,?,?,?)
+                """,
+                (
+                    "contractor-check",
+                    "California C-10 Contractor Check",
+                    "Source-linked California electrical contractor license preflight.",
+                    "active",
+                    "0.1.0",
+                    "/contractor-check/.well-known/agent-service.json",
+                    now,
+                    now,
+                ),
+            )
+            connection.execute(
+                """
+                CREATE TABLE IF NOT EXISTS contractor_check_intents (
+                    intent_id TEXT PRIMARY KEY,
+                    license_number TEXT NOT NULL,
+                    report_json TEXT NOT NULL,
+                    price_cents INTEGER NOT NULL,
+                    stripe_session_id TEXT UNIQUE,
+                    order_id TEXT UNIQUE,
+                    created_at TEXT NOT NULL
+                )
+                """
+            )
+            connection.execute(
+                "DELETE FROM contractor_check_intents WHERE created_at < ?",
+                ((datetime.now(UTC) - timedelta(days=30)).isoformat(),),
+            )
+            connection.execute(
+                """
                 CREATE TABLE IF NOT EXISTS claim_verifications (
                     verification_id TEXT PRIMARY KEY,
                     request_hash TEXT NOT NULL,
@@ -782,6 +816,49 @@ class VerificationStore:
             ).fetchall()
         return [self._customer_row(row) for row in rows]
 
+    def create_contractor_intent(self, license_number: str, report: dict[str, Any], price_cents: int) -> str:
+        intent_id = f"cci_{uuid.uuid4().hex}"
+        with self._connect() as connection:
+            self._purge_contractor_intents(connection)
+            connection.execute(
+                "INSERT INTO contractor_check_intents VALUES(?,?,?,?,?,?,?)",
+                (intent_id, license_number, json.dumps(report, separators=(",", ":")),
+                 price_cents, None, None, datetime.now(UTC).isoformat()),
+            )
+        return intent_id
+
+    @staticmethod
+    def _purge_contractor_intents(connection: sqlite3.Connection) -> None:
+        connection.execute(
+            "DELETE FROM contractor_check_intents WHERE created_at < ?",
+            ((datetime.now(UTC) - timedelta(days=30)).isoformat(),),
+        )
+
+    def purge_contractor_intents(self) -> None:
+        with self._connect() as connection:
+            self._purge_contractor_intents(connection)
+
+    def bind_contractor_session(self, intent_id: str, stripe_session_id: str) -> None:
+        with self._connect() as connection:
+            connection.execute(
+                "UPDATE contractor_check_intents SET stripe_session_id=? WHERE intent_id=? AND stripe_session_id IS NULL",
+                (stripe_session_id, intent_id),
+            )
+
+    def get_contractor_intent(self, intent_id: str) -> dict[str, Any] | None:
+        with self._connect() as connection:
+            row = connection.execute(
+                "SELECT * FROM contractor_check_intents WHERE intent_id=?", (intent_id,)
+            ).fetchone()
+        return dict(row) if row else None
+
+    def set_contractor_order(self, intent_id: str, order_id: str) -> None:
+        with self._connect() as connection:
+            connection.execute(
+                "UPDATE contractor_check_intents SET order_id=? WHERE intent_id=? AND order_id IS NULL",
+                (order_id, intent_id),
+            )
+
     def create_order(
         self,
         *,
@@ -822,12 +899,13 @@ class VerificationStore:
     def complete_order(self, *, order_id: str, values: dict[str, Any], receipt: dict[str, Any], signature: str) -> None:
         completed_at = datetime.now(UTC).isoformat()
         with self._connect() as connection:
-            connection.execute(
+            updated = connection.execute(
                 """
                 UPDATE orders SET status='completed',verification_id=?,provider_response_id=?,model=?,
                   input_tokens=?,cached_input_tokens=?,output_tokens=?,web_search_calls=?,
                   model_cost_microusd=?,search_cost_microusd=?,total_cost_microusd=?,
-                  receipt_id=?,receipt_json=?,receipt_signature=?,completed_at=? WHERE order_id=?
+                  receipt_id=?,receipt_json=?,receipt_signature=?,completed_at=?
+                  WHERE order_id=? AND status='processing'
                 """,
                 (
                     values["verification_id"], values["provider_response_id"], values["model"],
@@ -838,6 +916,8 @@ class VerificationStore:
                     signature, completed_at, order_id,
                 ),
             )
+            if updated.rowcount == 0:
+                return
             order = connection.execute("SELECT price_microusd FROM orders WHERE order_id=?", (order_id,)).fetchone()
             entries = [
                 ("revenue", "customer_payment", int(order["price_microusd"])),

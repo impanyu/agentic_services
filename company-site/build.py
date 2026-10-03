@@ -45,10 +45,10 @@ def main() -> None:
     catalog = json.loads((ROOT / "catalog.json").read_text())
     products = catalog["products"]
     human_cards = "\n".join(
-        product_card(product) for product in products if product["audience"] == "human"
+        product_card(product) for product in products if product["audience"] in {"human", "both"}
     )
     agent_cards = "\n".join(
-        product_card(product) for product in products if product["audience"] == "agent"
+        product_card(product) for product in products if product["audience"] in {"agent", "both"}
     )
 
     template = (ROOT / "index.template.html").read_text()

@@ -16,6 +16,11 @@ const facilitator = process.env.X402_FACILITATOR_URL ?? 'https://facilitator.ope
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY
 const stripeNetworkId = process.env.STRIPE_NETWORK_ID ?? 'agentic-services'
 const stripeMinimumPrice = process.env.STRIPE_MINIMUM_PRICE_USD ?? '0.50'
+const contractorOperation = {
+  id: 'license-preflight',
+  path: '/contractor-check/v1/check',
+  price: '1.00',
+}
 const indexNowKey = process.env.INDEXNOW_KEY
 
 const tiers = [
@@ -176,7 +181,7 @@ app.get('/robots.txt', (c) => c.text(`User-agent: *\nAllow: /\nSitemap: ${public
 
 app.get('/sitemap.xml', (c) => {
   c.header('Content-Type', 'application/xml; charset=utf-8')
-  return c.body(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/sitemap/0.9">\n  <url><loc>${publicBaseUrl}/</loc></url>\n  <url><loc>${publicBaseUrl}/platform/openapi.json</loc></url>\n  <url><loc>${publicBaseUrl}/status/</loc></url>\n  <url><loc>${serviceBaseUrl}/</loc></url>\n  <url><loc>${serviceBaseUrl}/openapi.json</loc></url>\n  <url><loc>${serviceBaseUrl}/.well-known/agent-service.json</loc></url>\n  <url><loc>${serviceBaseUrl}/.well-known/mcp/server.json</loc></url>\n  <url><loc>${serviceBaseUrl}/.well-known/agent-card.json</loc></url>\n</urlset>\n`)
+  return c.body(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/sitemap/0.9">\n  <url><loc>${publicBaseUrl}/</loc></url>\n  <url><loc>${publicBaseUrl}/platform/openapi.json</loc></url>\n  <url><loc>${publicBaseUrl}/status/</loc></url>\n  <url><loc>${serviceBaseUrl}/</loc></url>\n  <url><loc>${serviceBaseUrl}/openapi.json</loc></url>\n  <url><loc>${serviceBaseUrl}/.well-known/agent-service.json</loc></url>\n  <url><loc>${serviceBaseUrl}/.well-known/mcp/server.json</loc></url>\n  <url><loc>${serviceBaseUrl}/.well-known/agent-card.json</loc></url>\n  <url><loc>${publicBaseUrl}/contractor-check/</loc></url>\n  <url><loc>${publicBaseUrl}/contractor-check/openapi.json</loc></url>\n</urlset>\n`)
 })
 
 app.get('/platform/openapi.json', async () => {
@@ -462,6 +467,11 @@ if (stripeSecretKey) {
     ), tier),
   }))
   mountPaidRoutes(payments, paidTiers)
+  const contractorHandler = payments.compose(
+    [evmCharge, { amount: contractorOperation.price, description: 'California C-10 contractor license preflight' }],
+    [stripeCharge, { amount: contractorOperation.price, description: 'California C-10 contractor license preflight' }],
+  )
+  mountContractorRoute(contractorHandler)
 } else {
   const payments = Mppx.create({ methods: [evmCharge], secretKey })
   const paidTiers = tiers.map((tier) => ({
@@ -469,6 +479,10 @@ if (stripeSecretKey) {
     handler: toHonoPayment(payments.evm.charge(paymentOptions(tier)), tier),
   }))
   mountPaidRoutes(payments, paidTiers)
+  mountContractorRoute(payments.evm.charge({
+    amount: contractorOperation.price,
+    description: 'California C-10 contractor license preflight',
+  }))
 }
 
 app.all('*', async (c) => proxyRequest(c.req.raw, new URL(c.req.url).pathname))
@@ -482,7 +496,16 @@ function paymentOptions(tier: VerificationTier) {
   }
 }
 
-function stripePaymentOptions(tier: VerificationTier) {
+function mountContractorRoute(handler: PaymentHandler): void {
+  app.post(contractorOperation.path, async (c, next) => {
+    const payment = await handler(withPublicUrl(c.req.raw.clone()))
+    if (payment.status === 402) return payment.challenge
+    await next()
+    c.res = payment.withReceipt(c.res)
+  }, async (c) => proxyPaidRequest(c.req.raw, contractorOperation))
+}
+
+function stripePaymentOptions(tier: { id: string; price: string }) {
   const amount = Math.max(Number(tier.price), Number(stripeMinimumPrice)).toFixed(2)
   return {
     amount,
@@ -982,7 +1005,7 @@ async function proxyRequest(request: Request, path: string): Promise<Response> {
   } as RequestInit)
 }
 
-async function proxyPaidRequest(request: Request, tier: VerificationTier): Promise<Response> {
+async function proxyPaidRequest(request: Request, tier: { path: string; id: string; price: string }): Promise<Response> {
   const commerce = commerceMetadata(request, tier)
   const url = new URL(request.url)
   const upstream = new URL(tier.path + url.search, upstreamUrl)
@@ -1015,7 +1038,7 @@ async function proxyPaidRequest(request: Request, tier: VerificationTier): Promi
   })
 }
 
-function commerceMetadata(request: Request, tier: VerificationTier) {
+function commerceMetadata(request: Request, tier: { id: string; price: string }) {
   const orderId = `ord_${randomUUID().replaceAll('-', '')}`
   const orderToken = `ort_${randomBytes(32).toString('base64url')}`
   const authorization = request.headers.get('Authorization') ?? ''

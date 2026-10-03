@@ -29,13 +29,15 @@ Exit condition: an agent can repeatedly consume services under a bounded entitle
 
 ## Milestone 3 — service matrix
 
+- Support human-only, agent-only, and human-and-agent services in the catalog and commerce model.
+- Give human-facing services a usable UI and checkout/entitlement flow, and agent-facing services a callable API and machine discovery.
 - Add provider onboarding and endpoint ownership verification.
 - Add health, latency, freshness, and delivery-quality observations.
 - Add capability-based ranking and policy-aware selection.
 - Extend the live MCP and A2A adapters with additional client conformance tests and directory exporters.
 - Add composition receipts for workflows that purchase from multiple services.
 
-Exit condition: agents can choose among substitutable services and compose multiple paid results with an auditable cost chain.
+Exit condition: all three service categories can be published with the appropriate user surfaces and per-service commerce reporting; agents can choose among agent-facing services and compose paid results with an auditable cost chain.
 
 ## Choosing the first service
 

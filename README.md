@@ -1,27 +1,32 @@
 # Agentic Services
 
-Agentic Services is a service matrix for autonomous agents. Each service exposes a narrow, valuable information capability that an external agent can discover, evaluate, purchase, and call without manual account setup.
+Agentic Services is a multi-service platform for human users, autonomous agents, or both. Each service owns a focused capability and can be sold independently through the appropriate user-facing and/or machine-facing channel.
 
-The platform treats APIs, MCP tools, agent-to-agent services, software runtimes, and databases as different transports for the same commercial object: an **agent service**.
+Services belong to one of three product categories:
+
+- **Human-only:** designed for people to use through a UI; no agent-callable interface is required.
+- **Agent-only:** designed for autonomous agents to discover, purchase, and invoke through a machine interface; an informational product page is not a human-use UI.
+- **Human-and-agent:** provides both a usable human UI and a machine service interface for the same underlying capability.
+
+The category describes intended users, not whether a website or API happens to exist. APIs, MCP tools, and A2A services are possible machine transports; a human UI is a separate product surface.
 
 ## Product contract
 
-Every published service must provide:
+Every published service has a stable identity, its own offer and delivery contract, a payment path, and service-level and policy information. Requirements depend on its category:
 
-1. A machine-readable description of its capabilities and input/output schemas.
-2. At least one callable transport: HTTP, MCP, or A2A.
-3. A deterministic price or a machine-readable quote flow.
-4. At least one automated payment method.
-5. Provenance, freshness, service-level, and policy metadata.
-6. An idempotent execution path and a verifiable receipt.
+- Human-only services need a usable UI and human checkout or entitlement flow.
+- Agent-only services need a machine-readable description, input/output schemas, a callable transport, and machine-compatible pricing and payment.
+- Human-and-agent services need both complete surfaces, backed by the same service identity and consistent results and commercial terms where applicable.
+- Paid delivery must be metered and recorded. Machine calls require idempotency and verifiable receipts; human transactions require an order record and appropriate receipt.
+- Data services publish provenance and freshness appropriate to their claims.
 
-The canonical public manifest lives at:
+For services with an agent interface, the canonical public manifest lives at:
 
 ```text
 https://<service-host>/.well-known/agent-service.json
 ```
 
-The same manifest can be indexed by the platform registry and exported to compatible discovery networks.
+The same manifest can be indexed by the platform registry and exported to compatible discovery networks. Human-only services do not need an agent manifest.
 
 ## Repository layout
 
@@ -49,11 +54,11 @@ See [`docs/architecture.md`](docs/architecture.md) for the execution flow and [`
 
 ## Design principles
 
-- Protocol-first: an agent can integrate from schemas without reading prose.
+- Protocol-first for agent-facing services: an agent can integrate from schemas without reading prose.
 - Narrow services: each service owns a small domain and returns a useful result, not raw data alone.
 - Payment-neutral core: commercial terms are stable while payment rails remain replaceable.
-- Verifiable delivery: every paid execution produces a receipt tied to the request, price, and result.
-- Safe autonomy: budgets, expiry, replay protection, and idempotency are enforced in deterministic code.
+- Verifiable delivery: paid transactions have an order record; machine executions have a receipt tied to the request, price, and result.
+- Safe autonomy for machine purchases: budgets, expiry, replay protection, and idempotency are enforced in deterministic code.
 - Federated discovery: the platform registry is useful but is not the only way to find a service.
 
 ## Run Web Evidence locally

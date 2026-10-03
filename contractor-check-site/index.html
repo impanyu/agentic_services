@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>California C-10 Contractor Check — Dream Workshop</title>
+  <meta name="description" content="A source-linked preflight report for California electrical contractor license, bond, and workers' compensation records.">
+  <link rel="canonical" href="https://api.aisoup.net/contractor-check/">
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header class="top"><a class="brand" href="https://aisoup.net">◉ <span>Dream Workshop</span></a><nav><a href="#what-you-get">The report</a><a href="#pricing">Pricing</a><a href="/contractor-check/openapi.json">API ↗</a></nav></header>
+  <main>
+    <section class="hero">
+      <div class="label"><span class="dot"></span> CALIFORNIA · ELECTRICAL CONTRACTORS</div>
+      <h1>Check the record<br>before the <em>job starts.</em></h1>
+      <p class="intro">One source-linked report for a C-10 electrical contractor's license status, classification, bond, and workers' compensation record. Built for a quick first review before you bring someone onto a project.</p>
+      <form id="checkout-form" class="search-card">
+        <label for="license">California contractor license number</label>
+        <div class="input-row"><input id="license" name="licenseNumber" inputmode="numeric" pattern="[0-9]{1,8}" maxlength="8" placeholder="e.g. 1041253" required><button type="submit">Get report <span>↗</span></button></div>
+        <div class="under-input"><span>$19 per report · Secure Stripe checkout</span><span>No account required</span></div>
+        <p class="error" id="form-error" role="alert" hidden></p>
+      </form>
+      <div class="source-note">Public source: <a href="https://www.cslb.ca.gov/OnlineServices/CheckLicenseII/CheckLicense.aspx">California Contractors State License Board ↗</a></div>
+    </section>
+    <section class="what" id="what-you-get"><div><span class="section-num">01 / THE REPORT</span><h2>Four checks.<br>One clear trail.</h2></div><div class="check-list"><article><b>01</b><div><h3>License status</h3><p>See the status recorded on the CSLB detail page.</p></div></article><article><b>02</b><div><h3>C-10 classification</h3><p>Confirm whether the electrical contractor classification appears on the license.</p></div></article><article><b>03</b><div><h3>Contractor bond</h3><p>See whether CSLB displays a contractor bond record.</p></div></article><article><b>04</b><div><h3>Workers' compensation</h3><p>See whether CSLB displays workers' compensation coverage information.</p></div></article></div></section>
+    <section class="pricing" id="pricing"><span class="section-num">02 / PRICING</span><div><h2>Pay for a result,<br>not a seat.</h2><p><strong>$19</strong> / report</p></div><p>Each report includes the original CSLB link, the source's stated data time, retrieval time, and a content hash. Keep your report link for 30 days of access. Payment is processed by Stripe. For automated workflows, the same check is available through a paid API.</p><a href="/contractor-check/openapi.json">View API contract ↗</a></section>
+    <section class="limits"><h2>What this does—and doesn't—tell you</h2><p>This is a first-pass summary of a public licensing record. It does not authenticate an insurance certificate, establish project-specific coverage, or replace a review of the original CSLB page and contractor documents. Status can change after the report is created.</p></section>
+  </main>
+  <footer><span>© Dream Workshop LLC</span><span><a href="/contractor-check/terms/">Terms</a> · <a href="/contractor-check/privacy/">Privacy</a> · <a href="mailto:contact@aisoup.net">Contact</a></span></footer>
+</body>
+</html>

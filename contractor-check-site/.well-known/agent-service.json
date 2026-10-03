@@ -1,0 +1,62 @@
+{
+  "manifestVersion": "0.1",
+  "service": {
+    "id": "https://api.aisoup.net/contractor-check",
+    "name": "California C-10 Contractor Check",
+    "description": "Paid, source-linked preflight of California electrical contractor license, bond, and workers' compensation records.",
+    "version": "0.1.0",
+    "homepage": "https://api.aisoup.net/contractor-check/",
+    "tags": ["construction", "licensing", "contractor-compliance"]
+  },
+  "provider": {
+    "id": "https://aisoup.net",
+    "name": "Dream Workshop LLC",
+    "contact": "contact@aisoup.net"
+  },
+  "capabilities": [{
+    "id": "construction.contractor.license-preflight",
+    "summary": "Check one California contractor license against the CSLB public detail page, including C-10 classification, bond, and workers' compensation records.",
+    "domains": ["construction", "compliance"]
+  }],
+  "transports": [{
+    "id": "paid-http",
+    "type": "http",
+    "url": "https://api.aisoup.net",
+    "specification": "https://api.aisoup.net/contractor-check/openapi.json",
+    "authorization": "x402-or-mpp"
+  }],
+  "operations": [{
+    "id": "check-c10-license",
+    "capability": "construction.contractor.license-preflight",
+    "transport": "paid-http",
+    "summary": "Return the current CSLB public record checks for one California contractor license.",
+    "method": "POST",
+    "path": "/contractor-check/v1/check",
+    "inputSchema": {"type": "object", "additionalProperties": false, "required": ["licenseNumber"], "properties": {"licenseNumber": {"type": "string", "pattern": "^[0-9]{1,8}$"}}},
+    "outputSchema": {"type": "object", "required": ["serviceId", "licenseNumber", "businessName", "assessment", "checks", "details", "source", "limitations"], "properties": {"serviceId": {"type": "string"}, "licenseNumber": {"type": "string"}, "businessName": {"type": "string"}, "assessment": {"type": "string"}, "checks": {"type": "object"}, "details": {"type": "object"}, "source": {"type": "object"}, "limitations": {"type": "array", "items": {"type": "string"}}}},
+    "timeoutSeconds": 20,
+    "idempotent": true
+  }],
+  "offers": [{
+    "id": "single-license-check",
+    "operation": "check-c10-license",
+    "model": "per_call",
+    "amount": "1.00",
+    "currency": "USD",
+    "unit": "license check",
+    "paymentMethods": [{"protocol": "x402", "network": "eip155:8453", "asset": "USDC"}, {"protocol": "mpp", "network": "eip155:8453", "asset": "USDC"}]
+  }],
+  "provenance": {
+    "summary": "Each result links to the CSLB public license detail and includes the source's stated date, retrieval time, and HTML SHA-256.",
+    "sources": ["https://www.cslb.ca.gov/OnlineServices/CheckLicenseII/CheckLicense.aspx"],
+    "freshness": "The CSLB detail page is retrieved when the paid operation runs; its stated data timestamp is returned.",
+    "coverage": "California contractor licenses, with C-10 electrical classification check"
+  },
+  "policies": {
+    "terms": "https://api.aisoup.net/contractor-check/terms/",
+    "privacy": "https://api.aisoup.net/contractor-check/privacy/",
+    "dataRetentionDays": 30,
+    "allowedUse": ["Contractor onboarding research and decision support"],
+    "prohibitedUse": ["Treating this report as proof of insurance or final legal eligibility"]
+  }
+}

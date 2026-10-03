@@ -2,6 +2,10 @@
 
 ## Goal
 
+The platform supports three service categories: human-only, agent-only, and human-and-agent. The category states who the product is designed for, not which technical components happen to exist. A human-only service has a usable UI and human purchase path. An agent-only service has a discoverable, callable machine interface. A human-and-agent service has both surfaces over the same underlying capability and service identity. An informational landing page alone does not make an agent service a human-and-agent service.
+
+The loop below is the agent-facing goal for the latter two categories:
+
 An internet-connected agent should be able to complete this loop without a human creating an account or copying an API key:
 
 ```text
@@ -14,7 +18,7 @@ Human policy still controls the agent's wallet, spending limits, approved catego
 
 ### Service plane
 
-A service is a small, independently deployable information product. It may wrap proprietary analysis, licensed data, public data, a model, a database, or another API. It exposes one or more operations with explicit JSON input and output schemas.
+A service is a small, independently deployable product. It may wrap proprietary analysis, licensed data, public data, a model, a database, or another API. Agent-facing services expose one or more operations with explicit JSON input and output schemas; human-only services may expose their capability solely through a UI.
 
 The service owns domain logic. It does not implement wallets or settlement directly.
 
@@ -33,7 +37,7 @@ Service code receives a normalized invocation context, independent of the paymen
 
 ### Registry plane
 
-The registry indexes signed service manifests. Search works on capabilities and constraints rather than service names alone. Ranking can use price, freshness, latency, availability, provenance, and buyer policy.
+The platform catalog lists all services and their category. The agent registry indexes signed manifests only for services with a machine interface. Agent search works on capabilities and constraints rather than service names alone. Ranking can use price, freshness, latency, availability, provenance, and buyer policy.
 
 Registry ingestion must verify manifest syntax, ownership of the advertised endpoint, and health. Runtime quality signals remain distinct from provider claims.
 
@@ -52,7 +56,7 @@ The first implementation should target per-call machine payments. Credits and su
 
 ## Discovery
 
-Each service publishes a canonical manifest at `/.well-known/agent-service.json`. The manifest describes:
+Each agent-facing service publishes a canonical manifest at `/.well-known/agent-service.json`. The manifest describes:
 
 - stable service identity and provider;
 - natural-language and structured capabilities;
@@ -71,15 +75,15 @@ Every quote, order, receipt, ledger projection, and admin aggregate carries a st
 Public presentation and machine invocation are separate layers:
 
 - `aisoup.net` is the company catalog.
-- `api.aisoup.net/<service-id>/` is the human-readable product page, such as `api.aisoup.net/web-evidence/`.
-- `api.aisoup.net/<service-id>/v1/...` is the canonical HTTP API namespace.
+- `api.aisoup.net/<service-id>/` may host a product page, such as `api.aisoup.net/web-evidence/`; human-facing services need an actual usable UI.
+- `api.aisoup.net/<service-id>/v1/...` is the canonical HTTP API namespace for agent-facing services.
 - `api.aisoup.net/admin` is the shared multi-service commerce dashboard.
 
-Once published, service paths remain callable as compatibility aliases. Discovery documents advertise the canonical service-scoped path and may mark earlier aliases as deprecated. A new service must receive its own product page, stable `serviceId`, API namespace, discovery entries, cost model, and dashboard breakdown before launch.
+Once published, service paths remain callable as compatibility aliases. Agent discovery documents advertise the canonical service-scoped path and may mark earlier aliases as deprecated. A new service must receive its own catalog entry, stable `serviceId`, cost model, and dashboard breakdown before launch. Human-facing services also need a usable UI; agent-facing services also need an API namespace and discovery entries. Agent-only services may have an informational product page without being classified as human-and-agent.
 
-The public `GET /v1/services` endpoint exposes the platform catalog. Admin summary and order APIs accept an optional `serviceId` query parameter. Omitting it returns platform-wide totals, while `byService` preserves the per-service breakdown. Pagination uses `limit`, `offset`, and `total`, so the dashboard and external admin clients share the same contract.
+The public `GET /v1/services` endpoint exposes the current platform catalog. As human-only services are added, catalog entries must include their category without implying that every listing has an agent invocation endpoint. Admin summary and order APIs accept an optional `serviceId` query parameter. Omitting it returns platform-wide totals, while `byService` preserves the per-service breakdown. Pagination uses `limit`, `offset`, and `total`, so the dashboard and external admin clients share the same contract.
 
-## Invocation flow
+## Agent invocation flow
 
 1. The buyer searches the registry or resolves the well-known manifest.
 2. The buyer selects an operation and offer whose constraints match its task and policy.

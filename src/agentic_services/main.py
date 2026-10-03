@@ -23,6 +23,7 @@ from pydantic import BaseModel, Field
 from . import __version__
 from .admin_dashboard import admin_dashboard_html
 from .config import Settings
+from .contractor_routes import create_contractor_router
 from .contact import send_contact_email, send_email
 from .models import (
     CapabilitiesResponse,
@@ -257,6 +258,8 @@ def create_app(
         canonical = json.dumps(receipt, separators=(",", ":"), sort_keys=True).encode()
         return hmac.new(secret.encode(), canonical, hashlib.sha256).hexdigest()
 
+    app.include_router(create_contractor_router(store, require_service_api_key, sign_receipt, resolved_settings.base_url))
+
     def contact_ip_hash(request: Request) -> str:
         forwarded = request.headers.get("x-forwarded-for", "")
         address = forwarded.split(",", 1)[0].strip() or (
@@ -322,6 +325,7 @@ def create_app(
 
     @app.get("/healthz", tags=["operations"])
     def health() -> dict[str, str]:
+        store.purge_contractor_intents()
         return {"status": "ok"}
 
     @app.get("/.well-known/glama.json", tags=["discovery"])
