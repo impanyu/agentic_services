@@ -501,15 +501,13 @@ if (stripeSecretKey) {
   }))
 }
 
-app.use('/contractor-check/v1/*', humanUiCors)
-app.use('/web-evidence/v1/checkout', humanUiCors)
-app.use('/web-evidence/v1/report', humanUiCors)
-app.all('*', async (c) => proxyRequest(c.req.raw, new URL(c.req.url).pathname))
-
-async function humanUiCors(c: Parameters<MiddlewareHandler>[0], next: Parameters<MiddlewareHandler>[1]) {
+app.all('*', async (c) => {
+  const path = new URL(c.req.url).pathname
+  const humanPath = path.startsWith('/contractor-check/v1/')
+    || path === '/web-evidence/v1/checkout' || path === '/web-evidence/v1/report'
   const origin = c.req.header('Origin')
   const allowed = origin === 'https://aisoup.net' || origin === 'https://www.aisoup.net'
-  if (c.req.method === 'OPTIONS') {
+  if (humanPath && c.req.method === 'OPTIONS') {
     if (!allowed) return c.body(null, 403)
     return new Response(null, { status: 204, headers: {
       'Access-Control-Allow-Origin': origin,
@@ -518,12 +516,15 @@ async function humanUiCors(c: Parameters<MiddlewareHandler>[0], next: Parameters
       Vary: 'Origin',
     } })
   }
-  await next()
-  if (allowed) {
-    c.res.headers.set('Access-Control-Allow-Origin', origin)
-    c.res.headers.set('Vary', 'Origin')
-  }
-}
+  const upstream = await proxyRequest(c.req.raw, path)
+  if (!humanPath || !allowed) return upstream
+  const headers = new Headers(upstream.headers)
+  headers.set('Access-Control-Allow-Origin', origin)
+  headers.set('Vary', 'Origin')
+  return new Response(upstream.body, {
+    status: upstream.status, statusText: upstream.statusText, headers,
+  })
+})
 
 serve({ fetch: app.fetch, hostname: '0.0.0.0', port: 8010 })
 
