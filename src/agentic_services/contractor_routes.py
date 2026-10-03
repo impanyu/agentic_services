@@ -46,8 +46,8 @@ def create_contractor_router(
             raise HTTPException(status_code=503, detail=str(error)) from error
 
     def stripe_key() -> str:
-        key = os.getenv("STRIPE_SECRET_KEY", "")
-        if not key.startswith(("sk_live_", "sk_test_")):
+        key = os.getenv("CONTRACTOR_STRIPE_SECRET_KEY", "")
+        if not key.startswith(("rk_live_", "rk_test_", "sk_live_", "sk_test_")):
             raise HTTPException(status_code=503, detail="Stripe Checkout is not configured")
         return key
 
@@ -144,7 +144,7 @@ def create_contractor_router(
                 or session.get("currency") != "usd"
                 or session.get("amount_total") != intent["price_cents"]
                 or session.get("mode") != "payment"
-                or session.get("livemode") != stripe_key().startswith("sk_live_")):
+                or session.get("livemode") != stripe_key().startswith(("rk_live_", "sk_live_"))):
             raise HTTPException(status_code=402, detail="Payment is not complete")
         report = json.loads(intent["report_json"])
         order_id = f"ord_{intent_id[4:]}"

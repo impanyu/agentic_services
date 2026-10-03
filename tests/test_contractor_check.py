@@ -87,7 +87,7 @@ def test_checkout_releases_only_matching_paid_session(tmp_path: Path, monkeypatc
 
     monkeypatch.setattr(routes, "fetch_license_report", fake_lookup)
     monkeypatch.setattr(httpx.AsyncClient, "request", fake_stripe)
-    monkeypatch.setenv("STRIPE_SECRET_KEY", "sk_test_localdummy")
+    monkeypatch.setenv("CONTRACTOR_STRIPE_SECRET_KEY", "rk_test_localdummy")
     app = create_app(settings=Settings(
         openai_api_key=None, openai_model="test", database_path=tmp_path / "db.sqlite",
         base_url="https://api.example.test", service_api_key="internal-key",
