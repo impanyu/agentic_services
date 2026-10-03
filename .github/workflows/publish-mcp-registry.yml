@@ -1,0 +1,46 @@
+name: Publish MCP Registry service
+
+on:
+  workflow_dispatch:
+    inputs:
+      service:
+        description: Service to publish
+        required: true
+        type: choice
+        options:
+          - contractor-check
+          - web-evidence
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select published metadata
+        shell: bash
+        env:
+          SERVICE: ${{ inputs.service }}
+        run: |
+          case "$SERVICE" in
+            contractor-check) echo "SERVER_JSON=services/contractor-check/server.json" >> "$GITHUB_ENV" ;;
+            web-evidence) echo "SERVER_JSON=server.json" >> "$GITHUB_ENV" ;;
+            *) exit 1 ;;
+          esac
+      - name: Install verified MCP publisher
+        shell: bash
+        run: |
+          curl --fail --location --silent --show-error \
+            --output mcp-publisher_linux_amd64.tar.gz \
+            https://github.com/modelcontextprotocol/registry/releases/download/v1.8.1/mcp-publisher_linux_amd64.tar.gz
+          echo 'a06c9096dcb9727c13555b6be26c7effa707b01f06a4c561ba7a3635443cf2cc  mcp-publisher_linux_amd64.tar.gz' | sha256sum --check
+          tar -xzf mcp-publisher_linux_amd64.tar.gz mcp-publisher
+      - name: Authenticate with GitHub OIDC
+        run: ./mcp-publisher login github-oidc
+      - name: Publish service
+        run: ./mcp-publisher publish "$SERVER_JSON"
