@@ -11,7 +11,7 @@
   "humanPriceUsd": "19.00",
   "directories": {
     "mcpRegistry": null,
-    "smithery": null,
+    "smithery": "https://smithery.ai/servers/impanyu/contractor-check",
     "x402Bazaar": null,
     "mppScan": null,
     "glama": null

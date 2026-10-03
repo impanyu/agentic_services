@@ -15,10 +15,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def request(url: str, *, method: str = "GET", body: bytes | None = None, content_type: str | None = None):
+def request(url: str, *, method: str = "GET", body: bytes | None = None, content_type: str | None = None, accept: str | None = None):
     headers = {"User-Agent": "AgenticServices-ReleaseCheck/1.0"}
     if content_type:
         headers["Content-Type"] = content_type
+    if accept:
+        headers["Accept"] = accept
     try:
         with urllib.request.urlopen(urllib.request.Request(url, data=body, headers=headers, method=method), timeout=15) as response:
             return response.status, response.headers, response.read()
@@ -82,12 +84,18 @@ def main() -> int:
                     check(remote == expected, label + " matches local release")
                 except json.JSONDecodeError:
                     check(False, label + " valid JSON")
+        mcp_accept = "application/json, text/event-stream"
         status, _, data = request(base_url + "/mcp", method="POST", body=json.dumps({
             "jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {},
-        }).encode(), content_type="application/json")
+        }).encode(), content_type="application/json", accept=mcp_accept)
         check(status == 200, f"public MCP tools/list HTTP {status}")
         if status == 200:
             check(release["paidTool"] in data.decode(errors="replace"), "paid MCP tool discoverable")
+        status, _, data = request(base_url + "/mcp", method="POST", body=json.dumps({
+            "jsonrpc": "2.0", "id": 2, "method": "tools/call",
+            "params": {"name": release["paidTool"], "arguments": {"licenseNumber": "1234567"}},
+        }).encode(), content_type="application/json", accept=mcp_accept)
+        check(status == 200 and b'"Payment required to access this tool"' in data, "paid MCP tool returns x402 requirements without payment")
         status, headers, _ = request("https://api.aisoup.net" + paid_path, method="POST", body=b'{"licenseNumber":"1234567"}', content_type="application/json")
         check(status == 402, f"paid HTTP challenge HTTP {status}")
         check(bool(headers.get("PAYMENT-REQUIRED") or headers.get("WWW-Authenticate") or headers.get("Payment-Required")), "payment challenge header")
