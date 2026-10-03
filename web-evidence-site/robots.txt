@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://api.aisoup.net/web-evidence/sitemap.xml
+Sitemap: https://aisoup.net/web-evidence/sitemap.xml

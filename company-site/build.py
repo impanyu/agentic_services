@@ -13,6 +13,9 @@ DIST = ROOT / "dist"
 
 
 def product_card(product: dict[str, object]) -> str:
+    audience = str(product["audience"])
+    human = "✓" if audience in {"human", "both"} else "—"
+    agent = "✓" if audience in {"agent", "both"} else "—"
     tags = "".join(
         f'<li>{html.escape(str(tag))}</li>' for tag in product["capabilities"]
     )
@@ -27,6 +30,7 @@ def product_card(product: dict[str, object]) -> str:
             <span class="product-number">{html.escape(str(product['number']))}</span>
             <h3>{html.escape(str(product['name']))}</h3>
             <p>{html.escape(str(product['description']))}</p>
+            <p class="product-audience"><span>{human} For people</span><span>{agent} For agents</span></p>
           </div>
           <div class="product-card__bottom">
             <ul>{tags}</ul>
@@ -44,12 +48,7 @@ def product_card(product: dict[str, object]) -> str:
 def main() -> None:
     catalog = json.loads((ROOT / "catalog.json").read_text())
     products = catalog["products"]
-    human_cards = "\n".join(
-        product_card(product) for product in products if product["audience"] in {"human", "both"}
-    )
-    agent_cards = "\n".join(
-        product_card(product) for product in products if product["audience"] in {"agent", "both"}
-    )
+    cards = "\n".join(product_card(product) for product in products)
 
     template = (ROOT / "index.template.html").read_text()
     website_json_ld = {
@@ -76,8 +75,7 @@ def main() -> None:
         },
     }
     page = (
-        template.replace("{{HUMAN_PRODUCT_CARDS}}", human_cards)
-        .replace("{{AGENT_PRODUCT_CARDS}}", agent_cards)
+        template.replace("{{ALL_PRODUCT_CARDS}}", cards)
         .replace("{{JSON_LD}}", json.dumps(website_json_ld, ensure_ascii=False))
     )
 

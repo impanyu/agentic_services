@@ -5,7 +5,7 @@
     "name": "California C-10 Contractor Check",
     "description": "Paid, source-linked preflight of California electrical contractor license, bond, and workers' compensation records.",
     "version": "0.1.0",
-    "homepage": "https://api.aisoup.net/contractor-check/",
+    "homepage": "https://aisoup.net/contractor-check/",
     "tags": ["construction", "licensing", "contractor-compliance"]
   },
   "provider": {
@@ -77,8 +77,8 @@
     "coverage": "California contractor licenses, with C-10 electrical classification check"
   },
   "policies": {
-    "terms": "https://api.aisoup.net/contractor-check/terms/",
-    "privacy": "https://api.aisoup.net/contractor-check/privacy/",
+    "terms": "https://aisoup.net/contractor-check/terms/",
+    "privacy": "https://aisoup.net/contractor-check/privacy/",
     "dataRetentionDays": 30,
     "allowedUse": ["Contractor onboarding research and decision support"],
     "prohibitedUse": ["Treating this report as proof of insurance or final legal eligibility"]

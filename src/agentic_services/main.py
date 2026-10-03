@@ -5,6 +5,7 @@ import hashlib
 import hmac
 import ipaddress
 import json
+import os
 import re
 import secrets
 import socket
@@ -16,6 +17,7 @@ from functools import lru_cache
 from typing import Annotated
 
 import uvicorn
+import httpx
 from fastapi import FastAPI, Header, HTTPException, Query, Request, Response, status
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
@@ -551,7 +553,7 @@ def create_app(
                 "name": "Web Evidence",
                 "description": "Time-stamped verification of factual claims against current web evidence.",
                 "version": __version__,
-                "homepage": base_url,
+                "homepage": "https://aisoup.net/web-evidence/",
                 "tags": ["web", "evidence", "fact-checking", "research"],
             },
             "provider": {
@@ -715,7 +717,14 @@ def create_app(
                     customer_reference=customer_reference,
                 )
             except Exception as error:
-                raise HTTPException(status_code=409, detail="Order identifier already exists") from error
+                if payment_protocol != "stripe-checkout" or not store.reset_failed_order(order_id):
+                    raise HTTPException(status_code=409, detail="Order identifier already exists") from error
+                store.create_order(
+                    order_id=order_id, service_id="web-evidence", tier=tier.id,
+                    price_microusd=settled_amount, payment_protocol=payment_protocol,
+                    order_token_hash=order_token_hash, request_hash=request_hash,
+                    customer_key=customer_key, customer_reference=customer_reference,
+                )
         verification_service: ClaimVerificationService | None = request.app.state.verification_service
         if verification_service is None:
             raise HTTPException(
@@ -811,6 +820,84 @@ def create_app(
             customer_key,
             customer_reference,
         )
+
+    def human_stripe_key() -> str:
+        key = os.getenv("WEB_EVIDENCE_STRIPE_SECRET_KEY") or os.getenv("CONTRACTOR_STRIPE_SECRET_KEY", "")
+        if not key.startswith(("rk_live_", "rk_test_", "sk_live_", "sk_test_")):
+            raise HTTPException(status_code=503, detail="Stripe Checkout is not configured")
+        return key
+
+    async def human_stripe_request(method: str, path: str, data: dict[str, str] | None = None) -> dict[str, object]:
+        async with httpx.AsyncClient(timeout=15) as client:
+            try:
+                result = await client.request(
+                    method, f"https://api.stripe.com/v1/{path}", auth=(human_stripe_key(), ""), data=data,
+                )
+            except httpx.RequestError as error:
+                raise HTTPException(status_code=503, detail="Stripe is temporarily unavailable") from error
+        if result.status_code >= 400:
+            raise HTTPException(status_code=503, detail="Stripe could not complete this request")
+        return result.json()
+
+    @app.post("/web-evidence/v1/checkout", tags=["web evidence human checkout"])
+    async def web_evidence_checkout(payload: ClaimVerificationRequest) -> dict[str, str]:
+        human_stripe_key()
+        if payload.minimum_sources > 8 or payload.max_sources > 8:
+            raise HTTPException(status_code=422, detail="The Standard report supports at most 8 cited sources")
+        intent_id = store.create_web_evidence_intent(payload.model_dump_json(by_alias=True), 200)
+        session = await human_stripe_request("POST", "checkout/sessions", {
+            "mode": "payment",
+            "payment_method_types[0]": "card",
+            "line_items[0][price_data][currency]": "usd",
+            "line_items[0][price_data][unit_amount]": "200",
+            "line_items[0][price_data][product_data][name]": "Web Evidence Standard Report",
+            "line_items[0][quantity]": "1",
+            "client_reference_id": intent_id,
+            "metadata[serviceId]": "web-evidence",
+            "success_url": "https://aisoup.net/web-evidence/report/?session_id={CHECKOUT_SESSION_ID}",
+            "cancel_url": "https://aisoup.net/web-evidence/",
+        })
+        session_id, url = session.get("id"), session.get("url")
+        if not isinstance(session_id, str) or not isinstance(url, str) or not url.startswith("https://checkout.stripe.com/"):
+            raise HTTPException(status_code=503, detail="Stripe did not return a valid Checkout session")
+        store.bind_web_evidence_session(intent_id, session_id)
+        return {"checkoutUrl": url, "priceUsd": "2.00"}
+
+    @app.get("/web-evidence/v1/report", tags=["web evidence human checkout"])
+    async def web_evidence_paid_report(
+        request: Request, response: Response, session_id: str = Query(min_length=20, max_length=255),
+    ) -> dict[str, object]:
+        if not re.fullmatch(r"cs_(?:test|live)_[A-Za-z0-9]+", session_id):
+            raise HTTPException(status_code=422, detail="Invalid Checkout session")
+        session = await human_stripe_request("GET", f"checkout/sessions/{session_id}")
+        intent_id = session.get("client_reference_id")
+        if not isinstance(intent_id, str):
+            raise HTTPException(status_code=404, detail="Unknown report")
+        intent = store.get_web_evidence_intent(intent_id)
+        if not intent or intent["stripe_session_id"] != session_id:
+            raise HTTPException(status_code=404, detail="Unknown report")
+        if (session.get("payment_status") != "paid"
+                or session.get("currency") != "usd"
+                or session.get("amount_total") != intent["price_cents"]
+                or session.get("mode") != "payment"
+                or session.get("livemode") != human_stripe_key().startswith(("rk_live_", "sk_live_"))):
+            raise HTTPException(status_code=402, detail="Payment is not complete")
+        order_id = f"ord_{intent_id[4:]}"
+        existing = store.get_order(order_id)
+        if existing and existing["status"] == "completed":
+            result = store.get(str(existing["verificationId"]))
+        else:
+            payload = ClaimVerificationRequest.model_validate_json(intent["request_json"])
+            result = await run_verification(
+                next(item for item in tiers if item.id == "standard"), payload, request,
+                intent_id, f"Bearer {resolved_settings.service_api_key}" if resolved_settings.service_api_key else None,
+                response, order_id, None, "stripe-checkout", "2000000", None, None,
+            )
+            store.set_web_evidence_order(intent_id, order_id)
+        if result is None:
+            raise HTTPException(status_code=503, detail="Report is temporarily unavailable")
+        response.headers["Cache-Control"] = "private, no-store"
+        return {"orderId": order_id, "report": result.model_dump(by_alias=True, mode="json")}
 
     @app.post(
         "/v1/claims/verify/quick",

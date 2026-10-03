@@ -18,6 +18,46 @@ status.aisoup.net {
 }
 
 aisoup.net, www.aisoup.net {
+	handle /wiki {
+		redir https://wiki.aisoup.net/ permanent
+	}
+
+	handle_path /wiki/* {
+		redir https://wiki.aisoup.net{uri} permanent
+	}
+
+	handle /web-evidence {
+		redir /web-evidence/ permanent
+	}
+
+	handle_path /web-evidence/* {
+		root * /mnt/disks/agentic-services/app/web-evidence-site
+		encode zstd gzip
+		header {
+			Strict-Transport-Security "max-age=31536000; includeSubDomains"
+			X-Content-Type-Options "nosniff"
+			Referrer-Policy "strict-origin-when-cross-origin"
+			Content-Security-Policy "default-src 'self'; style-src 'self'; script-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
+		}
+		file_server
+	}
+
+	handle /contractor-check {
+		redir /contractor-check/ permanent
+	}
+
+	handle_path /contractor-check/* {
+		root * /mnt/disks/agentic-services/app/contractor-check-site
+		encode zstd gzip
+		header {
+			Strict-Transport-Security "max-age=31536000; includeSubDomains"
+			X-Content-Type-Options "nosniff"
+			Referrer-Policy "strict-origin-when-cross-origin"
+			Content-Security-Policy "default-src 'self'; style-src 'self'; script-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
+		}
+		file_server
+	}
+
 	handle /contact/messages {
 		rewrite * /v1/contact/messages
 		reverse_proxy 127.0.0.1:8010 {
@@ -44,7 +84,7 @@ evidence.aisoup.net {
 
 api.aisoup.net {
 	handle /contractor-check {
-		redir /contractor-check/ permanent
+		redir https://aisoup.net/contractor-check/ permanent
 	}
 
 	handle /contractor-check/v1/* {
@@ -65,7 +105,9 @@ api.aisoup.net {
 		}
 	}
 
-	handle_path /contractor-check/* {
+	@contractor_service_documents path /contractor-check/openapi.json /contractor-check/.well-known/agent-service.json
+	handle @contractor_service_documents {
+		uri strip_prefix /contractor-check
 		root * /mnt/disks/agentic-services/app/contractor-check-site
 		encode zstd gzip
 		header {
@@ -77,8 +119,12 @@ api.aisoup.net {
 		file_server
 	}
 
+	handle_path /contractor-check/* {
+		redir https://aisoup.net/contractor-check{uri} permanent
+	}
+
 	handle /web-evidence {
-		redir /web-evidence/ permanent
+		redir https://aisoup.net/web-evidence/ permanent
 	}
 
 	handle /web-evidence/v1/* {
@@ -96,15 +142,7 @@ api.aisoup.net {
 	}
 
 	handle_path /web-evidence/* {
-		root * /mnt/disks/agentic-services/app/web-evidence-site
-		encode zstd gzip
-		header {
-			Strict-Transport-Security "max-age=31536000; includeSubDomains"
-			X-Content-Type-Options "nosniff"
-			Referrer-Policy "strict-origin-when-cross-origin"
-			Content-Security-Policy "default-src 'self'; style-src 'self'; script-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
-		}
-		file_server
+		redir https://aisoup.net/web-evidence{uri} permanent
 	}
 
 	handle {

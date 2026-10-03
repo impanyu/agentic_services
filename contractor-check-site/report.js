@@ -11,7 +11,7 @@ function add(tag, content, parent = target, className = '') {
 async function load() {
   if (!sessionId) { status.textContent = 'No checkout session was provided.'; return; }
   try {
-    const response = await fetch(`/contractor-check/v1/report?session_id=${encodeURIComponent(sessionId)}`, { cache: 'no-store' });
+    const response = await fetch(`https://api.aisoup.net/contractor-check/v1/report?session_id=${encodeURIComponent(sessionId)}`, { cache: 'no-store' });
     const data = await response.json();
     if (!response.ok) throw new Error(typeof data.detail === 'string' ? data.detail : 'Report unavailable.');
     const report = data.report;

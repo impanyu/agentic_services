@@ -3,23 +3,23 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Web Evidence — Verifiable research for agents</title>
+    <title>Web Evidence — Claim verification for people and agents</title>
     <meta name="description" content="Verify factual claims with cited evidence, complete source provenance, snapshots, hashes, and agent-native payments.">
     <meta name="theme-color" content="#11110f">
     <meta property="og:title" content="Web Evidence by Dream Workshop">
     <meta property="og:description" content="Verifiable web research an agent can discover, purchase, and call.">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://api.aisoup.net/web-evidence/">
-    <link rel="canonical" href="https://api.aisoup.net/web-evidence/">
+    <meta property="og:url" content="https://aisoup.net/web-evidence/">
+    <link rel="canonical" href="https://aisoup.net/web-evidence/">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="styles.css">
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
-        "@type": "WebAPI",
+        "@type": "SoftwareApplication",
         "name": "Web Evidence",
-        "description": "Agent-facing paid claim verification with cited evidence, source provenance, snapshots, and hashes.",
-        "url": "https://api.aisoup.net/web-evidence/",
+        "description": "Claim verification for people and agents with cited evidence, source provenance, snapshots, and hashes.",
+        "url": "https://aisoup.net/web-evidence/",
         "documentation": "https://api.aisoup.net/web-evidence/openapi.json",
         "provider": { "@type": "Organization", "name": "Dream Workshop LLC", "url": "https://aisoup.net" }
       }
@@ -32,9 +32,9 @@
         <span>Dream Workshop</span>
       </a>
       <div class="nav-links">
-        <a href="#pricing">Pricing</a>
+        <a href="#verify">Verify a claim</a><a href="#pricing">Pricing</a>
         <a href="https://api.aisoup.net/web-evidence/openapi.json">OpenAPI ↗</a>
-        <a class="nav-button" href="https://api.aisoup.net/">All services ↗</a>
+        <a class="nav-button" href="https://aisoup.net/">All services ↗</a>
       </div>
     </header>
 
@@ -51,11 +51,11 @@
           <span class="signal-label signal-label--c">PROOF</span>
         </div>
         <div class="hero-copy">
-          <div class="eyebrow"><span></span> Live agent service · v0.3</div>
-          <h1>Give agents<br><em>evidence,</em><br>not answers.</h1>
+          <div class="eyebrow"><span></span> Live human + agent service · v0.3</div>
+          <h1>Check the claim.<br><em>See the evidence.</em></h1>
           <p>Web Evidence verifies factual claims against the current web and returns the source trail needed to inspect, reproduce, and trust the result.</p>
           <div class="hero-actions">
-            <a class="button button--primary" href="https://api.aisoup.net/web-evidence/openapi.json">Explore the API <span>↗</span></a>
+            <a class="button button--primary" href="#verify">Verify a claim · $2 <span>↗</span></a>
             <a class="button button--ghost" href="https://api.aisoup.net/web-evidence/.well-known/agent-service.json">Machine manifest <span>↗</span></a>
           </div>
         </div>
@@ -64,6 +64,19 @@
           <span>x402 · MPP</span>
           <span>USDC · USD</span>
         </div>
+      </section>
+
+      <section class="human-checkout" id="verify">
+        <div class="section-index">Start here / Standard report</div>
+        <h2>One claim. A source-linked answer.</h2>
+        <p>Enter a factual statement you want checked against current web evidence. $2 per report, paid securely with Stripe. No account required.</p>
+        <form id="claim-form">
+          <label for="claim">Claim to verify</label>
+          <textarea id="claim" name="claim" minlength="3" maxlength="4000" rows="4" placeholder="For example: California requires a C-10 license for electrical contractors." required></textarea>
+          <button class="button button--primary" type="submit">Continue to $2 checkout ↗</button>
+          <p id="claim-error" role="alert" hidden></p>
+        </form>
+        <small>Standard depth · Up to 8 cited sources · Stored snapshots where available. Reports can contain uncertainty or conflicting evidence.</small>
       </section>
 
       <section class="proof">
@@ -106,7 +119,7 @@
         <div class="section-index">03 / Pay per verification</div>
         <div class="pricing-heading">
           <h2>Buy the depth<br>the claim deserves.</h2>
-          <p>USDC prices are deterministic per call. Card payments through MPP Stripe use a $0.50 minimum charge.</p>
+          <p>Human Standard reports are $2 each with Stripe Checkout. Agent API calls use the prices below; MPP Stripe has a $0.50 minimum charge.</p>
         </div>
         <div class="tiers">
           <a href="https://api.aisoup.net/web-evidence/openapi.json" class="tier">
@@ -158,5 +171,6 @@
       <div><a href="https://wiki.aisoup.net">AgenticWiKi ↗</a><a href="https://api.aisoup.net/">All agent services ↗</a><a href="https://status.aisoup.net">Status ↗</a></div>
       <span>© 2026</span>
     </footer>
+    <script src="app.js" defer></script>
   </body>
 </html>

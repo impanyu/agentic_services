@@ -4,6 +4,8 @@ from pathlib import Path
 import json
 import hashlib
 import sqlite3
+import httpx
+import pytest
 from datetime import UTC, datetime
 
 from fastapi.testclient import TestClient
@@ -674,3 +676,58 @@ def test_protected_service_requires_valid_bearer_key(tmp_path: Path) -> None:
     assert valid.status_code == 200
     manifest = client.get("/.well-known/agent-service.json").json()
     assert manifest["transports"][0]["authorization"] == "bearer"
+
+
+def test_human_checkout_requires_matching_paid_session(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    provider = FakeProvider()
+    settings = Settings(
+        openai_api_key="test-only", openai_model=provider.model,
+        database_path=tmp_path / "evidence.db", base_url="https://api.example.test",
+        service_api_key="internal-key", receipt_signing_secret="receipt-test-secret",
+    )
+    service = ClaimVerificationService(
+        provider=provider,
+        store=VerificationStore(settings.database_path, tmp_path / "snapshots"),
+        snapshotter=FakeSnapshotter(),
+    )
+    client = TestClient(create_app(settings=settings, service=service))
+    monkeypatch.setenv("CONTRACTOR_STRIPE_SECRET_KEY", "rk_test_localdummy")
+    paid = {"value": False, "amount": 200}
+    session = {"intent": None}
+
+    async def fake_stripe(self, method, url, **kwargs):
+        request = httpx.Request(method, url)
+        if method == "POST":
+            session["intent"] = kwargs["data"]["client_reference_id"]
+            assert kwargs["data"]["success_url"] == "https://aisoup.net/web-evidence/report/?session_id={CHECKOUT_SESSION_ID}"
+            return httpx.Response(200, request=request, json={
+                "id": "cs_test_abc12345678901234567890",
+                "url": "https://checkout.stripe.com/c/pay/test-session",
+            })
+        return httpx.Response(200, request=request, json={
+            "client_reference_id": session["intent"],
+            "payment_status": "paid" if paid["value"] else "unpaid",
+            "currency": "usd", "amount_total": paid["amount"],
+            "mode": "payment", "livemode": False,
+        })
+
+    monkeypatch.setattr(httpx.AsyncClient, "request", fake_stripe)
+    created = client.post("/web-evidence/v1/checkout", json={"claim": "The Base mainnet chain ID is 8453."})
+    assert created.status_code == 200
+    path = "/web-evidence/v1/report?session_id=cs_test_abc12345678901234567890"
+    assert client.get(path).status_code == 402
+    assert provider.calls == 0
+    paid["value"] = True
+    paid["amount"] = 199
+    assert client.get(path).status_code == 402
+    assert provider.calls == 0
+    paid["amount"] = 200
+    first = client.get(path)
+    assert first.status_code == 200
+    assert first.json()["report"]["claim"] == "The Base mainnet chain ID is 8453."
+    assert provider.calls == 1
+    assert client.get(path).json()["orderId"] == first.json()["orderId"]
+    assert provider.calls == 1
+    order = client.app.state.store.get_order(first.json()["orderId"])
+    assert order["status"] == "completed"
+    assert order["amountMicrousd"] == 2_000_000

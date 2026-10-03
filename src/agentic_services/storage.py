@@ -96,6 +96,16 @@ class VerificationStore:
                 ((datetime.now(UTC) - timedelta(days=30)).isoformat(),),
             )
             connection.execute(
+                """CREATE TABLE IF NOT EXISTS web_evidence_checkout_intents (
+                    intent_id TEXT PRIMARY KEY,
+                    request_json TEXT NOT NULL,
+                    price_cents INTEGER NOT NULL,
+                    stripe_session_id TEXT UNIQUE,
+                    order_id TEXT UNIQUE,
+                    created_at TEXT NOT NULL
+                )"""
+            )
+            connection.execute(
                 """
                 CREATE TABLE IF NOT EXISTS claim_verifications (
                     verification_id TEXT PRIMARY KEY,
@@ -826,6 +836,44 @@ class VerificationStore:
                  price_cents, None, None, datetime.now(UTC).isoformat()),
             )
         return intent_id
+
+    def create_web_evidence_intent(self, request_json: str, price_cents: int) -> str:
+        intent_id = f"wei_{uuid.uuid4().hex}"
+        with self._connect() as connection:
+            connection.execute(
+                "INSERT INTO web_evidence_checkout_intents VALUES(?,?,?,?,?,?)",
+                (intent_id, request_json, price_cents, None, None, datetime.now(UTC).isoformat()),
+            )
+        return intent_id
+
+    def bind_web_evidence_session(self, intent_id: str, session_id: str) -> None:
+        with self._connect() as connection:
+            connection.execute(
+                "UPDATE web_evidence_checkout_intents SET stripe_session_id=? WHERE intent_id=? AND stripe_session_id IS NULL",
+                (session_id, intent_id),
+            )
+
+    def get_web_evidence_intent(self, intent_id: str) -> dict[str, Any] | None:
+        with self._connect() as connection:
+            row = connection.execute(
+                "SELECT * FROM web_evidence_checkout_intents WHERE intent_id=?", (intent_id,)
+            ).fetchone()
+        return dict(row) if row else None
+
+    def set_web_evidence_order(self, intent_id: str, order_id: str) -> None:
+        with self._connect() as connection:
+            connection.execute(
+                "UPDATE web_evidence_checkout_intents SET order_id=? WHERE intent_id=? AND order_id IS NULL",
+                (order_id, intent_id),
+            )
+
+    def reset_failed_order(self, order_id: str) -> bool:
+        with self._connect() as connection:
+            result = connection.execute(
+                "DELETE FROM orders WHERE order_id=? AND status='failed'",
+                (order_id,),
+            )
+        return result.rowcount == 1
 
     @staticmethod
     def _purge_contractor_intents(connection: sqlite3.Connection) -> None:
