@@ -123,6 +123,8 @@ For the production Docker Compose deployment at `api.aisoup.net`, follow [`deplo
 
 ## Live discovery
 
+California C-10 Contractor Check is live for humans through [Stripe Checkout](https://api.aisoup.net/contractor-check/) ($19/report) and for agents through its [paid HTTP API](https://api.aisoup.net/contractor-check/openapi.json) and [MCP endpoint](https://api.aisoup.net/contractor-check/.well-known/mcp/server.json) ($1/check in Base USDC). Its [Smithery listing](https://smithery.ai/servers/impanyu/contractor-check) is publicly visible. The release contract and repeatable validation gates are in [`docs/agent-service-release.md`](docs/agent-service-release.md). Other external directory entries and a settled payment are not yet verified.
+
 Web Evidence is published through the following public discovery surfaces:
 
 - [Smithery](https://smithery.ai/servers/impanyu/web-evidence) as the hosted MCP listing for `impanyu/web-evidence`.
