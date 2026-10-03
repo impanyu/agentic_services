@@ -99,8 +99,25 @@ def main() -> int:
         status, headers, _ = request("https://api.aisoup.net" + paid_path, method="POST", body=b'{"licenseNumber":"1234567"}', content_type="application/json")
         check(status == 402, f"paid HTTP challenge HTTP {status}")
         check(bool(headers.get("PAYMENT-REQUIRED") or headers.get("WWW-Authenticate") or headers.get("Payment-Required")), "payment challenge header")
+        for directory, url in release.get("directories", {}).items():
+            if not url:
+                continue
+            status, _, data = request(url)
+            check(status == 200, f"{directory} public listing HTTP {status}")
+            if status != 200:
+                continue
+            if directory == "mcpRegistry":
+                try:
+                    listed = json.loads(data)["server"]
+                    check(listed["name"] == registry["name"] and listed["version"] == registry["version"], "MCP Registry identity and version")
+                except (ValueError, KeyError, TypeError):
+                    check(False, "MCP Registry metadata shape")
+            elif directory == "smithery":
+                check(service_id.encode() in data and release["paidTool"].encode() in data, "Smithery service and tool visible")
+            elif directory in ("x402Scan", "mppScan"):
+                check(paid_path.encode() in data, f"{directory} paid route visible")
 
-    print(f"Result: {len(errors)} failure(s). Directory listings and settled payments require independent evidence.")
+    print(f"Result: {len(errors)} failure(s). Unlisted directories and settled payments still require independent evidence.")
     return 1 if errors else 0
 
 
