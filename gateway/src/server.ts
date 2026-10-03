@@ -4,6 +4,7 @@ import { Hono, type MiddlewareHandler } from 'hono'
 import { generate as generatePaymentOpenApi } from 'mppx/discovery'
 import { Mppx, evm, stripe } from 'mppx/server'
 import { createMcpHandler } from './mcp.js'
+import { createContractorMcpHandler } from './contractor-mcp.js'
 
 const recipient = requireEnv('PAYMENT_RECIPIENT') as `0x${string}`
 const secretKey = requireEnv('MPP_SECRET_KEY')
@@ -157,10 +158,25 @@ const mcpHandler = await createMcpHandler({
   publicBaseUrl,
   tiers,
 })
+const contractorMcpHandler = await createContractorMcpHandler({
+  facilitator, recipient, upstreamUrl, internalApiKey, publicBaseUrl,
+  price: contractorOperation.price,
+})
 
 const app = new Hono()
 
 app.all('/mcp', (c) => mcpHandler(withPublicUrl(c.req.raw)))
+app.all('/contractor-check/mcp', (c) => contractorMcpHandler(withPublicUrl(c.req.raw)))
+app.get('/contractor-check/.well-known/mcp/server.json', (c) => c.json({
+  $schema: 'https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json',
+  name: 'io.github.impanyu/contractor-check',
+  title: 'California C-10 Contractor Check',
+  description: 'Paid source-linked California electrical contractor license preflight.',
+  websiteUrl: `${publicBaseUrl}/contractor-check/`,
+  repository: { url: 'https://github.com/impanyu/agentic_services', source: 'github' },
+  version: '0.1.0',
+  remotes: [{ type: 'streamable-http', url: `${publicBaseUrl}/contractor-check/mcp` }],
+}))
 
 app.get('/', (c) => c.html(landingPage()))
 

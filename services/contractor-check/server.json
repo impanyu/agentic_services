@@ -1,0 +1,10 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.impanyu/contractor-check",
+  "title": "California C-10 Contractor Check",
+  "description": "Paid source-linked California electrical contractor license preflight.",
+  "websiteUrl": "https://api.aisoup.net/contractor-check/",
+  "repository": {"url": "https://github.com/impanyu/agentic_services", "source": "github"},
+  "version": "0.1.0",
+  "remotes": [{"type": "streamable-http", "url": "https://api.aisoup.net/contractor-check/mcp"}]
+}

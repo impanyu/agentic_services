@@ -1,0 +1,19 @@
+{
+  "serviceId": "contractor-check",
+  "baseUrl": "https://api.aisoup.net/contractor-check",
+  "manifest": "contractor-check-site/.well-known/agent-service.json",
+  "openapi": "contractor-check-site/openapi.json",
+  "mcpRegistry": "services/contractor-check/server.json",
+  "paidHttpPath": "/contractor-check/v1/check",
+  "mcpPath": "/contractor-check/mcp",
+  "paidTool": "check_c10_license",
+  "agentPriceUsd": "1.00",
+  "humanPriceUsd": "19.00",
+  "directories": {
+    "mcpRegistry": null,
+    "smithery": null,
+    "x402Bazaar": null,
+    "mppScan": null,
+    "glama": null
+  }
+}

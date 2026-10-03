@@ -65,7 +65,7 @@ def create_contractor_router(
             raise HTTPException(status_code=503, detail="Stripe could not complete this request")
         return result.json()
 
-    def record_order(order_id: str, report: dict[str, object], amount_microusd: int, protocol: str) -> dict[str, object]:
+    def record_order(order_id: str, report: dict[str, object], amount_microusd: int, protocol: str, order_token_hash: str | None = None) -> dict[str, object]:
         existing = store.get_order(order_id)
         if existing and existing["status"] == "completed":
             return report
@@ -76,7 +76,7 @@ def create_contractor_router(
                 store.create_order(
                     order_id=order_id, service_id=SERVICE_ID, tier="license-preflight",
                     price_microusd=amount_microusd, payment_protocol=protocol,
-                    order_token_hash=None, request_hash=hashlib.sha256(str(report["licenseNumber"]).encode()).hexdigest(),
+                    order_token_hash=order_token_hash, request_hash=hashlib.sha256(str(report["licenseNumber"]).encode()).hexdigest(),
                     customer_key=None, customer_reference=None,
                 )
             except sqlite3.IntegrityError:
@@ -159,6 +159,7 @@ def create_contractor_router(
         authorization: str | None = Header(default=None),
         x_agentic_order_id: str | None = Header(default=None),
         x_agentic_order_amount_microusd: str | None = Header(default=None),
+        x_agentic_order_token_hash: str | None = Header(default=None),
         x_agentic_payment_protocol: str | None = Header(default=None),
     ) -> dict[str, object]:
         require_api_key(authorization)
@@ -166,8 +167,10 @@ def create_contractor_router(
             raise HTTPException(status_code=403, detail="Paid gateway order required")
         if x_agentic_order_amount_microusd != str(AGENT_PRICE_MICROUSD):
             raise HTTPException(status_code=403, detail="Incorrect paid amount")
+        if not x_agentic_order_token_hash or not re.fullmatch(r"[a-f0-9]{64}", x_agentic_order_token_hash):
+            raise HTTPException(status_code=403, detail="Order token hash required")
         report = await lookup(payload.license_number)
-        record_order(x_agentic_order_id, report, AGENT_PRICE_MICROUSD, x_agentic_payment_protocol or "unknown")
+        record_order(x_agentic_order_id, report, AGENT_PRICE_MICROUSD, x_agentic_payment_protocol or "unknown", x_agentic_order_token_hash)
         response.headers["X-Agentic-Receipt-Id"] = str(store.get_order(x_agentic_order_id)["receiptId"])
         return report
 

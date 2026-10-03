@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import sqlite3
 from pathlib import Path
 
@@ -117,3 +118,32 @@ def test_checkout_releases_only_matching_paid_session(tmp_path: Path, monkeypatc
             (delivered.json()["orderId"],),
         ).fetchone()[0]
     assert count == 1
+
+
+def test_agent_paid_order_token_is_retrievable(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    import agentic_services.contractor_routes as routes
+
+    async def fake_lookup(_number: str):
+        return parse_license_page(SAMPLE_HTML, "1234567")
+
+    monkeypatch.setattr(routes, "fetch_license_report", fake_lookup)
+    app = create_app(settings=Settings(
+        openai_api_key=None, openai_model="test", database_path=tmp_path / "db.sqlite",
+        base_url="https://api.example.test", service_api_key="internal-key",
+        receipt_signing_secret="receipt-test-secret",
+    ))
+    client = TestClient(app)
+    order_id = "ord_" + "a" * 32
+    token = "ort_exampletesttoken"
+    headers = {
+        "Authorization": "Bearer internal-key",
+        "X-Agentic-Order-Id": order_id,
+        "X-Agentic-Order-Amount-Microusd": "1000000",
+        "X-Agentic-Order-Token-Hash": hashlib.sha256(token.encode()).hexdigest(),
+        "X-Agentic-Payment-Protocol": "x402-mcp",
+    }
+    response = client.post("/contractor-check/v1/check", json={"licenseNumber": "1234567"}, headers=headers)
+    assert response.status_code == 200
+    assert response.headers["X-Agentic-Receipt-Id"].startswith("rcpt_")
+    assert app.state.store.get_order_with_token(order_id, token)["status"] == "completed"
+    assert app.state.store.get_order_with_token(order_id, "bad") is None

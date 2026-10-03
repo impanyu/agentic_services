@@ -53,6 +53,18 @@ api.aisoup.net {
 		}
 	}
 
+	handle /contractor-check/mcp {
+		reverse_proxy 127.0.0.1:8010 {
+			flush_interval -1
+		}
+	}
+
+	handle /contractor-check/.well-known/mcp/server.json {
+		reverse_proxy 127.0.0.1:8010 {
+			flush_interval -1
+		}
+	}
+
 	handle_path /contractor-check/* {
 		root * /mnt/disks/agentic-services/app/contractor-check-site
 		encode zstd gzip

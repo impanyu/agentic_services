@@ -24,6 +24,12 @@
     "url": "https://api.aisoup.net",
     "specification": "https://api.aisoup.net/contractor-check/openapi.json",
     "authorization": "x402-or-mpp"
+  }, {
+    "id": "mcp",
+    "type": "mcp",
+    "url": "https://api.aisoup.net/contractor-check/mcp",
+    "specification": "https://api.aisoup.net/contractor-check/.well-known/mcp/server.json",
+    "authorization": "x402"
   }],
   "operations": [{
     "id": "check-c10-license",
@@ -36,6 +42,16 @@
     "outputSchema": {"type": "object", "required": ["serviceId", "licenseNumber", "businessName", "assessment", "checks", "details", "source", "limitations"], "properties": {"serviceId": {"type": "string"}, "licenseNumber": {"type": "string"}, "businessName": {"type": "string"}, "assessment": {"type": "string"}, "checks": {"type": "object"}, "details": {"type": "object"}, "source": {"type": "object"}, "limitations": {"type": "array", "items": {"type": "string"}}}},
     "timeoutSeconds": 20,
     "idempotent": true
+  }, {
+    "id": "check-c10-license-mcp",
+    "capability": "construction.contractor.license-preflight",
+    "transport": "mcp",
+    "summary": "Paid MCP tool check_c10_license for one California contractor license.",
+    "tool": "check_c10_license",
+    "inputSchema": {"type": "object", "additionalProperties": false, "required": ["licenseNumber"], "properties": {"licenseNumber": {"type": "string", "pattern": "^[0-9]{1,8}$"}}},
+    "outputSchema": {"type": "object"},
+    "timeoutSeconds": 20,
+    "idempotent": true
   }],
   "offers": [{
     "id": "single-license-check",
@@ -45,6 +61,14 @@
     "currency": "USD",
     "unit": "license check",
     "paymentMethods": [{"protocol": "x402", "network": "eip155:8453", "asset": "USDC"}, {"protocol": "mpp", "network": "eip155:8453", "asset": "USDC"}]
+  }, {
+    "id": "single-license-check-mcp",
+    "operation": "check-c10-license-mcp",
+    "model": "per_call",
+    "amount": "1.00",
+    "currency": "USD",
+    "unit": "license check",
+    "paymentMethods": [{"protocol": "x402", "network": "eip155:8453", "asset": "USDC"}]
   }],
   "provenance": {
     "summary": "Each result links to the CSLB public license detail and includes the source's stated date, retrieval time, and HTML SHA-256.",
