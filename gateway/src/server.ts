@@ -792,6 +792,29 @@ function mountPaidRoutes(
       },
     }
   }
+  discoveryPaths[contractorOperation.path] = {
+    post: {
+      operationId: 'checkC10ContractorLicense',
+      tags: ['Contractor Check'],
+      summary: 'Check one California C-10 contractor license',
+      description: 'Pay $1 in Base USDC, then receive a source-linked CSLB license, bond, and workers compensation preflight.',
+      requestBody: {
+        required: true,
+        content: { 'application/json': { schema: {
+          type: 'object', additionalProperties: false, required: ['licenseNumber'],
+          properties: { licenseNumber: { type: 'string', pattern: '^[0-9]{1,8}$' } },
+        } } },
+      },
+      responses: {
+        '200': { description: 'Source-linked contractor check report' },
+        '402': { description: 'x402 or MPP payment required' },
+      },
+      'x-payment-info': {
+        price: { mode: 'fixed', currency: 'USD', amount: contractorOperation.price },
+        protocols: [{ x402: {} }, { mpp: { method: 'evm', intent: 'charge', currency: evm.assets.base.USDC.address } }],
+      },
+    },
+  }
   app.get('/openapi.json', (c) => jsonDocumentResponse(discoveryDocument, 'public, max-age=300'))
 }
 

@@ -10,7 +10,7 @@
   "agentPriceUsd": "1.00",
   "humanPriceUsd": "19.00",
   "directories": {
-    "mcpRegistry": null,
+    "mcpRegistry": "https://registry.modelcontextprotocol.io/v0/servers/io.github.impanyu%2Fcontractor-check/versions/0.1.0",
     "smithery": "https://smithery.ai/servers/impanyu/contractor-check",
     "x402Bazaar": null,
     "mppScan": null,
