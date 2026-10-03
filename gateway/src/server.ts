@@ -508,14 +508,21 @@ app.all('*', async (c) => proxyRequest(c.req.raw, new URL(c.req.url).pathname))
 
 async function humanUiCors(c: Parameters<MiddlewareHandler>[0], next: Parameters<MiddlewareHandler>[1]) {
   const origin = c.req.header('Origin')
-  if (origin === 'https://aisoup.net' || origin === 'https://www.aisoup.net') {
-    c.header('Access-Control-Allow-Origin', origin)
-    c.header('Vary', 'Origin')
-    c.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-    c.header('Access-Control-Allow-Headers', 'Content-Type')
+  const allowed = origin === 'https://aisoup.net' || origin === 'https://www.aisoup.net'
+  if (c.req.method === 'OPTIONS') {
+    if (!allowed) return c.body(null, 403)
+    return new Response(null, { status: 204, headers: {
+      'Access-Control-Allow-Origin': origin,
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+      Vary: 'Origin',
+    } })
   }
-  if (c.req.method === 'OPTIONS') return c.body(null, 204)
   await next()
+  if (allowed) {
+    c.res.headers.set('Access-Control-Allow-Origin', origin)
+    c.res.headers.set('Vary', 'Origin')
+  }
 }
 
 serve({ fetch: app.fetch, hostname: '0.0.0.0', port: 8010 })
