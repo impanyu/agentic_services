@@ -55,7 +55,7 @@ class VerificationStore:
                     "Web Evidence",
                     "Current web claim verification with cited evidence and snapshots.",
                     "active",
-                    "0.3.0",
+                    "0.3.1",
                     "/.well-known/agent-service.json",
                     now,
                     now,

@@ -1,7 +1,7 @@
 import { serve } from '@hono/node-server'
 import { createHash, randomBytes, randomUUID } from 'node:crypto'
 import { Hono, type MiddlewareHandler } from 'hono'
-import { discovery } from 'mppx/hono'
+import { generate as generatePaymentOpenApi } from 'mppx/discovery'
 import { Mppx, evm, stripe } from 'mppx/server'
 import { createMcpHandler } from './mcp.js'
 
@@ -80,17 +80,17 @@ const claimRequestSchema = {
   additionalProperties: false,
   required: ['claim'],
   properties: {
-    claim: { type: 'string', minLength: 3, maxLength: 4000 },
-    asOf: { type: ['string', 'null'], format: 'date' },
-    jurisdiction: { type: ['string', 'null'] },
-    freshnessHours: { type: ['integer', 'null'], minimum: 1, maximum: 8760 },
-    sourcePolicy: { enum: ['official_only', 'authoritative', 'open_web'] },
-    minimumSources: { type: 'integer', minimum: 1, maximum: 10 },
-    maxSources: { type: 'integer', minimum: 1, maximum: 20 },
-    allowedDomains: { type: 'array', items: { type: 'string' } },
-    blockedDomains: { type: 'array', items: { type: 'string' } },
-    includeConflicts: { type: 'boolean' },
-    language: { type: 'string' },
+    claim: { type: 'string', minLength: 3, maxLength: 4000, description: 'The factual claim to verify.' },
+    asOf: { type: ['string', 'null'], format: 'date', description: 'Optional date at which the claim should be evaluated.' },
+    jurisdiction: { type: ['string', 'null'], description: 'Optional country, state, or legal jurisdiction.' },
+    freshnessHours: { type: ['integer', 'null'], minimum: 1, maximum: 8760, description: 'Maximum preferred source age in hours.' },
+    sourcePolicy: { enum: ['official_only', 'authoritative', 'open_web'], description: 'Policy controlling which kinds of web sources may be used.' },
+    minimumSources: { type: 'integer', minimum: 1, maximum: 10, description: 'Minimum number of evidence sources requested.' },
+    maxSources: { type: 'integer', minimum: 1, maximum: 20, description: 'Maximum number of evidence sources to return.' },
+    allowedDomains: { type: 'array', items: { type: 'string' }, description: 'Optional hostname allowlist without schemes or paths.' },
+    blockedDomains: { type: 'array', items: { type: 'string' }, description: 'Optional hostname blocklist without schemes or paths.' },
+    includeConflicts: { type: 'boolean', description: 'Whether to search for and report conflicting evidence.' },
+    language: { type: 'string', description: 'Preferred response language or auto.' },
   },
 }
 
@@ -214,7 +214,7 @@ app.get('/.well-known/mcp/server.json', (c) => c.json(mcpRegistryDocument()))
 
 app.get('/.well-known/agent-card.json', (c) => {
   c.header('Cache-Control', 'public, max-age=3600')
-  c.header('ETag', '"web-evidence-a2a-0.3.0"')
+  c.header('ETag', '"web-evidence-a2a-0.3.1"')
   return c.json(agentCard())
 })
 
@@ -227,7 +227,7 @@ app.get('/.well-known/agent-service.json', async () => {
   if (!upstream.ok) return upstream
   const document = await upstream.json() as Record<string, any>
   document.service.id = `${serviceBaseUrl}/.well-known/agent-service.json`
-  document.service.version = '0.3.0'
+  document.service.version = '0.3.1'
   document.service.homepage = `${publicBaseUrl}/web-evidence/`
   document.provider.name = 'Dream Workshop LLC'
   document.provider.contact = 'https://aisoup.net/#contact'
@@ -714,7 +714,7 @@ function verificationStatusSchema() {
 }
 
 function mountPaidRoutes(
-  payments: Parameters<typeof discovery>[1],
+  payments: Parameters<typeof generatePaymentOpenApi>[0],
   paidTiers: Array<{ tier: VerificationTier; handler: MiddlewareHandler }>,
 ): void {
   for (const { tier, handler } of paidTiers) {
@@ -727,31 +727,51 @@ function mountPaidRoutes(
   if (!standard) throw new Error('Standard verification tier is required')
   app.post('/a2a', standard.handler, handleA2A)
 
-  discovery(app, payments, {
-    path: '/openapi.json',
-    info: { title: 'Agentic Services Web Evidence', version: '0.3.0' },
+  const discoveryRoutes = paidTiers.map(({ tier, handler }) => ({
+    handler,
+    method: 'POST',
+    path: tier.canonicalPath,
+    summary: tier.summary,
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: requestSchemaForTier(tier),
+        },
+      },
+    },
+  }))
+  const discoveryDocument = generatePaymentOpenApi(payments, {
+    info: { title: 'Agentic Services Web Evidence', version: '0.3.1' },
     serviceInfo: {
       description: 'Paid, structured verification of factual claims using current web evidence.',
       name: 'Web Evidence',
-      url: publicBaseUrl,
+      url: `${publicBaseUrl}/web-evidence/`,
+      categories: ['research', 'fact-checking', 'web-evidence'],
+      docs: {
+        apiReference: `${serviceBaseUrl}/openapi.json`,
+        homepage: `${serviceBaseUrl}/`,
+        llms: `${serviceBaseUrl}/llms.txt`,
+      },
     },
-    routes: paidTiers.map(({ tier, handler }) => (
-      {
-        handler,
-        method: 'POST',
-        path: tier.canonicalPath,
-        summary: tier.summary,
-        requestBody: {
-          required: true,
-          content: {
-            'application/json': {
-              schema: requestSchemaForTier(tier),
-            },
-          },
-        },
-      }
-    )),
+    routes: discoveryRoutes,
   })
+  const discoveryInfo = discoveryDocument.info as Record<string, unknown>
+  discoveryInfo.description = 'Paid claim verification for agents with cited evidence, complete provider-source provenance, reproducible snapshots, content hashes, and signed receipts.'
+  const discoveryPaths = discoveryDocument.paths as Record<string, Record<string, Record<string, any>>>
+  for (const tier of tiers) {
+    const operation = discoveryPaths[tier.canonicalPath]?.post
+    if (!operation) continue
+    operation.description = `${tier.summary} Returns a structured verdict, citations, source provenance, snapshots, hashes, and payment receipt metadata.`
+    operation.responses = {
+      ...operation.responses,
+      '200': {
+        description: 'Structured claim-verification result with cited evidence and provenance.',
+        content: { 'application/json': { schema: claimResponseSchema } },
+      },
+    }
+  }
+  app.get('/openapi.json', (c) => jsonDocumentResponse(discoveryDocument, 'public, max-age=300'))
 }
 
 function requireEnv(name: string): string {
@@ -771,13 +791,14 @@ function mcpRegistryDocument() {
       url: 'https://github.com/impanyu/agentic_services',
       source: 'github',
     },
-    version: '0.3.0',
+    version: '0.3.1',
     remotes: [{ type: 'streamable-http', url: `${serviceBaseUrl}/mcp` }],
   }
 }
 
 function agentCard() {
   return {
+    protocolVersion: '1.0',
     name: 'Web Evidence',
     description: 'Verifies factual claims against current web evidence and returns citations, provenance, snapshots, and hashes.',
     supportedInterfaces: [{
@@ -786,7 +807,8 @@ function agentCard() {
       protocolVersion: '1.0',
     }],
     provider: { organization: 'Dream Workshop LLC', url: 'https://aisoup.net' },
-    version: '0.3.0',
+    version: '0.3.1',
+    iconUrl: `${publicBaseUrl}/favicon.ico`,
     documentationUrl: `${publicBaseUrl}/web-evidence/`,
     capabilities: {
       extensions: [
@@ -808,6 +830,34 @@ function agentCard() {
           params: {
             methods: ['evm', ...(stripeSecretKey ? ['stripe'] : [])],
             endpoint: `${serviceBaseUrl}/a2a`,
+          },
+        },
+        {
+          uri: 'https://a2a-registry.org/extensions/registry/v1',
+          description: 'Registry metadata and payment capabilities.',
+          required: false,
+          params: {
+            payment: {
+              model: 'paid',
+              protocols: ['x402', ...(stripeSecretKey ? ['stripe'] : [])],
+              direction: 'inbound',
+              rails: [
+                {
+                  network: 'base',
+                  token: 'USDC',
+                  type: 'stablecoin',
+                  protocol: 'x402',
+                  caip2: 'eip155:8453',
+                  contractAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+                },
+                ...(stripeSecretKey ? [{
+                  network: 'stripe',
+                  token: 'USD',
+                  type: 'fiat',
+                  protocol: 'stripe',
+                }] : []),
+              ],
+            },
           },
         },
       ],

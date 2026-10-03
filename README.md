@@ -120,7 +120,7 @@ For the production Docker Compose deployment at `api.aisoup.net`, follow [`deplo
 
 Web Evidence is published through the following public discovery surfaces:
 
-- [Official MCP Registry](https://registry.modelcontextprotocol.io/v0/servers/io.github.impanyu%2Fweb-evidence/versions/0.3.0) as `io.github.impanyu/web-evidence`.
+- [Official MCP Registry](https://registry.modelcontextprotocol.io/v0/servers/io.github.impanyu%2Fweb-evidence/versions/0.3.1) as `io.github.impanyu/web-evidence`.
 - [OpenX402 Bazaar](https://facilitator.openx402.ai/discovery/resources?type=mcp) as the paid MCP resource `mcp://api.aisoup.net/verify_claim_quick`.
 - [x402Scan](https://www.x402scan.com/server/131c08a0-027b-4f28-afe6-2a72fdbac7dc) with all four paid HTTP tiers and both public snapshot routes.
 - [MPPScan](https://www.mppscan.com/server/b915b7bda6517cd0e47f1cfaca657b4a4f7b268093117889d34b31bad1915664) with the paid verification routes and public evidence/commerce routes it can safely crawl.

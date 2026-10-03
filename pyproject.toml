@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "agentic-services"
-version = "0.3.0"
+version = "0.3.1"
 description = "Machine-discoverable, purchasable information services for agents"
 requires-python = ">=3.11"
 dependencies = [

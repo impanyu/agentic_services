@@ -3,16 +3,16 @@
   "name": "io.github.impanyu/web-evidence",
   "title": "Web Evidence",
   "description": "Paid claim verification with cited web evidence, source provenance, snapshots, and hashes.",
-  "websiteUrl": "https://api.aisoup.net",
+  "websiteUrl": "https://api.aisoup.net/web-evidence/",
   "repository": {
     "url": "https://github.com/impanyu/agentic_services",
     "source": "github"
   },
-  "version": "0.3.0",
+  "version": "0.3.1",
   "remotes": [
     {
       "type": "streamable-http",
-      "url": "https://api.aisoup.net/mcp"
+      "url": "https://api.aisoup.net/web-evidence/mcp"
     }
   ]
 }
