@@ -288,7 +288,7 @@ app.use('/openapi.json', async (c, next) => {
 
   const document = await c.res.json() as Record<string, any>
   document.info['x-guidance'] =
-    'Use POST /v1/claims/verify to verify one factual claim against current web evidence. Send a JSON body with claim and optional source, freshness, jurisdiction, and language constraints.'
+    'Use POST /web-evidence/v1/claims/verify to verify one factual claim against current web evidence. Send a JSON body with claim and optional source, freshness, jurisdiction, and language constraints.'
   document.info.contact = { url: 'https://aisoup.net/#contact' }
 
   for (const tier of tiers) {
@@ -319,24 +319,6 @@ app.use('/openapi.json', async (c, next) => {
         'application/json': {
           schema: claimResponseSchema,
         },
-      },
-    }
-    document.paths[tier.path] = {
-      post: {
-        ...structuredClone(operation),
-        operationId: `${operation.operationId}Legacy`,
-        summary: `${operation.summary ?? tier.summary} (legacy path)`,
-        deprecated: true,
-        'x-canonical-path': tier.canonicalPath,
-      },
-    }
-    document.paths[tier.servicePath] = {
-      post: {
-        ...structuredClone(operation),
-        operationId: `${operation.operationId}ServiceNamespaceLegacy`,
-        summary: `${operation.summary ?? tier.summary} (legacy service namespace)`,
-        deprecated: true,
-        'x-canonical-path': tier.canonicalPath,
       },
     }
   }
