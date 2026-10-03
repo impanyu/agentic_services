@@ -106,6 +106,19 @@ class VerificationStore:
                 )"""
             )
             connection.execute(
+                """CREATE TABLE IF NOT EXISTS stripe_checkout_fulfillments (
+                    stripe_session_id TEXT PRIMARY KEY,
+                    service_id TEXT NOT NULL,
+                    intent_id TEXT NOT NULL,
+                    status TEXT NOT NULL DEFAULT 'pending',
+                    attempts INTEGER NOT NULL DEFAULT 0,
+                    next_attempt_at TEXT NOT NULL,
+                    last_error TEXT,
+                    created_at TEXT NOT NULL,
+                    completed_at TEXT
+                )"""
+            )
+            connection.execute(
                 """
                 CREATE TABLE IF NOT EXISTS claim_verifications (
                     verification_id TEXT PRIMARY KEY,
@@ -865,6 +878,52 @@ class VerificationStore:
             connection.execute(
                 "UPDATE web_evidence_checkout_intents SET order_id=? WHERE intent_id=? AND order_id IS NULL",
                 (order_id, intent_id),
+            )
+
+    def enqueue_stripe_fulfillment(self, session_id: str, service_id: str, intent_id: str) -> None:
+        now = datetime.now(UTC).isoformat()
+        with self._connect() as connection:
+            connection.execute(
+                """INSERT OR IGNORE INTO stripe_checkout_fulfillments
+                   (stripe_session_id, service_id, intent_id, next_attempt_at, created_at)
+                   VALUES(?,?,?,?,?)""",
+                (session_id, service_id, intent_id, now, now),
+            )
+
+    def claim_stripe_fulfillment(self) -> dict[str, Any] | None:
+        now = datetime.now(UTC).isoformat()
+        lease_until = (datetime.now(UTC) + timedelta(minutes=5)).isoformat()
+        with self._connect() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            row = connection.execute(
+                """SELECT * FROM stripe_checkout_fulfillments
+                   WHERE status IN ('pending', 'processing') AND next_attempt_at <= ?
+                   ORDER BY next_attempt_at LIMIT 1""", (now,),
+            ).fetchone()
+            if row:
+                connection.execute(
+                    """UPDATE stripe_checkout_fulfillments
+                       SET status='processing', attempts=attempts+1, next_attempt_at=?
+                       WHERE stripe_session_id=?""", (lease_until, row["stripe_session_id"]),
+                )
+        return dict(row) if row else None
+
+    def finish_stripe_fulfillment(self, session_id: str) -> None:
+        with self._connect() as connection:
+            connection.execute(
+                """UPDATE stripe_checkout_fulfillments
+                   SET status='completed', last_error=NULL, completed_at=?
+                   WHERE stripe_session_id=?""", (datetime.now(UTC).isoformat(), session_id),
+            )
+
+    def retry_stripe_fulfillment(self, session_id: str, attempts: int, error: str) -> None:
+        delay = min(3600, 15 * 2 ** min(attempts, 8))
+        with self._connect() as connection:
+            connection.execute(
+                """UPDATE stripe_checkout_fulfillments
+                   SET status='pending', next_attempt_at=?, last_error=?
+                   WHERE stripe_session_id=?""",
+                ((datetime.now(UTC) + timedelta(seconds=delay)).isoformat(), error[:120], session_id),
             )
 
     def reset_failed_order(self, order_id: str) -> bool:

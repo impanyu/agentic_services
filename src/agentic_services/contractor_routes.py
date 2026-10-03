@@ -31,7 +31,8 @@ def create_contractor_router(
     require_api_key: Callable[[str | None], None],
     sign_receipt: Callable[[dict[str, object]], str],
     base_url: str,
-) -> APIRouter:
+    checkout_lock: Callable[[str], object],
+) -> tuple[APIRouter, Callable[[dict[str, object]], dict[str, object]], Callable[[str], object]]:
     router = APIRouter(tags=["contractor check"])
     base_url = base_url.rstrip("/")
 
@@ -129,11 +130,10 @@ def create_contractor_router(
         store.bind_contractor_session(intent_id, session_id)
         return {"checkoutUrl": url, "priceUsd": "19.00"}
 
-    @router.get("/contractor-check/v1/report")
-    async def get_paid_report(response: Response, session_id: str = Query(min_length=20, max_length=255)) -> dict[str, object]:
-        if not re.fullmatch(r"cs_(?:test|live)_[A-Za-z0-9]+", session_id):
+    def fulfill_paid_checkout(session: dict[str, object]) -> dict[str, object]:
+        session_id = session.get("id")
+        if not isinstance(session_id, str) or not re.fullmatch(r"cs_(?:test|live)_[A-Za-z0-9]+", session_id):
             raise HTTPException(status_code=422, detail="Invalid Checkout session")
-        session = await stripe_request("GET", f"checkout/sessions/{session_id}")
         intent_id = session.get("client_reference_id")
         if not isinstance(intent_id, str):
             raise HTTPException(status_code=404, detail="Unknown report")
@@ -150,8 +150,18 @@ def create_contractor_router(
         order_id = f"ord_{intent_id[4:]}"
         record_order(order_id, report, int(intent["price_cents"]) * 10_000, "stripe-checkout")
         store.set_contractor_order(intent_id, order_id)
-        response.headers["Cache-Control"] = "private, no-store"
         return {"orderId": order_id, "report": report}
+
+    @router.get("/contractor-check/v1/report")
+    async def get_paid_report(response: Response, session_id: str = Query(min_length=20, max_length=255)) -> dict[str, object]:
+        if not re.fullmatch(r"cs_(?:test|live)_[A-Za-z0-9]+", session_id):
+            raise HTTPException(status_code=422, detail="Invalid Checkout session")
+        async with checkout_lock(session_id):
+            session = await stripe_request("GET", f"checkout/sessions/{session_id}")
+            session["id"] = session_id
+            result = fulfill_paid_checkout(session)
+        response.headers["Cache-Control"] = "private, no-store"
+        return result
 
     @router.post("/contractor-check/v1/check")
     async def agent_check(
@@ -174,4 +184,9 @@ def create_contractor_router(
         response.headers["X-Agentic-Receipt-Id"] = str(store.get_order(x_agentic_order_id)["receiptId"])
         return report
 
-    return router
+    async def retrieve_checkout(session_id: str) -> dict[str, object]:
+        session = await stripe_request("GET", f"checkout/sessions/{session_id}")
+        session["id"] = session_id
+        return session
+
+    return router, fulfill_paid_checkout, retrieve_checkout

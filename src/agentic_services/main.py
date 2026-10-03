@@ -5,10 +5,12 @@ import hashlib
 import hmac
 import ipaddress
 import json
+import logging
 import os
 import re
 import secrets
 import socket
+from contextlib import asynccontextmanager
 from urllib.parse import urlparse
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
@@ -43,6 +45,7 @@ from .status_page import (
     status_page_html,
     status_rss,
 )
+from .stripe_webhook import InvalidStripeSignature, verify_stripe_event
 
 
 class CustomerCreateRequest(BaseModel):
@@ -180,10 +183,29 @@ def create_app(
     service: ClaimVerificationService | None = None,
 ) -> FastAPI:
     resolved_settings = settings or Settings.from_environment()
+
+    @asynccontextmanager
+    async def lifespan(app: FastAPI):
+        async def worker() -> None:
+            while True:
+                if not await app.state.process_stripe_fulfillment():
+                    await asyncio.sleep(5)
+
+        task = asyncio.create_task(worker())
+        try:
+            yield
+        finally:
+            task.cancel()
+            try:
+                await task
+            except asyncio.CancelledError:
+                pass
+
     app = FastAPI(
         title="Agentic Services — Web Evidence",
         version=__version__,
         description="Verify factual claims against current web evidence.",
+        lifespan=lifespan,
     )
     app.state.settings = resolved_settings
     app.state.verification_service = service or build_service(resolved_settings)
@@ -260,7 +282,15 @@ def create_app(
         canonical = json.dumps(receipt, separators=(",", ":"), sort_keys=True).encode()
         return hmac.new(secret.encode(), canonical, hashlib.sha256).hexdigest()
 
-    app.include_router(create_contractor_router(store, require_service_api_key, sign_receipt, resolved_settings.base_url))
+    checkout_locks: dict[str, asyncio.Lock] = {}
+
+    def checkout_lock(session_id: str) -> asyncio.Lock:
+        return checkout_locks.setdefault(session_id, asyncio.Lock())
+
+    contractor_router, fulfill_contractor_checkout, retrieve_contractor_checkout = create_contractor_router(
+        store, require_service_api_key, sign_receipt, resolved_settings.base_url, checkout_lock,
+    )
+    app.include_router(contractor_router)
 
     def contact_ip_hash(request: Request) -> str:
         forwarded = request.headers.get("x-forwarded-for", "")
@@ -863,13 +893,9 @@ def create_app(
         store.bind_web_evidence_session(intent_id, session_id)
         return {"checkoutUrl": url, "priceUsd": "2.00"}
 
-    @app.get("/web-evidence/v1/report", tags=["web evidence human checkout"])
-    async def web_evidence_paid_report(
-        request: Request, response: Response, session_id: str = Query(min_length=20, max_length=255),
+    async def fulfill_web_evidence_checkout(
+        session_id: str, session: dict[str, object], request: Request, response: Response,
     ) -> dict[str, object]:
-        if not re.fullmatch(r"cs_(?:test|live)_[A-Za-z0-9]+", session_id):
-            raise HTTPException(status_code=422, detail="Invalid Checkout session")
-        session = await human_stripe_request("GET", f"checkout/sessions/{session_id}")
         intent_id = session.get("client_reference_id")
         if not isinstance(intent_id, str):
             raise HTTPException(status_code=404, detail="Unknown report")
@@ -896,8 +922,87 @@ def create_app(
             store.set_web_evidence_order(intent_id, order_id)
         if result is None:
             raise HTTPException(status_code=503, detail="Report is temporarily unavailable")
-        response.headers["Cache-Control"] = "private, no-store"
         return {"orderId": order_id, "report": result.model_dump(by_alias=True, mode="json")}
+
+    @app.get("/web-evidence/v1/report", tags=["web evidence human checkout"])
+    async def web_evidence_paid_report(
+        request: Request, response: Response, session_id: str = Query(min_length=20, max_length=255),
+    ) -> dict[str, object]:
+        if not re.fullmatch(r"cs_(?:test|live)_[A-Za-z0-9]+", session_id):
+            raise HTTPException(status_code=422, detail="Invalid Checkout session")
+        async with checkout_lock(session_id):
+            session = await human_stripe_request("GET", f"checkout/sessions/{session_id}")
+            result = await fulfill_web_evidence_checkout(session_id, session, request, response)
+        response.headers["Cache-Control"] = "private, no-store"
+        return result
+
+    async def retrieve_paid_checkout(service_id: str, session_id: str) -> dict[str, object]:
+        if service_id == "contractor-check":
+            session = await retrieve_contractor_checkout(session_id)
+        else:
+            session = await human_stripe_request("GET", f"checkout/sessions/{session_id}")
+            session["id"] = session_id
+        intent_id = session.get("client_reference_id")
+        intent = (store.get_contractor_intent(intent_id) if service_id == "contractor-check"
+                  else store.get_web_evidence_intent(intent_id)) if isinstance(intent_id, str) else None
+        key = (os.getenv("CONTRACTOR_STRIPE_SECRET_KEY", "") if service_id == "contractor-check"
+               else human_stripe_key())
+        if (not intent or intent["stripe_session_id"] != session_id
+                or session.get("metadata", {}).get("serviceId") != service_id
+                or session.get("payment_status") != "paid"
+                or session.get("currency") != "usd"
+                or session.get("amount_total") != intent["price_cents"]
+                or session.get("mode") != "payment"
+                or session.get("livemode") != key.startswith(("rk_live_", "sk_live_"))):
+            raise HTTPException(status_code=422, detail="Checkout session does not match a paid order")
+        return session
+
+    @app.post("/v1/stripe/checkout-webhook", include_in_schema=False)
+    async def stripe_checkout_webhook(request: Request) -> dict[str, str]:
+        secret = os.getenv("HUMAN_STRIPE_WEBHOOK_SECRET", "")
+        if not secret.startswith("whsec_"):
+            raise HTTPException(status_code=503, detail="Stripe webhook is not configured")
+        body = await request.body()
+        if len(body) > 262_144:
+            raise HTTPException(status_code=413, detail="Stripe event is too large")
+        try:
+            event = verify_stripe_event(body, request.headers.get("stripe-signature"), secret)
+        except InvalidStripeSignature as error:
+            raise HTTPException(status_code=400, detail=str(error)) from error
+        if event.get("type") not in {"checkout.session.completed", "checkout.session.async_payment_succeeded"}:
+            return {"status": "ignored"}
+        session_data = event.get("data", {}).get("object", {})
+        session_id = session_data.get("id") if isinstance(session_data, dict) else None
+        service_id = session_data.get("metadata", {}).get("serviceId") if isinstance(session_data, dict) else None
+        if service_id not in {"web-evidence", "contractor-check"}:
+            return {"status": "ignored"}
+        if not isinstance(session_id, str) or not re.fullmatch(r"cs_(?:test|live)_[A-Za-z0-9]+", session_id):
+            raise HTTPException(status_code=422, detail="Invalid Checkout session")
+        session = await retrieve_paid_checkout(service_id, session_id)
+        store.enqueue_stripe_fulfillment(session_id, service_id, str(session["client_reference_id"]))
+        return {"status": "queued"}
+
+    async def process_stripe_fulfillment() -> bool:
+        job = store.claim_stripe_fulfillment()
+        if job is None:
+            return False
+        session_id, service_id = job["stripe_session_id"], job["service_id"]
+        try:
+            async with checkout_lock(session_id):
+                session = await retrieve_paid_checkout(service_id, session_id)
+                if service_id == "contractor-check":
+                    fulfill_contractor_checkout(session)
+                else:
+                    worker_request = Request({"type": "http", "app": app, "method": "POST", "path": "/v1/stripe/checkout-webhook", "headers": []})
+                    await fulfill_web_evidence_checkout(session_id, session, worker_request, Response())
+                store.finish_stripe_fulfillment(session_id)
+        except Exception as error:
+            logging.getLogger(__name__).exception("Stripe Checkout fulfillment failed for %s", session_id)
+            store.retry_stripe_fulfillment(session_id, job["attempts"] + 1, type(error).__name__)
+        return True
+
+    app.state.process_stripe_fulfillment = process_stripe_fulfillment
+
 
     @app.post(
         "/v1/claims/verify/quick",

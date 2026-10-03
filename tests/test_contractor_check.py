@@ -3,6 +3,9 @@ from __future__ import annotations
 import json
 import hashlib
 import sqlite3
+import hmac
+import time
+import asyncio
 from pathlib import Path
 
 import httpx
@@ -116,6 +119,48 @@ def test_checkout_releases_only_matching_paid_session(tmp_path: Path, monkeypatc
         count = connection.execute(
             "SELECT COUNT(*) FROM ledger_entries WHERE order_id=? AND kind='revenue'",
             (delivered.json()["orderId"],),
+        ).fetchone()[0]
+    assert count == 1
+
+
+def test_contractor_webhook_fulfills_without_browser_return(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    report = parse_license_page(SAMPLE_HTML, "1234567")
+    app = create_app(settings=Settings(
+        openai_api_key=None, openai_model="test", database_path=tmp_path / "db.sqlite",
+        base_url="https://api.example.test", service_api_key="internal-key",
+        receipt_signing_secret="receipt-test-secret",
+    ))
+    client = TestClient(app)
+    monkeypatch.setenv("CONTRACTOR_STRIPE_SECRET_KEY", "rk_test_localdummy")
+    monkeypatch.setenv("HUMAN_STRIPE_WEBHOOK_SECRET", "whsec_localtest")
+    session_id = "cs_test_abc12345678901234567890"
+    intent_id = app.state.store.create_contractor_intent("1234567", report, 1900)
+    app.state.store.bind_contractor_session(intent_id, session_id)
+
+    async def fake_stripe(self, method, url, **kwargs):
+        return httpx.Response(200, request=httpx.Request(method, url), json={
+            "id": session_id, "client_reference_id": intent_id,
+            "metadata": {"serviceId": "contractor-check"},
+            "payment_status": "paid", "currency": "usd", "amount_total": 1900,
+            "mode": "payment", "livemode": False,
+        })
+
+    monkeypatch.setattr(httpx.AsyncClient, "request", fake_stripe)
+    body = json.dumps({
+        "id": "evt_test_contractor", "type": "checkout.session.completed",
+        "data": {"object": {"id": session_id, "metadata": {"serviceId": "contractor-check"}}},
+    }).encode()
+    timestamp = int(time.time())
+    signature = hmac.new(b"whsec_localtest", str(timestamp).encode() + b"." + body, hashlib.sha256).hexdigest()
+    headers = {"Stripe-Signature": f"t={timestamp},v1={signature}"}
+    assert client.post("/v1/stripe/checkout-webhook", content=body, headers=headers).status_code == 200
+    assert asyncio.run(app.state.process_stripe_fulfillment()) is True
+    assert app.state.store.get_order(f"ord_{intent_id[4:]}")["status"] == "completed"
+    assert client.get(f"/contractor-check/v1/report?session_id={session_id}").status_code == 200
+    with sqlite3.connect(tmp_path / "db.sqlite") as connection:
+        count = connection.execute(
+            "SELECT COUNT(*) FROM ledger_entries WHERE order_id=? AND kind='revenue'",
+            (f"ord_{intent_id[4:]}",),
         ).fetchone()[0]
     assert count == 1
 

@@ -43,6 +43,8 @@ STRIPE_NETWORK_ID=agentic-services
 STRIPE_MINIMUM_PRICE_USD=0.50
 # Optional human Checkout for California C-10 Contractor Check (separate restricted key):
 CONTRACTOR_STRIPE_SECRET_KEY=<Stripe live Checkout Sessions key>
+WEB_EVIDENCE_STRIPE_SECRET_KEY=<same human-sales account key, if separately scoped>
+HUMAN_STRIPE_WEBHOOK_SECRET=<signing secret for the Checkout webhook endpoint>
 # Optional; enables the root key file required for IndexNow submissions:
 INDEXNOW_KEY=<8-128 character private IndexNow key>
 ```
@@ -54,6 +56,17 @@ docker compose --env-file .env.production up -d --build
 docker compose --env-file .env.production ps
 curl http://127.0.0.1:8010/healthz
 ```
+
+In the human-sales Stripe account, create one HTTPS event destination at
+`https://api.aisoup.net/v1/stripe/checkout-webhook` for `checkout.session.completed`
+and `checkout.session.async_payment_succeeded`. Copy that destination's signing
+secret into `HUMAN_STRIPE_WEBHOOK_SECRET`; it is distinct from all Stripe API
+keys and from the old QtPw MPP account. The receiver checks the raw-body
+signature, retrieves the Checkout Session from Stripe, verifies service,
+session binding, mode, paid status, currency, amount, and live/test mode, then
+durably queues fulfillment. A worker retries failed fulfillment after restarts.
+Check a real delivery in Stripe Workbench and a completed order in the admin
+ledger before treating live card fulfillment as verified.
 
 Append the API site block from `deploy/Caddyfile` to `/etc/caddy/Caddyfile`, validate it, and reload Caddy. Caddy obtains and renews TLS automatically after DNS resolves:
 

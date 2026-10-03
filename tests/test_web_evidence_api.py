@@ -7,6 +7,9 @@ import sqlite3
 import httpx
 import pytest
 from datetime import UTC, datetime
+import hmac
+import time
+import asyncio
 
 from fastapi.testclient import TestClient
 from jsonschema import Draft202012Validator, FormatChecker
@@ -731,3 +734,58 @@ def test_human_checkout_requires_matching_paid_session(tmp_path: Path, monkeypat
     order = client.app.state.store.get_order(first.json()["orderId"])
     assert order["status"] == "completed"
     assert order["amountMicrousd"] == 2_000_000
+
+
+def test_web_evidence_webhook_queues_and_fulfills_once(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    provider = FakeProvider()
+    settings = Settings(
+        openai_api_key="test-only", openai_model=provider.model,
+        database_path=tmp_path / "evidence.db", base_url="https://api.example.test",
+        service_api_key="internal-key", receipt_signing_secret="receipt-test-secret",
+    )
+    service = ClaimVerificationService(
+        provider=provider, store=VerificationStore(settings.database_path, tmp_path / "snapshots"),
+        snapshotter=FakeSnapshotter(),
+    )
+    app = create_app(settings=settings, service=service)
+    client = TestClient(app)
+    monkeypatch.setenv("CONTRACTOR_STRIPE_SECRET_KEY", "rk_test_localdummy")
+    monkeypatch.setenv("HUMAN_STRIPE_WEBHOOK_SECRET", "whsec_localtest")
+    session_id = "cs_test_abc12345678901234567890"
+    intent_id = app.state.store.create_web_evidence_intent('{"claim":"The Earth orbits the Sun."}', 200)
+    app.state.store.bind_web_evidence_session(intent_id, session_id)
+    paid = {"value": True}
+
+    async def fake_stripe(self, method, url, **kwargs):
+        return httpx.Response(200, request=httpx.Request(method, url), json={
+            "id": session_id, "client_reference_id": intent_id,
+            "metadata": {"serviceId": "web-evidence"},
+            "payment_status": "paid" if paid["value"] else "unpaid",
+            "currency": "usd", "amount_total": 200, "mode": "payment", "livemode": False,
+        })
+
+    monkeypatch.setattr(httpx.AsyncClient, "request", fake_stripe)
+    body = json.dumps({
+        "id": "evt_test_web_evidence", "type": "checkout.session.completed",
+        "data": {"object": {"id": session_id, "metadata": {"serviceId": "web-evidence"}}},
+    }).encode()
+    timestamp = int(time.time())
+    signature = hmac.new(b"whsec_localtest", str(timestamp).encode() + b"." + body, hashlib.sha256).hexdigest()
+    headers = {"Stripe-Signature": f"t={timestamp},v1={signature}"}
+    path = "/v1/stripe/checkout-webhook"
+
+    assert client.post(path, content=body).status_code == 400
+    assert client.post(path, content=body, headers={"Stripe-Signature": f"t={timestamp - 1000},v1={signature}"}).status_code == 400
+    paid["value"] = False
+    assert client.post(path, content=body, headers=headers).status_code == 422
+    paid["value"] = True
+    assert client.post(path, content=body, headers=headers).json() == {"status": "queued"}
+    assert client.post(path, content=body, headers=headers).json() == {"status": "queued"}
+    assert provider.calls == 0
+    assert asyncio.run(app.state.process_stripe_fulfillment()) is True
+    assert asyncio.run(app.state.process_stripe_fulfillment()) is False
+    assert provider.calls == 1
+    order = app.state.store.get_order(f"ord_{intent_id[4:]}")
+    assert order["status"] == "completed"
+    assert client.get(f"/web-evidence/v1/report?session_id={session_id}").status_code == 200
+    assert provider.calls == 1

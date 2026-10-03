@@ -2,7 +2,7 @@
 
 Use `services/<service-id>/release.json` as the release contract. The service manifest, OpenAPI document, MCP Registry metadata, gateway amount, backend amount, and human Stripe amount must agree before deployment. Run `python3 scripts/check-service-release.py services/<service-id>/release.json` to check this locally, then rerun with `--live` after deployment. The live check does not spend money.
 
-For an agent service, expose a public HTTP 402 challenge and a Streamable HTTP MCP endpoint. The MCP tool list should state the per-call price and include one free pricing tool. A paid call must produce a result, order ID, order token, and signed receipt; the token must retrieve only that order. Keep Stripe Checkout for any human-facing UI. A Checkout redirect verifies payment before releasing the report, but a webhook is needed for reliable fulfillment when customers do not return to the site.
+For an agent service, expose a public HTTP 402 challenge and a Streamable HTTP MCP endpoint. The MCP tool list should state the per-call price and include one free pricing tool. A paid call must produce a result, order ID, order token, and signed receipt; the token must retrieve only that order. Keep Stripe Checkout for any human-facing UI. For human Checkout, configure the signed `https://api.aisoup.net/v1/stripe/checkout-webhook` destination in the human-sales Stripe account, subscribe to `checkout.session.completed` and `checkout.session.async_payment_succeeded`, and verify a real delivered event plus a completed order. The return page also verifies payment before showing a report; both paths share the same order.
 
 Release gates are distinct:
 
