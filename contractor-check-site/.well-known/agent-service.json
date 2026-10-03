@@ -41,7 +41,7 @@
     "inputSchema": {"type": "object", "additionalProperties": false, "required": ["licenseNumber"], "properties": {"licenseNumber": {"type": "string", "pattern": "^[0-9]{1,8}$"}}},
     "outputSchema": {"type": "object", "required": ["serviceId", "licenseNumber", "businessName", "assessment", "checks", "details", "source", "limitations"], "properties": {"serviceId": {"type": "string"}, "licenseNumber": {"type": "string"}, "businessName": {"type": "string"}, "assessment": {"type": "string"}, "checks": {"type": "object"}, "details": {"type": "object"}, "source": {"type": "object"}, "limitations": {"type": "array", "items": {"type": "string"}}}},
     "timeoutSeconds": 20,
-    "idempotent": true
+    "idempotent": false
   }, {
     "id": "check-c10-license-mcp",
     "capability": "construction.contractor.license-preflight",
@@ -51,7 +51,7 @@
     "inputSchema": {"type": "object", "additionalProperties": false, "required": ["licenseNumber"], "properties": {"licenseNumber": {"type": "string", "pattern": "^[0-9]{1,8}$"}}},
     "outputSchema": {"type": "object"},
     "timeoutSeconds": 20,
-    "idempotent": true
+    "idempotent": false
   }],
   "offers": [{
     "id": "single-license-check",
