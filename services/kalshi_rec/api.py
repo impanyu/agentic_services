@@ -127,8 +127,12 @@ def trades(ticker: list[str] | None = Query(None), day: date | None = None, fmt:
         cold = A.read_trades(days, ticker)
     else:
         days = [day]
-        hot_t = [r[0] for r in ro_db().execute("SELECT DISTINCT ticker FROM btc15m_trades")
-                 if A.ticker_day(r[0]) == day]
+        db = ro_db()
+        try:
+            hot_t = [r[0] for r in db.execute("SELECT DISTINCT ticker FROM btc15m_trades")
+                     if A.ticker_day(r[0]) == day]
+        finally:
+            db.close()
         q = ",".join("?" * len(hot_t)) or "''"
         hot = _hot_trades(f"ticker IN ({q})", tuple(hot_t)) if hot_t else A.TRADE_SCHEMA.empty_table()
         cold = A.read_trades(days)

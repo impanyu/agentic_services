@@ -13,7 +13,7 @@ read/write API. Self-contained: does not import `src/agentic_services`.
 |---|---|
 | `recorder.py` | WebSocket recorder: `cfbenchmarks_value` (BRTI) + `trade` (all markets, keeps `KXBTC15M-*`). 1 s buffered writes, reconnects on 30 s BRTI silence, logs sessions in `ws_sessions`. |
 | `verify.py` | Daily REST cross-check per market by `trade_id`; back-fills anything the WS missed (`source='rest'`), records missing/extra/mismatch counts in `btc15m_markets`. Public endpoints, no auth. |
-| `compact.py` | Moves ET days older than `KREC_KEEP_HOT_DAYS` (default 3) from SQLite into `data/archive/{btc15m_trades,brti}/YYYY-MM-DD.parquet`, then deletes them from SQLite and vacuums. |
+| `compact.py` | Moves verified trade markets and BRTI ticks older than `KREC_KEEP_HOT_DAYS` (default 3 ET calendar days) from SQLite into `data/archive/{btc15m_trades,brti}/YYYY-MM-DD.parquet`, then deletes them from SQLite and vacuums. Unverified trades remain hot until REST reconciliation succeeds. |
 | `api.py` | FastAPI on `127.0.0.1:8765`, `Authorization: Bearer $KREC_API_TOKEN`. Merges hot SQLite + archive transparently. |
 | `archive.py` | Parquet schema/encoding, idempotent merge-write, reads. |
 | `common.py` | Config, Kalshi RSA-PSS auth, SQLite schema. |
