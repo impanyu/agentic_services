@@ -91,6 +91,14 @@ api.aisoup.net {
 		uri strip_prefix /kalshi-rec/v1
 		reverse_proxy 127.0.0.1:8765
 	}
+	@kalshi_write {
+		method POST
+		path /kalshi-rec/v1/btc15m/markets /kalshi-rec/v1/btc15m/trades /kalshi-rec/v1/brti
+	}
+	handle @kalshi_write {
+		uri strip_prefix /kalshi-rec/v1
+		reverse_proxy 127.0.0.1:8765
+	}
 
 	handle /kalshi-rec/* {
 		respond 404

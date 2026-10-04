@@ -26,13 +26,13 @@ Reads (`fmt=parquet` default, `fmt=json` for decoded rows):
 `GET /btc15m/trades?ticker=...` or `?day=YYYY-MM-DD` (ET, by market close),
 `GET /brti?start_ms=&end_ms=` (max 40 days).
 
-Once data redistribution rights are confirmed and the Caddy route is deployed,
-the public read-only URL is `https://api.aisoup.net/kalshi-rec/v1/`. Supply
-`Authorization: Bearer <read token>` on every request, including `/health`.
-Only the four GET routes above (`health`, `btc15m/markets`, `btc15m/trades`,
-`brti`) are exposed. The public read token cannot call uploads or `/stats`.
-Keep `KREC_API_TOKEN` for localhost administration only. The company catalog
-does not list this service yet.
+The owner-only HTTPS URL is `https://api.aisoup.net/kalshi-rec/v1/`. Supply
+`Authorization: Bearer <token>` on every request, including `/health`.
+The four GET routes above (`health`, `btc15m/markets`, `btc15m/trades`,
+`brti`) and three POST upload routes are exposed. The public read token cannot
+call uploads or `/stats`; uploads require the separate `KREC_API_TOKEN`.
+Do not issue either token to customers until data distribution rights and the
+payment flow are settled. The company catalog does not list this service yet.
 
 Writes (idempotent; Parquet body in the archive schema):
 `POST /btc15m/trades` (dedup by `trade_id`), `POST /brti` (dedup by `ts_ms`),
