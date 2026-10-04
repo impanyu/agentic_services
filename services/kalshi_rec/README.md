@@ -28,9 +28,10 @@ Reads (`fmt=parquet` default, `fmt=json` for decoded rows):
 
 The owner-only HTTPS URL is `https://api.aisoup.net/kalshi-rec/v1/`. Supply
 `Authorization: Bearer <token>` on every request, including `/health`.
-The four GET routes above (`health`, `btc15m/markets`, `btc15m/trades`,
-`brti`) and three POST upload routes are exposed. The public read token cannot
-call uploads or `/stats`; uploads require the separate `KREC_API_TOKEN`.
+All existing GET and POST routes are exposed under that versioned prefix.
+`GET /openapi.json` returns the full API contract with the public base URL;
+it and `/stats` require the management token. The read token cannot call
+uploads, `/stats`, or `/openapi.json`; uploads require `KREC_API_TOKEN`.
 Do not issue either token to customers until data distribution rights and the
 payment flow are settled. The company catalog does not list this service yet.
 

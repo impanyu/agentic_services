@@ -72,6 +72,13 @@ assert client.get('/health', headers=reader).json() == {'ok': True}
 assert client.get('/health', headers=admin).json() == {'ok': True}
 assert client.get('/brti', params={'start_ms': 0, 'end_ms': 1, 'fmt': 'json'}, headers=reader).status_code == 200
 assert client.get('/stats', headers=reader).status_code == 401
+assert client.get('/openapi.json').status_code == 401
+assert client.get('/openapi.json', headers=reader).status_code == 401
+schema = client.get('/openapi.json', headers=admin).json()
+assert schema['servers'] == [{'url': 'https://api.aisoup.net/kalshi-rec/v1'}]
+assert '/btc15m/trades' in schema['paths']
+assert schema['paths']['/btc15m/trades']['get']['security'] == [{'BearerAuth': []}]
+assert schema['paths']['/btc15m/trades']['post']['security'] == [{'BearerAuth': []}]
 assert client.post('/brti', headers=reader, content=b'invalid').status_code == 401
 assert client.post('/brti', headers=admin, content=b'invalid').status_code == 400
 """

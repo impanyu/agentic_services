@@ -85,7 +85,7 @@ evidence.aisoup.net {
 api.aisoup.net {
 	@kalshi_read {
 		method GET
-		path /kalshi-rec/v1/health /kalshi-rec/v1/btc15m/markets /kalshi-rec/v1/btc15m/trades /kalshi-rec/v1/brti
+		path /kalshi-rec/v1/health /kalshi-rec/v1/stats /kalshi-rec/v1/openapi.json /kalshi-rec/v1/btc15m/markets /kalshi-rec/v1/btc15m/trades /kalshi-rec/v1/brti
 	}
 	handle @kalshi_read {
 		uri strip_prefix /kalshi-rec/v1

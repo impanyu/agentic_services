@@ -1,8 +1,8 @@
 """Read/write API over the hot SQLite + Parquet archive.
 
-Bound to 127.0.0.1 only. The public reverse proxy exposes selected GET routes
-under /kalshi-rec/v1/ when data redistribution is authorized. Those routes accept
-KREC_READ_TOKEN; the local upload/admin routes require KREC_API_TOKEN.
+Bound to 127.0.0.1 behind the public reverse proxy's /kalshi-rec/v1/ prefix.
+Read routes accept KREC_READ_TOKEN; upload, stats, and schema routes require
+KREC_API_TOKEN. Both tokens remain private to the owner.
 
 Reads (fmt=parquet → raw Parquet bytes in the archive's compact encoding; fmt=json → decoded rows):
   GET  /health
@@ -27,6 +27,7 @@ from datetime import date, datetime, timedelta
 import pyarrow as pa
 import pyarrow.parquet as pq
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request, Response
+from fastapi.openapi.utils import get_openapi
 
 import archive as A
 from common import DB_PATH, connect, load_env
@@ -37,7 +38,9 @@ TOKEN = os.environ.get("KREC_API_TOKEN", "")
 READ_TOKEN = os.environ.get("KREC_READ_TOKEN", "")
 JSON_ROW_LIMIT = 500_000
 
-app = FastAPI(title="kalshi-rec")
+PUBLIC_BASE_URL = "https://api.aisoup.net/kalshi-rec/v1"
+app = FastAPI(title="Kalshi 15-minute BTC Recorder API", version="0.1.0",
+              openapi_url=None, docs_url=None, redoc_url=None)
 
 
 def admin_auth(authorization: str = Header(default="")) -> None:
@@ -49,6 +52,20 @@ def read_auth(authorization: str = Header(default="")) -> None:
     if not any(token and secrets.compare_digest(authorization, f"Bearer {token}")
                for token in (READ_TOKEN, TOKEN)):
         raise HTTPException(401, "bad token")
+
+
+@app.get("/openapi.json", dependencies=[Depends(admin_auth)], include_in_schema=False)
+def owner_openapi():
+    schema = get_openapi(title=app.title, version=app.version, routes=app.routes,
+                         servers=[{"url": PUBLIC_BASE_URL}])
+    schema.setdefault("components", {})["securitySchemes"] = {
+        "BearerAuth": {"type": "http", "scheme": "bearer"}}
+    for path in schema["paths"].values():
+        for operation in path.values():
+            operation["parameters"] = [p for p in operation.get("parameters", [])
+                                       if p.get("name", "").lower() != "authorization"]
+            operation["security"] = [{"BearerAuth": []}]
+    return schema
 
 
 def ro_db():
