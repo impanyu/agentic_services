@@ -71,6 +71,15 @@ assert client.get('/health', headers={'Authorization': 'Bearer invalid'}).status
 assert client.get('/health', headers=reader).json() == {'ok': True}
 assert client.get('/health', headers=admin).json() == {'ok': True}
 assert client.get('/brti', params={'start_ms': 0, 'end_ms': 1, 'fmt': 'json'}, headers=reader).status_code == 200
+assert client.get('/btc15m/tickers', params={'day': '2026-10-04'}).status_code == 401
+db = __import__('sqlite3').connect(__import__('os').environ['KREC_DB'])
+with db:
+    db.execute("INSERT INTO btc15m_markets(ticker) VALUES ('KXBTC15M-26OCT041200-00')")
+    db.execute("INSERT INTO btc15m_trades(trade_id,ticker,ts_ms,yes_price,no_price,count,source) VALUES "
+               "('test-trade','KXBTC15M-26OCT041215-15',1,50,50,1,'ws')")
+db.close()
+tickers = client.get('/btc15m/tickers', params={'day': '2026-10-04'}, headers=reader).json()
+assert tickers['tickers'] == ['KXBTC15M-26OCT041200-00', 'KXBTC15M-26OCT041215-15']
 assert client.get('/stats', headers=reader).status_code == 401
 assert client.get('/openapi.json').status_code == 401
 assert client.get('/openapi.json', headers=reader).status_code == 401

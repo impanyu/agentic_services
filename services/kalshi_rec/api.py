@@ -7,6 +7,7 @@ KREC_API_TOKEN. Both tokens remain private to the owner.
 Reads (fmt=parquet → raw Parquet bytes in the archive's compact encoding; fmt=json → decoded rows):
   GET  /health
   GET  /stats
+  GET  /btc15m/tickers?day=YYYY-MM-DD                         (market list incl. live tape)
   GET  /btc15m/markets?start=YYYY-MM-DD&end=YYYY-MM-DD        (verification + metadata)
   GET  /btc15m/trades?ticker=KXBTC15M-...                     (one or more ticker=)
   GET  /btc15m/trades?day=YYYY-MM-DD                           (ET day by market close)
@@ -138,6 +139,21 @@ def markets(start: date = Query(...), end: date = Query(...)):
         db.close()
     rows = [r for r in rows if lo <= A.ticker_close_et(r["ticker"]) < hi]
     return {"n": len(rows), "rows": rows}
+
+
+@app.get("/btc15m/tickers", dependencies=[Depends(read_auth)])
+def tickers(day: date = Query(...)):
+    month = "JAN FEB MAR APR MAY JUN JUL AUG SEP OCT NOV DEC".split()[day.month - 1]
+    prefix = f"KXBTC15M-{day.year % 100:02d}{month}{day.day:02d}%"
+    db = ro_db()
+    try:
+        rows = [r[0] for r in db.execute(
+            "SELECT ticker FROM btc15m_markets WHERE ticker LIKE ? "
+            "UNION SELECT DISTINCT ticker FROM btc15m_trades WHERE ticker LIKE ? "
+            "ORDER BY ticker", (prefix, prefix))]
+    finally:
+        db.close()
+    return {"day": day.isoformat(), "n": len(rows), "tickers": rows}
 
 
 @app.get("/btc15m/trades", dependencies=[Depends(read_auth)])

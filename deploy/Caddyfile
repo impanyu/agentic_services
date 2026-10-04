@@ -83,9 +83,26 @@ evidence.aisoup.net {
 }
 
 api.aisoup.net {
+	handle /kalshi-rec/ui {
+		redir /kalshi-rec/ui/ permanent
+	}
+
+	handle_path /kalshi-rec/ui/* {
+		root * /mnt/disks/agentic-services/app/kalshi-rec-site
+		encode zstd gzip
+		header {
+			Strict-Transport-Security "max-age=31536000; includeSubDomains"
+			X-Content-Type-Options "nosniff"
+			Referrer-Policy "no-referrer"
+			X-Robots-Tag "noindex, nofollow, noarchive"
+			Content-Security-Policy "default-src 'self'; connect-src 'self'; style-src 'self'; script-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
+		}
+		file_server
+	}
+
 	@kalshi_read {
 		method GET
-		path /kalshi-rec/v1/health /kalshi-rec/v1/stats /kalshi-rec/v1/openapi.json /kalshi-rec/v1/btc15m/markets /kalshi-rec/v1/btc15m/trades /kalshi-rec/v1/brti
+		path /kalshi-rec/v1/health /kalshi-rec/v1/stats /kalshi-rec/v1/openapi.json /kalshi-rec/v1/btc15m/markets /kalshi-rec/v1/btc15m/tickers /kalshi-rec/v1/btc15m/trades /kalshi-rec/v1/brti
 	}
 	handle @kalshi_read {
 		uri strip_prefix /kalshi-rec/v1

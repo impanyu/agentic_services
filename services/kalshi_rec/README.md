@@ -22,7 +22,8 @@ read/write API. Self-contained: does not import `src/agentic_services`.
 ## API
 
 Reads (`fmt=parquet` default, `fmt=json` for decoded rows):
-`GET /health`, `GET /stats`, `GET /btc15m/markets?start=&end=`,
+`GET /health`, `GET /stats`, `GET /btc15m/tickers?day=YYYY-MM-DD`,
+`GET /btc15m/markets?start=&end=`,
 `GET /btc15m/trades?ticker=...` or `?day=YYYY-MM-DD` (ET, by market close),
 `GET /brti?start_ms=&end_ms=` (max 40 days).
 
@@ -34,6 +35,9 @@ it and `/stats` require the management token. The read token cannot call
 uploads, `/stats`, or `/openapi.json`; uploads require `KREC_API_TOKEN`.
 Do not issue either token to customers until data distribution rights and the
 payment flow are settled. The company catalog does not list this service yet.
+The personal history viewer is at `https://api.aisoup.net/kalshi-rec/ui/`;
+it accepts only the read token, keeps it in page memory, and has no link from
+the company website.
 
 Writes (idempotent; Parquet body in the archive schema):
 `POST /btc15m/trades` (dedup by `trade_id`), `POST /brti` (dedup by `ts_ms`),
