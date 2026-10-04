@@ -14,7 +14,7 @@ read/write API. Self-contained: does not import `src/agentic_services`.
 | `recorder.py` | WebSocket recorder: `cfbenchmarks_value` (BRTI) + `trade` (all markets, keeps `KXBTC15M-*`). 1 s buffered writes, reconnects on 30 s BRTI silence, logs sessions in `ws_sessions`. |
 | `verify.py` | Daily REST cross-check per market by `trade_id`; back-fills anything the WS missed (`source='rest'`), records missing/extra/mismatch counts in `btc15m_markets`. Public endpoints, no auth. |
 | `compact.py` | Moves verified trade markets and BRTI ticks older than `KREC_KEEP_HOT_DAYS` (default 3 ET calendar days) from SQLite into `data/archive/{btc15m_trades,brti}/YYYY-MM-DD.parquet`, then deletes them from SQLite and vacuums. Unverified trades remain hot until REST reconciliation succeeds. |
-| `api.py` | FastAPI on `127.0.0.1:8765`, `Authorization: Bearer $KREC_API_TOKEN`. Merges hot SQLite + archive transparently. |
+| `api.py` | FastAPI on `127.0.0.1:8765`; read-only access uses `KREC_READ_TOKEN`, uploads and stats use `KREC_API_TOKEN`. Merges hot SQLite + archive transparently. |
 | `archive.py` | Parquet schema/encoding, idempotent merge-write, reads. |
 | `common.py` | Config, Kalshi RSA-PSS auth, SQLite schema. |
 | `systemd/` | `kalshi-rec.service`, `kalshi-rec-api.service`, `kalshi-rec-nightly.{service,timer}` (09:30 UTC). |
@@ -25,6 +25,14 @@ Reads (`fmt=parquet` default, `fmt=json` for decoded rows):
 `GET /health`, `GET /stats`, `GET /btc15m/markets?start=&end=`,
 `GET /btc15m/trades?ticker=...` or `?day=YYYY-MM-DD` (ET, by market close),
 `GET /brti?start_ms=&end_ms=` (max 40 days).
+
+Once data redistribution rights are confirmed and the Caddy route is deployed,
+the public read-only URL is `https://api.aisoup.net/kalshi-rec/v1/`. Supply
+`Authorization: Bearer <read token>` on every request, including `/health`.
+Only the four GET routes above (`health`, `btc15m/markets`, `btc15m/trades`,
+`brti`) are exposed. The public read token cannot call uploads or `/stats`.
+Keep `KREC_API_TOKEN` for localhost administration only. The company catalog
+does not list this service yet.
 
 Writes (idempotent; Parquet body in the archive schema):
 `POST /btc15m/trades` (dedup by `trade_id`), `POST /brti` (dedup by `ts_ms`),
@@ -40,7 +48,7 @@ Deployed at `/home/ypan12/kalshi_rec` (user `ypan12`), not from this checkout.
 
 ```bash
 python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
-cp .env.example .env && chmod 600 .env        # fill KALSHI_API_KEY_ID, key path, KREC_API_TOKEN
+cp .env.example .env && chmod 600 .env        # fill KALSHI_API_KEY_ID, key path, both API tokens
 sudo cp systemd/* /etc/systemd/system/ && sudo systemctl daemon-reload
 sudo systemctl enable --now kalshi-rec kalshi-rec-api kalshi-rec-nightly.timer
 ```

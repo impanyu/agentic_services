@@ -50,3 +50,31 @@ db.close()
     result = subprocess.run([sys.executable, "-c", code], cwd=service, env=env,
                             capture_output=True, text=True, check=False)
     assert result.returncode == 0, result.stderr
+
+
+def test_public_read_token_cannot_use_admin_endpoints(tmp_path: Path) -> None:
+    pytest.importorskip("pyarrow")
+    pytest.importorskip("fastapi")
+    service = Path(__file__).resolve().parents[1] / "services" / "kalshi_rec"
+    env = {**os.environ, "KREC_DB": str(tmp_path / "hot.db"),
+           "KREC_ARCHIVE": str(tmp_path / "archive"),
+           "KREC_API_TOKEN": "test-admin-token", "KREC_READ_TOKEN": "test-read-token"}
+    code = """
+from fastapi.testclient import TestClient
+from api import app
+
+client = TestClient(app)
+reader = {'Authorization': 'Bearer test-read-token'}
+admin = {'Authorization': 'Bearer test-admin-token'}
+assert client.get('/health').status_code == 401
+assert client.get('/health', headers={'Authorization': 'Bearer invalid'}).status_code == 401
+assert client.get('/health', headers=reader).json() == {'ok': True}
+assert client.get('/health', headers=admin).json() == {'ok': True}
+assert client.get('/brti', params={'start_ms': 0, 'end_ms': 1, 'fmt': 'json'}, headers=reader).status_code == 200
+assert client.get('/stats', headers=reader).status_code == 401
+assert client.post('/brti', headers=reader, content=b'invalid').status_code == 401
+assert client.post('/brti', headers=admin, content=b'invalid').status_code == 400
+"""
+    result = subprocess.run([sys.executable, "-c", code], cwd=service, env=env,
+                            capture_output=True, text=True, check=False)
+    assert result.returncode == 0, result.stderr

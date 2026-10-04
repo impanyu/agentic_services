@@ -1,8 +1,8 @@
 """Read/write API over the hot SQLite + Parquet archive.
 
-Bound to 127.0.0.1 only; reach it from the Mac through an SSH tunnel
-(ssh -L 8765:127.0.0.1:8765 ...). Every request needs
-`Authorization: Bearer $KREC_API_TOKEN` (from .env).
+Bound to 127.0.0.1 only. The public reverse proxy exposes selected GET routes
+under /kalshi-rec/v1/ when data redistribution is authorized. Those routes accept
+KREC_READ_TOKEN; the local upload/admin routes require KREC_API_TOKEN.
 
 Reads (fmt=parquet → raw Parquet bytes in the archive's compact encoding; fmt=json → decoded rows):
   GET  /health
@@ -34,13 +34,20 @@ from common import DB_PATH, connect, load_env
 load_env()
 connect().close()   # make sure the hot DB + schema exist before the first read-only open
 TOKEN = os.environ.get("KREC_API_TOKEN", "")
+READ_TOKEN = os.environ.get("KREC_READ_TOKEN", "")
 JSON_ROW_LIMIT = 500_000
 
 app = FastAPI(title="kalshi-rec")
 
 
-def auth(authorization: str = Header(default="")) -> None:
+def admin_auth(authorization: str = Header(default="")) -> None:
     if not TOKEN or not secrets.compare_digest(authorization, f"Bearer {TOKEN}"):
+        raise HTTPException(401, "bad token")
+
+
+def read_auth(authorization: str = Header(default="")) -> None:
+    if not any(token and secrets.compare_digest(authorization, f"Bearer {token}")
+               for token in (READ_TOKEN, TOKEN)):
         raise HTTPException(401, "bad token")
 
 
@@ -81,12 +88,12 @@ def _emit(t: pa.Table, fmt: str, kind: str) -> Response:
                     headers={"X-Rows": str(t.num_rows)})
 
 
-@app.get("/health")
+@app.get("/health", dependencies=[Depends(read_auth)])
 def health():
     return {"ok": True}
 
 
-@app.get("/stats", dependencies=[Depends(auth)])
+@app.get("/stats", dependencies=[Depends(admin_auth)])
 def stats():
     db = ro_db()
     try:
@@ -103,7 +110,7 @@ def stats():
     return {"hot_db_bytes": os.path.getsize(DB_PATH), "hot": hot, "archive": A.usage()}
 
 
-@app.get("/btc15m/markets", dependencies=[Depends(auth)])
+@app.get("/btc15m/markets", dependencies=[Depends(read_auth)])
 def markets(start: date = Query(...), end: date = Query(...)):
     lo = datetime(start.year, start.month, start.day, tzinfo=A.ET)
     hi = datetime(end.year, end.month, end.day, tzinfo=A.ET) + timedelta(days=1)
@@ -116,7 +123,7 @@ def markets(start: date = Query(...), end: date = Query(...)):
     return {"n": len(rows), "rows": rows}
 
 
-@app.get("/btc15m/trades", dependencies=[Depends(auth)])
+@app.get("/btc15m/trades", dependencies=[Depends(read_auth)])
 def trades(ticker: list[str] | None = Query(None), day: date | None = None, fmt: str = "parquet"):
     if not ticker and not day:
         raise HTTPException(400, "give ticker= or day=")
@@ -141,7 +148,7 @@ def trades(ticker: list[str] | None = Query(None), day: date | None = None, fmt:
     return _emit(t, fmt, "trades")
 
 
-@app.get("/brti", dependencies=[Depends(auth)])
+@app.get("/brti", dependencies=[Depends(read_auth)])
 def brti(start_ms: int, end_ms: int, fmt: str = "parquet"):
     if end_ms - start_ms > 40 * 86_400_000:
         raise HTTPException(400, "max 40 days per request")
@@ -166,7 +173,7 @@ async def _body_table(req: Request) -> pa.Table:
         raise HTTPException(400, f"not a Parquet file: {e}")
 
 
-@app.post("/btc15m/trades", dependencies=[Depends(auth)])
+@app.post("/btc15m/trades", dependencies=[Depends(admin_auth)])
 async def post_trades(req: Request):
     t = await _body_table(req)
     missing = set(A.TRADE_SCHEMA.names) - set(t.column_names)
@@ -179,7 +186,7 @@ async def post_trades(req: Request):
     return {"rows_in": t.num_rows, "added_by_day": added, "added": sum(added.values())}
 
 
-@app.post("/brti", dependencies=[Depends(auth)])
+@app.post("/brti", dependencies=[Depends(admin_auth)])
 async def post_brti(req: Request):
     t = await _body_table(req)
     missing = set(A.BRTI_SCHEMA.names) - set(t.column_names)
@@ -189,7 +196,7 @@ async def post_brti(req: Request):
     return {"rows_in": t.num_rows, "added_by_day": added, "added": sum(added.values())}
 
 
-@app.post("/btc15m/markets", dependencies=[Depends(auth)])
+@app.post("/btc15m/markets", dependencies=[Depends(admin_auth)])
 async def post_markets(rows: list[dict]):
     cols = ["ticker", "open_time", "close_time", "floor_strike", "result", "expiration_value", "volume"]
     db = sqlite3.connect(DB_PATH, timeout=30)

@@ -83,6 +83,19 @@ evidence.aisoup.net {
 }
 
 api.aisoup.net {
+	@kalshi_read {
+		method GET
+		path /kalshi-rec/v1/health /kalshi-rec/v1/btc15m/markets /kalshi-rec/v1/btc15m/trades /kalshi-rec/v1/brti
+	}
+	handle @kalshi_read {
+		uri strip_prefix /kalshi-rec/v1
+		reverse_proxy 127.0.0.1:8765
+	}
+
+	handle /kalshi-rec/* {
+		respond 404
+	}
+
 	handle /contractor-check {
 		redir https://aisoup.net/contractor-check/ permanent
 	}
