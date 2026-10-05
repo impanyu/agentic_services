@@ -1,0 +1,11 @@
+.subscription{display:grid;grid-template-columns:1fr 1fr;gap:9vw;padding:75px 0;border-bottom:1px solid var(--line)}
+.subscription h2{font-size:clamp(32px,4vw,54px);margin:12px 0}
+.subscription p{color:var(--muted)}
+.subscription strong{font-size:42px;color:var(--lime)}
+.subscription small{font-size:17px}
+.subscription-box{padding:28px;border:1px solid var(--line);background:var(--surface);border-radius:6px;align-self:center}
+.subscription-box button{background:var(--lime);color:#10190d;border:0;padding:15px 23px;border-radius:5px;font-weight:700;cursor:pointer}
+.subscription-box button:disabled{background:#647163;color:#d2d9d0;cursor:not-allowed}
+.subscription-box label{font-size:13px;color:var(--muted)}
+.subscription-box .fine{font-size:12px}
+@media(max-width:760px){.subscription{grid-template-columns:1fr;gap:30px}}

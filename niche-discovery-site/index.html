@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Niche Discovery — Dream Workshop</title>
+  <meta name="description" content="从真实抱怨、建议和提案中发现有证据支持的利基市场需求。">
+  <link rel="canonical" href="https://aisoup.net/niche-discovery/">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="subscription.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header class="top"><a href="https://aisoup.net/" class="brand">◉ Dream Workshop</a><nav><a href="#explore">探索需求</a><a href="#submit">提交信号</a><a href="https://api.aisoup.net/niche-discovery/openapi.json">Agent API ↗</a></nav></header>
+  <main>
+    <section class="hero"><div class="eyebrow">HUMAN + AGENT · PREVIEW</div><h1>从一句抱怨，<br>发现一个<span>利基市场。</span></h1><p>我们接收用户和 agent 的提案与问题反馈，核对公开来源，再把重复出现的需求整理成可追溯的利基市场假设。每个评分都附带证据和判断依据。</p><div class="hero-actions"><a class="button" href="#explore">探索需求 ↗</a><a class="secondary" href="#submit">贡献一条线索</a></div><p class="fine">只有经过人工复核、至少三条信号且来自两个来源域的主题才会显示。样本不足时不提供趋势预测。</p></section>
+    <section class="method"><article><b>01 / 收集</b><p>用户与 agent 主动提交；配置的公开来源由编辑复核。</p></article><article><b>02 / 聚合</b><p>把反复出现的痛点整理为“谁、在何种场景、缺少什么”。</p></article><article><b>03 / 评估</b><p>分开呈现原始信号、编辑评分、时间变化与未知之处。</p></article></section>
+    <section class="subscription"><div><span class="eyebrow">SUBSCRIBE / 人和 Agent 共用</span><h2>完整评估与来源</h2><p>公开列表可免费搜索。完整需求分析、评分维度和证据链接需要订阅。人类和 agent 使用同一订阅凭证；agent 也可选择单次付费调用。</p><strong>$9.99 <small>/ 月</small></strong><p class="fine">按月自动续费。可通过 Stripe 客户门户管理或取消。付款后凭证发送至 Checkout 所填邮箱。</p></div><div class="subscription-box"><button id="subscribe" type="button" disabled>订阅准备中</button><p id="subscription-message" role="status">首批真实评估发布并完成支付验证后开放订阅。</p><label>已有订阅凭证<input id="access-token" type="password" autocomplete="off" placeholder="nd_..."></label><p><a id="manage" href="#" hidden>管理或取消订阅 ↗</a></p><p class="fine">凭证只保存在本页浏览器内存中，刷新后需重新输入。</p></div></section>
+    <section id="explore" class="explore"><div class="section-head"><div><span class="eyebrow">DISCOVER / 需求雷达</span><h2>可验证的市场假设</h2></div><p>评分是编辑判断，不是销售额或市场规模的实测值。样本不足时不显示趋势预测。</p></div><div class="filters"><label>搜索关键词<input id="query" type="search" placeholder="例如：发票、物流、开发工具"></label><label>排序<select id="sort"><option value="score">综合评分</option><option value="recent">最近更新</option></select></label><button id="search" type="button">搜索</button></div><div id="results" class="results" aria-live="polite"><p class="empty">正在读取已复核的需求…</p></div><div id="detail" class="detail" hidden></div></section>
+    <section id="submit" class="submit"><div><span class="eyebrow">CONTRIBUTE / 提交需求</span><h2>你遇到过什么<br>反复出现的问题？</h2><p>可提交自己的抱怨、产品建议或服务提案。提交内容先进入审核队列，不会自动公开。请勿填写私人信息或他人的个人资料。</p><p>Agent 可通过 <a href="https://api.aisoup.net/niche-discovery/openapi.json">HTTP API</a> 提交相同结构的数据。</p></div><form id="submission-form"><label>类型<select name="kind"><option value="complaint">抱怨 / 未解决问题</option><option value="suggestion">建议</option><option value="proposal">服务提案</option></select></label><label>问题与场景<textarea name="text" minlength="25" maxlength="3000" required placeholder="谁在什么场景遇到什么问题？现在如何解决？为什么不满意？"></textarea></label><label>受影响的人群（可选）<input name="audience" maxlength="120" placeholder="例如：小型电商卖家"></label><label>公开来源链接（可选）<input name="source_url" type="url" placeholder="https://..."></label><div class="trap"><label>公司<input name="company" tabindex="-1" autocomplete="off"></label></div><button type="submit">提交线索 ↗</button><p id="form-message" role="status"></p></form></section>
+  </main><footer><span>© Dream Workshop LLC</span><span><a href="privacy/">隐私</a> · <a href="terms/">条款</a> · <a href="https://api.aisoup.net/niche-discovery/openapi.json">API</a> · <a href="mailto:contact@aisoup.net">联系我们</a></span></footer>
+</body>
+</html>

@@ -46,6 +46,22 @@ aisoup.net, www.aisoup.net {
 		redir /contractor-check/ permanent
 	}
 
+	handle /niche-discovery {
+		redir /niche-discovery/ permanent
+	}
+
+	handle_path /niche-discovery/* {
+		root * /mnt/disks/agentic-services/app/niche-discovery-site
+		encode zstd gzip
+		header {
+			Strict-Transport-Security "max-age=31536000; includeSubDomains"
+			X-Content-Type-Options "nosniff"
+			Referrer-Policy "strict-origin-when-cross-origin"
+			Content-Security-Policy "default-src 'self'; connect-src 'self' https://api.aisoup.net; style-src 'self'; script-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
+		}
+		file_server
+	}
+
 	handle_path /contractor-check/* {
 		root * /mnt/disks/agentic-services/app/contractor-check-site
 		encode zstd gzip
@@ -83,6 +99,24 @@ evidence.aisoup.net {
 }
 
 api.aisoup.net {
+	handle /niche-discovery/v1/* {
+		reverse_proxy 127.0.0.1:8010 {
+			flush_interval -1
+		}
+	}
+
+	handle /niche-discovery/openapi.json {
+		reverse_proxy 127.0.0.1:8010 {
+			flush_interval -1
+		}
+	}
+
+	handle /niche-discovery/.well-known/agent-service.json {
+		uri strip_prefix /niche-discovery
+		root * /mnt/disks/agentic-services/app/niche-discovery-site
+		file_server
+	}
+
 	handle /contractor-check {
 		redir https://aisoup.net/contractor-check/ permanent
 	}

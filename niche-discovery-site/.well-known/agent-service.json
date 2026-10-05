@@ -1,0 +1,30 @@
+{
+  "manifestVersion": "0.1",
+  "service": {
+    "id": "https://api.aisoup.net/niche-discovery",
+    "name": "Niche Discovery",
+    "description": "Submit market problems and inspect evidence-linked niche evaluations for people and agents.",
+    "version": "0.1.0",
+    "homepage": "https://aisoup.net/niche-discovery/",
+    "tags": ["market-research", "niche-discovery", "demand-signals"]
+  },
+  "provider": {"id": "https://aisoup.net", "name": "Dream Workshop LLC", "contact": "contact@aisoup.net"},
+  "capabilities": [{"id": "market.niche.discovery", "summary": "Find and evaluate underserved market needs using linked demand signals.", "domains": ["market-research", "product-discovery"]}],
+  "transports": [
+    {"id": "public-http", "type": "http", "url": "https://api.aisoup.net", "specification": "https://api.aisoup.net/niche-discovery/openapi.json", "authorization": "none"},
+    {"id": "subscriber-http", "type": "http", "url": "https://api.aisoup.net", "specification": "https://api.aisoup.net/niche-discovery/openapi.json", "authorization": "bearer"},
+    {"id": "per-call-http", "type": "http", "url": "https://api.aisoup.net", "specification": "https://api.aisoup.net/niche-discovery/openapi.json", "authorization": "x402-or-mpp"}
+  ],
+  "operations": [
+    {"id": "submit-signal", "capability": "market.niche.discovery", "transport": "public-http", "summary": "Submit a complaint, suggestion, or proposal for private review.", "method": "POST", "path": "/niche-discovery/v1/submissions", "inputSchema": {"type": "object"}, "outputSchema": {"type": "object"}, "timeoutSeconds": 10, "idempotent": false},
+    {"id": "search-niches", "capability": "market.niche.discovery", "transport": "public-http", "summary": "Search the public list of reviewed niche hypotheses.", "method": "GET", "path": "/niche-discovery/v1/niches", "inputSchema": {"type": "object"}, "outputSchema": {"type": "object"}, "timeoutSeconds": 10, "idempotent": true},
+    {"id": "get-niche-subscription", "capability": "market.niche.discovery", "transport": "subscriber-http", "summary": "Retrieve a full evaluation using the shared human/agent subscription token.", "method": "GET", "path": "/niche-discovery/v1/niches/{niche_id}", "inputSchema": {"type": "object"}, "outputSchema": {"type": "object"}, "timeoutSeconds": 10, "idempotent": true},
+    {"id": "get-niche-per-call", "capability": "market.niche.discovery", "transport": "per-call-http", "summary": "Buy one full evaluation using Base USDC.", "method": "GET", "path": "/niche-discovery/v1/niches/{niche_id}/pay-per-call", "inputSchema": {"type": "object"}, "outputSchema": {"type": "object"}, "timeoutSeconds": 10, "idempotent": true}
+  ],
+  "offers": [
+    {"id": "monthly-access", "operation": "get-niche-subscription", "model": "subscription", "amount": "9.99", "currency": "USD", "unit": "month", "paymentMethods": [{"protocol": "subscription", "network": "stripe", "asset": "USD"}]},
+    {"id": "single-evaluation", "operation": "get-niche-per-call", "model": "per_call", "amount": "0.25", "currency": "USD", "unit": "evaluation", "paymentMethods": [{"protocol": "x402", "network": "eip155:8453", "asset": "USDC"}, {"protocol": "mpp", "network": "eip155:8453", "asset": "USDC"}]}
+  ],
+  "provenance": {"summary": "Published evaluations link to reviewed source signals and expose observation dates, source-domain count, scoring weights, and uncertainty.", "freshness": "Signals carry original observation dates; reports include update timestamps.", "coverage": "Cross-industry; coverage depends on submitted and licensed/approved source signals."},
+  "policies": {"terms": "https://aisoup.net/niche-discovery/terms/", "privacy": "https://aisoup.net/niche-discovery/privacy/", "dataRetentionDays": 365, "allowedUse": ["Market research and product discovery"], "prohibitedUse": ["Representing editorial scores as verified market size or guaranteed demand"]}
+}

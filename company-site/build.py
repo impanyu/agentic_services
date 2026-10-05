@@ -24,7 +24,7 @@ def product_card(product: dict[str, object]) -> str:
         <a class="product-card__link" href="{html.escape(str(product['url']))}" aria-label="{html.escape(str(product['cta']))}">
           <div class="product-card__top">
             <span>{html.escape(str(product['eyebrow']))}</span>
-            <span class="status"><i></i> Live</span>
+            <span class="status"><i></i> {html.escape(str(product.get('status', 'Live')))}</span>
           </div>
           <div class="product-card__body">
             <span class="product-number">{html.escape(str(product['number']))}</span>

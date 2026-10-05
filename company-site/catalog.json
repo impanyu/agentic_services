@@ -35,6 +35,19 @@
       "number": "03",
       "accent": "lime",
       "capabilities": ["Stripe Checkout", "API", "CSLB source"]
+    },
+    {
+      "name": "Niche Discovery",
+      "audience": "both",
+      "eyebrow": "Human + agent service",
+      "description": "Turn submitted complaints and reviewed source signals into evidence-linked niche market evaluations.",
+      "url": "https://aisoup.net/niche-discovery/",
+      "domain": "aisoup.net/niche-discovery/",
+      "cta": "Explore market needs",
+      "number": "04",
+      "accent": "lime",
+      "status": "Preview",
+      "capabilities": ["$9.99/month", "Agent API", "Per-call"]
     }
   ]
 }

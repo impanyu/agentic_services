@@ -22,6 +22,7 @@ const contractorOperation = {
   path: '/contractor-check/v1/check',
   price: '1.00',
 }
+const nichePerCallPrice = process.env.NICHE_PER_CALL_PRICE_USD ?? '0.25'
 const indexNowKey = process.env.INDEXNOW_KEY
 
 const tiers = [
@@ -165,8 +166,28 @@ const contractorMcpHandler = await createContractorMcpHandler({
 
 const app = new Hono()
 
+app.use('/niche-discovery/*', async (c, next) => {
+  const origin = c.req.header('Origin')
+  const allowed = origin === 'https://aisoup.net' || origin === 'https://www.aisoup.net'
+  if (c.req.method === 'OPTIONS') {
+    if (!allowed) return c.body(null, 403)
+    return new Response(null, { status: 204, headers: {
+      'Access-Control-Allow-Origin': origin,
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      Vary: 'Origin',
+    } })
+  }
+  await next()
+  if (allowed) {
+    c.header('Access-Control-Allow-Origin', origin)
+    c.header('Vary', 'Origin')
+  }
+})
+
 app.all('/mcp', (c) => mcpHandler(withPublicUrl(c.req.raw)))
 app.all('/contractor-check/mcp', (c) => contractorMcpHandler(withPublicUrl(c.req.raw)))
+app.get('/niche-discovery/v1/niches/:id', (c) => proxyNicheDetail(c.req.raw, c.req.param('id'), false))
 app.get('/contractor-check/.well-known/mcp/server.json', (c) => c.json({
   $schema: 'https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json',
   name: 'io.github.impanyu/contractor-check',
@@ -488,6 +509,10 @@ if (stripeSecretKey) {
     [stripeCharge, { amount: contractorOperation.price, description: 'California C-10 contractor license preflight' }],
   )
   mountContractorRoute(contractorHandler)
+  mountNichePerCallRoute(payments.evm.charge({
+    amount: nichePerCallPrice,
+    description: 'One full Niche Discovery evaluation with linked evidence',
+  }))
 } else {
   const payments = Mppx.create({ methods: [evmCharge], secretKey })
   const paidTiers = tiers.map((tier) => ({
@@ -498,6 +523,10 @@ if (stripeSecretKey) {
   mountContractorRoute(payments.evm.charge({
     amount: contractorOperation.price,
     description: 'California C-10 contractor license preflight',
+  }))
+  mountNichePerCallRoute(payments.evm.charge({
+    amount: nichePerCallPrice,
+    description: 'One full Niche Discovery evaluation with linked evidence',
   }))
 }
 
@@ -542,6 +571,35 @@ function mountContractorRoute(handler: PaymentHandler): void {
     await next()
     c.res = payment.withReceipt(c.res)
   }, async (c) => proxyPaidRequest(c.req.raw, contractorOperation))
+}
+
+function mountNichePerCallRoute(handler: PaymentHandler): void {
+  app.get('/niche-discovery/v1/niches/:id/pay-per-call', async (c, next) => {
+    const id = c.req.param('id')
+    if (!/^niche_[a-f0-9]{32}$/.test(id)) return c.text('Invalid niche id', 400)
+    const preview = await proxyRequest(c.req.raw, `/niche-discovery/v1/niches/${id}/preview`)
+    if (!preview.ok) return preview
+    const payment = await handler(withPublicUrl(c.req.raw.clone()))
+    if (payment.status === 402) return payment.challenge
+    await next()
+    c.res = payment.withReceipt(c.res)
+  }, async (c) => proxyNicheDetail(c.req.raw, c.req.param('id'), true))
+}
+
+async function proxyNicheDetail(request: Request, id: string, paid: boolean): Promise<Response> {
+  if (!/^niche_[a-f0-9]{32}$/.test(id)) return new Response('Invalid niche id', { status: 400 })
+  const upstream = new URL(`/niche-discovery/v1/niches/${id}`, upstreamUrl)
+  const headers = new Headers(request.headers)
+  headers.set('Host', upstream.host)
+  headers.delete('X-Niche-Paid-Call')
+  headers.delete('Payment-Signature')
+  headers.delete('Payment-Authorization')
+  headers.delete('X-Payment')
+  if (paid) {
+    headers.set('Authorization', `Bearer ${internalApiKey}`)
+    headers.set('X-Niche-Paid-Call', '1')
+  }
+  return fetch(upstream, { method: 'GET', headers })
 }
 
 function stripePaymentOptions(tier: { id: string; price: string }) {
@@ -1049,6 +1107,7 @@ async function proxyRequest(request: Request, path: string): Promise<Response> {
   headers.delete('Payment-Signature')
   headers.delete('Payment-Authorization')
   headers.delete('X-Payment')
+  headers.delete('X-Niche-Paid-Call')
   for (const name of [...headers.keys()]) {
     const lowerName = name.toLowerCase()
     if (

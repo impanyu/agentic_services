@@ -79,6 +79,14 @@ class VerificationStore:
                 ),
             )
             connection.execute(
+                """INSERT OR IGNORE INTO services(
+                    service_id,name,description,status,version,manifest_url,created_at,updated_at
+                ) VALUES(?,?,?,?,?,?,?,?)""",
+                ("niche-discovery", "Niche Discovery",
+                 "Evidence-linked discovery and evaluation of underserved market needs.",
+                 "preview", "0.1.0", "/niche-discovery/openapi.json", now, now),
+            )
+            connection.execute(
                 """
                 CREATE TABLE IF NOT EXISTS contractor_check_intents (
                     intent_id TEXT PRIMARY KEY,

@@ -22,6 +22,7 @@ import uvicorn
 import httpx
 from fastapi import FastAPI, Header, HTTPException, Query, Request, Response, status
 from fastapi.responses import HTMLResponse
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from . import __version__
@@ -36,6 +37,7 @@ from .models import (
     ClaimVerificationResult,
     EvidenceSnapshot,
 )
+from .niche_discovery import NicheStore, collect_configured_github, create_niche_router
 from .provider import OpenAIEvidenceProvider
 from .service import ClaimVerificationService, IdempotencyConflictError
 from .storage import VerificationStore
@@ -192,12 +194,27 @@ def create_app(
                     await asyncio.sleep(5)
 
         task = asyncio.create_task(worker())
+        async def niche_collector() -> None:
+            while True:
+                if os.getenv("NICHE_GITHUB_REPOSITORIES", "").strip():
+                    try:
+                        await collect_configured_github(NicheStore(resolved_settings.database_path))
+                    except Exception:
+                        logging.getLogger(__name__).exception("Niche Discovery collection failed")
+                await asyncio.sleep(6 * 60 * 60)
+
+        niche_task = asyncio.create_task(niche_collector())
         try:
             yield
         finally:
             task.cancel()
+            niche_task.cancel()
             try:
                 await task
+            except asyncio.CancelledError:
+                pass
+            try:
+                await niche_task
             except asyncio.CancelledError:
                 pass
 
@@ -206,6 +223,12 @@ def create_app(
         version=__version__,
         description="Verify factual claims against current web evidence.",
         lifespan=lifespan,
+    )
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["https://aisoup.net", "https://www.aisoup.net"],
+        allow_methods=["GET", "POST", "OPTIONS"],
+        allow_headers=["Content-Type", "Authorization"],
     )
     app.state.settings = resolved_settings
     app.state.verification_service = service or build_service(resolved_settings)
@@ -291,6 +314,28 @@ def create_app(
         store, require_service_api_key, sign_receipt, resolved_settings.base_url, checkout_lock,
     )
     app.include_router(contractor_router)
+    app.include_router(create_niche_router(resolved_settings))
+
+    @app.get("/niche-discovery/openapi.json", include_in_schema=False)
+    def niche_openapi() -> dict[str, object]:
+        document = app.openapi()
+        paths = {path: value for path, value in document["paths"].items()
+                 if path.startswith("/niche-discovery/v1/") and "/admin/" not in path}
+        paths["/niche-discovery/v1/niches/{niche_id}/pay-per-call"] = {
+            "get": {
+                "operationId": "get_niche_pay_per_call",
+                "summary": "Pay USD 0.25 in Base USDC for one full niche evaluation",
+                "parameters": [{"name": "niche_id", "in": "path", "required": True, "schema": {"type": "string"}}],
+                "responses": {"200": {"description": "Full evaluation with gateway payment receipt"},
+                              "402": {"description": "x402/MPP payment challenge"}},
+            },
+        }
+        return {
+            **document,
+            "info": {"title": "Niche Discovery API", "version": "0.1.0",
+                     "description": "Submit market needs and inspect evidence-linked niche hypotheses."},
+            "paths": paths,
+        }
 
     def contact_ip_hash(request: Request) -> str:
         forwarded = request.headers.get("x-forwarded-for", "")
