@@ -180,8 +180,13 @@ app.use('/niche-discovery/*', async (c, next) => {
   }
   await next()
   if (allowed) {
-    c.header('Access-Control-Allow-Origin', origin)
-    c.header('Vary', 'Origin')
+    const response = c.res
+    const headers = new Headers(response.headers)
+    headers.set('Access-Control-Allow-Origin', origin)
+    headers.append('Vary', 'Origin')
+    c.res = new Response(response.body, {
+      status: response.status, statusText: response.statusText, headers,
+    })
   }
 })
 
