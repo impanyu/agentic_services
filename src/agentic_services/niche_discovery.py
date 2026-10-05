@@ -98,6 +98,12 @@ class NicheStore:
                     notified INTEGER NOT NULL DEFAULT 0,
                     updated_at TEXT NOT NULL
                 );
+                CREATE TABLE IF NOT EXISTS niche_collection_runs (
+                    id TEXT PRIMARY KEY, source TEXT NOT NULL, status TEXT NOT NULL,
+                    result_json TEXT NOT NULL, finished_at TEXT NOT NULL
+                );
+                CREATE INDEX IF NOT EXISTS niche_collection_runs_source_time
+                    ON niche_collection_runs(source, finished_at DESC);
             """)
 
     def connect(self) -> sqlite3.Connection:
@@ -141,9 +147,46 @@ class NicheStore:
             )
             return result.rowcount == 1
 
+    def ingest_external_signal(self, *, external_id: str, origin: str, kind: str,
+                               text: str, source_url: str, observed_at: str,
+                               audience: str | None = None) -> bool:
+        """Queue a link-backed candidate; source text is never published verbatim."""
+        parsed = urlparse(source_url)
+        if parsed.scheme not in {"http", "https"} or not parsed.hostname:
+            return False
+        clean = re.sub(r"[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}", "[email removed]", text, flags=re.IGNORECASE)
+        clean = re.sub(r"\s+", " ", clean).strip()[:500]
+        if len(clean) < 25:
+            return False
+        with self.connect() as db:
+            result = db.execute(
+                "INSERT OR IGNORE INTO niche_signals(id,kind,text,audience,source_url,source_domain,external_id,origin,observed_at,created_at,moderation) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
+                (f"sig_{uuid.uuid4().hex}", kind, clean, audience, source_url,
+                 parsed.hostname.lower(), external_id, origin, observed_at, now(), "pending"),
+            )
+            return result.rowcount == 1
+
     def signals(self, limit: int = 100) -> list[dict]:
         with self.connect() as db:
             return [dict(row) for row in db.execute("SELECT id,kind,text,audience,source_url,source_domain,origin,observed_at,moderation FROM niche_signals ORDER BY created_at DESC LIMIT ?", (limit,))]
+
+    def record_collection_run(self, source: str, status: str, result: dict) -> None:
+        with self.connect() as db:
+            db.execute("INSERT INTO niche_collection_runs VALUES(?,?,?,?,?)",
+                       (f"run_{uuid.uuid4().hex}", source, status, json.dumps(result), now()))
+            db.execute("""DELETE FROM niche_collection_runs WHERE id IN (
+                SELECT id FROM niche_collection_runs WHERE source=?
+                ORDER BY finished_at DESC LIMIT -1 OFFSET 100
+            )""", (source,))
+
+    def collection_status(self) -> list[dict]:
+        with self.connect() as db:
+            rows = db.execute("""SELECT source,status,result_json,finished_at FROM niche_collection_runs r
+                WHERE finished_at=(SELECT MAX(finished_at) FROM niche_collection_runs WHERE source=r.source)
+                ORDER BY source""").fetchall()
+        return [{"source": row["source"], "status": row["status"],
+                 "result": json.loads(row["result_json"]), "finishedAt": row["finished_at"]}
+                for row in rows]
 
     def save_niche(self, draft: NicheDraft) -> dict:
         ids = list(dict.fromkeys(draft.signal_ids))
@@ -169,6 +212,11 @@ class NicheStore:
             draft = json.loads(row["draft_json"])
             signals = [dict(s) for s in db.execute("""SELECT s.id,s.kind,s.source_url,s.source_domain,s.origin,s.observed_at
                 FROM niche_signals s JOIN niche_links l ON l.signal_id=s.id WHERE l.niche_id=? ORDER BY s.observed_at DESC""", (niche_id,))]
+            for signal in signals:
+                signal["sourceAttribution"] = (
+                    "GDELT Project — https://www.gdeltproject.org/"
+                    if signal["origin"] == "gdelt_news" else None
+                )
             dates = [datetime.fromisoformat(s["observed_at"].replace("Z", "+00:00")) for s in signals]
             today = datetime.now(UTC)
             recent = sum(d >= today - timedelta(days=30) for d in dates)
@@ -258,6 +306,62 @@ async def collect_configured_github(store: NicheStore) -> dict:
                 if "pull_request" not in item:
                     added += store.ingest_github_issue(item, repo)
     return {"repositories": len(repositories), "signalsAdded": added, "status": "pending_review"}
+
+
+async def collect_hacker_news(store: NicheStore) -> dict:
+    """Sample recent Ask HN questions through the official public API."""
+    added = 0
+    async with httpx.AsyncClient(timeout=15, headers={"User-Agent": "DreamWorkshop-NicheDiscovery/0.1"}) as client:
+        response = await client.get("https://hacker-news.firebaseio.com/v0/askstories.json")
+        response.raise_for_status()
+        item_ids = response.json()[:30]
+        for item_id in item_ids:
+            if not isinstance(item_id, int):
+                continue
+            item_response = await client.get(f"https://hacker-news.firebaseio.com/v0/item/{item_id}.json")
+            item_response.raise_for_status()
+            item = item_response.json()
+            if not isinstance(item, dict) or item.get("deleted") or item.get("dead") or item.get("type") != "story":
+                continue
+            title = str(item.get("title") or "")
+            if not re.search(r"\b(recommend\w*|alternative\w*|tool\w*|software|service\w*|problem\w*|struggl\w*|need\w*|looking for|how do you|wish\w*|no longer|price increase|broken|gets me|what did)\b", title, re.IGNORECASE):
+                continue
+            added += store.ingest_external_signal(
+                external_id=f"hackernews:{item_id}", origin="hacker_news",
+                kind="question", text=title,
+                source_url=f"https://news.ycombinator.com/item?id={item_id}",
+                observed_at=datetime.fromtimestamp(item.get("time", 0), UTC).isoformat(),
+            )
+    return {"itemsChecked": len(item_ids), "signalsAdded": added, "status": "pending_review"}
+
+
+async def collect_gdelt_news(store: NicheStore) -> dict:
+    """Queue news headlines from GDELT's public article index, not article bodies."""
+    query = os.getenv("NICHE_GDELT_QUERY", "").strip()
+    if not query:
+        return {"status": "not_configured", "signalsAdded": 0}
+    async with httpx.AsyncClient(timeout=20, headers={"User-Agent": "DreamWorkshop-NicheDiscovery/0.1"}) as client:
+        response = await client.get("https://api.gdeltproject.org/api/v2/doc/doc", params={
+            "query": query, "mode": "artlist", "format": "json", "maxrecords": 25,
+            "timespan": "1week", "sort": "datedesc",
+        })
+        response.raise_for_status()
+        data = response.json()
+    added = 0
+    for article in data.get("articles", []):
+        url = str(article.get("url") or "")
+        title = str(article.get("title") or "")
+        seen = str(article.get("seendate") or "")
+        try:
+            observed_at = datetime.strptime(seen, "%Y%m%dT%H%M%SZ").replace(tzinfo=UTC).isoformat()
+        except ValueError:
+            observed_at = now()
+        added += store.ingest_external_signal(
+            external_id=f"gdelt:{hashlib.sha256(url.encode()).hexdigest()}",
+            origin="gdelt_news", kind="news_report", text=title,
+            source_url=url, observed_at=observed_at,
+        )
+    return {"articlesChecked": len(data.get("articles", [])), "signalsAdded": added, "status": "pending_review"}
 
 
 def create_niche_router(settings: Settings) -> APIRouter:
@@ -460,5 +564,23 @@ def create_niche_router(settings: Settings) -> APIRouter:
         if result["status"] == "not_configured":
             raise HTTPException(status_code=503, detail="NICHE_GITHUB_REPOSITORIES is not configured")
         return result
+
+    @router.post("/admin/collect/hacker-news")
+    async def collect_hacker_news_admin(x_admin_key: str | None = Header(default=None)) -> dict:
+        admin(x_admin_key)
+        return await collect_hacker_news(store)
+
+    @router.post("/admin/collect/gdelt")
+    async def collect_gdelt_admin(x_admin_key: str | None = Header(default=None)) -> dict:
+        admin(x_admin_key)
+        result = await collect_gdelt_news(store)
+        if result["status"] == "not_configured":
+            raise HTTPException(status_code=503, detail="NICHE_GDELT_QUERY is not configured")
+        return result
+
+    @router.get("/admin/collection-status")
+    def collection_status(x_admin_key: str | None = Header(default=None)) -> dict:
+        admin(x_admin_key)
+        return {"sources": store.collection_status()}
 
     return router

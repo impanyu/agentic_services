@@ -26,7 +26,7 @@ results.addEventListener('click', async event => {
   if (response.status === 401) { detail.hidden = false; detail.innerHTML = '<p>A full evaluation requires an active subscription. Enter the access token from your email above.</p>'; detail.scrollIntoView({behavior:'smooth'}); return; }
   if (!response.ok) return;
   const n = await response.json();
-  const evidence = n.evidence.map(s => `<li>${s.source_url ? `<a href="${escapeHtml(s.source_url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(s.source_domain)} ↗</a>` : escapeHtml(s.source_domain)} · ${escapeHtml(s.kind)} · ${escapeHtml(s.observed_at?.slice(0,10))}</li>`).join('');
+  const evidence = n.evidence.map(s => `<li>${s.source_url ? `<a href="${escapeHtml(s.source_url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(s.source_domain)} ↗</a>` : escapeHtml(s.source_domain)} · ${escapeHtml(s.kind)} · ${escapeHtml(s.observed_at?.slice(0,10))}${s.origin === 'gdelt_news' ? ' · <a href="https://www.gdeltproject.org/" target="_blank" rel="noopener noreferrer">Indexed by GDELT Project</a>' : ''}</li>`).join('');
   detail.innerHTML = `<h3>${escapeHtml(n.title)}</h3><p>${escapeHtml(n.problem)}</p><h4>Target buyer</h4><p>${escapeHtml(n.buyer)}</p><h4>Potential service</h4><p>${escapeHtml(n.solutionHypothesis)}</p><h4>Evaluation rationale</h4><p>${escapeHtml(n.evaluationNotes)}</p><p>Editorial score ${n.score}/100 · ${n.signalCount} signals · ${n.sourceDomainCount} source domains · ${n.recent30Days} in the last 30 days · Trend: ${escapeHtml(n.trend)}</p><h4>Evidence links</h4><ul>${evidence}</ul><p>A growth forecast is unavailable without enough reliable history.</p>`;
   detail.hidden = false;
   detail.scrollIntoView({behavior:'smooth',block:'start'});

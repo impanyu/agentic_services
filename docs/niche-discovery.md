@@ -27,19 +27,29 @@ those windows. Forecast remains unavailable until longitudinal observations
 and out-of-sample calibration exist. That missing data must not be silently
 filled with model guesses.
 
-The only automated source adapter in this release is an admin-triggered GitHub
-Issues collector for explicitly configured repositories. It fetches at most
-50 recent open issues per repository, skips pull requests, deduplicates by
-GitHub issue ID, removes email addresses, and queues records for review.
+Automated source adapters queue candidates for editorial review; none
+auto-publish a niche. GitHub Issues collection uses explicitly configured
+repositories, fetches at most 50 recent open issues per repository, skips pull
+requests, deduplicates by GitHub issue ID, and removes email addresses.
 Configure `NICHE_GITHUB_REPOSITORIES` with reviewed `owner/repo` pairs.
 Before adding a repository, review [GitHub's API terms](https://docs.github.com/en/site-policy/github-terms/github-terms-of-service)
 and [rate limits](https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api).
-Other media, social, and shopping sources need individual API/terms review,
-provenance rules, deletion handling, and a bounded collection plan before
-integration. In particular, [Reddit's commercial Data API](https://redditinc.com/policies/data-api-terms)
+The Hacker News adapter samples at most 30 recent Ask HN questions through
+its [official API](https://github.com/HackerNews/API), selecting explicit
+requests for tools, alternatives, or help. Set `NICHE_COLLECT_HACKER_NEWS=1`
+to run it every six hours. The GDELT adapter queries its
+[public news index](https://blog.gdeltproject.org/gdelt-doc-2-0-api-debuts/)
+with `NICHE_GDELT_QUERY`, saving linked headlines rather than articles.
+[GDELT attribution](https://gdeltproject.org/about.html) is required in
+analysis and reports. HTTP 429 is treated as a failed collection cycle, not
+silently retried in a burst.
+
+The [source register](niche-signal-sources.md) tracks media, social,
+marketplace, first-party, procurement, and other signal sources one by one.
+In particular, [Reddit's commercial Data API](https://redditinc.com/policies/data-api-terms)
 requires a separate agreement; [YouTube comment storage](https://developers.google.com/youtube/terms/derived-metrics-policy)
-has refresh/deletion limits. The service
-must not quietly scrape either platform or republish user comments.
+has refresh/deletion limits. The service must not quietly scrape either
+platform or republish user comments.
 
 ## Billing and operations
 

@@ -37,7 +37,9 @@ from .models import (
     ClaimVerificationResult,
     EvidenceSnapshot,
 )
-from .niche_discovery import NicheStore, collect_configured_github, create_niche_router
+from .niche_discovery import (NicheStore, collect_configured_github,
+                              collect_gdelt_news, collect_hacker_news,
+                              create_niche_router)
 from .provider import OpenAIEvidenceProvider
 from .service import ClaimVerificationService, IdempotencyConflictError
 from .storage import VerificationStore
@@ -195,12 +197,22 @@ def create_app(
 
         task = asyncio.create_task(worker())
         async def niche_collector() -> None:
+            store = NicheStore(resolved_settings.database_path)
             while True:
+                collectors = []
+                if os.getenv("NICHE_COLLECT_HACKER_NEWS", "") == "1":
+                    collectors.append(("Hacker News", collect_hacker_news))
+                if os.getenv("NICHE_GDELT_QUERY", "").strip():
+                    collectors.append(("GDELT", collect_gdelt_news))
                 if os.getenv("NICHE_GITHUB_REPOSITORIES", "").strip():
+                    collectors.append(("GitHub", collect_configured_github))
+                for name, collect in collectors:
                     try:
-                        await collect_configured_github(NicheStore(resolved_settings.database_path))
-                    except Exception:
-                        logging.getLogger(__name__).exception("Niche Discovery collection failed")
+                        result = await collect(store)
+                        store.record_collection_run(name, "ok", result)
+                    except Exception as error:
+                        store.record_collection_run(name, "error", {"errorType": type(error).__name__})
+                        logging.getLogger(__name__).exception("Niche Discovery %s collection failed", name)
                 await asyncio.sleep(6 * 60 * 60)
 
         niche_task = asyncio.create_task(niche_collector())

@@ -1,4 +1,5 @@
 from pathlib import Path
+import asyncio
 import hashlib
 import hmac
 import json
@@ -12,7 +13,7 @@ from fastapi.testclient import TestClient
 
 from agentic_services.config import Settings
 from agentic_services.main import create_app
-from agentic_services.niche_discovery import NicheStore
+from agentic_services.niche_discovery import NicheStore, collect_gdelt_news, collect_hacker_news
 
 
 def client_for(tmp_path: Path) -> TestClient:
@@ -84,6 +85,47 @@ def test_github_signal_is_idempotent_and_removes_email(tmp_path: Path) -> None:
     assert store.ingest_github_issue(issue, "acme/app") is True
     assert store.ingest_github_issue(issue, "acme/app") is False
     assert "private@example.org" not in store.signals()[0]["text"]
+
+
+def test_public_source_collectors_queue_private_deduplicated_candidates(tmp_path: Path,
+                                                                           monkeypatch: pytest.MonkeyPatch) -> None:
+    store = NicheStore(tmp_path / "signals.sqlite")
+    monkeypatch.setenv("NICHE_GDELT_QUERY", '"customer complaints"')
+
+    async def fake_get(self, url, **_kwargs):
+        if url.endswith("askstories.json"):
+            data = [101, 102]
+        elif url.endswith("/101.json"):
+            data = {"id": 101, "type": "story", "title": "Ask HN: What tool replaces manual invoice reconciliation?",
+                    "time": 1790812800}
+        elif url.endswith("/102.json"):
+            data = {"id": 102, "type": "story", "title": "Ask HN: What are you reading for fun?", "time": 1790812800}
+        else:
+            data = {"articles": [{"url": "https://example.org/report", "title": "Shops report a recurring invoice data gap",
+                                  "seendate": "20261001T120000Z"}]}
+        return httpx.Response(200, request=httpx.Request("GET", url), json=data)
+
+    monkeypatch.setattr(httpx.AsyncClient, "get", fake_get)
+    assert asyncio.run(collect_hacker_news(store))["signalsAdded"] == 1
+    assert asyncio.run(collect_gdelt_news(store))["signalsAdded"] == 1
+    assert asyncio.run(collect_hacker_news(store))["signalsAdded"] == 0
+    assert asyncio.run(collect_gdelt_news(store))["signalsAdded"] == 0
+    signals = store.signals()
+    assert {signal["origin"] for signal in signals} == {"hacker_news", "gdelt_news"}
+    assert {signal["moderation"] for signal in signals} == {"pending"}
+    store.record_collection_run("Hacker News", "ok", {"signalsAdded": 1})
+    assert store.collection_status()[0]["result"]["signalsAdded"] == 1
+
+
+def test_external_signal_rejects_bad_link_and_strips_email(tmp_path: Path) -> None:
+    store = NicheStore(tmp_path / "signals.sqlite")
+    assert not store.ingest_external_signal(external_id="bad", origin="source", kind="review",
+                                            text="A long enough review describing a problem",
+                                            source_url="javascript:alert(1)", observed_at="2026-10-01T00:00:00Z")
+    assert store.ingest_external_signal(external_id="ok", origin="source", kind="review",
+                                        text="The checkout is broken; contact user@example.org for a workaround.",
+                                        source_url="https://store.example.org/review/1", observed_at="2026-10-01T00:00:00Z")
+    assert "user@example.org" not in store.signals()[0]["text"]
 
 
 def test_niche_manifest_matches_schema() -> None:
