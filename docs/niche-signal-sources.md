@@ -27,7 +27,7 @@ Every adapter must record source URL, platform, source identifier, observation t
 
 | Priority | Source | Signal | Access / rights | Status | Next action |
 |---|---|---|---|---|---|
-| P0 | [Hacker News Ask HN](https://github.com/HackerNews/API) | Explicit questions about tools, alternatives, workarounds | Official public API; sample recent questions, link back | **Implemented** | Enable bounded six-hour collection; review first batch and repeat run |
+| P0 | [Hacker News Ask HN](https://github.com/HackerNews/API) | Explicit questions about tools, alternatives, workarounds | Official public API; sample recent questions, link back | **Running**; six-hour VM job added 4 pending signals, repeat run added 0 duplicates on 2026-10-05 | Review useful-candidate rate and false positives after several cycles |
 | P0 | [GitHub Issues](https://docs.github.com/en/rest/issues/issues) | Feature requests, recurring bugs, missing integrations | Official API; repository allowlist and rate limits | **Implemented** | Choose representative repositories across industries; configure and verify |
 | P0 | [Reddit](https://redditinc.com/policies/data-api-terms) | Domain-specific pain, substitutions, willingness to pay | **Permission needed:** commercial API use requires a separate Reddit agreement | Permission needed | Define use case and volume; seek Reddit commercial terms before any automated collection |
 | P1 | [Stack Exchange network](https://api.stackexchange.com/) | Repeated expert questions across many industries | Official API; attribution and CC BY-SA obligations require design review | Candidate | Select sites, review attribution/retention, ingest links and metadata |
@@ -41,7 +41,7 @@ Every adapter must record source URL, platform, source identifier, observation t
 
 | Priority | Source | Signal | Access / rights | Status | Next action |
 |---|---|---|---|---|---|
-| P0 | [GDELT news index](https://gdeltproject.org/about.html) | News reports about unmet needs, regulation, shortages, emerging workarounds | Open commercial-use GDELT data with attribution; linked publishers retain rights to articles | **Implemented** | Configure narrow demand queries; respect 429/backoff and verify recurring records |
+| P0 | [GDELT news index](https://gdeltproject.org/about.html) | News reports about unmet needs, regulation, shortages, emerging workarounds | Open commercial-use GDELT data with attribution; linked publishers retain rights to articles | **Implemented**, not enabled; local and VM probes returned 429 | Resolve API access/rate limits, then configure narrow queries and verify recurring records |
 | P1 | Trade publications, newsletters, podcasts | Specialist pain and new category formation | Publisher RSS/API or licensed feed; no full-text republication | Candidate | Source-by-source feed and terms review |
 | P1 | [CFPB complaint database](https://www.consumerfinance.gov/data-research/consumer-complaints/) | Structured financial-product complaints | Public API; narratives changed in 2026 | Candidate | Build structured issue/volume adapter without assuming new narratives |
 | P1 | Municipal 311 open-data portals | Local service failures and repeated requests | City open-data APIs and licenses vary | Candidate | Pilot two cities with stable APIs and geographic normalization |
