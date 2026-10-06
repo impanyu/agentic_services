@@ -52,6 +52,8 @@ The platform has four layers:
 
 See [`docs/architecture.md`](docs/architecture.md) for the execution flow and [`docs/roadmap.md`](docs/roadmap.md) for the build sequence.
 
+For Niche Discovery, see the [continuous collection and agent-analysis design](docs/niche-discovery-architecture.md).
+
 ## Design principles
 
 - Protocol-first for agent-facing services: an agent can integrate from schemas without reading prose.

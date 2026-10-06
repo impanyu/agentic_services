@@ -1,5 +1,9 @@
 # Niche Discovery — first release
 
+See the [continuous collection and agent-analysis architecture](niche-discovery-architecture.md)
+for the target pipeline, data contracts and implementation sequence. The sections
+below describe the current first release.
+
 Niche Discovery is a cross-industry service for people and agents. Human page:
 `https://aisoup.net/niche-discovery/`. Machine API:
 `https://api.aisoup.net/niche-discovery/v1/`. Signals are collected from configured external sources; users and agents consume
