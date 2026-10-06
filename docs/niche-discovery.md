@@ -1,7 +1,9 @@
 # Niche Discovery — first release
 
 See the [continuous collection and agent-analysis architecture](niche-discovery-architecture.md)
-for the target pipeline, data contracts and implementation sequence. The sections
+for the target information model and implementation sequence, and the
+[Niche Manager Agent design](niche-manager-agent.md) for autonomous tools, memory,
+periodic execution and external-event wakes. The sections
 below describe the current first release.
 
 Niche Discovery is a cross-industry service for people and agents. Human page:

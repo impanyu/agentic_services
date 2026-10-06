@@ -1,8 +1,13 @@
 # Niche Discovery: continuous collection and agent analysis
 
-Design date: 2026-10-05. Status: proposed implementation architecture, grounded in
+Design date: 2026-10-05. Updated: 2026-10-06. Status: proposed implementation architecture, grounded in
 checkout `8ade6af`. This document specifies the next system; it does not claim
 that analysis workers, automated research, forecasting or publication are live.
+
+The [Niche Manager Agent runtime design](niche-manager-agent.md) specifies the
+central autonomous agent, full tool catalog, persistent memory, periodic wakes,
+source subscriptions/callbacks and durable inbox. It is the authoritative runtime
+design; the information/evidence model below remains the supporting contract.
 
 ## 1. Product and architecture decisions
 
@@ -14,7 +19,8 @@ through the English human UI and agent API. The loop is one-way:
 hypotheses → evaluated opportunities → human and agent consumers**.
 
 There is no public contribution form, signal-write API or client-triggered
-arbitrary crawl. Internal operators configure sources and review reports.
+arbitrary crawl. The manager configures available sources and maintains reports; operators supply
+access credentials, permissions and deployment policy.
 Industries are open-ended: physical products, local services, professional
 workflows and consumer needs are first-class alongside software and agent tools.
 
@@ -25,47 +31,41 @@ Decisions:
   conversations. Customer reads use published report versions.
 - Separate a search **lead**, a source **observation**, an extracted **signal**,
   and a market **hypothesis**. Discovery URLs are not evidence.
-- Use a single analysis-worker pool with explicit logical stages initially.
-  These roles do not require five independent services or five model calls for
-  every document. Fan out only expensive or independently useful work.
+- Use one persistent full-fledged manager agent that selects any available tool.
+  Extraction, grouping, discovery, research and verification are reasoning
+  capabilities it may compose and revisit, not a prescribed execution order.
 - Keep policy, quotas, metrics, state transitions and publication gates in code.
   Models extract and reason; they do not authorize sources or fabricate numbers.
 - Keep stable opportunity IDs, versioned findings and claim-to-evidence lineage.
   New data can strengthen, weaken, split, merge or withdraw an opportunity.
-- Retain editorial publication in the first release. Automatic publication is a
-  later, measured capability; automated discovery does not wait for an editor.
+- Let the manager maintain and publish ordinary knowledge revisions after
+  deterministic evidence checks. Evaluate before enabling automatic publication;
+  operator review remains available for exceptions and audits.
 
 ## 2. System overview
 
 ```mermaid
 flowchart TD
-    R[Source registry and budgets] --> S[Persistent scheduler]
-    S --> C[Source collection workers]
-    C --> L[Private search leads]
-    C --> D[Versioned permitted observations]
-    L --> Q[Scoped research proposals]
-    Q --> S
-    D --> N[Normalize and deduplicate]
-    N --> E[Extract structured demand signals]
-    E --> K[Group signals by buyer and problem]
-    K --> H[Niche hypotheses]
-    H --> A[Research and evaluate]
-    A --> Q
-    A --> V[Evidence and counterevidence checks]
-    V --> P[Editorial publication gate]
-    P --> O[Versioned opportunity catalog]
-    O --> U[Human UI]
-    O --> I[Agent API]
-    O --> W[Watchlists and change delivery]
-    D --> X[Change and removal processing]
-    X --> V
-    X --> O
+    S[Periodic scheduler] --> Q[Durable inbox]
+    E[Source subscriptions and callbacks] --> G[Verified ingestion]
+    G --> Q
+    C[Polling collectors] --> Q
+    Q --> A[Niche Manager Agent]
+    A <--> M[Persistent memory and plans]
+    A <--> T[Available tools and connectors]
+    T --> R[External research and analysis]
+    T --> V[Validated knowledge mutations]
+    V --> K[Niche knowledge base]
+    K --> U[Human UI]
+    K --> I[Agent API]
+    R --> Q
 ```
 
-The scheduler, collectors, analysis workers and report delivery run independently
-of the web server. A shared durable job store connects them. A source outage
-must not stop healthy sources, and a failed model call must not lose collected
-observations. New report versions become visible atomically after verification.
+The manager chooses research and maintenance actions, with access to a discoverable
+and extensible tool registry. The scheduler and verified source ingress persist
+wake events even while it is offline. Separate tool workers can continue background
+I/O and post completion events. The full runtime, queue, callback and autonomy
+contracts are described in [Niche Manager Agent](niche-manager-agent.md).
 
 ## 3. Source registry and ongoing collection
 
@@ -162,13 +162,15 @@ normal retention. Backups need their own purge/expiry process; hash-only audit
 records are retained only where permitted. Public revisions must not preserve
 revoked excerpts under the label of history.
 
-## 5. Analysis agent workflow
+## 5. Manager reasoning capabilities
 
-One orchestrator schedules the following typed stages. Every result is schema
-validated and records input revision IDs, model, prompt, policy and code versions.
-It may return `insufficient_evidence`; that is a valid output, not a failed job.
+The manager has the following reasoning capabilities and may use them in any
+order, repeat them, or investigate another question using available tools. Every
+written result is schema validated and records input revision IDs, model, prompt,
+policy and code versions. It may return `insufficient_evidence`; that is a valid
+output, not a failed job. These are logical capabilities, not separate mandated agents.
 
-| Stage | Input and task | Durable output |
+| Capability | Input and task | Durable output |
 | --- | --- | --- |
 | Extractor | Read eligible observations; identify pain, unmet request, workaround, purchase intent or contextual event | Structured signals, supporting spans and extraction uncertainty |
 | Grouper | Match the new signal to existing buyer/problem groups; propose a new group where needed | Group membership and merge/split suggestions |
@@ -283,8 +285,9 @@ No paid provider or new spending mandate is authorized by this design document.
 
 ## 8. Publication and customer delivery
 
-First-release publication requires operator review, eligible source uses, valid
-claim-to-evidence links and measured support. Preserve the existing minimum
+Target publication is maintained by the manager and requires eligible source
+uses, valid claim-to-evidence links and measured support. Operator review is an
+exception/audit mechanism; automatic publication is enabled only after evaluation. Preserve the existing minimum
 three signals/two domains, but add independent-origin and contradiction checks:
 that numerical floor is necessary, not sufficient evidence of demand.
 
@@ -308,9 +311,10 @@ Customer reads and watchlist checks must not trigger unbounded paid analysis.
 Initial deployment uses the existing `agentic-wiki` VM and Python service stack:
 
 - Public API/UI and payment gateway continue serving published data.
-- One separate scheduler process persists due jobs.
-- One collector worker and one analysis worker run independently with bounded
-  concurrency. Workers can share a container image with distinct entry commands.
+- A scheduler and verified ingestion gateway persist ticks, callbacks and source
+  events in the durable inbox.
+- One agent runner owns the persistent manager session; tool workers execute
+  collection, browser and computation tasks and return completion events.
 - Use the existing SQLite database for a single-host pilot, short transactions,
   a durable job table and validated leasing. No network-wide SQLite sharing.
 - Private bounded document storage lives alongside existing persistent volumes.
@@ -323,12 +327,12 @@ interface makes that transition possible without rewriting source adapters.
 
 | Phase | Work | Completion evidence |
 | --- | --- | --- |
-| 1. Durable collection | Source definitions, independent cadence, checkpoints, job leasing, coverage/error states | Restart resumes work; retries do not duplicate observations; one broken source does not block others |
-| 2. First analysis loop | Versioned observations, extraction, grouping and niche drafting from existing eligible sources | Every extracted claim has valid source support; synthetic faults and a human-reviewed evaluation set pass |
-| 3. Research and verification | Bounded follow-up collection, competing alternatives, counterevidence, confidence and operator review | A candidate progresses from mixed-source evidence to a reviewed report with explicit unknowns |
-| 4. Continuous updates | Incremental reanalysis, revisions, stable IDs, removal propagation and indices | Edited/deleted evidence updates or withdraws reports; stale jobs cannot republish old evidence |
-| 5. Product delivery | Shared UI/API schema, saved searches, ranking filters, change feed and optional notifications | Human and agent get the same revision; entitlement and change/retraction delivery are verified |
-| 6. Broader coverage and forecasting | Add source families one at a time; evaluate time-normalized trends/forecasts | Actual coverage is measured; forecasts beat a baseline on unseen time periods or remain unavailable |
+| 1. Persistent agent foundation | Durable inbox/ticks, manager lease, memory, tool discovery and multi-turn runtime | Scheduled and queued wakes survive restart; tools/plan continue without duplicate effects |
+| 2. External event ingestion | Verified callbacks, supported subscriptions, polling fallback and source checkpoints | New source messages wake the manager; duplicates and forged callbacks cannot corrupt the knowledge base |
+| 3. Autonomous research/curation | Available source/analysis/knowledge tools, evidence gates and evaluation set | Agent discovers and revises a supported narrow-market hypothesis using its own tool plan |
+| 4. Continuous updates | Stable revisions, removal propagation, budgets and change events | Deletion retracts affected claims; stale plans cannot republish old evidence; exhausted runs resume later |
+| 5. Product delivery | Shared UI/API projection, ranking filters, watchlists and change feed | Human and agent consume identical active revisions and withdrawal state |
+| 6. Broader coverage and forecasting | Additional available connectors and validated time-series tools | Coverage and forecast quality are measured rather than inferred from collection volume |
 
 Evaluation metrics include extraction support accuracy, grouping precision,
 missed narrow niches, counterevidence recall, editor rejection/correction rate,
@@ -352,6 +356,7 @@ Verified from the checkout, not refreshed production status:
 | Publication | Minimum support floor and manual publication | Verifier checks, confidence, coverage and retraction-aware delivery |
 | Delivery | English UI, read API, existing billing foundation | Saved searches/change feed; production billing validation remains separate |
 
-The first engineering task is **durable collection plus the extraction/grouping/
-niche-draft loop**, using already eligible source data. This produces a reviewable
-end-to-end result before adding more crawler volume or autonomous deep research.
+The first engineering task is **a persistent full agent runtime with a durable
+inbox, periodic wakes, memory and executable source/knowledge tools**, followed by
+a supported callback adapter. It must demonstrate autonomous research and a
+versioned database update through the same tools available in later production.

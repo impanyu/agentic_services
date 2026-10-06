@@ -53,6 +53,7 @@ The platform has four layers:
 See [`docs/architecture.md`](docs/architecture.md) for the execution flow and [`docs/roadmap.md`](docs/roadmap.md) for the build sequence.
 
 For Niche Discovery, see the [continuous collection and agent-analysis design](docs/niche-discovery-architecture.md).
+Its [Niche Manager Agent](docs/niche-manager-agent.md) owns autonomous research and knowledge-base maintenance through an extensible tool registry, memory, periodic runs and event-driven wakes.
 
 ## Design principles
 
