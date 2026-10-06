@@ -551,6 +551,26 @@ def create_niche_router(settings: Settings) -> APIRouter:
             raise HTTPException(status_code=503, detail=result["status"])
         return result
 
+    @router.get("/admin/search-leads")
+    def search_leads(x_admin_key: str | None = Header(default=None)) -> dict:
+        admin(x_admin_key)
+        from .niche_search import leads
+        return {"leads": leads(store), "evidenceEligible": False}
+
+    @router.post("/admin/collect/search")
+    async def search_collect(x_admin_key: str | None = Header(default=None)) -> dict:
+        admin(x_admin_key)
+        from .niche_search import collect_search, SearchUnavailable
+        try:
+            result = await collect_search(store)
+        except SearchUnavailable as error:
+            store.record_collection_run("Web search discovery", "error", {"errorType": type(error).__name__})
+            raise HTTPException(status_code=503, detail=str(error)) from None
+        store.record_collection_run("Web search discovery", result["status"], result)
+        if result["status"] != "discovery_only":
+            raise HTTPException(status_code=503, detail=result["status"])
+        return result
+
     @router.get("/admin/collection-status")
     def collection_status(x_admin_key: str | None = Header(default=None)) -> dict:
         admin(x_admin_key)

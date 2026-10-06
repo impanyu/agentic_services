@@ -37,6 +37,7 @@ from .models import (
     ClaimVerificationResult,
     EvidenceSnapshot,
 )
+from .niche_search import collect_search
 from .niche_reddit import collect_reddit
 from .niche_discovery import (NicheStore, collect_configured_github,
                               collect_gdelt_news, collect_hacker_news,
@@ -209,6 +210,8 @@ def create_app(
                     collectors.append(("GitHub", collect_configured_github))
                 if os.getenv("NICHE_COLLECT_REDDIT", "") == "1":
                     collectors.append(("Reddit", collect_reddit))
+                if os.getenv("NICHE_COLLECT_SEARCH", "") == "1":
+                    collectors.append(("Web search discovery", collect_search))
                 for name, collect in collectors:
                     try:
                         result = await collect(store)

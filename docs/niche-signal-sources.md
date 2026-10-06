@@ -20,6 +20,15 @@ Every adapter must record source URL, platform, source identifier, observation t
 | P0 | Our searches with no results, repeated query refinements | Unmet information need | First-party analytics with privacy notice; no raw identifiers | Candidate | Define aggregate event schema and opt-out/retention |
 | P1 | Our paid API failures, support tickets, cancellations | Pain plus payment or churn evidence | First-party; minimize customer data | Candidate | Add service-specific anonymized reason codes |
 
+## Search-index discovery (leads only)
+
+| Priority | Source | Signal | Access / rights | Status | Next action |
+|---|---|---|---|---|---|
+| P0 | [Brave web search](https://brave.com/search/api/) | Candidate links across Reddit, media, shopping and professional workflows | Official search API plus plan granting persistent search-result storage; no downstream webpage rights implied | **Implemented; disabled**, no credential or live run | Configure provider key and storage grant; see [search discovery setup](niche-search-discovery.md); verify actual results before marking Running |
+
+Search leads are kept outside the evidence tables. No Reddit pages are fetched;
+unverified search results are not paid-report evidence or inputs to niche scores.
+
 ## Public discussion and developer communities
 
 | Priority | Source | Signal | Access / rights | Status | Next action |

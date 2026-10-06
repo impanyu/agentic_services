@@ -90,3 +90,13 @@ Collection is disabled pending explicit commercial approval and an approved API 
 See [Reddit access request and setup](reddit-access-request.md) for the draft request,
 proposed communities, exact coverage limits and configuration. Tests use synthetic
 fixtures; no Reddit commercial access or live collection is claimed.
+
+### Whole-web search discovery
+
+The [search discovery layer](niche-search-discovery.md) collects candidate URLs
+through an approved search API, separately from source evidence. It can locate
+Reddit discussions and other media/shopping/professional pages without requesting
+those pages. Leads remain internal, do not count toward scores or publication,
+and require independent permitted source evidence before use in evaluations.
+The adapter is implemented but disabled pending a key and search-result storage
+rights. No new paid service has been purchased.
