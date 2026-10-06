@@ -13,18 +13,18 @@
 <body>
   <header class="top">
     <a href="https://aisoup.net/" class="brand">◉ Dream Workshop</a>
-    <nav><a href="#explore">Explore</a><a href="#submit">Submit a signal</a><a href="https://api.aisoup.net/niche-discovery/openapi.json">Agent API ↗</a></nav>
+    <nav><a href="#explore">Explore</a><a href="https://api.aisoup.net/niche-discovery/openapi.json">Agent API ↗</a></nav>
   </header>
   <main>
     <section class="hero">
       <div class="eyebrow">HUMAN + AGENT · PREVIEW</div>
       <h1>From a complaint<br>to a <span>niche market.</span></h1>
-      <p>Share a problem or proposal. We review public sources and connect recurring needs into traceable market hypotheses, with evidence and reasoning behind every score.</p>
-      <div class="hero-actions"><a class="button" href="#explore">Explore opportunities ↗</a><a class="secondary" href="#submit">Contribute a signal</a></div>
+      <p>We collect and review signals from external sources and connect recurring needs into traceable market hypotheses, with evidence and reasoning behind every score.</p>
+      <div class="hero-actions"><a class="button" href="#explore">Explore opportunities ↗</a></div>
       <p class="fine">A niche appears only after editorial review and at least three signals from two source domains. We do not forecast trends without enough history.</p>
     </section>
     <section class="method">
-      <article><b>01 / COLLECT</b><p>People and agents submit signals; editors review configured public sources.</p></article>
+      <article><b>01 / COLLECT</b><p>We collect signals from configured sources and review the evidence.</p></article>
       <article><b>02 / CONNECT</b><p>Recurring problems become a clear hypothesis about the buyer, situation, and unmet need.</p></article>
       <article><b>03 / EVALUATE</b><p>We separate source evidence, editorial scores, changes over time, and remaining uncertainty.</p></article>
     </section>
@@ -49,17 +49,6 @@
       <div class="filters"><label>Search keywords<input id="query" type="search" placeholder="e.g. invoicing, logistics, developer tools"></label><label>Sort by<select id="sort"><option value="score">Editorial score</option><option value="recent">Most recent</option></select></label><button id="search" type="button">Search</button></div>
       <div id="results" class="results" aria-live="polite"><p class="empty">Loading reviewed opportunities…</p></div>
       <div id="detail" class="detail" hidden></div>
-    </section>
-    <section id="submit" class="submit">
-      <div><span class="eyebrow">CONTRIBUTE / SHARE A NEED</span><h2>What problem keeps<br>coming back?</h2><p>Submit a complaint, product suggestion, or service proposal. Submissions enter a private review queue and are never published automatically. Please do not include sensitive personal information or someone else's private details.</p><p>Agents can submit the same fields through the <a href="https://api.aisoup.net/niche-discovery/openapi.json">HTTP API</a>.</p></div>
-      <form id="submission-form">
-        <label>Type<select name="kind"><option value="complaint">Complaint / unsolved problem</option><option value="suggestion">Suggestion</option><option value="proposal">Service proposal</option></select></label>
-        <label>Problem and context<textarea name="text" minlength="25" maxlength="3000" required placeholder="Who faces this problem, in what situation, and why are existing solutions inadequate?"></textarea></label>
-        <label>People affected (optional)<input name="audience" maxlength="120" placeholder="e.g. small online sellers"></label>
-        <label>Public source link (optional)<input name="source_url" type="url" placeholder="https://..."></label>
-        <div class="trap"><label>Company<input name="company" tabindex="-1" autocomplete="off"></label></div>
-        <button type="submit">Submit signal ↗</button><p id="form-message" role="status"></p>
-      </form>
     </section>
   </main>
   <footer><span>© Dream Workshop LLC</span><span><a href="privacy/">Privacy</a> · <a href="terms/">Terms</a> · <a href="https://api.aisoup.net/niche-discovery/openapi.json">API</a> · <a href="mailto:contact@aisoup.net">Contact</a></span></footer>

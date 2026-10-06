@@ -12,7 +12,7 @@ async function loadNiches() {
     if (!response.ok) throw new Error('The service is temporarily unavailable');
     const {niches} = await response.json();
     if (!niches.length) {
-      results.innerHTML = '<p class="empty">No reviewed opportunities match your search yet. You can submit the first signal; we will not fill the list with invented data.</p>';
+      results.innerHTML = '<p class="empty">No reviewed opportunities match your search yet. We are collecting and reviewing source evidence before publishing evaluations.</p>';
       return;
     }
     results.innerHTML = niches.map(n => `<button class="card" type="button" data-id="${escapeHtml(n.id)}"><span class="score">${n.score}<small>/100</small></span><small>${escapeHtml(n.category)}</small><h3>${escapeHtml(n.title)}</h3><p>Target buyer: ${escapeHtml(n.buyer)} · editorial score</p></button>`).join('');
@@ -65,19 +65,5 @@ if (new URLSearchParams(location.search).get('subscription') === 'success') {
   document.querySelector('#subscription-message').textContent = 'Checkout has returned. Check your email for an access token; delivery may take a moment.';
 }
 document.querySelector('#query').addEventListener('keydown', e => { if (e.key === 'Enter') loadNiches(); });
-document.querySelector('#submission-form').addEventListener('submit', async event => {
-  event.preventDefault();
-  const form = event.currentTarget;
-  const message = document.querySelector('#form-message');
-  const data = Object.fromEntries(new FormData(form));
-  if (!data.source_url) delete data.source_url;
-  message.textContent = 'Submitting…';
-  try {
-    const response = await fetch(`${API}/submissions`, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
-    if (!response.ok) throw new Error(response.status === 429 ? 'Too many submissions. Please try again later.' : 'Submission failed. Check your entry and try again.');
-    form.reset();
-    message.textContent = 'Received. Your signal will be reviewed before anything is published. Thank you.';
-  } catch (error) { message.textContent = error.message; }
-});
 
 loadNiches();

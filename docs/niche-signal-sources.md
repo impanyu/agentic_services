@@ -13,15 +13,12 @@ Owner: Dream Workshop LLC. Updated: 2026-10-05. This is the living queue for add
 
 Every adapter must record source URL, platform, source identifier, observation time, collection time, query/scope, and review state; deduplicate records; bound rate and retention; handle removal requests; and keep copied text out of public reports. Media coverage, social discussion, and reviews are *candidate signals*, not proof of market size or willingness to pay. Source counts must be normalized for syndication and correlated posts before scoring.
 
-## First-party and agent-native signals
+## Internal aggregate product telemetry (future)
 
 | Priority | Source | Signal | Access / rights | Status | Next action |
 |---|---|---|---|---|---|
-| P0 | Niche Discovery submissions, human and agent | First-hand complaint, suggestion, proposal | User-submitted under our terms; private review | **Implemented**; public endpoint live, zero real submissions observed | Measure submission volume, review quality, and deletion requests |
 | P0 | Our searches with no results, repeated query refinements | Unmet information need | First-party analytics with privacy notice; no raw identifiers | Candidate | Define aggregate event schema and opt-out/retention |
 | P1 | Our paid API failures, support tickets, cancellations | Pain plus payment or churn evidence | First-party; minimize customer data | Candidate | Add service-specific anonymized reason codes |
-| P1 | Opt-in agent tool failures and missing-tool requests | Agent workflow gap | Explicit agent/developer consent; never collect prompt contents by default | Candidate | Design opt-in feedback endpoint and examples |
-| P1 | Customer interviews, waitlists, concierge requests | Buyer, budget, current workaround | Consent and direct contact | Candidate | Add structured intake and follow-up workflow |
 
 ## Public discussion and developer communities
 
@@ -29,7 +26,7 @@ Every adapter must record source URL, platform, source identifier, observation t
 |---|---|---|---|---|---|
 | P0 | [Hacker News Ask HN](https://github.com/HackerNews/API) | Explicit questions about tools, alternatives, workarounds | Official public API; sample recent questions, link back | **Running**; six-hour VM job added 4 pending signals, repeat run added 0 duplicates on 2026-10-05 | Review useful-candidate rate and false positives after several cycles |
 | P0 | [GitHub Issues](https://docs.github.com/en/rest/issues/issues) | Feature requests, recurring bugs, missing integrations | Official API; repository allowlist and rate limits | **Running**; WooCommerce and Home Assistant pilots added 22 pending signals, repeat run added 0 duplicates on 2026-10-05 | Review candidate quality before widening the repository list |
-| P0 | [Reddit](https://redditinc.com/policies/data-api-terms) | Domain-specific pain, substitutions, willingness to pay | **Permission needed:** commercial API use requires a separate Reddit agreement | Permission needed | Define use case and volume; seek Reddit commercial terms before any automated collection |
+| P0 | [Reddit](https://redditinc.com/policies/data-api-terms) | Domain-specific pain, substitutions, willingness to pay | **Permission needed:** commercial API use requires a separate Reddit agreement | Implemented; permission needed; disabled | OAuth adapter and mocked tests complete; see [Reddit access plan](reddit-access-request.md). Obtain commercial agreement and approved application before collection |
 | P1 | [Stack Exchange network](https://api.stackexchange.com/) | Repeated expert questions across many industries | Official API; attribution and CC BY-SA obligations require design review | Candidate | Select sites, review attribution/retention, ingest links and metadata |
 | P1 | [Bluesky](https://bsky.network/docs/category/http-reference/) | Emerging complaints and “wish there were” posts | Public AppView API, visibility preferences; current anonymous search returned 403 in our environment | Candidate | Verify reliable access and respect visibility/deletion labels |
 | P1 | Mastodon public timelines | Community-specific pain | Server-specific API, policies and opt-out expectations | Candidate | Pilot opt-in servers with published API rules |
@@ -72,7 +69,7 @@ Every adapter must record source URL, platform, source identifier, observation t
 
 ## Collection order
 
-1. Stabilize first-party submissions plus public Hacker News and GDELT adapters; measure useful-candidate rate, dedupe, freshness, and review workload. GDELT returned HTTP 429 during a local probe, so backoff and production verification are required.
+1. Stabilize public Hacker News, GitHub and GDELT adapters; measure useful-candidate rate, dedupe, freshness, and review workload. GDELT returned HTTP 429 during a local probe, so backoff and production verification are required.
 2. Add representative GitHub repositories, CFPB structured complaints, and one open procurement/311 source. These diversify domains without depending on restricted social APIs.
 3. Pursue Reddit commercial access and opt-in merchant data in parallel. These are likely high-value sources but require authorization before production ingestion.
 4. Add marketplace/app-review and other social adapters one at a time after rights, access, deletion, and attribution checks. Keep a provider-level kill switch and source health log.

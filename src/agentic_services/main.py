@@ -37,6 +37,7 @@ from .models import (
     ClaimVerificationResult,
     EvidenceSnapshot,
 )
+from .niche_reddit import collect_reddit
 from .niche_discovery import (NicheStore, collect_configured_github,
                               collect_gdelt_news, collect_hacker_news,
                               create_niche_router)
@@ -206,10 +207,12 @@ def create_app(
                     collectors.append(("GDELT", collect_gdelt_news))
                 if os.getenv("NICHE_GITHUB_REPOSITORIES", "").strip():
                     collectors.append(("GitHub", collect_configured_github))
+                if os.getenv("NICHE_COLLECT_REDDIT", "") == "1":
+                    collectors.append(("Reddit", collect_reddit))
                 for name, collect in collectors:
                     try:
                         result = await collect(store)
-                        store.record_collection_run(name, "ok", result)
+                        store.record_collection_run(name, "ok" if result["status"] == "pending_review" else result["status"], result)
                     except Exception as error:
                         store.record_collection_run(name, "error", {"errorType": type(error).__name__})
                         logging.getLogger(__name__).exception("Niche Discovery %s collection failed", name)

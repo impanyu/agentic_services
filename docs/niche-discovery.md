@@ -2,21 +2,19 @@
 
 Niche Discovery is a cross-industry service for people and agents. Human page:
 `https://aisoup.net/niche-discovery/`. Machine API:
-`https://api.aisoup.net/niche-discovery/v1/`. Anyone can submit a complaint,
-suggestion, or proposal. Public listing and keyword search are free. A USD
+`https://api.aisoup.net/niche-discovery/v1/`. Signals are collected from configured external sources; users and agents consume
+reviewed market information through the UI and API. Public listing and keyword search are free. A USD
 9.99/month Stripe subscription unlocks complete evaluations for both people
 and agents via the same `nd_` bearer token. Agents may instead buy one complete
 evaluation per call for USD 0.25 through the existing Base USDC payment gateway
 at `GET /niche-discovery/v1/niches/{id}/pay-per-call`.
 
-The first release is intentionally evidence-first. Submissions remain private
-pending editorial review. An editor can link signals into a niche. A niche
-cannot be published without at least three linked signals from two source
-domains. A signal with a user-supplied URL is **not** independently verified by
-the server; an editor must check it before publication. Published reports show
-links and metadata, not the underlying copied complaint text. Direct
-submissions are limited to five per IP hash per hour, and the hash is not
-returned to API clients.
+The first release is evidence-first and one-way: source collection → private
+review → niche evaluation → human UI and agent API. There is no public signal
+contribution endpoint or form. An editor can link collected signals into a niche.
+Publication requires at least three signals from two source domains. Editors
+check the original evidence; reports show links and metadata rather than copied
+source excerpts.
 
 The 0–100 score is an editorial hypothesis: pain 25%, frequency 20%,
 willingness to pay 20%, reachable buyers 15%, feasibility 10%, and competition
@@ -82,3 +80,13 @@ site. A preview page with an empty catalog is not a paid launch.
 Because the VM has a separately preserved Kalshi service in its live Caddy
 configuration, merge the Niche Discovery Caddy blocks into `/etc/caddy/Caddyfile`
 instead of replacing the whole file from this repository.
+
+### Reddit adapter
+
+Reddit posts and comments are implemented through an approval-gated OAuth adapter,
+with private candidate review, bounded community sampling, deduplication, retained
+content refresh and deletion of dependent reports when evidence changes or disappears.
+Collection is disabled pending explicit commercial approval and an approved API app.
+See [Reddit access request and setup](reddit-access-request.md) for the draft request,
+proposed communities, exact coverage limits and configuration. Tests use synthetic
+fixtures; no Reddit commercial access or live collection is claimed.

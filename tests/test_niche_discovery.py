@@ -25,15 +25,13 @@ def client_for(tmp_path: Path) -> TestClient:
     return TestClient(app)
 
 
-def test_submission_private_until_curated(tmp_path: Path) -> None:
+def test_collected_signals_private_until_curated(tmp_path: Path) -> None:
     client = client_for(tmp_path)
+    store = NicheStore(tmp_path / "test.sqlite")
     for index in range(3):
-        response = client.post("/niche-discovery/v1/submissions", json={
-            "kind": "complaint", "text": f"Small shops cannot reconcile recurring invoices from provider {index} without manual copying.",
-            "source_url": f"https://example{index}.org/issue",
-        })
-        assert response.status_code == 202
-        assert response.json()["status"] == "pending_review"
+        store.ingest_external_signal(external_id=f"test:{index}", origin="test_source", kind="complaint",
+            text=f"Small shops cannot reconcile recurring invoices from provider {index} without manual copying.",
+            source_url=f"https://example{index}.org/issue", observed_at="2026-10-01T00:00:00Z")
     assert client.get("/niche-discovery/v1/niches").json()["niches"] == []
     assert client.get("/niche-discovery/v1/admin/signals").status_code == 401
     signals = client.get("/niche-discovery/v1/admin/signals", headers={"X-Admin-Key": "editor-secret"}).json()["signals"]
@@ -60,12 +58,14 @@ def test_submission_private_until_curated(tmp_path: Path) -> None:
     assert client.get("/niche-discovery/v1/niches?q=unrelated").json()["niches"] == []
 
 
-def test_abuse_limit_and_publication_floor(tmp_path: Path) -> None:
+def test_no_public_contribution_and_publication_floor(tmp_path: Path) -> None:
     client = client_for(tmp_path)
-    payload = {"kind": "proposal", "text": "A longer than twenty-five character proposal for a product gap."}
-    for _ in range(5):
-        assert client.post("/niche-discovery/v1/submissions", json=payload).status_code == 202
-    assert client.post("/niche-discovery/v1/submissions", json=payload).status_code == 429
+    assert client.post("/niche-discovery/v1/submissions", json={"text": "a signal"}).status_code == 404
+    schema = client.get("/niche-discovery/openapi.json").json()
+    assert not any("submission" in path for path in schema["paths"])
+    NicheStore(tmp_path / "test.sqlite").ingest_external_signal(external_id="test:1", origin="test_source",
+        kind="complaint", text="A longer than twenty-five character proposal for a product gap.",
+        source_url="https://example.org/issue", observed_at="2026-10-01T00:00:00Z")
     signal = client.get("/niche-discovery/v1/admin/signals", headers={"X-Admin-Key": "editor-secret"}).json()["signals"][0]
     draft = {
         "title": "A narrow product gap", "problem": "A longer than thirty character description of the market gap.",

@@ -1,7 +1,7 @@
 """Evidence-first niche discovery MVP.
 
-Public submissions are private until an editor attaches them to a published niche.
-External collection is deliberately limited to configured GitHub repositories.
+Collected candidates are private until editorial review.
+External collection uses explicitly configured source adapters.
 """
 
 from __future__ import annotations
@@ -21,7 +21,7 @@ from urllib.parse import urlparse
 
 import httpx
 from fastapi import APIRouter, Header, HTTPException, Query, Request
-from pydantic import BaseModel, Field, HttpUrl
+from pydantic import BaseModel, Field
 
 from .config import Settings
 from .contact import send_email
@@ -30,14 +30,6 @@ from .stripe_webhook import InvalidStripeSignature, verify_stripe_event
 
 def now() -> str:
     return datetime.now(UTC).isoformat()
-
-
-class Submission(BaseModel):
-    kind: Literal["complaint", "suggestion", "proposal"]
-    text: Annotated[str, Field(min_length=25, max_length=3000)]
-    audience: Annotated[str | None, Field(max_length=120)] = None
-    source_url: HttpUrl | None = None
-    company: Annotated[str, Field(max_length=150)] = ""  # honeypot
 
 
 class NicheDraft(BaseModel):
@@ -85,10 +77,6 @@ class NicheStore:
                     niche_id TEXT NOT NULL, signal_id TEXT NOT NULL,
                     PRIMARY KEY(niche_id, signal_id)
                 );
-                CREATE TABLE IF NOT EXISTS niche_submission_limits (
-                    reporter_hash TEXT NOT NULL, hour TEXT NOT NULL, count INTEGER NOT NULL,
-                    PRIMARY KEY(reporter_hash, hour)
-                );
                 CREATE TABLE IF NOT EXISTS niche_subscriptions (
                     stripe_subscription_id TEXT PRIMARY KEY,
                     stripe_customer_id TEXT NOT NULL,
@@ -111,24 +99,6 @@ class NicheStore:
         db.row_factory = sqlite3.Row
         db.execute("PRAGMA foreign_keys=ON")
         return db
-
-    def submit(self, payload: Submission, reporter_hash: str) -> str:
-        hour = datetime.now(UTC).strftime("%Y-%m-%dT%H")
-        signal_id = f"sig_{uuid.uuid4().hex}"
-        with self.connect() as db:
-            db.execute("BEGIN IMMEDIATE")
-            db.execute("DELETE FROM niche_submission_limits WHERE hour < ?", ((datetime.now(UTC) - timedelta(days=2)).strftime("%Y-%m-%dT%H"),))
-            row = db.execute("SELECT count FROM niche_submission_limits WHERE reporter_hash=? AND hour=?", (reporter_hash, hour)).fetchone()
-            if row and row["count"] >= 5:
-                raise HTTPException(status_code=429, detail="Submission limit reached; try again later")
-            db.execute("INSERT INTO niche_submission_limits VALUES(?,?,1) ON CONFLICT(reporter_hash,hour) DO UPDATE SET count=count+1", (reporter_hash, hour))
-            url = str(payload.source_url) if payload.source_url else None
-            db.execute(
-                "INSERT INTO niche_signals(id,kind,text,audience,source_url,source_domain,external_id,origin,observed_at,created_at,reporter_hash) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
-                (signal_id, payload.kind, payload.text.strip(), payload.audience, url,
-                 urlparse(url).hostname or "direct" if url else "direct", None, "direct", now(), now(), reporter_hash),
-            )
-        return signal_id
 
     def ingest_github_issue(self, item: dict, repository: str) -> bool:
         external_id = f"github:{item['id']}"
@@ -368,7 +338,6 @@ def create_niche_router(settings: Settings) -> APIRouter:
     router = APIRouter(prefix="/niche-discovery/v1", tags=["niche discovery"])
     store = NicheStore(settings.database_path)
     admin_api_key = settings.admin_api_key
-    hash_secret = settings.contact_ip_hash_secret or settings.receipt_signing_secret
 
     def stripe_config() -> tuple[str, str, str]:
         key = os.getenv("NICHE_STRIPE_SECRET_KEY", "")
@@ -409,16 +378,6 @@ def create_niche_router(settings: Settings) -> APIRouter:
             raise HTTPException(status_code=503, detail="Admin key is not configured")
         if not key or not hmac.compare_digest(key, admin_api_key):
             raise HTTPException(status_code=401, detail="Admin key required")
-
-    @router.post("/submissions", status_code=202)
-    def submit(payload: Submission, request: Request) -> dict:
-        if payload.company:
-            return {"status": "received"}
-        # Caddy appends the actual peer to X-Forwarded-For; the leftmost value
-        # may be chosen by the caller and must not control the rate limit.
-        raw_ip = (request.headers.get("x-forwarded-for", "").split(",")[-1].strip() or (request.client.host if request.client else "unknown"))
-        reporter_hash = hmac.new((hash_secret or "local-niche-limit").encode(), raw_ip.encode(), hashlib.sha256).hexdigest()
-        return {"id": store.submit(payload, reporter_hash), "status": "pending_review"}
 
     @router.get("/niches")
     def list_niches(q: Annotated[str, Query(max_length=150)] = "", category: Annotated[str | None, Query(max_length=80)] = None,
@@ -576,6 +535,20 @@ def create_niche_router(settings: Settings) -> APIRouter:
         result = await collect_gdelt_news(store)
         if result["status"] == "not_configured":
             raise HTTPException(status_code=503, detail="NICHE_GDELT_QUERY is not configured")
+        return result
+
+    @router.post("/admin/collect/reddit")
+    async def collect_reddit_admin(x_admin_key: str | None = Header(default=None)) -> dict:
+        admin(x_admin_key)
+        from .niche_reddit import collect_reddit, RedditUnavailable
+        try:
+            result = await collect_reddit(store)
+        except RedditUnavailable as error:
+            store.record_collection_run("Reddit", "error", {"errorType": type(error).__name__})
+            raise HTTPException(status_code=503, detail=str(error)) from None
+        store.record_collection_run("Reddit", result["status"], result)
+        if result["status"] != "pending_review":
+            raise HTTPException(status_code=503, detail=result["status"])
         return result
 
     @router.get("/admin/collection-status")
