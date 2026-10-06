@@ -63,6 +63,8 @@ def test_no_public_contribution_and_publication_floor(tmp_path: Path) -> None:
     assert client.post("/niche-discovery/v1/submissions", json={"text": "a signal"}).status_code == 404
     schema = client.get("/niche-discovery/openapi.json").json()
     assert not any("submission" in path for path in schema["paths"])
+    manifest = json.loads(Path("niche-discovery-site/.well-known/agent-service.json").read_text())
+    assert not any("submit" in op["id"] or "submission" in op["path"] for op in manifest["operations"])
     NicheStore(tmp_path / "test.sqlite").ingest_external_signal(external_id="test:1", origin="test_source",
         kind="complaint", text="A longer than twenty-five character proposal for a product gap.",
         source_url="https://example.org/issue", observed_at="2026-10-01T00:00:00Z")
