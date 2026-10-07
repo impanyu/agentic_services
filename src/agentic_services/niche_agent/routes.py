@@ -40,8 +40,10 @@ def create_manager_router(settings: Settings) -> APIRouter:
     @router.get('/admin/manager')
     def status(x_admin_key: str | None = Header(default=None)):
         admin(x_admin_key)
+        from .websub import public_status
         return {**store.status(), 'enabled': os.getenv('NICHE_AGENT_ENABLED') == '1',
-                'model': os.getenv('NICHE_AGENT_MODEL', 'gpt-6-sol')}
+                'model': os.getenv('NICHE_AGENT_MODEL', 'gpt-6-sol'),
+                'websub': public_status(store)}
 
     @router.post('/admin/manager/wake', status_code=202)
     def wake(body: WakeRequest, x_admin_key: str | None = Header(default=None)):

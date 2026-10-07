@@ -10,3 +10,5 @@ data
 tests
 docs
 examples
+
+.local/

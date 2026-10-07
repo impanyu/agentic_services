@@ -174,7 +174,7 @@ app.use('/niche-discovery/*', async (c, next) => {
     return new Response(null, { status: 204, headers: {
       'Access-Control-Allow-Origin': origin,
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, Idempotency-Key',
       Vary: 'Origin',
     } })
   }
@@ -192,6 +192,9 @@ app.use('/niche-discovery/*', async (c, next) => {
 
 app.all('/mcp', (c) => mcpHandler(withPublicUrl(c.req.raw)))
 app.all('/contractor-check/mcp', (c) => contractorMcpHandler(withPublicUrl(c.req.raw)))
+app.post('/niche-discovery/v1/research', (c) => proxyNicheResearch(c.req.raw))
+app.get('/niche-discovery/v1/research/:id', (c) => proxyNicheResearch(c.req.raw))
+
 app.get('/niche-discovery/v1/niches/:id', (c) => proxyNicheDetail(c.req.raw, c.req.param('id'), false))
 app.get('/contractor-check/.well-known/mcp/server.json', (c) => c.json({
   $schema: 'https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json',
@@ -1198,4 +1201,16 @@ function paymentCredentialMethod(value: string): string | undefined {
   } catch {
     return undefined
   }
+}
+
+async function proxyNicheResearch(request: Request): Promise<Response> {
+  const url = new URL(request.url)
+  const upstream = new URL(url.pathname, upstreamUrl)
+  const headers = new Headers(request.headers)
+  headers.set('Host', upstream.host)
+  for (const name of ['X-Niche-Paid-Call', 'Payment-Signature', 'Payment-Authorization', 'X-Payment', 'X-Admin-Key']) headers.delete(name)
+  const response = await fetch(upstream, { method: request.method, headers, body: request.method === 'POST' ? await request.arrayBuffer() : undefined })
+  const output = new Headers(response.headers)
+  output.set('Cache-Control', 'no-store')
+  return new Response(response.body, {status:response.status, headers:output})
 }

@@ -127,3 +127,7 @@ human UI, public catalog and public OpenAPI returned 200. The published catalog
 remained empty; this is not a paid launch or validated customer demand. The internal
 callback test subscription is paused; no external platform webhook was registered.
 The separately preserved live Caddy configuration was not modified.
+
+## Source expansion and on-demand research
+
+See [on-demand operations](niche-on-demand.md) for the subscriber job API, reserved foreground capacity, private retention, new adapters, and real WebSub registration/renewal. Existing generic callbacks still require operator registration at each external platform.

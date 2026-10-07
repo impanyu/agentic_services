@@ -15,7 +15,10 @@ class DailyBudgetExhausted(RuntimeError):
     pass
 
 
-class ManagerStore(NicheStore):
+from .research import ResearchStore
+
+
+class ManagerStore(NicheStore, ResearchStore):
     """SQLite transactions are the authority for leases, receipts and revisions."""
 
     def __init__(self, path: Path):
@@ -55,6 +58,10 @@ class ManagerStore(NicheStore):
                     interval INTEGER NOT NULL, enabled INTEGER NOT NULL, next_poll REAL NOT NULL);
             ''')
 
+            self.init_research(db)
+            from .sources import init as init_sources
+            init_sources(db)
+
     def enqueue(self, kind: str, payload: dict, dedupe: str, *, available: float | None = None) -> str:
         raw = json.dumps(payload, sort_keys=True)
         if len(raw.encode()) > 16000:
@@ -74,14 +81,20 @@ class ManagerStore(NicheStore):
             # Recovery is safe only after the previous manager lease expired.
             db.execute("UPDATE manager_events SET status=CASE WHEN attempts>=3 THEN 'dead' ELSE 'pending' END,run_id=NULL WHERE status='leased'")
             db.execute("UPDATE manager_runs SET status='interrupted',finished=? WHERE status='running'", (now(),))
-            rows = db.execute("SELECT * FROM manager_events WHERE status='pending' AND available<=? ORDER BY available,id LIMIT ?", (timestamp, limit)).fetchall()
+            db.execute("UPDATE niche_research SET status='failed',updated=? WHERE result IS NULL AND event_id IN (SELECT id FROM manager_events WHERE status='dead')",(timestamp,))
+            rows = db.execute("SELECT * FROM manager_events WHERE status='pending' AND available<=? ORDER BY CASE WHEN kind='research.request' THEN 0 ELSE 1 END,available,id LIMIT ?", (timestamp, limit)).fetchall()
             if not rows:
                 return None
+            if rows[0]['kind']=='research.request':
+                rows=rows[:1]  # Keep foreground requests isolated from unrelated objectives.
             owner = 'mgr_' + uuid.uuid4().hex
             db.execute('INSERT OR REPLACE INTO manager_lease VALUES(1,?,?)', (owner, timestamp + lease_seconds))
             db.execute('INSERT INTO manager_runs(id,status,started) VALUES(?,?,?)', (owner, 'running', now()))
             for row in rows:
                 db.execute("UPDATE manager_events SET status='leased',run_id=?,attempts=attempts+1 WHERE id=?", (owner, row['id']))
+            for row in rows:
+                db.execute("UPDATE niche_research SET status='running',updated=? WHERE event_id=? AND result IS NULL", (timestamp,row['id']))
+            db.execute("UPDATE niche_research SET status='failed',updated=? WHERE result IS NULL AND event_id IN (SELECT id FROM manager_events WHERE status='dead')",(timestamp,))
             return owner, [{**dict(row), 'payload': json.loads(row['payload'])} for row in rows]
 
     def assert_owner(self, db, owner: str) -> None:
@@ -109,6 +122,16 @@ class ManagerStore(NicheStore):
                 for event_id in event_ids:
                     db.execute("UPDATE manager_events SET status='pending',attempts=MAX(0,attempts-1),available=? WHERE id=?",
                                (tomorrow, event_id))
+            for event_id in event_ids:
+                research = db.execute('SELECT result FROM niche_research WHERE event_id=?',(event_id,)).fetchone()
+                if research and research['result']:
+                    db.execute("UPDATE manager_events SET status='handled' WHERE id=?",(event_id,))
+                if research and not research['result']:
+                    # A final model message is not a committed research outcome.
+                    event=db.execute('SELECT attempts FROM manager_events WHERE id=?',(event_id,)).fetchone()
+                    state='pending' if budget_wait or event['attempts']<3 else 'dead'
+                    db.execute('UPDATE manager_events SET status=?,available=? WHERE id=?',(state,(int(time.time()//86400)+1)*86400 if budget_wait else time.time()+900,event_id))
+                    db.execute('UPDATE niche_research SET status=?,updated=? WHERE event_id=?',('waiting_for_budget' if budget_wait else ('failed' if state=='dead' else 'queued'),time.time(),event_id))
             db.execute('DELETE FROM manager_lease WHERE owner=?', (owner,))
 
     def remember(self, owner: str, key: str, value: str) -> None:
@@ -186,7 +209,8 @@ class ManagerStore(NicheStore):
             signals = db.execute(f"SELECT * FROM niche_signals WHERE id IN ({','.join('?' for _ in ids)})", ids).fetchall()
             if len(signals) != len(ids):
                 raise ValueError('Unknown or deleted evidence')
-            if draft.publish and (len(ids) < 3 or len({r['source_domain'] for r in signals}) < 2 or confidence == 'low'):
+            demand = [r for r in signals if r['kind'] not in {'news_report','regulatory_notice','recall_context'}]
+            if draft.publish and (len(demand) < 3 or len({'stack-exchange-network' if r['origin']=='stack-exchange' else r['source_domain'] for r in demand}) < 2 or confidence == 'low'):
                 raise ValueError('Publication requires 3 signals, 2 domains and at least medium confidence')
             target = niche_id or 'niche_' + uuid.uuid4().hex
             score = round(sum(getattr(draft, k) * weight / 5 for k, weight in WEIGHTS.items()))
@@ -195,7 +219,7 @@ class ManagerStore(NicheStore):
             db.execute('DELETE FROM niche_links WHERE niche_id=?', (target,))
             db.executemany('INSERT INTO niche_links VALUES(?,?)', [(target, i) for i in ids])
             metadata = {'rationale': rationale, 'confidence': confidence, 'counterevidence': counterevidence,
-                        'operation': operation, 'draft': draft.model_dump(), 'signalIds': ids, 'retiredIds': retirement}
+                        'operation': operation, 'runId':owner, 'draft': draft.model_dump(), 'signalIds': ids, 'retiredIds': retirement}
             db.execute('INSERT OR REPLACE INTO manager_revisions VALUES(?,?)', (target, revision + 1))
             db.execute('INSERT INTO manager_revision_log VALUES(?,?,?,?)', (target, revision + 1, json.dumps(metadata), now()))
             for retired in retirement:
@@ -237,7 +261,8 @@ class ManagerStore(NicheStore):
 
     def subscribe(self, owner: str | None, identifier: str, source: str, secret_env: str, interval: int, enabled: bool) -> dict:
         import re
-        if source not in {'github', 'hacker-news', 'gdelt', 'reddit', 'search'}:
+        from .sources import source_registry
+        if source not in ({'github', 'hacker-news', 'gdelt', 'reddit', 'search'} | set(source_registry())):
             raise ValueError('Unregistered source')
         if not re.fullmatch(r'[a-z0-9-]{1,64}', identifier) or not re.fullmatch(r'NICHE_CALLBACK_[A-Z0-9_]+', secret_env):
             raise ValueError('Invalid subscription id or secret environment reference')

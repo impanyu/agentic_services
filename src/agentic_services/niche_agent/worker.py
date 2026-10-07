@@ -14,10 +14,16 @@ async def serve():
     config = AgentConfig.environment()
     if not settings.openai_api_key:
         raise RuntimeError('OPENAI_API_KEY is not configured')
+    next_maintenance=0
     while True:
         with store.connect() as db:
             db.execute('INSERT OR REPLACE INTO manager_worker_health VALUES(1,?)', (time.time(),))
         if os.getenv('NICHE_AGENT_ENABLED') == '1':
+            if time.time()>=next_maintenance:
+                from .websub import maintain
+                await maintain(store)
+                store.prune_research()
+                next_maintenance=time.time()+60
             store.schedule(config.tick_seconds)
             await run_once(store, settings.openai_api_key, config)
         await asyncio.sleep(5)

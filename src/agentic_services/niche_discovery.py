@@ -161,11 +161,13 @@ class NicheStore:
     def save_niche(self, draft: NicheDraft) -> dict:
         ids = list(dict.fromkeys(draft.signal_ids))
         with self.connect() as db:
-            existing = db.execute(f"SELECT id,source_domain FROM niche_signals WHERE id IN ({','.join('?' for _ in ids)})", ids).fetchall()
+            existing = db.execute(f"SELECT id,source_domain,kind,origin FROM niche_signals WHERE id IN ({','.join('?' for _ in ids)})", ids).fetchall()
             if len(existing) != len(ids):
                 raise HTTPException(status_code=422, detail="Unknown signal id")
             domains = {row["source_domain"] for row in existing}
-            if draft.publish and (len(ids) < 3 or len(domains) < 2):
+            demand=[s for s in existing if s['kind'] not in {'news_report','regulatory_notice','recall_context'}]
+            independent={'stack-exchange-network' if s['origin']=='stack-exchange' else s['source_domain'] for s in demand}
+            if draft.publish and (len(demand) < 3 or len(independent) < 2):
                 raise HTTPException(status_code=422, detail="Publishing requires at least 3 signals from 2 source domains")
             score = round(sum(getattr(draft, name) * weight / 5 for name, weight in WEIGHTS.items()))
             niche_id = f"niche_{uuid.uuid4().hex}"
@@ -187,6 +189,10 @@ class NicheStore:
                     "GDELT Project — https://www.gdeltproject.org/"
                     if signal["origin"] == "gdelt_news" else None
                 )
+            if db.execute("SELECT 1 FROM sqlite_master WHERE name='niche_signal_provenance'").fetchone():
+                for signal in signals:
+                    provenance=db.execute('SELECT metadata FROM niche_signal_provenance WHERE signal_id=?',(signal['id'],)).fetchone()
+                    if provenance: signal['provenance']=json.loads(provenance[0])
             manager_metadata = {}
             if db.execute("SELECT 1 FROM sqlite_master WHERE name='manager_revision_log'").fetchone():
                 revision = db.execute('SELECT revision,metadata FROM manager_revision_log WHERE niche_id=? ORDER BY revision DESC LIMIT 1', (niche_id,)).fetchone()
@@ -389,7 +395,8 @@ def create_niche_router(settings: Settings) -> APIRouter:
     @router.get("/niches")
     def list_niches(q: Annotated[str, Query(max_length=150)] = "", category: Annotated[str | None, Query(max_length=80)] = None,
                     sort: Literal["recent", "score"] = "score", limit: Annotated[int, Query(ge=1, le=100)] = 20) -> dict:
-        return {"niches": store.list_niches(q, category, sort, limit), "rankingMethod": "editorial_hypothesis"}
+        matches=store.list_niches(q, category, sort, limit)
+        return {"niches": matches, "rankingMethod": "editorial_hypothesis", "researchAvailable":not bool(matches), "researchPath":"/niche-discovery/v1/research", "researchRequires":"active_subscription", "researchMethod":"POST"}
 
     @router.get("/niches/{niche_id}")
     def niche(niche_id: str, authorization: str | None = Header(default=None), x_niche_paid_call: str | None = Header(default=None)) -> dict:

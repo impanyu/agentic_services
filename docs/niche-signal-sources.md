@@ -84,3 +84,22 @@ unverified search results are not paid-report evidence or inputs to niche scores
 4. Add marketplace/app-review and other social adapters one at a time after rights, access, deletion, and attribution checks. Keep a provider-level kill switch and source health log.
 
 Do not label the service “whole-web coverage.” Report actual covered platforms, regions, languages, collection windows, and known gaps on each niche evaluation. Cross-source corroboration matters more than a large unfiltered post count.
+
+## October 6 expansion (implementation; production verification pending)
+
+| Source | Implementation and scope | Current verification |
+|---|---|---|
+| Stack Exchange | Official API; configured DIY/gardening/money/travel/bicycles/cooking sites; current CC BY-SA 4.0 headlines, author/profile/license attribution | Local live collection succeeded; bounded keyword research and repeat dedupe tests pass |
+| CPSC | Recent official recall titles, URLs and dates; contextual product-safety signal | Local live collection succeeded; does not count toward demand publication threshold |
+| Federal Register | Recent official titles/URLs/dates, optional agent keyword query | Local live collection succeeded; regulatory context only |
+| Global Voices | CC BY 3.0 RSS headlines, dates/bylines/source attribution; operator-approved advertised WebSub hub | Local live headline collection succeeded; actual hub verification still pending |
+| NYC 311 | Non-identifying administrative metadata adapter; extra rights-reference gate | Public API probe succeeded; disabled pending specific reuse review |
+| CFPB | Structured complaint-field adapter; no narratives | Public API probes timed out; disabled; field mapping still needs a successful live response |
+
+The common adapter framework enforces bounded responses, provider attempt budgets,
+backoff, short query-cache windows, source identifiers and private excerpts. WebSub
+adds registration, verified leases and renewal to existing signed callback/polling
+support. [On-demand research](niche-on-demand.md) uses the same autonomous manager;
+private search objectives are not contributed demand signals. This expansion still
+does not claim all-platform coverage; commercial shopping/review/social access remains
+tracked above and must be connected individually.

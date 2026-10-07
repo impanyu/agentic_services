@@ -4,7 +4,7 @@
     "id": "https://api.aisoup.net/niche-discovery",
     "name": "Niche Discovery",
     "description": "Inspect evidence-linked niche market evaluations based on collected source signals, for people and agents.",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "homepage": "https://aisoup.net/niche-discovery/",
     "tags": [
       "market-research",
@@ -90,6 +90,38 @@
       "summary": "Buy one full evaluation using Base USDC.",
       "method": "GET",
       "path": "/niche-discovery/v1/niches/{niche_id}/pay-per-call",
+      "inputSchema": {
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object"
+      },
+      "timeoutSeconds": 10,
+      "idempotent": true
+    },
+    {
+      "id": "explore-niche",
+      "capability": "market.niche.discovery",
+      "transport": "subscriber-http",
+      "summary": "Search first; on a miss enqueue private autonomous research. Active subscription, Idempotency-Key and daily quota required.",
+      "method": "POST",
+      "path": "/niche-discovery/v1/research",
+      "inputSchema": {
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object"
+      },
+      "timeoutSeconds": 10,
+      "idempotent": true
+    },
+    {
+      "id": "research-result",
+      "capability": "market.niche.discovery",
+      "transport": "subscriber-http",
+      "summary": "Poll your research outcome. Results may be provisional or report insufficient evidence.",
+      "method": "GET",
+      "path": "/niche-discovery/v1/research/{identifier}",
       "inputSchema": {
         "type": "object"
       },
