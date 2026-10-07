@@ -207,6 +207,7 @@ def create_app(
         async def niche_collector() -> None:
             store = ManagerStore(resolved_settings.database_path)
             while True:
+                store.prune_queries()
                 collectors = []
                 if os.getenv("NICHE_COLLECT_HACKER_NEWS", "") == "1":
                     collectors.append(("Hacker News", collect_hacker_news))

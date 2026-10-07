@@ -70,3 +70,11 @@ def test_query_redaction_retention_and_not_evidence(tmp_path):
     with s.connect() as db:db.execute('UPDATE niche_user_queries SET created=0')
     s.record_lookup('client','fresh query',None,'human_free',0,free=True)
     assert len(s.query_inspirations()['topics'])==1
+
+
+def test_retention_cleanup_without_new_search(tmp_path):
+    c,s,n,headers=setup(tmp_path)
+    s.record_lookup('client','gardening tools',None,'human_free',0,free=True)
+    with s.connect() as db:db.execute('UPDATE niche_user_queries SET created=0')
+    s.prune_queries()
+    with s.connect() as db:assert db.execute('SELECT COUNT(*) FROM niche_user_queries').fetchone()[0]==0

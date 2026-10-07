@@ -26,6 +26,7 @@ async def serve():
                 from .websub import maintain
                 await maintain(store)
                 store.prune_research()
+                store.prune_queries()
                 next_maintenance=time.time()+60
             store.schedule(config.tick_seconds)
             await run_once(store, settings.openai_api_key, config)

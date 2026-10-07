@@ -43,6 +43,11 @@ class QueryStore:
             db.execute('DELETE FROM niche_query_usage WHERE day<?',(day,))
         return {'limit':3 if free else None,'used':count+1,'remaining':max(0,2-count) if free else None,'resetsAt':(int(time.time()//86400)+1)*86400}
 
+    def prune_queries(self):
+        with self.connect() as db:
+            db.execute('DELETE FROM niche_user_queries WHERE created<?',(time.time()-30*86400,))
+            db.execute('DELETE FROM niche_query_usage WHERE day<?',(datetime.now(UTC).date().isoformat(),))
+
     def query_inspirations(self, limit=10):
         with self.connect() as db:
             rows=db.execute('''SELECT query,category,COUNT(*) searches,COUNT(DISTINCT principal) anonymous_clients,
