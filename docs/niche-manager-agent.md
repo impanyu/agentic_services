@@ -1,6 +1,8 @@
 # Niche Manager Agent
 
-Updated 2026-10-06. Proposed architecture, not a deployed agent runtime.
+Updated 2026-10-06. The first autonomous runtime is implemented; see
+[niche-manager-operations.md](niche-manager-operations.md) for configuration,
+verification and remaining connector work. Later sections describe the broader target architecture.
 This specifies the autonomous knowledge-base manager requested by the user and
 supersedes fixed-stage/manual-publication assumptions in the earlier design.
 

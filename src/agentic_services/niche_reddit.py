@@ -52,6 +52,18 @@ def purge(store: NicheStore, external_ids: list[str]) -> int:
                 db.execute("DELETE FROM niches WHERE id=?", (niche_id,))
             db.execute("DELETE FROM niche_links WHERE signal_id=?", (row["id"],))
             db.execute("DELETE FROM niche_signals WHERE id=?", (row["id"],))
+        if rows:
+            # Conservative invalidation: persistent agent context may contain source
+            # derivatives. Wipe it rather than retaining deleted Reddit material.
+            tables = {r[0] for r in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+            for table in ('manager_memory', 'manager_revision_log', 'agent_messages', 'agent_sessions'):
+                if table in tables:
+                    db.execute(f'DELETE FROM {table}')
+            if 'manager_runs' in tables:
+                db.execute('UPDATE manager_runs SET result=NULL')
+            if 'manager_lease' in tables:
+                # Fence an in-flight manager from committing deleted derivatives.
+                db.execute('DELETE FROM manager_lease')
         return len(rows)
 
 

@@ -10,6 +10,7 @@ import os
 import re
 import secrets
 import socket
+import time
 from contextlib import asynccontextmanager
 from urllib.parse import urlparse
 from dataclasses import dataclass
@@ -37,6 +38,8 @@ from .models import (
     ClaimVerificationResult,
     EvidenceSnapshot,
 )
+from .niche_agent.routes import create_manager_router
+from .niche_agent.store import ManagerStore
 from .niche_search import collect_search
 from .niche_reddit import collect_reddit
 from .niche_discovery import (NicheStore, collect_configured_github,
@@ -199,7 +202,7 @@ def create_app(
 
         task = asyncio.create_task(worker())
         async def niche_collector() -> None:
-            store = NicheStore(resolved_settings.database_path)
+            store = ManagerStore(resolved_settings.database_path)
             while True:
                 collectors = []
                 if os.getenv("NICHE_COLLECT_HACKER_NEWS", "") == "1":
@@ -215,6 +218,9 @@ def create_app(
                 for name, collect in collectors:
                     try:
                         result = await collect(store)
+                        if result.get('signalsAdded', 0) > 0:
+                            store.enqueue('source.batch.ready', {'source': name, 'signalsAdded': result['signalsAdded']},
+                                          f'collection:{name}:{time.time_ns()}')
                         store.record_collection_run(name, "ok" if result["status"] == "pending_review" else result["status"], result)
                     except Exception as error:
                         store.record_collection_run(name, "error", {"errorType": type(error).__name__})
@@ -333,6 +339,7 @@ def create_app(
     )
     app.include_router(contractor_router)
     app.include_router(create_niche_router(resolved_settings))
+    app.include_router(create_manager_router(resolved_settings))
 
     @app.get("/niche-discovery/openapi.json", include_in_schema=False)
     def niche_openapi() -> dict[str, object]:

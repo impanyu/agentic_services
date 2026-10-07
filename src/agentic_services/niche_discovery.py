@@ -187,6 +187,13 @@ class NicheStore:
                     "GDELT Project — https://www.gdeltproject.org/"
                     if signal["origin"] == "gdelt_news" else None
                 )
+            manager_metadata = {}
+            if db.execute("SELECT 1 FROM sqlite_master WHERE name='manager_revision_log'").fetchone():
+                revision = db.execute('SELECT revision,metadata FROM manager_revision_log WHERE niche_id=? ORDER BY revision DESC LIMIT 1', (niche_id,)).fetchone()
+                if revision:
+                    metadata = json.loads(revision['metadata'])
+                    manager_metadata = {'revision': revision['revision'], 'confidence': metadata['confidence'],
+                                        'counterevidence': metadata['counterevidence'], 'assessmentRationale': metadata['rationale']}
             dates = [datetime.fromisoformat(s["observed_at"].replace("Z", "+00:00")) for s in signals]
             today = datetime.now(UTC)
             recent = sum(d >= today - timedelta(days=30) for d in dates)
@@ -202,7 +209,7 @@ class NicheStore:
                 "recent30Days": recent, "previous30Days": prior,
                 "trend": "insufficient_history" if recent + prior < 10 else ("rising" if recent > prior * 1.5 else "falling" if prior > recent * 1.5 else "stable"),
                 "forecast": None, "forecastStatus": "not_available_without_longitudinal_history",
-                "evidence": signals, "updatedAt": row["updated_at"],
+                "evidence": signals, "updatedAt": row["updated_at"], **manager_metadata,
             }
 
     def list_niches(self, query: str, category: str | None, sort: str, limit: int) -> list[dict]:

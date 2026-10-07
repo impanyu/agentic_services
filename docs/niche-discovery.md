@@ -17,7 +17,8 @@ at `GET /niche-discovery/v1/niches/{id}/pay-per-call`.
 
 The first release is evidence-first and one-way: source collection → private
 review → niche evaluation → human UI and agent API. There is no public signal
-contribution endpoint or form. An editor can link collected signals into a niche.
+contribution endpoint or form. The autonomous manager can link collected signals into a niche, revise assessments,
+merge/split records and publish supported evaluations. An admin editor remains available.
 Publication requires at least three signals from two source domains. Editors
 check the original evidence; reports show links and metadata rather than copied
 source excerpts.
@@ -31,8 +32,10 @@ those windows. Forecast remains unavailable until longitudinal observations
 and out-of-sample calibration exist. That missing data must not be silently
 filled with model guesses.
 
-Automated source adapters queue candidates for editorial review; none
-auto-publish a niche. GitHub Issues collection uses explicitly configured
+Automated source adapters queue private candidates and wake the manager when new
+signals arrive. Adapters do not publish; the manager selects research tools and
+commits assessments through deterministic evidence and revision checks.
+See [manager operations](niche-manager-operations.md). GitHub Issues collection uses explicitly configured
 repositories, fetches at most 50 recent open issues per repository, skips pull
 requests, deduplicates by GitHub issue ID, and removes email addresses.
 Configure `NICHE_GITHUB_REPOSITORIES` with reviewed `owner/repo` pairs.

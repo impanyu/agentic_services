@@ -92,7 +92,10 @@ def reserve(store: NicheStore, maximum: int) -> bool:
     return True
 
 
-async def collect_search(store: NicheStore) -> dict:
+async def collect_search(store: NicheStore, queries: tuple[str, ...] | None = None) -> dict:
+    queries = QUERIES if queries is None else queries
+    if not queries or len(queries) > 8 or any(not 3 <= len(q) <= 500 for q in queries):
+        raise ValueError("Invalid discovery queries")
     setup(store)
     cutoff = (datetime.now(UTC) - timedelta(days=30)).isoformat()
     with store.connect() as db:
@@ -120,10 +123,10 @@ async def collect_search(store: NicheStore) -> dict:
         with store.connect() as db:
             row = db.execute("SELECT requests FROM niche_search_budget WHERE day=?", (day,)).fetchone()
         start = row[0] if row else 0
-        for index in range(len(QUERIES)):
+        for index in range(len(queries)):
             if not reserve(store, maximum):
                 break
-            query = QUERIES[(start + index) % len(QUERIES)]
+            query = queries[(start + index) % len(queries)]
             try:
                 response = await client.get("https://api.search.brave.com/res/v1/web/search",
                     params={"q": query, "count": 10, "freshness": "pm", "safesearch": "strict"})

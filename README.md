@@ -144,3 +144,5 @@ The `api.aisoup.net` URL-prefix property is verified in Google Search Console an
 ## Status
 
 The repository contains the v0 protocol, a runnable tiered Web Evidence service, full provider-source provenance, URL snapshots with raw and normalized SHA-256 hashes, SQLite persistence, machine-readable discovery, and an x402/MPP dual-protocol payment gateway. Each paid HTTP, MCP, or A2A execution creates an order, signed receipt, and detailed revenue/cost ledger entry. The admin dashboard reports per-order OpenAI token and Web Search costs, gross profit, and margins. Production USDC settlement and public MCP, A2A, x402, and MPP directory discovery have been verified. MPP Stripe has passed an isolated two-account sandbox payment; a real live-mode card charge remains an acceptance requirement. The next milestone is additional evidence operations and ongoing directory health monitoring.
+
+Niche Manager runtime and deployment: [operations](docs/niche-manager-operations.md).
