@@ -158,6 +158,13 @@ def create_research_router(settings: Settings):
     @router.post('/research', status_code=202)
     def research(body: ResearchRequest, response: Response, authorization: str|None=Header(default=None), idempotency_key: str=Header(min_length=1,max_length=160)):
         who = principal(authorization)
+        with store.connect() as db:
+            prior=db.execute('SELECT a.digest,a.research_id FROM niche_research_aliases a JOIN niche_research r ON r.id=a.research_id WHERE a.principal=? AND a.operation=?',(who,idempotency_key)).fetchone()
+        if prior:
+            digest=hashlib.sha256(json.dumps(body.model_dump(),sort_keys=True).encode()).hexdigest()
+            if prior['digest']!=digest: raise HTTPException(409,'Idempotency-Key was used with different criteria')
+            response.headers['Cache-Control']='no-store'
+            return store.research_result(prior['research_id'],who)
         matches = store.list_niches(body.query,body.category,'score',100)
         # Region and buyer are additional constraints; never reuse a looser hit.
         matches = [n for n in matches if (not body.buyer or body.buyer.lower() in n['buyer'].lower()) and (not body.region or body.region.lower() in json.dumps(store.niche(n['id'])).lower())]

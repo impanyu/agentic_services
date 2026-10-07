@@ -190,3 +190,11 @@ def test_alias_idempotency_conflict(tmp_path):
     assert s.request_research('alice','one',criteria)==s.request_research('alice','alias',criteria)
     with pytest.raises(HTTPException) as e: s.request_research('alice','alias',{'query':'different'})
     assert e.value.status_code==409
+
+
+def test_committed_outcome_survives_later_model_failure(tmp_path):
+    s=store(tmp_path);rid=s.request_research('alice','one',{'query':'regional objective'})
+    owner,_=s.claim();s.complete_research(owner,rid,[],'insufficient_evidence','The permitted source sample is insufficient to support a record.')
+    s.finish(owner,success=False,result='Connection failed after committing the result')
+    assert s.research_result(rid,'alice')['status']=='insufficient_evidence'
+    assert s.status()['queue']=={'handled':1}

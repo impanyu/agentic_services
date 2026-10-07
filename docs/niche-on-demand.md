@@ -39,7 +39,7 @@ background wakes cannot consume that reserve. This is not a dollar billing meter
 
 Research objectives never become demand evidence. Shared-memory writes and shared
 follow-up objectives are disabled during private request wakes. Session transcripts,
-queries, principal hashes and job receipts expire after 30 days. Independently
+research objectives, principal hashes and job receipts expire after 30 days. Independently
 source-backed assessment records may persist; raw user queries are not public.
 
 ## Sources and subscriptions

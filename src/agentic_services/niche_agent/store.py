@@ -79,6 +79,7 @@ class ManagerStore(NicheStore, ResearchStore):
             if lease and lease['expires'] > timestamp:
                 return None
             # Recovery is safe only after the previous manager lease expired.
+            db.execute("UPDATE manager_events SET status='handled',run_id=NULL WHERE status='leased' AND id IN (SELECT event_id FROM niche_research WHERE result IS NOT NULL)")
             db.execute("UPDATE manager_events SET status=CASE WHEN attempts>=3 THEN 'dead' ELSE 'pending' END,run_id=NULL WHERE status='leased'")
             db.execute("UPDATE manager_runs SET status='interrupted',finished=? WHERE status='running'", (now(),))
             db.execute("UPDATE niche_research SET status='failed',updated=? WHERE result IS NULL AND event_id IN (SELECT id FROM manager_events WHERE status='dead')",(timestamp,))

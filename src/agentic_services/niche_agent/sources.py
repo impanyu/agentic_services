@@ -105,7 +105,8 @@ async def request(store, source, url, params=None, *, method='GET', data=None):
 
 def record(store, source, identifier, text, link, date, kind, metadata):
     try:
-        date=datetime.fromisoformat(str(date).replace('Z','+00:00')).astimezone(UTC).isoformat()
+        parsed_date=datetime.fromisoformat(str(date).replace('Z','+00:00'))
+        date=parsed_date.replace(tzinfo=UTC).isoformat() if parsed_date.tzinfo is None else parsed_date.astimezone(UTC).isoformat()
     except (ValueError,TypeError):
         return False
     parsed=urlsplit(link)
@@ -198,7 +199,7 @@ async def collect_registered(store, source, query=''):
                 for d in r.json():
                     examined+=1
                     text=' | '.join(str(d.get(k,'')) for k in ('complaint_type','descriptor','borough','status'))
-                    added+=record(store,source,d['unique_key'],text,'https://data.cityofnewyork.us/Social-Services/311-Service-Requests-from-2020-to-Present/erm2-nwe9',d['created_date']+'Z','complaint',{'query':query,'license':registry[source]['license'],'attribution':'NYC Open Data / 311','limitations':'Bounded recent administrative sample, not representative market demand'})
+                    added+=record(store,source,d['unique_key'],text,'https://data.cityofnewyork.us/Social-Services/311-Service-Requests-from-2020-to-Present/erm2-nwe9',datetime.fromisoformat(d['created_date']).replace(tzinfo=__import__('zoneinfo').ZoneInfo('America/New_York')).astimezone(UTC).isoformat(),'complaint',{'query':query,'license':registry[source]['license'],'attribution':'NYC Open Data / 311','limitations':'Bounded recent administrative sample, not representative market demand'})
         elif source=='cfpb':
             params={'size':30,'sort':'created_date_desc'}
             if query: params['search_term']=query

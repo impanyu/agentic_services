@@ -41,6 +41,9 @@ services:
 
   niche-manager:
     build: .
+    depends_on:
+      payment-gateway:
+        condition: service_healthy
     restart: unless-stopped
     command: ["python", "-m", "agentic_services.niche_agent.worker"]
     env_file:
