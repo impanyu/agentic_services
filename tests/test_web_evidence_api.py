@@ -720,6 +720,7 @@ def test_human_checkout_requires_matching_paid_session(tmp_path: Path, monkeypat
     path = "/web-evidence/v1/report?session_id=cs_test_abc12345678901234567890"
     assert client.get(path).status_code == 402
     assert provider.calls == 0
+    assert not any(r['stage'] in {'payment_confirmed','report_delivered'} for r in client.app.state.growth.summary(30, None)['rows'])
     paid["value"] = True
     paid["amount"] = 199
     assert client.get(path).status_code == 402
@@ -728,6 +729,7 @@ def test_human_checkout_requires_matching_paid_session(tmp_path: Path, monkeypat
     first = client.get(path)
     assert first.status_code == 200
     assert first.json()["report"]["claim"] == "The Base mainnet chain ID is 8453."
+    assert {r['stage'] for r in client.app.state.growth.summary(30, None)['rows']} >= {'checkout_created','payment_confirmed','report_delivered'}
     assert provider.calls == 1
     assert client.get(path).json()["orderId"] == first.json()["orderId"]
     assert provider.calls == 1

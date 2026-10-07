@@ -24,7 +24,7 @@
         "provider": { "@type": "Organization", "name": "Dream Workshop LLC", "url": "https://aisoup.net" }
       }
     </script>
-  </head>
+  <script src="usage.js" defer></script></head>
   <body>
     <header class="nav">
       <a class="company" href="https://aisoup.net" aria-label="Dream Workshop home">
@@ -51,12 +51,12 @@
           <span class="signal-label signal-label--c">PROOF</span>
         </div>
         <div class="hero-copy">
-          <div class="eyebrow"><span></span> Live human + agent service · v0.3</div>
+          <div class="eyebrow"><span></span> FOR WRITERS, EDITORS & RESEARCH AGENTS</div>
           <h1>Check the claim.<br><em>See the evidence.</em></h1>
-          <p>Web Evidence verifies factual claims against the current web and returns the source trail needed to inspect, reproduce, and trust the result.</p>
+          <p>Before you publish a newsletter, article, or research note, check one factual statement and get a dated answer with source links you can inspect. $2 per Standard report. No subscription.</p>
           <div class="hero-actions">
             <a class="button button--primary" href="#verify">Verify a claim · $2 <span>↗</span></a>
-            <a class="button button--ghost" href="https://api.aisoup.net/web-evidence/.well-known/agent-service.json">Machine manifest <span>↗</span></a>
+            <a class="button button--ghost" data-usage="sample_view" href="sample/">Read a free real sample <span>↗</span></a>
           </div>
         </div>
         <div class="hero-foot">
@@ -76,7 +76,7 @@
           <button class="button button--primary" type="submit">Continue to $2 checkout ↗</button>
           <p id="claim-error" role="alert" hidden></p>
         </form>
-        <small>Standard depth · Up to 8 cited sources · Stored snapshots where available. Reports can contain uncertainty or conflicting evidence.</small>
+        <p><a data-usage="sample_view" href="sample/">Inspect the free archived sample before paying ↗</a></p><p>Check public, factual statements. We may return uncertainty or insufficient evidence. This is a research aid; review sources before relying on a report. If a paid report cannot be delivered, contact <a href="mailto:contact@aisoup.net">contact@aisoup.net</a> with your order or Checkout reference for help or a refund review.</p><small>Standard depth · Up to 8 cited sources · Stored snapshots where available. Reports can contain uncertainty or conflicting evidence.</small>
       </section>
 
       <section class="proof">
@@ -168,7 +168,7 @@
 
     <footer>
       <a href="https://aisoup.net">Dream Workshop LLC</a>
-      <div><a href="https://wiki.aisoup.net">AgenticWiKi ↗</a><a href="https://api.aisoup.net/">All agent services ↗</a><a href="https://status.aisoup.net">Status ↗</a></div>
+      <div><a href="privacy/">Privacy</a><a href="https://wiki.aisoup.net">AgenticWiKi ↗</a><a href="https://api.aisoup.net/">All agent services ↗</a><a href="https://status.aisoup.net">Status ↗</a></div>
       <span>© 2026</span>
     </footer>
     <script src="app.js" defer></script>

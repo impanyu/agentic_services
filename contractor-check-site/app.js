@@ -9,7 +9,7 @@ form.addEventListener('submit', async (event) => {
   try {
     const response = await fetch('https://api.aisoup.net/contractor-check/v1/checkout', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...window.DWUsage?.headers() },
       body: JSON.stringify({ licenseNumber: document.getElementById('license').value.trim() }),
     });
     const result = await response.json();

@@ -8,7 +8,7 @@ form.addEventListener('submit', async (event) => {
   error.hidden = true;
   try {
     const response = await fetch('https://api.aisoup.net/web-evidence/v1/checkout', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers: { 'Content-Type': 'application/json', ...window.DWUsage?.headers() },
       body: JSON.stringify({ claim: document.getElementById('claim').value.trim() }),
     });
     const result = await response.json();

@@ -28,6 +28,7 @@ from pydantic import BaseModel, Field
 
 from . import __version__
 from .admin_dashboard import admin_dashboard_html
+from .growth import GrowthStore, create_growth_router
 from .config import Settings
 from .contractor_routes import create_contractor_router
 from .contact import send_contact_email, send_email
@@ -293,6 +294,23 @@ def create_app(
         if not admin_key or not hmac.compare_digest(admin_key, expected):
             raise HTTPException(status_code=401, detail="A valid X-Admin-Key is required")
 
+    growth = GrowthStore(resolved_settings.database_path, resolved_settings.admin_api_key or resolved_settings.receipt_signing_secret or "local-growth")
+    app.state.growth = growth
+    app.include_router(create_growth_router(growth, require_admin_key, require_service_api_key))
+
+    @app.middleware("http")
+    async def observe_checkout_failure(request: Request, call_next):
+        response = await call_next(request)
+        service = {"/web-evidence/v1/checkout": "web-evidence", "/contractor-check/v1/checkout": "contractor-check"}.get(request.url.path)
+        if service and request.method == "POST" and response.status_code >= 400:
+            try:
+                session = growth.session(service, request.headers)
+                if session:
+                    growth.record(service, "checkout_failed", session, session)
+            except Exception:
+                logging.getLogger(__name__).warning("Checkout failure measurement unavailable")
+        return response
+
     def require_customer(customer_key: str | None) -> dict[str, object]:
         customer = store.customer_for_key(customer_key)
         if customer is None:
@@ -345,7 +363,7 @@ def create_app(
         return checkout_locks.setdefault(session_id, asyncio.Lock())
 
     contractor_router, fulfill_contractor_checkout, retrieve_contractor_checkout = create_contractor_router(
-        store, require_service_api_key, sign_receipt, resolved_settings.base_url, checkout_lock,
+        store, require_service_api_key, sign_receipt, resolved_settings.base_url, checkout_lock, growth=growth,
     )
     app.include_router(contractor_router)
     app.include_router(create_niche_router(resolved_settings))
@@ -371,7 +389,7 @@ def create_app(
         return {
             **document,
             "info": {"title": "Niche Discovery API", "version": "0.1.0",
-                     "description": "Submit market needs and inspect evidence-linked niche hypotheses."},
+                     "description": "Search reviewed, evidence-linked niche market evaluations."},
             "paths": paths,
         }
 
@@ -953,7 +971,7 @@ def create_app(
         return result.json()
 
     @app.post("/web-evidence/v1/checkout", tags=["web evidence human checkout"])
-    async def web_evidence_checkout(payload: ClaimVerificationRequest) -> dict[str, str]:
+    async def web_evidence_checkout(payload: ClaimVerificationRequest, request: Request) -> dict[str, str]:
         human_stripe_key()
         if payload.minimum_sources > 8 or payload.max_sources > 8:
             raise HTTPException(status_code=422, detail="The Standard report supports at most 8 cited sources")
@@ -974,6 +992,7 @@ def create_app(
         if not isinstance(session_id, str) or not isinstance(url, str) or not url.startswith("https://checkout.stripe.com/"):
             raise HTTPException(status_code=503, detail="Stripe did not return a valid Checkout session")
         store.bind_web_evidence_session(intent_id, session_id)
+        growth.checkout("web-evidence", intent_id, request.headers)
         return {"checkoutUrl": url, "priceUsd": "2.00"}
 
     async def fulfill_web_evidence_checkout(
@@ -992,6 +1011,7 @@ def create_app(
                 or session.get("livemode") != human_stripe_key().startswith(("rk_live_", "sk_live_"))):
             raise HTTPException(status_code=402, detail="Payment is not complete")
         order_id = f"ord_{intent_id[4:]}"
+        growth.outcome("web-evidence", intent_id, "payment_confirmed")
         existing = store.get_order(order_id)
         if existing and existing["status"] == "completed":
             result = store.get(str(existing["verificationId"]))
@@ -1005,6 +1025,7 @@ def create_app(
             store.set_web_evidence_order(intent_id, order_id)
         if result is None:
             raise HTTPException(status_code=503, detail="Report is temporarily unavailable")
+        growth.outcome("web-evidence", intent_id, "report_ready")
         return {"orderId": order_id, "report": result.model_dump(by_alias=True, mode="json")}
 
     @app.get("/web-evidence/v1/report", tags=["web evidence human checkout"])
@@ -1016,6 +1037,7 @@ def create_app(
         async with checkout_lock(session_id):
             session = await human_stripe_request("GET", f"checkout/sessions/{session_id}")
             result = await fulfill_web_evidence_checkout(session_id, session, request, response)
+            growth.outcome("web-evidence", str(session["client_reference_id"]), "report_delivered")
         response.headers["Cache-Control"] = "private, no-store"
         return result
 

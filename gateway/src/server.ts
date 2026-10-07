@@ -544,6 +544,7 @@ app.all('*', async (c) => {
   const path = new URL(c.req.url).pathname
   const humanPath = path.startsWith('/contractor-check/v1/')
     || path === '/web-evidence/v1/checkout' || path === '/web-evidence/v1/report'
+    || path === '/v1/usage/events'
   const origin = c.req.header('Origin')
   const allowed = origin === 'https://aisoup.net' || origin === 'https://www.aisoup.net'
   if (humanPath && c.req.method === 'OPTIONS') {
@@ -551,7 +552,7 @@ app.all('*', async (c) => {
     return new Response(null, { status: 204, headers: {
       'Access-Control-Allow-Origin': origin,
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Headers': 'Content-Type, X-Usage-Session, X-Usage-Source, X-Usage-Campaign, X-Usage-Test',
       Vary: 'Origin',
     } })
   }

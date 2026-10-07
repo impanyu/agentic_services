@@ -10,6 +10,8 @@ function add(tag, value, parent = target, className = '') {
 }
 async function load() {
   if (!sessionId) { status.textContent = 'No Checkout session was provided.'; return; }
+  target.replaceChildren();
+  document.querySelector('#retry-report').disabled = true;
   try {
     const response = await fetch(`https://api.aisoup.net/web-evidence/v1/report?session_id=${encodeURIComponent(sessionId)}`, { cache: 'no-store' });
     const data = await response.json();
@@ -28,9 +30,24 @@ async function load() {
       if (source.url?.startsWith('https://') || source.url?.startsWith('http://')) { link.href = source.url; link.target = '_blank'; link.rel = 'noopener noreferrer'; }
       add('p', `Relationship: ${source.relationship} · Cited: ${source.cited ? 'yes' : 'no'} · Snapshot: ${source.snapshotted ? 'saved' : 'unavailable'}`, card, 'report-meta');
     }
+    add('h2', 'Snapshot metadata');
+    for (const snapshot of report.snapshots || []) {
+      add('p', `${snapshot.requestedUrl} · ${snapshot.status} · Captured ${snapshot.retrievedAt}`);
+      if (snapshot.rawSha256) add('p', `Raw SHA-256: ${snapshot.rawSha256}`, target, 'report-meta');
+      if (snapshot.failureReason) add('p', snapshot.failureReason, target, 'report-meta');
+    }
+    const download = add('button', 'Download report JSON');
+    download.type = 'button';
+    download.onclick = () => {
+      const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], {type:'application/json'}));
+      const link = document.createElement('a'); link.href = url; link.download = 'web-evidence-report.json'; link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    };
     add('h2', 'Limitations');
     for (const item of report.limitations || []) add('p', item);
     target.hidden = false;
-  } catch (failure) { status.textContent = failure.message; }
+    window.DWUsage?.event('report_view');
+  } catch (failure) { status.textContent = failure.message; } finally { document.querySelector('#retry-report').disabled = false; }
 }
+document.querySelector('#retry-report').onclick = load;
 load();

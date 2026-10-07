@@ -10,7 +10,7 @@ from datetime import UTC, datetime
 from typing import Callable
 
 import httpx
-from fastapi import APIRouter, Header, HTTPException, Query, Response
+from fastapi import APIRouter, Header, HTTPException, Query, Request, Response
 from pydantic import BaseModel, Field
 
 from .contractor_check import LicenseNotFoundError, SourceUnavailableError, fetch_license_report, validate_license_number
@@ -32,6 +32,7 @@ def create_contractor_router(
     sign_receipt: Callable[[dict[str, object]], str],
     base_url: str,
     checkout_lock: Callable[[str], object],
+    growth=None,
 ) -> tuple[APIRouter, Callable[[dict[str, object]], dict[str, object]], Callable[[str], object]]:
     router = APIRouter(tags=["contractor check"])
     base_url = base_url.rstrip("/")
@@ -104,7 +105,7 @@ def create_contractor_router(
         return report
 
     @router.post("/contractor-check/v1/checkout")
-    async def create_checkout(payload: LicenseRequest, authorization: str | None = Header(default=None)) -> dict[str, str]:
+    async def create_checkout(payload: LicenseRequest, request: Request, authorization: str | None = Header(default=None)) -> dict[str, str]:
         require_api_key(authorization)
         stripe_key()
         report = await lookup(payload.license_number)
@@ -128,6 +129,8 @@ def create_contractor_router(
         if not isinstance(session_id, str) or not isinstance(url, str) or not url.startswith("https://checkout.stripe.com/"):
             raise HTTPException(status_code=503, detail="Stripe did not return a valid Checkout session")
         store.bind_contractor_session(intent_id, session_id)
+        if growth:
+            growth.checkout(SERVICE_ID, intent_id, request.headers)
         return {"checkoutUrl": url, "priceUsd": "19.00"}
 
     def fulfill_paid_checkout(session: dict[str, object]) -> dict[str, object]:
@@ -147,9 +150,13 @@ def create_contractor_router(
                 or session.get("livemode") != stripe_key().startswith(("rk_live_", "sk_live_"))):
             raise HTTPException(status_code=402, detail="Payment is not complete")
         report = json.loads(intent["report_json"])
+        if growth:
+            growth.outcome(SERVICE_ID, intent_id, "payment_confirmed")
         order_id = f"ord_{intent_id[4:]}"
         record_order(order_id, report, int(intent["price_cents"]) * 10_000, "stripe-checkout")
         store.set_contractor_order(intent_id, order_id)
+        if growth:
+            growth.outcome(SERVICE_ID, intent_id, "report_ready")
         return {"orderId": order_id, "report": report}
 
     @router.get("/contractor-check/v1/report")
@@ -160,6 +167,8 @@ def create_contractor_router(
             session = await stripe_request("GET", f"checkout/sessions/{session_id}")
             session["id"] = session_id
             result = fulfill_paid_checkout(session)
+            if growth:
+                growth.outcome(SERVICE_ID, str(session["client_reference_id"]), "report_delivered")
         response.headers["Cache-Control"] = "private, no-store"
         return result
 

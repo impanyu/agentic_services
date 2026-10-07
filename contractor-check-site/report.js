@@ -39,6 +39,7 @@ async function load() {
     add('h3', 'Limitations');
     for (const limitation of report.limitations) add('p', limitation);
     target.hidden = false;
+    window.DWUsage?.event('report_view');
   } catch (failure) { status.textContent = failure.message; }
 }
 load();
