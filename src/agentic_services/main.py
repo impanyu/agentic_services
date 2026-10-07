@@ -41,6 +41,7 @@ from .models import (
 from .niche_agent.routes import create_manager_router
 from .niche_agent.research import create_research_router
 from .niche_agent.websub import create_websub_router
+from .niche_agent.query_service import create_query_router
 from .niche_agent.store import ManagerStore
 from .niche_search import collect_search
 from .niche_reddit import collect_reddit
@@ -349,6 +350,7 @@ def create_app(
     app.include_router(create_niche_router(resolved_settings))
     app.include_router(create_manager_router(resolved_settings))
     app.include_router(create_research_router(resolved_settings))
+    app.include_router(create_query_router(resolved_settings))
     app.include_router(create_websub_router(resolved_settings))
 
     @app.get("/niche-discovery/openapi.json", include_in_schema=False)

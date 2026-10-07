@@ -395,8 +395,9 @@ def create_niche_router(settings: Settings) -> APIRouter:
     @router.get("/niches")
     def list_niches(q: Annotated[str, Query(max_length=150)] = "", category: Annotated[str | None, Query(max_length=80)] = None,
                     sort: Literal["recent", "score"] = "score", limit: Annotated[int, Query(ge=1, le=100)] = 20) -> dict:
-        matches=store.list_niches(q, category, sort, limit)
-        return {"niches": matches, "rankingMethod": "editorial_hypothesis", "researchAvailable":not bool(matches), "researchPath":"/niche-discovery/v1/research", "researchRequires":"active_subscription", "researchMethod":"POST"}
+        if q.strip():
+            raise HTTPException(400,'Use /niche-discovery/v1/search (human) or /search/pay-per-call (agent) for database queries')
+        return {"niches":store.list_niches('', category, sort, limit), "rankingMethod":"editorial_hypothesis", "searchMode":"database_only", "searchPath":"/niche-discovery/v1/search"}
 
     @router.get("/niches/{niche_id}")
     def niche(niche_id: str, authorization: str | None = Header(default=None), x_niche_paid_call: str | None = Header(default=None)) -> dict:

@@ -54,8 +54,8 @@ def test_collected_signals_private_until_curated(tmp_path: Path) -> None:
     assert niche["sourceDomainCount"] == 3
     assert client.get(f"/niche-discovery/v1/niches/{niche['id']}").status_code == 401
     assert client.get(f"/niche-discovery/v1/niches/{niche['id']}", headers={"Authorization": "Bearer internal-secret", "X-Niche-Paid-Call": "1"}).status_code == 200
-    assert len(client.get("/niche-discovery/v1/niches?q=invoice&sort=score").json()["niches"]) == 1
-    assert client.get("/niche-discovery/v1/niches?q=unrelated").json()["niches"] == []
+    assert client.get("/niche-discovery/v1/niches?q=invoice&sort=score").status_code == 400
+    assert client.get("/niche-discovery/v1/niches?q=unrelated").status_code == 400
 
 
 def test_no_public_contribution_and_publication_floor(tmp_path: Path) -> None:

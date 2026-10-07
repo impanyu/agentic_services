@@ -16,9 +16,10 @@ class DailyBudgetExhausted(RuntimeError):
 
 
 from .research import ResearchStore
+from .query_service import QueryStore
 
 
-class ManagerStore(NicheStore, ResearchStore):
+class ManagerStore(NicheStore, ResearchStore, QueryStore):
     """SQLite transactions are the authority for leases, receipts and revisions."""
 
     def __init__(self, path: Path):
@@ -59,6 +60,7 @@ class ManagerStore(NicheStore, ResearchStore):
             ''')
 
             self.init_research(db)
+            self.init_queries(db)
             from .sources import init as init_sources
             init_sources(db)
 

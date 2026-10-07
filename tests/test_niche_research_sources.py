@@ -82,12 +82,9 @@ def test_research_http_auth_and_scope(tmp_path,monkeypatch):
         token='nd_'+person;s.upsert_subscription('sub_'+person,'cus_'+person,person+'@example.com','active',hashlib.sha256(token.encode()).hexdigest())
     app=FastAPI();app.include_router(create_research_router(settings));c=TestClient(app)
     payload={'query':'small farm logistics'};path='/niche-discovery/v1/research'
-    assert c.post(path,json=payload,headers={'Idempotency-Key':'one'}).status_code==401
-    headers={'Idempotency-Key':'one','Authorization':'Bearer nd_alice'}
-    r=c.post(path,json=payload,headers=headers)
-    assert r.status_code==202 and r.headers['cache-control']=='no-store'
-    assert c.get(r.json()['statusUrl'],headers={'Authorization':'Bearer nd_bob'}).status_code==404
-    assert c.post(path,json={**payload,'signals':['fake']},headers=headers).status_code==422
+    assert c.post(path,json=payload,headers={'Idempotency-Key':'one'}).status_code==404
+    assert c.post(path,json=payload,headers={'Authorization':'Bearer nd_alice','Idempotency-Key':'one'}).status_code==404
+    assert c.get('/niche-discovery/v1/research/any').status_code==404
 
 
 def feed_env(monkeypatch):
@@ -151,27 +148,15 @@ def test_stackexchange_license_and_dedupe(tmp_path,monkeypatch):
     assert len(s.signals())==1
 
 
-def test_sdk_foreground_completes_private_job(tmp_path,monkeypatch):
-    from agents import Model, ModelResponse, Usage
-    from openai.types.responses import ResponseFunctionToolCall,ResponseOutputMessage,ResponseOutputText
-    from agentic_services.niche_agent.runtime import run_once,AgentConfig
-    s=store(tmp_path);rid=s.request_research('alice','live-path',{'query':'narrow objective without data'})
-    class ResearchModel(Model):
-        calls=0
-        async def get_response(self,*args,**kwargs):
-            self.calls+=1
-            if self.calls==1:
-                output=[ResponseFunctionToolCall(type='function_call',name='complete_research',call_id='finish',arguments=json.dumps({'request_id':rid,'niche_ids':[],'outcome':'insufficient_evidence','summary':'No sufficient relevant permitted evidence is available for this objective.'}))]
-            else:
-                output=[ResponseOutputMessage(type='message',id='message',role='assistant',status='completed',content=[ResponseOutputText(type='output_text',text='Committed the evidence gap.',annotations=[])])]
-            return ModelResponse(output=output,usage=Usage(requests=1,input_tokens=10,output_tokens=10,total_tokens=20),response_id='response-'+str(self.calls))
-        async def stream_response(self,*args,**kwargs):
-            raise NotImplementedError()
-            yield
-    model=ResearchModel()
-    assert asyncio.run(run_once(s,'synthetic-model-only',AgentConfig(),model=model))
-    assert model.calls==2 and s.research_result(rid,'alice')['status']=='insufficient_evidence'
-    assert s.status()['queue']=={'handled':1}
+def test_no_live_generation_tool_and_query_inspirations(tmp_path):
+    from agentic_services.niche_agent.runtime import build_tools
+    s=store(tmp_path);s.enqueue('schedule.tick',{},'tick');owner,_=s.claim()
+    names={t.name for t in build_tools(s,owner)}
+    assert 'complete_research' not in names and 'inspect_query_inspirations' in names
+    s.record_lookup('anonymous','garden watering',None,'human_free',0,free=True)
+    topics=s.query_inspirations()['topics']
+    assert topics[0]['query']=='garden watering' and topics[0]['misses']==1
+    assert not s.signals()  # Queries are not demand evidence.
 
 
 def test_research_retention_scrubs_queries_and_sdk_transcript(tmp_path):

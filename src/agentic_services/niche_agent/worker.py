@@ -14,6 +14,9 @@ async def serve():
     config = AgentConfig.environment()
     if not settings.openai_api_key:
         raise RuntimeError('OPENAI_API_KEY is not configured')
+    with store.connect() as db:
+        db.execute("UPDATE manager_events SET status='cancelled' WHERE kind='research.request' AND status='pending'")
+        db.execute("UPDATE niche_research SET status='cancelled',updated=? WHERE result IS NULL AND status IN ('queued','waiting_for_budget')",(time.time(),))
     next_maintenance=0
     while True:
         with store.connect() as db:

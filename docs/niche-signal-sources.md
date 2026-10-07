@@ -85,21 +85,20 @@ unverified search results are not paid-report evidence or inputs to niche scores
 
 Do not label the service “whole-web coverage.” Report actual covered platforms, regions, languages, collection windows, and known gaps on each niche evaluation. Cross-source corroboration matters more than a large unfiltered post count.
 
-## October 6 expansion (implementation; production verification pending)
+## October 6 expansion (production verified; UTC October 7)
 
 | Source | Implementation and scope | Current verification |
 |---|---|---|
-| Stack Exchange | Official API; configured DIY/gardening/money/travel/bicycles/cooking sites; current CC BY-SA 4.0 headlines, author/profile/license attribution | Local live collection succeeded; bounded keyword research and repeat dedupe tests pass |
-| CPSC | Recent official recall titles, URLs and dates; contextual product-safety signal | Local live collection succeeded; does not count toward demand publication threshold |
-| Federal Register | Recent official titles/URLs/dates, optional agent keyword query | Local live collection succeeded; regulatory context only |
-| Global Voices | CC BY 3.0 RSS headlines, dates/bylines/source attribution; operator-approved advertised WebSub hub | Local live headline collection succeeded; actual hub verification still pending |
+| Stack Exchange | Official API; configured DIY/gardening/money/travel/bicycles/cooking sites; current CC BY-SA 4.0 headlines, author/profile/license attribution | Running on VM: 71 initial question candidates across six sites, additional background exploration candidates; repeat startup added no duplicates; keyword/dedupe tests pass |
+| CPSC | Recent official recall titles, URLs and dates; contextual product-safety signal | Running on VM: 73 candidates; repeat startup added 0; contextual only |
+| Federal Register | Recent official titles/URLs/dates, optional agent keyword query | Running on VM: 29 candidates; repeat startup added 0; regulatory context only |
+| Global Voices | CC BY 3.0 RSS headlines, dates/bylines/source attribution; operator-approved advertised WebSub hub | Running on VM: 14 headline candidates; repeat added 0; Google hub verification established an active 24-hour WebSub lease; renewal scheduled |
 | NYC 311 | Non-identifying administrative metadata adapter; extra rights-reference gate | Public API probe succeeded; disabled pending specific reuse review |
 | CFPB | Structured complaint-field adapter; no narratives | Public API probes timed out; disabled; field mapping still needs a successful live response |
 
 The common adapter framework enforces bounded responses, provider attempt budgets,
 backoff, short query-cache windows, source identifiers and private excerpts. WebSub
 adds registration, verified leases and renewal to existing signed callback/polling
-support. [On-demand research](niche-on-demand.md) uses the same autonomous manager;
-private search objectives are not contributed demand signals. This expansion still
+support. [Database-only query service](niche-query-service.md) retains anonymized search interests to inspire later agent research; queries are not contributed demand signals. On-request generation is deferred. This expansion still
 does not claim all-platform coverage; commercial shopping/review/social access remains
 tracked above and must be connected individually.

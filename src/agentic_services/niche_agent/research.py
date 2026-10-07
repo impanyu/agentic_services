@@ -138,13 +138,6 @@ def create_research_router(settings: Settings):
     router = APIRouter(prefix='/niche-discovery/v1')
     store = ManagerStore(settings.database_path)
 
-    def principal(authorization):
-        scheme, _, token = (authorization or '').partition(' ')
-        if scheme.lower()!='bearer' or not token.startswith('nd_') or not store.active_for_token(token):
-            raise HTTPException(401,'An active Niche Discovery subscription is required')
-        customer = store.customer_for_token(token)
-        return hashlib.sha256(('customer:'+customer).encode()).hexdigest()
-
     @router.get('/sources')
     def sources():
         from .runtime import source_status
@@ -155,32 +148,4 @@ def create_research_router(settings: Settings):
                 'recentCollections':[{**r,'result':{k:v for k,v in r['result'].items() if k in {'source','status','signalsAdded','examined','errorType','limitation'}}} for r in status['recentCollections']],'subscriptions':public_status(store),
                 'note':'Configured sources are not necessarily collecting. Counts are sampled signals, not paid-demand validation.'}
 
-    @router.post('/research', status_code=202)
-    def research(body: ResearchRequest, response: Response, authorization: str|None=Header(default=None), idempotency_key: str=Header(min_length=1,max_length=160)):
-        who = principal(authorization)
-        with store.connect() as db:
-            prior=db.execute('SELECT a.digest,a.research_id FROM niche_research_aliases a JOIN niche_research r ON r.id=a.research_id WHERE a.principal=? AND a.operation=?',(who,idempotency_key)).fetchone()
-        if prior:
-            digest=hashlib.sha256(json.dumps(body.model_dump(),sort_keys=True).encode()).hexdigest()
-            if prior['digest']!=digest: raise HTTPException(409,'Idempotency-Key was used with different criteria')
-            response.headers['Cache-Control']='no-store'
-            return store.research_result(prior['research_id'],who)
-        matches = store.list_niches(body.query,body.category,'score',100)
-        # Region and buyer are additional constraints; never reuse a looser hit.
-        matches = [n for n in matches if (not body.buyer or body.buyer.lower() in n['buyer'].lower()) and (not body.region or body.region.lower() in json.dumps(store.niche(n['id'])).lower())]
-        if matches:
-            response.status_code=200
-            return {'status':'existing','niches':[store.niche(n['id']) for n in matches[:5]]}
-        if os.getenv('NICHE_AGENT_ENABLED')!='1':
-            raise HTTPException(503,'Research worker is currently disabled')
-        quota=max(1,min(int(os.getenv('NICHE_RESEARCH_DAILY_QUOTA','3')),20))
-        identifier=store.request_research(who,idempotency_key,body.model_dump(),quota)
-        response.headers['Cache-Control']='no-store'
-        response.headers['Location']='/niche-discovery/v1/research/'+identifier
-        return store.research_result(identifier,who)
-
-    @router.get('/research/{identifier}')
-    def result(identifier: str, response: Response, authorization: str|None=Header(default=None)):
-        response.headers['Cache-Control']='no-store'
-        return store.research_result(identifier,principal(authorization))
     return router

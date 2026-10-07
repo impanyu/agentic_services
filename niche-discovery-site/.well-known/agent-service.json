@@ -3,7 +3,7 @@
   "service": {
     "id": "https://api.aisoup.net/niche-discovery",
     "name": "Niche Discovery",
-    "description": "Inspect evidence-linked niche market evaluations based on collected source signals, for people and agents.",
+    "description": "Database-only niche market search for agents with per-call payment; human UI offers free daily searches and monthly subscriptions.",
     "version": "0.2.0",
     "homepage": "https://aisoup.net/niche-discovery/",
     "tags": [
@@ -54,26 +54,10 @@
     {
       "id": "search-niches",
       "capability": "market.niche.discovery",
-      "transport": "public-http",
-      "summary": "Search the public list of reviewed niche hypotheses.",
+      "transport": "per-call-http",
+      "summary": "Search existing database records; up to 20 complete evaluations. No real-time generation. User query interests may inspire later background research.",
       "method": "GET",
-      "path": "/niche-discovery/v1/niches",
-      "inputSchema": {
-        "type": "object"
-      },
-      "outputSchema": {
-        "type": "object"
-      },
-      "timeoutSeconds": 10,
-      "idempotent": true
-    },
-    {
-      "id": "get-niche-subscription",
-      "capability": "market.niche.discovery",
-      "transport": "subscriber-http",
-      "summary": "Retrieve a full evaluation using the shared human/agent subscription token.",
-      "method": "GET",
-      "path": "/niche-discovery/v1/niches/{niche_id}",
+      "path": "/niche-discovery/v1/search/pay-per-call",
       "inputSchema": {
         "type": "object"
       },
@@ -98,56 +82,9 @@
       },
       "timeoutSeconds": 10,
       "idempotent": true
-    },
-    {
-      "id": "explore-niche",
-      "capability": "market.niche.discovery",
-      "transport": "subscriber-http",
-      "summary": "Search first; on a miss enqueue private autonomous research. Active subscription, Idempotency-Key and daily quota required.",
-      "method": "POST",
-      "path": "/niche-discovery/v1/research",
-      "inputSchema": {
-        "type": "object"
-      },
-      "outputSchema": {
-        "type": "object"
-      },
-      "timeoutSeconds": 10,
-      "idempotent": true
-    },
-    {
-      "id": "research-result",
-      "capability": "market.niche.discovery",
-      "transport": "subscriber-http",
-      "summary": "Poll your research outcome. Results may be provisional or report insufficient evidence.",
-      "method": "GET",
-      "path": "/niche-discovery/v1/research/{identifier}",
-      "inputSchema": {
-        "type": "object"
-      },
-      "outputSchema": {
-        "type": "object"
-      },
-      "timeoutSeconds": 10,
-      "idempotent": true
     }
   ],
   "offers": [
-    {
-      "id": "monthly-access",
-      "operation": "get-niche-subscription",
-      "model": "subscription",
-      "amount": "9.99",
-      "currency": "USD",
-      "unit": "month",
-      "paymentMethods": [
-        {
-          "protocol": "subscription",
-          "network": "stripe",
-          "asset": "USD"
-        }
-      ]
-    },
     {
       "id": "single-evaluation",
       "operation": "get-niche-per-call",
@@ -161,6 +98,21 @@
           "network": "eip155:8453",
           "asset": "USDC"
         },
+        {
+          "protocol": "mpp",
+          "network": "eip155:8453",
+          "asset": "USDC"
+        }
+      ]
+    },
+    {
+      "id": "database-search",
+      "operation": "search-niches",
+      "model": "per_call",
+      "amount": "0.05",
+      "currency": "USD",
+      "unit": "search",
+      "paymentMethods": [
         {
           "protocol": "mpp",
           "network": "eip155:8453",

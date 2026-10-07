@@ -1,5 +1,5 @@
 import { serve } from '@hono/node-server'
-import { createHash, randomBytes, randomUUID } from 'node:crypto'
+import { createHash, createHmac, randomBytes, randomUUID } from 'node:crypto'
 import { Hono, type MiddlewareHandler } from 'hono'
 import { generate as generatePaymentOpenApi } from 'mppx/discovery'
 import { Mppx, evm, stripe } from 'mppx/server'
@@ -22,6 +22,7 @@ const contractorOperation = {
   path: '/contractor-check/v1/check',
   price: '1.00',
 }
+const nicheSearchPrice = process.env.NICHE_SEARCH_PRICE_USD ?? '0.05'
 const nichePerCallPrice = process.env.NICHE_PER_CALL_PRICE_USD ?? '0.25'
 const indexNowKey = process.env.INDEXNOW_KEY
 
@@ -192,8 +193,7 @@ app.use('/niche-discovery/*', async (c, next) => {
 
 app.all('/mcp', (c) => mcpHandler(withPublicUrl(c.req.raw)))
 app.all('/contractor-check/mcp', (c) => contractorMcpHandler(withPublicUrl(c.req.raw)))
-app.post('/niche-discovery/v1/research', (c) => proxyNicheResearch(c.req.raw))
-app.get('/niche-discovery/v1/research/:id', (c) => proxyNicheResearch(c.req.raw))
+app.get('/niche-discovery/v1/search', (c) => proxyNicheSearch(c.req.raw, false))
 
 app.get('/niche-discovery/v1/niches/:id', (c) => proxyNicheDetail(c.req.raw, c.req.param('id'), false))
 app.get('/contractor-check/.well-known/mcp/server.json', (c) => c.json({
@@ -517,6 +517,7 @@ if (stripeSecretKey) {
     [stripeCharge, { amount: contractorOperation.price, description: 'California C-10 contractor license preflight' }],
   )
   mountContractorRoute(contractorHandler)
+  mountNicheSearchRoute(payments.evm.charge({ amount:nicheSearchPrice, description:'One database-only Niche Discovery search, up to 20 evaluations' }))
   mountNichePerCallRoute(payments.evm.charge({
     amount: nichePerCallPrice,
     description: 'One full Niche Discovery evaluation with linked evidence',
@@ -532,6 +533,7 @@ if (stripeSecretKey) {
     amount: contractorOperation.price,
     description: 'California C-10 contractor license preflight',
   }))
+  mountNicheSearchRoute(payments.evm.charge({ amount:nicheSearchPrice, description:'One database-only Niche Discovery search, up to 20 evaluations' }))
   mountNichePerCallRoute(payments.evm.charge({
     amount: nichePerCallPrice,
     description: 'One full Niche Discovery evaluation with linked evidence',
@@ -1116,6 +1118,8 @@ async function proxyRequest(request: Request, path: string): Promise<Response> {
   headers.delete('Payment-Authorization')
   headers.delete('X-Payment')
   headers.delete('X-Niche-Paid-Call')
+  headers.delete('X-Niche-Gateway-Key')
+  headers.delete('X-Niche-Visitor')
   for (const name of [...headers.keys()]) {
     const lowerName = name.toLowerCase()
     if (
@@ -1203,14 +1207,39 @@ function paymentCredentialMethod(value: string): string | undefined {
   }
 }
 
-async function proxyNicheResearch(request: Request): Promise<Response> {
+async function proxyNicheSearch(request: Request, paid: boolean): Promise<Response> {
   const url = new URL(request.url)
-  const upstream = new URL(url.pathname, upstreamUrl)
+  const upstream = new URL(`/niche-discovery/v1/search${paid ? '/pay-per-call' : ''}${url.search}`, upstreamUrl)
   const headers = new Headers(request.headers)
+  const address = request.headers.get('X-Forwarded-For')?.split(',').at(-1)?.trim() || 'unknown-client'
+  const visitor = createHmac('sha256', secretKey).update(`niche-visitor:${address}`).digest('hex')
   headers.set('Host', upstream.host)
   for (const name of ['X-Niche-Paid-Call', 'Payment-Signature', 'Payment-Authorization', 'X-Payment', 'X-Admin-Key']) headers.delete(name)
-  const response = await fetch(upstream, { method: request.method, headers, body: request.method === 'POST' ? await request.arrayBuffer() : undefined })
+  headers.set('X-Niche-Gateway-Key', internalApiKey)
+  headers.set('X-Niche-Visitor', visitor)
+  if (paid) headers.set('Authorization', `Bearer ${internalApiKey}`)
+  const response = await fetch(upstream, {method:'GET',headers})
   const output = new Headers(response.headers)
-  output.set('Cache-Control', 'no-store')
+  output.set('Cache-Control','no-store')
   return new Response(response.body, {status:response.status, headers:output})
+}
+
+function mountNicheSearchRoute(handler: PaymentHandler): void {
+  app.get('/niche-discovery/v1/search/pay-per-call', async (c, next) => {
+    const url = new URL(c.req.url)
+    const q = url.searchParams.get('q') || ''
+    const limit = Number(url.searchParams.get('limit') || '20')
+    const category = url.searchParams.get('category') || ''
+    const sort = url.searchParams.get('sort') || 'score'
+    if(['q','limit','category','sort'].some(key => url.searchParams.getAll(key).length>1)) return c.text('Duplicate search criteria',422)
+    if(q.trim().length<3 || q.length>150 || !Number.isInteger(limit) || limit<1 || limit>20 || category.length>80 || !['score','recent'].includes(sort)) return c.text('Invalid database search criteria',422)
+    const readiness=await proxyRequest(new Request(new URL('/niche-discovery/v1/niches',c.req.url),{headers:c.req.raw.headers}),'/niche-discovery/v1/niches')
+    if(!readiness.ok) return readiness
+    const catalog=await readiness.json() as {niches?:unknown[]}
+    if(!catalog.niches?.length) return c.text('Paid search opens after reviewed evaluations are published',503)
+    const payment=await handler(withPublicUrl(c.req.raw.clone()))
+    if(payment.status===402) return payment.challenge
+    await next()
+    c.res=payment.withReceipt(c.res)
+  }, async (c) => proxyNicheSearch(c.req.raw,true))
 }
