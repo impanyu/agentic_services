@@ -160,3 +160,5 @@ footer > span { color: var(--muted); font: 9px var(--mono); }
 .report-shell{max-width:980px;margin:3rem auto;padding:2rem;background:#f5f0e8;color:#141510;border-radius:12px}.report-shell h1{font-size:clamp(2rem,5vw,4rem)}.report-shell h2{font-size:1.45rem;margin-top:2rem}.report-shell a{color:#145ea8;overflow-wrap:anywhere}.report-shell article{border-top:1px solid #bbb;padding:1rem 0}.report-shell .report-meta{font-size:.9rem;color:#575a51}
 
 .usage-note{font-size:12px;line-height:1.5;max-width:640px}.usage-note button{font:inherit;border:0;background:none;color:inherit;text-decoration:underline;cursor:pointer;padding:0}.usage-note button:disabled{cursor:default;text-decoration:none}
+
+.report-shell details{margin:1.5rem 0}.report-shell summary{cursor:pointer;font-weight:600}.report-shell details p{font-size:.85rem;overflow-wrap:anywhere}.report-shell .button{color:#fff}

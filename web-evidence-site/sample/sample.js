@@ -11,11 +11,12 @@
       if (/^https?:\/\//.test(source.url)) { link.href = source.url; link.target = '_blank'; link.rel = 'noopener noreferrer'; }
       add('p', `Supports/opposes: ${source.relationship} · Provider-reported: ${source.consulted ? 'yes' : 'no'} · Model-cited: ${source.cited ? 'yes' : 'not recorded'} · Snapshot saved: ${source.snapshotted ? 'yes' : 'no'}`, card);
     }
-    add('h2', 'Snapshot metadata');
+    const captures = add('details', '');
+    add('summary', 'Capture metadata and content hashes (technical)', captures);
     for (const snapshot of report.snapshots || []) {
-      add('p', `${snapshot.requestedUrl} · ${snapshot.status} · ${snapshot.retrievedAt}`);
-      if (snapshot.rawSha256) add('p', `Raw SHA-256: ${snapshot.rawSha256}`);
-      if (snapshot.failureReason) add('p', snapshot.failureReason);
+      add('p', `${snapshot.requestedUrl} · ${snapshot.status} · ${snapshot.retrievedAt}`, captures);
+      if (snapshot.rawSha256) add('p', `Raw SHA-256: ${snapshot.rawSha256}`, captures);
+      if (snapshot.failureReason) add('p', snapshot.failureReason, captures);
     }
     add('h2', 'Limitations');
     for (const limitation of report.limitations || []) add('p', limitation);

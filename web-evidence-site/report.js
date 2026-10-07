@@ -30,11 +30,12 @@ async function load() {
       if (source.url?.startsWith('https://') || source.url?.startsWith('http://')) { link.href = source.url; link.target = '_blank'; link.rel = 'noopener noreferrer'; }
       add('p', `Relationship: ${source.relationship} · Cited: ${source.cited ? 'yes' : 'no'} · Snapshot: ${source.snapshotted ? 'saved' : 'unavailable'}`, card, 'report-meta');
     }
-    add('h2', 'Snapshot metadata');
+    const captures = add('details', '');
+    add('summary', 'Capture metadata and content hashes (technical)', captures);
     for (const snapshot of report.snapshots || []) {
-      add('p', `${snapshot.requestedUrl} · ${snapshot.status} · Captured ${snapshot.retrievedAt}`);
-      if (snapshot.rawSha256) add('p', `Raw SHA-256: ${snapshot.rawSha256}`, target, 'report-meta');
-      if (snapshot.failureReason) add('p', snapshot.failureReason, target, 'report-meta');
+      add('p', `${snapshot.requestedUrl} · ${snapshot.status} · Captured ${snapshot.retrievedAt}`, captures);
+      if (snapshot.rawSha256) add('p', `Raw SHA-256: ${snapshot.rawSha256}`, captures, 'report-meta');
+      if (snapshot.failureReason) add('p', snapshot.failureReason, captures, 'report-meta');
     }
     const download = add('button', 'Download report JSON');
     download.type = 'button';
