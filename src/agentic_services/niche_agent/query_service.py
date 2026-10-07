@@ -29,6 +29,8 @@ class QueryStore:
         clean=re.sub(r'[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}','[email removed]',query,flags=re.I)
         clean=re.sub(r'\b(?:sk-(?:proj-)?[A-Za-z0-9_-]{12,}|nd_[A-Za-z0-9_-]+|(?:\+?\d[\s().-]*){9,})\b','[sensitive value removed]',clean)
         clean=re.sub(r'\s+',' ',clean).strip()[:150]
+        if category:
+            category=re.sub(r'[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}','[email removed]',category,flags=re.I)
         with self.connect() as db:
             db.execute('BEGIN IMMEDIATE')
             used=db.execute('SELECT count FROM niche_query_usage WHERE principal=? AND day=?',(principal,day)).fetchone()

@@ -9,11 +9,14 @@ below describe the current first release.
 Niche Discovery is a cross-industry service for people and agents. Human page:
 `https://aisoup.net/niche-discovery/`. Machine API:
 `https://api.aisoup.net/niche-discovery/v1/`. Signals are collected from configured external sources; users and agents consume
-reviewed market information through the UI and API. Public listing and keyword search are free. A USD
-9.99/month Stripe subscription unlocks complete evaluations for both people
-and agents via the same `nd_` bearer token. Agents may instead buy one complete
-evaluation per call for USD 0.25 through the existing Base USDC payment gateway
-at `GET /niche-discovery/v1/niches/{id}/pay-per-call`.
+reviewed market information through the UI and API. The preview catalog is free.
+Human visitors get three database searches per UTC day; the USD 9.99/month human
+subscription removes that free-search limit. Agent database search is USD 0.05/call
+(configurable), up to 20 full published evaluations, through the Base USDC/MPP gateway
+at `GET /niche-discovery/v1/search/pay-per-call`. The existing USD 0.25 per-evaluation
+endpoint remains available. No lookup starts live generation; private query interests
+can inspire later background research. See [query policy](niche-query-service.md).
+
 
 The first release is evidence-first and one-way: source collection → private
 review → niche evaluation → human UI and agent API. There is no public signal

@@ -131,3 +131,29 @@ The separately preserved live Caddy configuration was not modified.
 ## Source expansion and on-demand research
 
 See [database search operations](niche-query-service.md) for free human quotas, human subscriptions, paid agent searches, private query inspirations, new adapters, and real WebSub registration/renewal. Public on-request generation is deferred. Existing generic callbacks still require operator registration at each external platform.
+
+## Database-only rollout verification (2026-10-06 local / October 7 UTC)
+
+Broader production collection stored 71 initial Stack Exchange questions across six
+sites, 73 CPSC notices, 29 Federal Register notices and 14 Global Voices headlines.
+Subsequent collection/exploration added real question metadata; repeat startup polling
+added no duplicate recall/news/feed records. Global Voices' actual Google hub verified
+our callback and established an active 24-hour lease; renewal is scheduled. A publisher
+content push and expiry-time renewal have not yet been observed live (signature and
+renewal logic have tests).
+
+The initial on-request operator test collected evidence but exhausted its finite model
+allowance without committing a record. The product then changed to database-only
+lookup; that pending job is cancelled. Public research routes/tools/UI offers are
+removed. Human lookup and query-inspired background research replace that experiment.
+
+Production verification: free searches returned used=1,2,3; the fourth returned 429.
+Forged visitor/gateway and forwarded-address headers did not reset the public allowance.
+Invalid paid search criteria returned 422 before payment. An empty published catalog
+returned 503 before a charge. Removed research POST returned 404 and is absent from
+public OpenAPI. Three query rows were recorded, then labelled validation so they cannot
+be mistaken for customer interests. Search calls did not change model usage. UI/API and
+WebSub status checks passed. There are still no published assessments; human Stripe
+configuration is absent and Checkout remains disabled. No real paid search, subscription
+payment or Niche-specific webhook delivery is claimed. Existing Web Evidence/other
+commerce and the preserved Caddy configuration remain independent.

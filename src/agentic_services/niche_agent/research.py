@@ -5,7 +5,7 @@ import time
 import uuid
 from datetime import UTC, datetime
 
-from fastapi import APIRouter, Header, HTTPException, Response
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from ..config import Settings
@@ -134,7 +134,6 @@ class ResearchStore:
 
 def create_research_router(settings: Settings):
     from .store import ManagerStore
-    import os
     router = APIRouter(prefix='/niche-discovery/v1')
     store = ManagerStore(settings.database_path)
 
