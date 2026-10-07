@@ -115,3 +115,15 @@ OpenAI key. GPT-6 Sol autonomously invoked seven tools, created one unpublished,
 low-confidence WooCommerce fulfillment-migration draft, saved a follow-up plan,
 and completed/acknowledged the event. This validates tool execution and database
 maintenance, not a paid market opportunity. No fixture data was uploaded.
+
+Production verification (2026-10-06): the independent worker is enabled on the
+existing VM, using the existing provider key. Public signed callback ingress
+returned 202; unsigned requests returned 401; repeated delivery reused one event
+ID. One completed production run processed and acknowledged the batched scheduler
+tick, collection batch and callback events. It retained a low-confidence private
+WooCommerce local-pickup customer-notification draft, three memory records and
+scheduled follow-up research. Worker/API/payment-gateway health checks passed;
+human UI, public catalog and public OpenAPI returned 200. The published catalog
+remained empty; this is not a paid launch or validated customer demand. The internal
+callback test subscription is paused; no external platform webhook was registered.
+The separately preserved live Caddy configuration was not modified.
