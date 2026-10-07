@@ -20,7 +20,10 @@ Each wake has a persisted SDK SQLite session. Persistent plans, decisions, hypot
 unresolved work and knowledge revisions bridge wakes/restarts. We do not blindly
 concatenate the entire lifetime transcript or truncate arbitrary tool/result pairs.
 The agent chooses tools and ordering, loops on their results, and can recover from
-errors. There is no fixed analysis-stage graph.
+errors. Searches return small summaries; `read_signal` and `read_niche` retrieve
+selected full records. Before each model call, older large read results are replaced
+with explicit archival notices and stable IDs, keeping call/result pairs intact.
+The complete transcript stays persisted. There is no fixed analysis-stage graph.
 
 Default limits: 20 model turns/wake, 4,000 output tokens/request, ten minutes/wake,
 24 requests/day and 300,000 tokens/day. Before each model call, UTF-8 bytes of the

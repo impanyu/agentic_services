@@ -168,7 +168,10 @@ class ManagerStore(NicheStore):
             if prior:
                 if prior['digest'] != digest:
                     raise ValueError('Operation id reused with different input')
-                return json.loads(prior['result'])
+                result = json.loads(prior['result'])
+                if not db.execute('SELECT 1 FROM niches WHERE id=?', (result['id'],)).fetchone():
+                    raise ValueError('Previous operation result was removed; reassess current evidence')
+                return result
             current = db.execute('SELECT * FROM niches WHERE id=?', (niche_id,)).fetchone() if niche_id else None
             revision_row = db.execute('SELECT revision FROM manager_revisions WHERE niche_id=?', (niche_id,)).fetchone()
             revision = revision_row[0] if revision_row else 0

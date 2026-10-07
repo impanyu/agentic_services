@@ -271,3 +271,28 @@ def test_sdk_validated_knowledge_mutation(tmp_path):
     assert len(s.catalog()) == 1
     assert 'niche_' in str(model.mutation_result)
     assert s.status()['runs'][0]['status'] == 'completed'
+
+
+def test_context_compaction_keeps_call_pairs_and_evidence_refs():
+    from agentic_services.niche_agent.runtime import compact_model_input
+    from agents.run_config import ModelInputData, CallModelData
+    items=[]
+    for i in range(4):
+        items.extend([{'type':'function_call','name':'search_signals','call_id':str(i),'arguments':'{}'},
+                      {'type':'function_call_output','call_id':str(i),'output':'sig_abcd '+ 'x'*10000}])
+    data=CallModelData(model_data=ModelInputData(input=items,instructions='mission'),agent=None,context=None)
+    compacted=compact_model_input(data)
+    assert len(compacted.input)==len(items)
+    assert compacted.input[0]==items[0]
+    assert 'sig_abcd' in compacted.input[1]['output'] and len(compacted.input[1]['output'])<1000
+    assert compacted.input[-1]==items[-1]
+    assert len(items[1]['output'])>10000  # persisted original is never mutated
+
+
+def test_removed_operation_receipt_cannot_claim_republication(tmp_path):
+    s=manager(tmp_path);owner,_=s.claim();d=draft(s)
+    result=revision(s,owner,'deleted-record',draft=d)
+    with s.connect() as db:
+        db.execute('DELETE FROM niches WHERE id=?',(result['id'],))
+    with pytest.raises(ValueError,match='removed'):
+        revision(s,owner,'deleted-record',draft=d)

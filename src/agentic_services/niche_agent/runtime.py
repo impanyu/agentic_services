@@ -4,13 +4,14 @@ import asyncio
 import hashlib
 import json
 import os
+import re
 import time
 from contextlib import AsyncExitStack
 from dataclasses import dataclass
 from typing import Literal
 
 from agents import Agent, ModelSettings, OpenAIResponsesModel, RunConfig, RunHooks, Runner, SQLiteSession, function_tool as sdk_function_tool
-from agents.run_config import ToolExecutionConfig
+from agents.run_config import ToolExecutionConfig, ModelInputData
 from agents.model_settings import ModelRetrySettings
 from agents.mcp import MCPServerStreamableHttp
 from openai import AsyncOpenAI
@@ -137,22 +138,43 @@ def build_tools(store: ManagerStore, owner: str, mcp_catalog: list[dict] | None 
 
     @function_tool
     def search_signals(query: str, limit: int) -> list[dict]:
-        """Search stored eligible evidence text/audience by keyword; blank query lists newest signals."""
-        limit = max(1, min(limit, 60))
+        """Search up to 20 evidence summaries by keyword; blank query lists newest. Use read_signal for full text."""
+        limit = max(1, min(limit, 20))
         with store.connect() as db:
             rows = db.execute('SELECT id,kind,text,audience,source_url,source_domain,origin,observed_at FROM niche_signals WHERE text LIKE ? OR audience LIKE ? ORDER BY created_at DESC LIMIT ?',
                               ('%' + query + '%', '%' + query + '%', limit)).fetchall()
-        return [dict(row) for row in rows]
+        return [{**dict(row), 'text': row['text'][:500], 'fullTextAvailable':len(row['text'])>500} for row in rows]
+
+    @function_tool
+    def read_signal(signal_id: str) -> dict:
+        """Read one full stored evidence excerpt after selecting an ID from search results."""
+        with store.connect() as db:
+            row = db.execute('SELECT id,kind,text,audience,source_url,source_domain,origin,observed_at FROM niche_signals WHERE id=?', (signal_id,)).fetchone()
+        if not row:
+            raise ValueError('Unknown or deleted signal')
+        return dict(row)
 
     @function_tool
     def search_knowledge(query: str) -> list[dict]:
-        """Read published and draft niches, full assessment input and expected revision numbers."""
-        return store.catalog(query)
+        """Search up to ten published/draft niche summaries and revision numbers; use read_niche for full draft."""
+        return [{'id': r['id'], 'revision':r['revision'], 'published':r['published'],
+                 'title':r['draft_json']['title'], 'problem':r['draft_json']['problem'][:500],
+                 'buyer':r['draft_json']['buyer'], 'category':r['draft_json']['category']}
+                for r in store.catalog(query)[:10]]
+
+    @function_tool
+    def read_niche(niche_id: str) -> dict:
+        """Read one complete assessment draft and expected revision for updates."""
+        with store.connect() as db:
+            row = db.execute('SELECT n.id,n.published,n.draft_json,COALESCE(r.revision,0) revision FROM niches n LEFT JOIN manager_revisions r ON r.niche_id=n.id WHERE n.id=?', (niche_id,)).fetchone()
+        if not row:
+            raise ValueError('Unknown or removed niche')
+        return {**dict(row), 'draft_json':json.loads(row['draft_json'])}
 
     @function_tool
     def search_memory(query: str) -> list[dict]:
         """Read persistent plans, hypotheses, unresolved questions and decisions by keyword."""
-        return store.memories(query)
+        return [{**r, 'value':r['value'][:2500]} for r in store.memories(query)[:10]]
 
     @function_tool
     def remember(key: str, value: str) -> dict:
@@ -219,7 +241,7 @@ def build_tools(store: ManagerStore, owner: str, mcp_catalog: list[dict] | None 
                 'dates': sorted(row['observed_at'] for row in rows), 'marketSize': None,
                 'limitation': 'Sample counts cannot establish market size or willingness to pay.'}
 
-    tools = [collect_source, inspect_sources, search_signals, search_knowledge, search_memory,
+    tools = [collect_source, inspect_sources, search_signals, read_signal, search_knowledge, read_niche, search_memory,
              remember, revise_niche, split_niche, schedule_followup, manage_subscription,
              search_discovery_leads, evidence_metrics, discover_web] + build_web_tools(store, owner)
 
@@ -264,6 +286,30 @@ class BudgetHooks(RunHooks):
     async def on_tool_end(self, context, agent, tool, result):
         with self.store.connect() as db:
             db.execute("UPDATE manager_tool_calls SET status='returned' WHERE id=(SELECT MAX(id) FROM manager_tool_calls WHERE run_id=? AND tool=? AND status='started')", (self.owner, tool.name))
+
+
+def compact_model_input(data):
+    """Archive old read bodies without breaking function-call/result correlation.
+    Session transcripts remain intact; stable evidence IDs remain retrievable.
+    """
+    items = data.model_data.input
+    names = {item.get('call_id'):item.get('name') for item in items
+             if isinstance(item,dict) and item.get('type')=='function_call'}
+    reads = {'search_signals','search_knowledge','search_memory','read_signal','read_niche',
+             'search_discovery_leads','list_tools','read_source_document'}
+    indices = [i for i,item in enumerate(items) if isinstance(item,dict)
+               and item.get('type')=='function_call_output' and names.get(item.get('call_id')) in reads]
+    archived = set(indices[:-2])
+    output = []
+    for i,item in enumerate(items):
+        if i in archived:
+            text = str(item.get('output',''))
+            if len(text.encode()) > 2000:
+                refs = list(dict.fromkeys(re.findall(r'(?:sig|niche|doc)_[0-9a-f]+',text)))[:40]
+                item = {**item,'output':json.dumps({'status':'archived_read_result', 'referenceIds':refs,
+                    'note':'Full result is in the persisted transcript/database. Re-read selected IDs as needed. No evidence was deleted.'})}
+        output.append(item)
+    return ModelInputData(input=output,instructions=data.model_data.instructions)
 
 
 async def run_once(store: ManagerStore, api_key: str, config: AgentConfig, *, model=None) -> bool:
@@ -317,7 +363,7 @@ async def run_once(store: ManagerStore, api_key: str, config: AgentConfig, *, mo
                           tools=build_tools(store, owner, mcp_catalog), mcp_servers=servers,
                           model_settings=ModelSettings(max_tokens=config.max_output_tokens,
                               reasoning=Reasoning(effort='high'), parallel_tool_calls=False, store=False, retry=ModelRetrySettings(max_retries=0)))
-            prompt = json.dumps({'events': events, 'memory': store.memories(), 'sources': source_status(store),
+            prompt = json.dumps({'events': events, 'memory': [{'key':r['key'], 'value':r['value'][:2500]} for r in store.memories()[:10]], 'sources': source_status(store),
                                  'limits': {'maxModelTurns':config.max_turns, 'dailyRequests':config.daily_requests, 'dailyReservedTokens':config.daily_tokens},
                                  'mission': 'Maintain and improve the niche knowledge base; choose your own plan.'}, ensure_ascii=False)
             # Full transcript of each wake persists. Cross-wake continuity lives in
@@ -325,7 +371,7 @@ async def run_once(store: ManagerStore, api_key: str, config: AgentConfig, *, mo
             session = SQLiteSession('niche-manager:' + owner, db_path=str(store.path))
             result = await asyncio.wait_for(Runner.run(agent, prompt, max_turns=config.max_turns,
                 session=session, hooks=BudgetHooks(store, owner, config, mcp_catalog),
-                run_config=RunConfig(tracing_disabled=True, trace_include_sensitive_data=False, tool_execution=ToolExecutionConfig(max_function_tool_concurrency=1))),
+                run_config=RunConfig(call_model_input_filter=compact_model_input, tracing_disabled=True, trace_include_sensitive_data=False, tool_execution=ToolExecutionConfig(max_function_tool_concurrency=1))),
                 timeout=config.timeout_seconds)
             store.finish(owner, success=True, result=str(result.final_output))
     except asyncio.CancelledError:
