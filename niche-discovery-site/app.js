@@ -2,9 +2,12 @@ const API = 'https://api.aisoup.net/niche-discovery/v1';
 const results = document.querySelector('#results');
 const detail = document.querySelector('#detail');
 let accessToken = '';
+let searchGeneration = 0;
 const escapeHtml = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 async function loadNiches() {
+  searchGeneration++;
+  clearTimeout(researchTimer);
   results.innerHTML = '<p class="empty">Loading reviewed opportunities…</p>';
   const params = new URLSearchParams({q: document.querySelector('#query').value.trim(), sort: document.querySelector('#sort').value});
   try {
@@ -77,6 +80,7 @@ let researchTimer;
 async function startResearch() {
   const message = document.querySelector('#research-status');
   const query = document.querySelector('#query').value.trim();
+  const generation = searchGeneration;
   if (query.length < 3) { message.textContent = 'Enter a specific topic with at least three characters.'; return; }
   if (!accessToken) { message.textContent = 'Exploration requires an active subscription token. Enter yours above. Subscriptions are $9.99/month when available.'; return; }
   document.querySelector('#explore').disabled = true;
@@ -86,15 +90,16 @@ async function startResearch() {
     const result = await response.json();
     if (!response.ok) throw new Error(result.detail || 'Could not start research');
     if (result.status === 'existing') { renderNiche(result.niches[0]); message.textContent = 'Found an existing evaluation.'; return; }
-    await pollResearch(result.id);
+    await pollResearch(result.id, generation);
   } catch (error) { message.textContent = error.message; }
   finally { const button=document.querySelector('#explore'); if(button) button.disabled=false; }
 }
-async function pollResearch(id) {
+async function pollResearch(id, generation = searchGeneration) {
   clearTimeout(researchTimer);
   const response=await fetch(`${API}/research/${encodeURIComponent(id)}`,{headers:{Authorization:`Bearer ${accessToken}`}});
   const result=await response.json();
   if(!response.ok) throw new Error(result.detail || 'Could not check research progress');
+  if (generation !== searchGeneration) return;
   const message=document.querySelector('#research-status');
   if(!message) return;
   const labels={queued:'Queued for the research agent.',running:'The agent is exploring sources and assessing evidence.',waiting_for_budget:'Waiting for research capacity. The job will retry automatically.',failed:'Research failed after retries. Please contact support.'};
@@ -110,5 +115,5 @@ async function pollResearch(id) {
     }
     return;
   }
-  researchTimer=setTimeout(()=>pollResearch(id).catch(error=>{if(message) message.textContent=error.message;}),5000);
+  researchTimer=setTimeout(()=>pollResearch(id, generation).catch(error=>{if(message) message.textContent=error.message;}),5000);
 }
