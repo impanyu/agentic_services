@@ -26,7 +26,7 @@ with explicit archival notices and stable IDs, keeping call/result pairs intact.
 The complete transcript stays persisted. There is no fixed analysis-stage graph.
 
 Default limits: 20 model turns/wake, 4,000 output tokens/request, ten minutes/wake,
-24 requests/day and 300,000 tokens/day. Before each model call, UTF-8 bytes of the
+32 requests/day and 300,000 tokens/day. Before each model call, UTF-8 bytes of the
 input, instructions and tool schemas plus overhead conservatively reserve tokens.
 Successful responses settle to reported usage; failed/unknown requests keep their
 reservation. Budget exhaustion defers events to the next UTC day instead of dropping

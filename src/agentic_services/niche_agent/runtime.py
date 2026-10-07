@@ -73,7 +73,7 @@ class AgentConfig:
     model: str = 'gpt-6-sol'
     max_turns: int = 20
     max_output_tokens: int = 4000
-    daily_requests: int = 24
+    daily_requests: int = 32
     daily_tokens: int = 300000
     timeout_seconds: int = 600
     tick_seconds: int = 21600
@@ -88,7 +88,7 @@ class AgentConfig:
         return cls(model=os.getenv('NICHE_AGENT_MODEL', 'gpt-6-sol'),
                    max_turns=integer('NICHE_AGENT_MAX_TURNS', 20, 2, 50),
                    max_output_tokens=integer('NICHE_AGENT_MAX_OUTPUT_TOKENS', 4000, 1000, 8000),
-                   daily_requests=integer('NICHE_AGENT_DAILY_REQUESTS', 24, 1, 200),
+                   daily_requests=integer('NICHE_AGENT_DAILY_REQUESTS', 32, 1, 200),
                    daily_tokens=integer('NICHE_AGENT_DAILY_RESERVED_TOKENS', 300000, 10000, 2000000),
                    timeout_seconds=integer('NICHE_AGENT_TIMEOUT_SECONDS', 600, 30, 1800),
                    tick_seconds=integer('NICHE_AGENT_TICK_SECONDS', 21600, 3600, 604800))
@@ -354,9 +354,12 @@ async def run_once(store: ManagerStore, api_key: str, config: AgentConfig, *, mo
                     mcp_catalog.append({'name': tool.name, 'description': tool.description, 'inputSchema': tool.inputSchema, 'server': server.name})
             def instructions(context, agent):
                 used = context.usage.requests
-                return INSTRUCTIONS + f"\nRun budget: {used} model calls completed out of {config.max_turns}. " + (
+                daily = store.daily_usage()
+                remaining = config.daily_requests - daily['requests']
+                tokens_remaining = config.daily_tokens - daily['tokens']
+                return INSTRUCTIONS + f"\nRun budget: {used} model calls completed out of {config.max_turns}; daily model requests remaining: {remaining}; daily token budget remaining: {tokens_remaining}. " + (
                     'Checkpoint unfinished work and give a final answer now; do not begin new research.'
-                    if used >= config.max_turns - 2 else 'Keep sufficient turns for committing and a final answer.')
+                    if used >= config.max_turns - 2 or remaining <= 3 or tokens_remaining < 45000 else 'Keep sufficient turns for committing and a final answer.')
 
             agent = Agent(name='Niche Manager', instructions=instructions,
                           model=model or OpenAIResponsesModel(config.model, client),

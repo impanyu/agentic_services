@@ -123,6 +123,12 @@ class ManagerStore(NicheStore):
         with self.connect() as db:
             return [dict(r) for r in db.execute('SELECT * FROM manager_memory WHERE key LIKE ? OR value LIKE ? ORDER BY updated DESC LIMIT 30', ('%' + query + '%', '%' + query + '%'))]
 
+    def daily_usage(self) -> dict:
+        day = datetime.now(UTC).date().isoformat()
+        with self.connect() as db:
+            row = db.execute('SELECT requests,tokens FROM manager_budget WHERE day=?', (day,)).fetchone()
+        return {'requests':row['requests'] if row else 0, 'tokens':row['tokens'] if row else 0}
+
     def reserve(self, owner: str, tokens: int, max_requests: int, max_tokens: int) -> None:
         day = datetime.now(UTC).date().isoformat()
         with self.connect() as db:

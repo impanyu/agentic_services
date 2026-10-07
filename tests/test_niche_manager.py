@@ -296,3 +296,23 @@ def test_removed_operation_receipt_cannot_claim_republication(tmp_path):
         db.execute('DELETE FROM niches WHERE id=?',(result['id'],))
     with pytest.raises(ValueError,match='removed'):
         revision(s,owner,'deleted-record',draft=d)
+
+
+class NearLimitModel(PlanningModel):
+    async def get_response(self, system_instructions, input, model_settings, tools,
+                           output_schema, handoffs, tracing, **kwargs):
+        assert 'daily model requests remaining: 2' in system_instructions
+        assert 'give a final answer now' in system_instructions
+        output=[ResponseOutputMessage(id='final-budget',role='assistant',status='completed',type='message',
+            content=[ResponseOutputText(type='output_text',text='Checkpoint complete; preserve remaining budget.',annotations=[])])]
+        return ModelResponse(output=output,usage=Usage(requests=1,input_tokens=10,output_tokens=10,total_tokens=20),response_id='budget-final')
+
+
+def test_agent_sees_daily_budget_and_finishes_before_exhaustion(tmp_path):
+    from datetime import UTC,datetime
+    s=manager(tmp_path)
+    with s.connect() as db:
+        db.execute('INSERT INTO manager_budget VALUES(?,2,0)',(datetime.now(UTC).date().isoformat(),))
+    asyncio.run(run_once(s,'test',AgentConfig(daily_requests=4),model=NearLimitModel()))
+    assert s.status()['runs'][0]['status']=='completed'
+    assert s.status()['queue']=={'handled':1}
