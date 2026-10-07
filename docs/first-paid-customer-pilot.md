@@ -22,6 +22,9 @@ four prospects. Measurement starts with this deployment, without backfilling.
 
 ## Ten-person initial cohort
 
+The researched public [prospect list](pilot-prospects.md) contains nine potential
+writer/editor and developer-community entry points. None is a recruited user.
+
 Recruit manually, following venue rules, from these roles:
 
 | Role | Initial count | Selection criterion | Validation question |
@@ -95,3 +98,24 @@ batch within its current daily limits, prioritize completion and external workin
 memory, and preserve rejected candidates and weak evidence privately. Budget is
 not raised. Until credible records exist and live subscription delivery is verified,
 human subscriptions and empty-catalog paid searches remain closed.
+
+## Production verification, October 7, 2026
+
+84 Python tests and the gateway TypeScript check passed. Public service, sample JSON,
+early niche notes, admin shell, health and niche catalog returned HTTP 200.
+A newly marked internal session produced exactly one event at each tested stage:
+page view, sample view, checkout attempt and Checkout creation. A duplicate page
+event did not inflate the count; a forged browser `payment_confirmed` event was
+rejected with 422. Cross-origin preflight returned 204 and a live-mode $2 Checkout
+session was created successfully. Its unpaid report request returned 402 without
+running a model. The unused test session was then expired through Stripe; no card
+was charged. The unsigned webhook request returned 400. Signed paid fulfillment
+and replay protection were exercised in isolated tests, not a new live paid order.
+
+All three production containers were healthy; the host Caddy configuration checksum
+remained unchanged. Native browser checks showed the English purchase page, working
+archived sample, collapsed technical capture details and optional measurement control.
+The first-batch objective was queued with the existing daily usage of 48 requests /
+306,960 tokens; its earliest eligibility is the next UTC-day budget reset. No budget
+increase or additional foreground model allowance was configured. The public niche
+catalog still had zero reviewed records. Emails and community posts remain unsent.

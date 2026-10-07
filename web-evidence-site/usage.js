@@ -17,7 +17,8 @@
     if (token) { state.test = token; history.replaceState(null, '', location.pathname + location.search); }
     sessionStorage.setItem('dw-usage-v1', JSON.stringify(state));
   } catch (_) { state = null; }
-  let optedOut = navigator.doNotTrack === '1' || navigator.globalPrivacyControl === true;
+  const browserOptOut = navigator.doNotTrack === '1' || navigator.globalPrivacyControl === true;
+  let optedOut = browserOptOut;
   try { optedOut ||= localStorage.getItem('dw-usage-optout') === '1'; } catch (_) { optedOut = true; }
   const headers = () => !state || optedOut ? {} : {
     'X-Usage-Session': state.id, 'X-Usage-Source': state.source,
@@ -37,8 +38,8 @@
   note.textContent = 'Optional anonymous session measurement · 30-day retention · no claim text or stored IP addresses. ';
   const button = document.createElement('button');
   button.type = 'button';
-  const label = () => { button.textContent = optedOut ? 'Measurement off' : 'Turn measurement off'; button.disabled = optedOut; };
-  button.onclick = () => { optedOut = true; try { localStorage.setItem('dw-usage-optout', '1'); sessionStorage.removeItem('dw-usage-v1'); } catch (_) {} label(); };
+  const label = () => { button.textContent = browserOptOut ? 'Measurement off (browser preference)' : optedOut ? 'Enable anonymous measurement' : 'Turn measurement off'; button.disabled = browserOptOut || !state; };
+  button.onclick = () => { optedOut = !optedOut; try { localStorage.setItem('dw-usage-optout', optedOut ? '1' : '0'); if (optedOut) sessionStorage.removeItem('dw-usage-v1'); else sessionStorage.setItem('dw-usage-v1', JSON.stringify(state)); } catch (_) { optedOut = true; } label(); if (!optedOut && !location.pathname.includes('/report/')) event('page_view'); };
   label(); controls.append(note, button); (document.querySelector('footer') || document.body).append(controls);
   document.addEventListener('submit', e => {
     if (['claim-form', 'checkout-form'].includes(e.target.id)) event('checkout_attempt');
