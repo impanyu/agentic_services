@@ -195,7 +195,28 @@ el('account-login').addEventListener('click',()=>{persistHistory();location.href
 el('account-logout').addEventListener('click',async()=>{try{await json('/photo-scout/v1/auth/logout',{method:'POST',headers:{'X-CSRF-Token':csrfToken}});authUser=null;csrfToken=null;pendingHistory.clear();searchHistory=[];sessionStorage.removeItem(HISTORY_KEY);el('results').hidden=true;el('toggle-results').disabled=true;renderHistory();drawHistoryMap();resetTaskRecovery();await loadAccount();await restoreTasks();}catch{el('history-note').textContent='Sign-out failed. Please try again.';}});
 function stripHistoryImage(s){const copy={...s};delete copy.imageUrl;delete copy.streetViewReference;return copy;}
 function saveSearch(result){const id=activeSearch?.jobId||crypto.randomUUID();if(searchHistory.some(h=>h.id===id))return;const context=activeSearch?.context;searchHistory.unshift({id,created:Date.now(),label:context?.query||context?.locationLabel||el('prompt-query').value.trim()||`Around ${Number(el('lat').value).toFixed(4)}, ${Number(el('lon').value).toFixed(4)}`,radius:context?.radius||Number(el('radius').value),checked:true,result});searchHistory=searchHistory.slice(0,30);persistHistory();renderHistory();}
-function renderHistory(){const root=el('history-items');root.replaceChildren();el('history-count').textContent=String(searchHistory.length);el('history-all').disabled=!searchHistory.length;el('history-all').checked=searchHistory.length>0&&searchHistory.every(h=>h.checked);el('history-all').indeterminate=searchHistory.some(h=>h.checked)&&!searchHistory.every(h=>h.checked);if(!searchHistory.length)root.append(node('p','Your completed searches will appear here.','small'));for(const h of searchHistory){const row=node('div',null,'history-item'),label=node('label'),check=node('input');check.type='checkbox';check.checked=h.checked;check.setAttribute('aria-label','Show search: '+h.label);check.addEventListener('change',()=>{h.checked=check.checked;persistHistory();renderHistory();drawHistoryMap({fit:true});});const text=node('span');text.append(node('strong',h.label),node('small',`${new Date(h.created).toLocaleString()} · ${h.radius/1000} km · ${allPoiViews(h.result).length} places`));label.append(check,text);const view=node('button','View');view.type='button';view.addEventListener('click',()=>{render(h.result,{save:false,mapUpdate:false});el('search-history').open=false;});row.append(label,view);root.append(row);}}
+function historyEntries(){
+ const merged=new Map(searchHistory.map(h=>['search:'+h.id,{id:h.id,kind:'search',created:h.created,label:h.label,history:h,state:'complete'}]));
+ for(const task of taskRecords){const key=task.kind+':'+task.id,existing=merged.get(key),c=task.context||{};merged.set(key,{...existing,id:task.id,kind:task.kind,created:task.created*1000,label:existing?.label||c.query||c.name||c.locationLabel||(Number.isFinite(c.lat)&&Number.isFinite(c.lon)?`Around ${c.lat.toFixed(4)}, ${c.lon.toFixed(4)}`:'Photo search'),task,state:existing?.history?'complete':task.state});}
+ const entries=[...merged.values()].sort((a,b)=>b.created-a.created);
+ const searches=entries.filter(e=>e.kind==='search').slice(0,30),photos=entries.filter(e=>e.kind==='portrait');
+ return [...searches,...photos].sort((a,b)=>b.created-a.created);
+}
+function renderHistory(){
+ const root=el('history-items'),entries=historyEntries();root.replaceChildren();el('history-count').textContent=String(entries.length);
+ const completed=entries.filter(e=>e.kind==='search'&&e.history).map(e=>e.history);
+ el('history-all').disabled=!completed.length;el('history-all').checked=completed.length>0&&completed.every(h=>h.checked);el('history-all').indeterminate=completed.some(h=>h.checked)&&!completed.every(h=>h.checked);
+ if(!entries.length)root.append(node('p','Your searches will appear here.','small'));
+ for(const entry of entries){
+  const h=entry.history,row=node('div',null,'history-item'),label=node(h?'label':'span',null,'history-copy');
+  if(h){const check=node('input');check.type='checkbox';check.checked=h.checked;check.setAttribute('aria-label','Show search: '+entry.label);check.addEventListener('change',()=>{h.checked=check.checked;persistHistory();renderHistory();drawHistoryMap({fit:true});});label.append(check);}
+  const text=node('span'),detail=h?`${h.radius/1000} km · ${allPoiViews(h.result).length} places`:(entry.kind==='portrait'?'Selfie · ':'')+entry.state;
+  text.append(node('strong',entry.label),node('small',`${new Date(entry.created).toLocaleString()} · ${detail}`));label.append(text);
+  const pending=['queued','running','checking'].includes(entry.state),view=node('button',pending?'Progress':entry.state==='failed'?'Details':entry.kind==='portrait'?'View photo':'View');view.type='button';
+  view.addEventListener('click',()=>{if(entry.task)viewSavedTask(entry.task);else{render(h.result,{save:false,mapUpdate:false});el('search-history').open=false;}});
+  row.append(label,view);root.append(row);
+ }
+}
 function drawHistoryMap({fit=false}={}){photoLocationLayer.clearLayers();candidatePoiLayer.clearLayers();resultPins=[];for(const h of searchHistory.filter(h=>h.checked)){for(const [i,s] of allPoiViews(h.result).entries()){const pos=s.poi;if(!pos||!Number.isFinite(pos.lat)||!Number.isFinite(pos.lon))continue;const b=photoBearing(s),popup=node('div',null,'photo-popup');popup.append(node('strong',s.name),node('p',s.score==null?'No verified image':`${s.score}/100 · ${b.label}`),node('p',h.label));const show=node('button','View place','popup-shortlist');show.type='button';const reveal=()=>{render(h.result,{save:false,mapUpdate:false});el('photo-spot-'+String(i+1))?.scrollIntoView({block:'nearest',behavior:'smooth'});};show.addEventListener('click',reveal);popup.append(show);if(s.sourceUrl)popup.append(link(s.provider==='google-street-view'?'Open Street View ↗':'Open original photo ↗',s.sourceUrl));const marker=L.marker([pos.lat,pos.lon],{title:`${s.name} · ${b.label} · ${h.label}`,icon:i<Math.min(3,(h.result.spots||[]).length)?photographerIcon(s,i):directionDot(s)}).addTo(photoLocationLayer).bindPopup(popup).on('click',reveal);resultPins.push(marker);}}if(fit&&resultPins.length)map.fitBounds(L.featureGroup(resultPins).getBounds().pad(.2),{paddingTopLeft:[40,80],paddingBottomRight:[40,250],maxZoom:16});}
 el('history-all').addEventListener('change',()=>{for(const h of searchHistory)h.checked=el('history-all').checked;persistHistory();renderHistory();drawHistoryMap({fit:true});});
 try{const legacy=localStorage.getItem(HISTORY_KEY);if(legacy&&!sessionStorage.getItem(HISTORY_KEY))sessionStorage.setItem(HISTORY_KEY,legacy);localStorage.removeItem(HISTORY_KEY);const saved=JSON.parse(sessionStorage.getItem(HISTORY_KEY)||'[]');if(Array.isArray(saved))searchHistory=saved.filter(h=>h&&typeof h.id==='string'&&typeof h.label==='string'&&h.result&&Array.isArray(h.result.spots)).slice(0,30);}catch{}renderHistory();drawHistoryMap({fit:true});loadAccount().finally(()=>restoreTasks());
@@ -289,10 +310,6 @@ function applyTaskContext(context){
  syncMapSelection();updateParameterSummary();if(moved)map.fitBounds(searchArea.getBounds(),{padding:[32,32],maxZoom:16});
  if(context.nearbyPois&&!poiCatalog){poiCatalog={nearbyPois:context.nearbyPois,coords:context};candidatePoiLayer.clearLayers();for(const p of context.nearbyPois)L.circleMarker([p.lat,p.lon],{radius:6,color:'#fff',weight:2,fillColor:'#456951',fillOpacity:.9}).bindTooltip(node('span',p.name)).addTo(candidatePoiLayer);}
 }
-function renderTasks(){
- const root=el('task-items');root.replaceChildren();el('task-section').hidden=!taskRecords.length;
- for(const task of taskRecords){const row=node('div',null,'task-item'),copy=node('span');copy.append(node('strong',task.context?.query||task.context?.name||task.context?.locationLabel||'Photo search'),node('small',(task.kind==='portrait'?'Selfie':'Search')+' · '+task.state+' · '+new Date(task.created*1000).toLocaleString()));const view=node('button',['queued','running','checking'].includes(task.state)?'Progress':'View');view.type='button';view.addEventListener('click',()=>viewSavedTask(task));row.append(copy,view);root.append(row);}
-}
 async function viewSavedTask(task){
  el('search-history').open=false;
  if(task.kind==='portrait'){if(studioBusy&&studioJob?.id!==task.id){studio.showModal();return;}recoverStudio(task);studio.showModal();return;}
@@ -304,12 +321,12 @@ function recoverStudio(task){
  studioBusy=true;studioJob={id:task.id};studioGenerate.disabled=true;studioUpload.disabled=true;studioPose.disabled=true;studioStyles.disabled=true;setStudioActivity(task.state);pollStudio();
 }
 function resetTaskRecovery(){
- taskRecoveryGeneration++;clearTimeout(taskRefreshTimer);taskRecords=[];tasksReady=false;activeSearch=null;pollGeneration++;searchBusy=false;studioBusy=false;studioJob=null;clearTimeout(studioTimer);clearStudioOutput();studioPrepared=null;studioFile=null;studioUpload.value='';studioUpload.disabled=false;studioPose.disabled=false;studioStyles.disabled=false;studioGenerate.disabled=true;personPreview.hidden=true;personPreview.removeAttribute('src');studioTask.hidden=true;selfieActivityLayer.clearLayers();renderTasks();updateSubmitState();
+ taskRecoveryGeneration++;clearTimeout(taskRefreshTimer);taskRecords=[];tasksReady=false;activeSearch=null;pollGeneration++;searchBusy=false;studioBusy=false;studioJob=null;clearTimeout(studioTimer);clearStudioOutput();studioPrepared=null;studioFile=null;studioUpload.value='';studioUpload.disabled=false;studioPose.disabled=false;studioStyles.disabled=false;studioGenerate.disabled=true;personPreview.hidden=true;personPreview.removeAttribute('src');studioTask.hidden=true;selfieActivityLayer.clearLayers();renderHistory();updateSubmitState();
 }
 async function restoreTasks(){
  if(taskRefreshBusy)return;taskRefreshBusy=true;const generation=taskRecoveryGeneration;
  try{
-  const data=await json('/photo-scout/v1/tasks');if(generation!==taskRecoveryGeneration)return;tasksReady=true;taskRecords=data.items;renderTasks();
+  const data=await json('/photo-scout/v1/tasks');if(generation!==taskRecoveryGeneration)return;tasksReady=true;taskRecords=data.items;renderHistory();
   for(const task of taskRecords.filter(t=>t.kind==='search'&&t.state==='complete')){
    if(searchHistory.some(h=>h.id===task.id)||activeSearch?.jobId===task.id)continue;
    const report=await json('/photo-scout/v1/report/'+encodeURIComponent(task.id));if(generation!==taskRecoveryGeneration)return;
