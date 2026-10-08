@@ -5,6 +5,19 @@ const map=L.map('map').setView([41.8827,-87.6233],15);
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'}).addTo(map);
 let selected=L.marker([41.8827,-87.6233]).addTo(map), resultPins=[];let humanFreePreview=false;
 function pick(lat,lon){el('lat').value=lat.toFixed(6);el('lon').value=lon.toFixed(6);selected.setLatLng([lat,lon]);}
+const locationStatus=s=>{el('location-status').textContent=s};
+el('locate').addEventListener('click',()=>{
+ if(!window.isSecureContext||!navigator.geolocation){locationStatus('Location is unavailable in this browser. Select a point on the map or enter coordinates instead.');return;}
+ el('locate').disabled=true;locationStatus('Requesting your location… Allow location access in your browser to continue.');
+ const finish=()=>{el('locate').disabled=false};
+ try{navigator.geolocation.getCurrentPosition(position=>{
+  finish();const {latitude:lat,longitude:lon,accuracy}=position.coords;
+  if(!Number.isFinite(lat)||!Number.isFinite(lon)||Math.abs(lat)>85||Math.abs(lon)>180){locationStatus('Your location is outside the supported map area. Please choose a location manually.');return;}
+  pick(lat,lon);map.setView([lat,lon],15);el('search').querySelector('input[type="checkbox"]').checked=false;
+  locationStatus(`Current location selected${Number.isFinite(accuracy)?` (estimated accuracy ±${Math.ceil(accuracy)} m)`:''}. Review the map, agree to the search, then click Find photo spots.`);
+ },error=>{finish();locationStatus(error.code===1?'Location permission was denied. You can allow it in browser settings, or choose a point manually.':error.code===3?'Location request timed out. Try again or select a point manually.':'Your location could not be determined. Try again or select a point manually.');},{enableHighAccuracy:true,timeout:15000,maximumAge:0});}
+ catch{finish();locationStatus('Location is unavailable. Select a point on the map or enter coordinates instead.');}
+});
 map.on('click',e=>pick(e.latlng.lat,e.latlng.lng));
 for(const id of ['lat','lon']) el(id).addEventListener('change',()=>{const lat=Number(el('lat').value),lon=Number(el('lon').value);if(Number.isFinite(lat)&&Number.isFinite(lon)&&Math.abs(lat)<=85&&Math.abs(lon)<=180){selected.setLatLng([lat,lon]);map.setView([lat,lon],15)}});
 function node(tag,txt,cls){const n=document.createElement(tag);if(txt)n.textContent=txt;if(cls)n.className=cls;return n;}

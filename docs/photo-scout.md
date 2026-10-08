@@ -197,3 +197,8 @@ returned directly and are not persisted as paid reports; refreshing loses them.
 The same 30-run daily budget, one-run concurrency limit, source lookup throttle,
 Google image budget and 270-second timeout apply. Set the flag back to `0` to
 restore human Checkout.
+
+The human website also offers an optional “Use my current location” button. It
+requests browser geolocation only on click, recenters the map, displays estimated
+accuracy, and requires the user to review and submit the search separately.
+Permission denial, unavailable location and timeouts retain manual selection.
