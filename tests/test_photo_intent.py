@@ -8,7 +8,7 @@ from agentic_services.config import Settings
 from agentic_services.main import create_app
 
 def plan(**changes):
-    return intent.PhotoIntent(**({'locationQuery':None,'useMapCenter':True,'photoStyles':['waterside'],'radiusMeters':1000,'preferences':'Quiet waterside','explanation':'Find nearby waterside places','clarification':None}|changes))
+    return intent.PhotoIntent(**({'locationQuery':None,'useMapCenter':True,'photoStyles':['waterside'],'radiusMeters':1000,'limit':3,'preferences':'Quiet waterside','explanation':'Find nearby waterside places','clarification':None}|changes))
 
 def test_resolve_map_context_and_explicit_place(monkeypatch):
     async def parsed(settings,payload):return plan(locationQuery='Eiffel Tower, Paris',useMapCenter=False)
