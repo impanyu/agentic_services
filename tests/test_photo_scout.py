@@ -127,3 +127,45 @@ def test_shared_webhook_queues_photo_delivery_without_success_page(tmp_path,monk
         asyncio.run(app.state.process_stripe_fulfillment())
     assert calls==[1]
     assert store.get(job)['state']=='complete'
+
+
+def test_multisource_sample_keeps_both_providers_at_shared_points():
+    from agentic_services.photo_scout.sources import diverse_sample
+    rows=[{'id':str(i),'provider':'commons','lat':0,'lon':i*.001,'distanceMeters':i} for i in range(15)]
+    rows += [{'id':'street','provider':'panoramax','lat':0,'lon':0,'distanceMeters':500}]
+    sample=diverse_sample(rows)
+    assert len(sample)==12
+    assert sample[1]['id']=='street'
+
+
+def test_panoramax_excludes_unknown_licenses_and_image_hosts():
+    from agentic_services.photo_scout.sources import panoramax
+    import uuid
+    def feature(license,host):
+        return {'id':str(uuid.uuid4()),'geometry':{'type':'Point','coordinates':[2.295,48.855]},
+            'properties':{'license':license,'datetime':'2025-01-01T00:00:00Z'},
+            'providers':[{'name':'City photographer','roles':['producer']}],
+            'assets':{'sd':{'href':f'https://{host}/api/image.jpg'}}}
+    data={'features':[feature('etalab-2.0','panoramax.ign.fr'),feature('proprietary','panoramax.ign.fr'),feature('CC-BY-SA-4.0','evil.test')]}
+    async def run():
+        async with httpx.AsyncClient(transport=httpx.MockTransport(lambda r:httpx.Response(200,json=data))) as c:
+            return await panoramax(c,48.855,2.295,700)
+    rows=asyncio.run(run());assert len(rows)==1
+    assert rows[0]['author']=='City photographer';assert rows[0]['capturedAt']=='2025-01-01T00:00:00Z'
+
+
+def test_image_redirects_only_follow_verified_panoramax_hosts(monkeypatch):
+    import agentic_services.photo_scout.sources as sources
+    real=httpx.AsyncClient
+    calls=[]
+    def handler(r):
+        calls.append(str(r.url))
+        if r.url.host=='panoramax.ign.fr':
+            return httpx.Response(302,headers={'Location':'https://panoramax-storage-public-fast.s3.gra.perf.cloud.ovh.net/sd.jpg'})
+        return httpx.Response(200,content=b'\xff\xd8\xfftest')
+    monkeypatch.setattr(sources.httpx,'AsyncClient',lambda **kw:real(transport=httpx.MockTransport(handler)))
+    assert asyncio.run(sources.image_data('https://panoramax.ign.fr/api/pic.jpg')).startswith('data:image/jpeg;')
+    assert len(calls)==2
+    def hostile(r): return httpx.Response(302,headers={'Location':'http://127.0.0.1/secret'})
+    monkeypatch.setattr(sources.httpx,'AsyncClient',lambda **kw:real(transport=httpx.MockTransport(hostile)))
+    with pytest.raises(ValueError): asyncio.run(sources.image_data('https://panoramax.ign.fr/api/pic.jpg'))

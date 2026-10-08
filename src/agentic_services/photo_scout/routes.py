@@ -109,6 +109,7 @@ def create_photo_router(settings,require_api,verification_store):
         return {'serviceId':'photo-scout','enabled':os.getenv('PHOTO_SCOUT_ENABLED')=='1' and bool(settings.openai_api_key),
             'humanPriceUsd':f'{price()/100:.2f}' if price()>0 else None,
             'sources':{'wikimedia-commons':'enabled',
+                'panoramax':'enabled' if os.getenv('PHOTO_SCOUT_PANORAMAX_ENABLED','1')=='1' else 'disabled',
                 'mapillary':'configured' if os.getenv('PHOTO_SCOUT_MAPILLARY_TOKEN') else 'needs_token',
                 'google-street-view':'disabled_pending_appropriate_authorization',
                 'kartaview':'not_connected'},

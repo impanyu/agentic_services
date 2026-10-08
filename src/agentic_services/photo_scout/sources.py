@@ -8,6 +8,11 @@ from urllib.parse import urlsplit
 import httpx
 from bs4 import BeautifulSoup
 
+PANORAMAX_IMAGE_HOSTS = frozenset({
+    'panoramax.ign.fr', 'panoramax.openstreetmap.fr',
+    'panoramax-storage-public-fast.s3.gra.perf.cloud.ovh.net',
+})
+
 HEADERS = {'User-Agent': 'AISoupPhotoScout/0.1 (https://aisoup.net/contact/)'}
 
 
@@ -25,7 +30,7 @@ def distance(a, b):
 def image_host(url):
     u = urlsplit(url)
     host = (u.hostname or '').lower()
-    return u.scheme == 'https' and not u.username and not u.password and u.port in (None,443) and (host == 'upload.wikimedia.org' or host.endswith('.fbcdn.net'))
+    return u.scheme == 'https' and not u.username and not u.password and u.port in (None,443) and (host == 'upload.wikimedia.org' or host.endswith('.fbcdn.net') or host in PANORAMAX_IMAGE_HOSTS)
 
 
 async def get_json(client, url, params=None, headers=None):
@@ -126,11 +131,84 @@ async def mapillary(client, lat, lon, radius):
     return found
 
 
+async def panoramax(client, lat, lon, radius):
+    """Federated STAC catalog; accept only verified image hosts and open licenses."""
+    import asyncio
+    import uuid
+    dy=radius/111320; dx=dy/max(.01,math.cos(math.radians(lat)))
+    if abs(lat)+dy>=90 or abs(lon)+dx>=180:
+        return []
+    points=[(lat,lon),(lat+dy*.6,lon),(lat-dy*.6,lon),
+            (lat,lon+dx*.6),(lat,lon-dx*.6)]
+    async def search(p):
+        return await get_json(client,'https://api.panoramax.xyz/api/search',{
+            'bbox':f'{p[1]-dx*.5},{p[0]-dy*.5},{p[1]+dx*.5},{p[0]+dy*.5}',
+            'limit':8})
+    responses=await asyncio.gather(*(search(p) for p in points),return_exceptions=True)
+    if all(isinstance(r,Exception) for r in responses):
+        raise ValueError('Panoramax catalog unavailable')
+    rows=[]; seen=set()
+    licenses={'CC-BY-SA-4.0':('CC BY-SA 4.0','https://creativecommons.org/licenses/by-sa/4.0/'),
+              'CC-BY-4.0':('CC BY 4.0','https://creativecommons.org/licenses/by/4.0/'),
+              'CC0-1.0':('CC0','https://creativecommons.org/publicdomain/zero/1.0/'),
+              'etalab-2.0':('Etalab Open License 2.0','https://ia.numerique.gouv.fr/licence-ouverte-open-licence/')}
+    for response in responses:
+        if not isinstance(response,dict): continue
+        for f in response.get('features',[])[:8]:
+            try:
+                identifier=str(uuid.UUID(f['id']))
+                geom=f.get('geometry',{}); coords=geom.get('coordinates',[])
+                if geom.get('type')!='Point' or len(coords)<2: continue
+                lon2,lat2=map(float,coords[:2])
+                if not math.isfinite(lat2) or not math.isfinite(lon2) or abs(lat2)>90 or abs(lon2)>180: continue
+                if distance((lat,lon),(lat2,lon2))>radius: continue
+                props=f.get('properties',{}); license_info=licenses.get(props.get('license'))
+                if not license_info or identifier in seen: continue
+                # Metadata from unknown/private federated instances is not followed.
+                asset=f.get('assets',{}).get('sd',{})
+                image=asset.get('href','')
+                if urlsplit(image).hostname not in ('panoramax.ign.fr','panoramax.openstreetmap.fr') or not image_host(image): continue
+                if props.get('geovisio:visibility','anyone')!='anyone': continue
+                authors=[text(p.get('name')) for p in f.get('providers',[]) if 'producer' in p.get('roles',[])]
+                authors=[a for a in authors if a]
+                if not authors: continue
+                seen.add(identifier)
+                rows.append({'id':'panoramax:'+identifier,'provider':'panoramax',
+                    'title':'Geolocated street-level photograph','lat':lat2,'lon':lon2,
+                    'locationType':'camera_geotag','imageUrl':image,
+                    'sourceUrl':'https://panoramax.xyz/#pic='+identifier,
+                    'author':' / '.join(dict.fromkeys(authors)),
+                    'license':license_info[0],'licenseUrl':license_info[1],
+                    'sourceDate':props.get('datetime'),'capturedAt':props.get('datetime'),
+                    'viewHeadingDegrees':props.get('view:azimuth'),
+                    'description':'Street-level camera position; not a verified safe standing point.'})
+            except (ValueError,TypeError,KeyError):
+                continue
+    return rows
+
+
+def diverse_sample(rows,limit=12):
+    """Rotate sources and retain distinct images at shared points for comparison."""
+    from itertools import zip_longest
+    groups={}
+    for row in sorted(rows,key=lambda r:r['distanceMeters']):
+        groups.setdefault(row['provider'],[]).append(row)
+    selected=[]
+    for batch in zip_longest(*groups.values()):
+        for row in batch:
+            if row and all(x['provider']!=row['provider'] or distance((row['lat'],row['lon']),(x['lat'],x['lon']))>=35 for x in selected):
+                selected.append(row)
+                if len(selected)==limit: return selected
+    return selected
+
+
 async def candidates(lat,lon,radius):
     import asyncio
     statuses={}; rows=[]
     async with httpx.AsyncClient(timeout=25,headers=HEADERS,follow_redirects=False) as client:
         providers=[('wikimedia-commons',commons)]
+        if os.getenv('PHOTO_SCOUT_PANORAMAX_ENABLED','1')=='1':
+            providers.append(('panoramax',panoramax))
         if os.getenv('PHOTO_SCOUT_MAPILLARY_TOKEN'):
             providers.append(('mapillary',mapillary))
         results=await asyncio.gather(*(fn(client,lat,lon,radius) for _,fn in providers),return_exceptions=True)
@@ -144,24 +222,30 @@ async def candidates(lat,lon,radius):
         d=distance((lat,lon),(row['lat'],row['lon']))
         if d<=radius:
             row['distanceMeters']=round(d); valid.append(row)
-    # Prefer diversity of mapped viewpoints; cap provider/model exposure.
-    diverse=[]
-    for row in sorted(valid,key=lambda r:r['distanceMeters']):
-        if all(distance((row['lat'],row['lon']),(x['lat'],x['lon']))>=35 for x in diverse):
-            diverse.append(row)
-        if len(diverse)==12: break
-    return diverse,statuses
+    return diverse_sample(valid),statuses
 
 
 async def image_data(url):
     if not image_host(url):
         raise ValueError('Image provider host is not allowed')
     async with httpx.AsyncClient(timeout=25,headers=HEADERS,follow_redirects=False) as client:
-        async with client.stream('GET',url) as r:
-            r.raise_for_status(); data=bytearray()
-            async for chunk in r.aiter_bytes():
-                data.extend(chunk)
-                if len(data)>3_000_000: raise ValueError('Image too large')
+        for hop in range(3):
+            async with client.stream('GET',url) as r:
+                if r.is_redirect:
+                    from urllib.parse import urljoin
+                    target=urljoin(url,r.headers.get('location',''))
+                    # Only verified Panoramax hosts can redirect to its verified CDN.
+                    if urlsplit(url).hostname not in PANORAMAX_IMAGE_HOSTS or urlsplit(target).hostname not in PANORAMAX_IMAGE_HOSTS or not image_host(target):
+                        raise ValueError('Image redirect is not allowed')
+                    url=target
+                    continue
+                r.raise_for_status(); data=bytearray()
+                async for chunk in r.aiter_bytes():
+                    data.extend(chunk)
+                    if len(data)>3_000_000: raise ValueError('Image too large')
+                break
+        else:
+            raise ValueError('Image redirect limit exceeded')
     if data.startswith(b'\xff\xd8\xff'): mime='image/jpeg'
     elif data.startswith(b'\x89PNG\r\n\x1a\n'): mime='image/png'
     elif data[:4]==b'RIFF' and data[8:12]==b'WEBP': mime='image/webp'

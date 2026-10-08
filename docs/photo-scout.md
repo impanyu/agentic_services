@@ -9,6 +9,9 @@ under `/photo-scout/`. English UI, click on a Leaflet map or enter coordinates.
 - Wikimedia Commons: location search, file metadata, allowlisted CC BY / CC BY-SA /
   CC0 / public-domain images only. Attribution and license travel with each result.
   Geotags may locate depicted subjects rather than camera positions.
+- Panoramax: federated STAC catalog with approved IGN/OSM France image hosts,
+  explicit per-photo open licenses and producer attribution. Paris real-image retrieval
+  and a multi-source multimodal run verified; provider kill switch supported.
 - Mapillary: adapter implemented, needs `PHOTO_SCOUT_MAPILLARY_TOKEN`; source-linked
   contributor credit and CC BY-SA license retained. Not live-verified without token.
 - OpenStreetMap Overpass: separate nearby tourism POIs; attribution/ODbL returned.
@@ -33,7 +36,7 @@ Existing Python Agents SDK; one agent chooses image-inspection tools and returns
 structured visual judgments. Reuses configured OpenAI key/model. Up to 12 diverse
 image candidates, 6 actual inspections, 8 turns, 240 seconds, 2500 output tokens/turn.
 Server rejects unseen IDs, invented locations and duplicate mapped viewpoints.
-Image fetching is provider-host allowlisted, HTTPS only, no redirects, max 3 MB,
+Image fetching is provider-host allowlisted, HTTPS only, only bounded Panoramax redirects to verified hosts, max 3 MB,
 JPEG/PNG/WebP signatures only. No arbitrary user image URL is fetched. Source/model
 errors are not replaced with fabricated recommendations. Provider captions are
 untrusted, HTML stripped; recommendations do not identify people or infer access.
@@ -96,3 +99,14 @@ Stripe live-mode Checkout creation 200; unpaid private report 402; test Checkout
 expired 200 without paying; unsigned webhook 400. Shared webhook queue delivery and
 replay were tested with mocked paid Stripe responses, not a new live paid transaction.
 No marketplace listings were submitted.
+
+## Multi-source expansion
+
+Source register: [photo-scout-sources.md](photo-scout-sources.md). Selection rotates
+image sources and preserves cross-provider images at a shared coordinate for comparison.
+Final recommended locations still deduplicate. Panoramax is enabled by default with
+`PHOTO_SCOUT_PANORAMAX_ENABLED=0` as its kill switch. The Paris model smoke run inspected
+six actual images and returned one Panoramax 2025 street scene and one Wikimedia
+landscape photograph. Public free sample is `sample-paris.json`. No paid transaction
+was made for this source expansion; existing pricing is unchanged. KartaView timed
+out in both local and VM probes and remains unconnected.

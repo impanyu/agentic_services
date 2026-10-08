@@ -1,0 +1,75 @@
+{
+  "spots": [
+    {
+      "id": "panoramax:7c07cbef-f61e-4080-b8ff-59fd0cc51413",
+      "provider": "panoramax",
+      "title": "Geolocated street-level photograph",
+      "lat": 48.858873448,
+      "lon": 2.294327896,
+      "locationType": "camera_geotag",
+      "imageUrl": "https://panoramax.ign.fr/api/pictures/7c07cbef-f61e-4080-b8ff-59fd0cc51413/sd.jpg",
+      "sourceUrl": "https://panoramax.xyz/#pic=7c07cbef-f61e-4080-b8ff-59fd0cc51413",
+      "author": "vellu@reilukerho.net",
+      "license": "Etalab Open License 2.0",
+      "licenseUrl": "https://ia.numerique.gouv.fr/licence-ouverte-open-licence/",
+      "sourceDate": "2025-10-10T09:26:35.977000+00:00",
+      "capturedAt": "2025-10-10T09:26:35.977000+00:00",
+      "viewHeadingDegrees": 13,
+      "distanceMeters": 434,
+      "image_id": "panoramax:7c07cbef-f61e-4080-b8ff-59fd0cc51413",
+      "name": "Gustave Eiffel bust beneath the Eiffel Tower",
+      "score": 84,
+      "visible_evidence": "The 2025 street-level image shows a bust on a stone pedestal framed by the Tower\u2019s riveted ironwork, making a distinctive close-up composition.",
+      "photo_tip": "Try a low, upward-looking frame that keeps the bust centered and uses the iron lattice as a backdrop; a tighter crop could emphasize the contrast in materials.",
+      "uncertainty": "The image is recent, but its camera geotag is not a verified safe standing point. The photo suggests a spot at the Tower\u2019s base; it does not establish current access or conditions.",
+      "confidence": "high",
+      "accessStatus": "unknown",
+      "coordinateWarning": "Mapped image point; exact standing spot and access are not verified."
+    },
+    {
+      "id": "commons:28378582",
+      "provider": "wikimedia-commons",
+      "title": "Tour Eiffel (3665892235).jpg",
+      "lat": 48.855679,
+      "lon": 2.295799,
+      "locationType": "file_geotag_not_verified_camera_position",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/0/02/Tour_Eiffel_%283665892235%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Tour_Eiffel_(3665892235).jpg",
+      "author": "Leandro Neumann Ciuffo",
+      "license": "CC BY 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+      "sourceDate": "2009-06-20 21:59",
+      "capturedAt": "2009-06-20 21:59",
+      "distanceMeters": 95,
+      "image_id": "commons:28378582",
+      "name": "Champ de Mars view toward the Eiffel Tower",
+      "score": 82,
+      "visible_evidence": "The photograph shows the illuminated Tower rising above dark tree silhouettes, with a strip of lawn and people visible at the bottom of the frame.",
+      "photo_tip": "From a suitable public viewpoint with a clear line of sight, try including lawn or tree silhouettes for scale; the glowing structure against a dimmer sky is a strong dusk-style composition if lighting conditions allow.",
+      "uncertainty": "This is an older 2009 image. Its file geotag is not a verified camera position, so Champ de Mars is an inferred viewpoint rather than a confirmed exact spot; present-day sightlines and access may differ.",
+      "confidence": "medium",
+      "accessStatus": "unknown",
+      "coordinateWarning": "Mapped image point; exact standing spot and access are not verified."
+    }
+  ],
+  "summary": "The inspected sample offers one recent close-up at the Tower\u2019s base and one older, wider Tower view. The newer street images elsewhere in the sample mostly showed ordinary streets rather than compelling scenic compositions.",
+  "sources": {
+    "wikimedia-commons": {
+      "status": "ok",
+      "eligibleImages": 6
+    },
+    "panoramax": {
+      "status": "ok",
+      "eligibleImages": 40
+    }
+  },
+  "inspectedImages": 6,
+  "coverage": "Subjective recommendations from a bounded image sample; not all nearby POIs.",
+  "model": "gpt-6-luna",
+  "usage": {
+    "requests": 7,
+    "inputTokens": 80385,
+    "outputTokens": 1155
+  },
+  "sampleNote": "Internal live-model multi-source example near the Eiffel Tower, generated October 8, 2026. Not a customer report or current conditions check."
+}
