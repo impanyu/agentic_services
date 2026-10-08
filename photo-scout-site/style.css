@@ -80,3 +80,8 @@ html:has(body.photo-app),body.photo-app{height:100%;overflow:hidden}.photo-app m
  .photo-app:has(#results:not([hidden])) .scout-dock,.photo-app:has(#results:not([hidden])) .map-overlay-controls{display:none}
  .photo-studio{max-height:calc(100dvh - 20px);padding:14px;width:min(600px,calc(100vw - 24px))}.studio-inputs img,.studio-inputs:has(img[hidden]) img:not([hidden]){height:100px}
 }
+@media(max-width:760px){
+ .dock-toolbar{display:block;position:relative}.dock-actions{position:absolute;right:0;top:0}
+ .map-controls>summary{padding-right:90px}.dock-toolbar:has(#toggle-results:not(:disabled)) .map-controls>summary{padding-right:152px}
+ .photo-app:has(#map-controls[open]) .leaflet-control-zoom,.photo-app:has(#map-controls[open]) .map-overlay-controls .center-map,.photo-app:has(#map-controls[open]) .map-overlay-controls .leaflet-control-layers{display:none}
+}
