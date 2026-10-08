@@ -25,7 +25,7 @@ under `/photo-scout/`. English UI, click on a Leaflet map or enter coordinates.
   enabled with `PHOTO_SCOUT_GOOGLE_ENABLED=1` and a dedicated IP/API-restricted key.
   Queries up to 25 circular-grid locations, filters actual camera points by an adaptive 80–250 m
   minimum separation, and provides at most two opposing 120-degree views per panorama. Google imagery is sent to
-  the agent transiently, never cached in reports or embedded beside the OSM map.
+  the model transiently and never cached in reports. Google image cards retain their own attribution; Google recommendation pins are not added to the selection map.
   Results include a Google panorama link and inspected heading. Google-specific
   commercial inference permission has NOT been verified; technical access is not
   evidence of that permission. Enabled following the owner's explicit instruction.
@@ -329,3 +329,7 @@ reported; if no image can be scored, the request fails instead of returning a fa
 no-recommendation result. Processing remains bounded to 240 seconds for download
 and scoring, 270 seconds for the overall request. Model retries are disabled.
 Images remain transient, credentials and signed catalog tokens never enter prompts.
+
+## Single-page website layout
+
+The map, search form, task status and shortlist remain on one page. Rendering a result replaces only the shortlist section; it does not hide the workspace or sample buttons. Completed reports restore below the form without scrolling on entry. User-triggered views and newly completed searches scroll to the shortlist; an adjustment link scrolls back to the map without removing results. Viewing examples preserves the selected location.
