@@ -151,13 +151,13 @@ def create_portrait_router(settings,require_api):
             if limit>0 and c.execute('SELECT runs FROM photo_portrait_budget WHERE day=?',(day,)).fetchone()[0]>=limit:raise HTTPException(429,'Free photo studio capacity reached for today')
             c.execute('UPDATE photo_portrait_budget SET runs=runs+1 WHERE day=?',(day,))
             c.execute('INSERT INTO photo_portraits VALUES(?,?,?,?,?,?,?,?,?)',(job,hashlib.sha256(token.encode()).hexdigest(),now,now+retention,'queued',json.dumps({'reference':ref,'place':payload.place,'pose':payload.pose,'style':payload.style,'posture':payload.posture,'weather':payload.weather,'expression':payload.expression}),photo,None,None))
-            tasks.bind_in(c,'portrait',job,identity,{'name':payload.place,'provider':payload.provider,'sourceUrl':payload.background,'poi':{'lat':payload.lat,'lon':payload.lon},'viewHeadingDegrees':int(ref.rsplit('/',1)[-1]) if payload.provider=='google-street-view' else None})
+            tasks.bind_in(c,'portrait',job,identity,{'name':payload.place,'provider':payload.provider,'sourceUrl':payload.background,'poi':{'lat':payload.lat,'lon':payload.lon},'viewHeadingDegrees':int(ref.rsplit('/',1)[-1]) if payload.provider=='google-street-view' else None,'generation':{'style':payload.style,'posture':payload.posture,'weather':payload.weather,'expression':payload.expression,'directions':payload.pose}})
         response.headers['Cache-Control']='private, no-store'
         return {'id':job,'token':token,'state':'queued','expiresInSeconds':retention,'aiGenerated':True}
     @router.get('/photo-scout/v1/portraits/{job}')
     def status(job:str,request:Request,authorization:str|None=Header(None),x_report_token:str|None=Header(None)):
         require_api(authorization);row=owned(job,x_report_token,request)
-        return Response(json.dumps({'id':job,'state':row['state'],'error':row['error'],'aiGenerated':True}),media_type='application/json',headers={'Cache-Control':'private, no-store'})
+        return Response(json.dumps({'id':job,'state':row['state'],'error':row['error'],'aiGenerated':True,'context':tasks.context('portrait',job)}),media_type='application/json',headers={'Cache-Control':'private, no-store'})
     @router.get('/photo-scout/v1/portraits/{job}/image')
     def output(job:str,request:Request,authorization:str|None=Header(None),x_report_token:str|None=Header(None)):
         require_api(authorization);row=owned(job,x_report_token,request)

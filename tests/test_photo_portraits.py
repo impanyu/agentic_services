@@ -37,7 +37,7 @@ def test_private_job_edits_both_images_and_removes_upload(tmp_path,monkeypatch,i
     async def background(ref):return 'data:image/png;base64,'+base64.b64encode(raw).decode()
     monkeypatch.setattr(portraits,'AsyncOpenAI',Client);monkeypatch.setattr(portraits,'image_data',background)
     settings=Settings(openai_api_key='fixture',openai_model='test',database_path=tmp_path/'db',base_url='https://api.test',service_api_key='private')
-    app=create_app(settings=settings);client=TestClient(app);auth={'Authorization':'Bearer private'}
+    app=create_app(settings=settings);client=TestClient(app,base_url='https://api.test');auth={'Authorization':'Bearer private'}
     body={'portrait':'data:image/png;base64,'+base64.b64encode(raw).decode(),'background':'https://www.google.com/maps/@?map_action=pano&pano=abc&heading=90','provider':'google-street-view','place':'Test park'}
     assert client.post('/photo-scout/v1/portraits',json=body).status_code==401
     assert client.post('/photo-scout/v1/portraits',json=body|{'style':'unsupported'},headers=auth).status_code==422
@@ -59,7 +59,10 @@ def test_private_job_edits_both_images_and_removes_upload(tmp_path,monkeypatch,i
     assert 'golden-hour light' in calls[0]['prompt']
     assert 'cheerful broad smile' in calls[0]['prompt']
     assert 'relight the entire scene and subjects together' in calls[0]['prompt']
-    assert client.get(path,headers=owned).json()['state']=='complete'
+    completed=client.get(path,headers=owned).json();assert completed['state']=='complete'
+    assert completed['context']['generation']=={'style':'natural','posture':'walking','weather':'golden_hour','expression':'big_smile','directions':''}
+    history=client.get('/photo-scout/v1/tasks',headers=auth).json()
+    assert history['items'][0]['context']['generation']==completed['context']['generation']
     image=client.get(path+'/image',headers=owned);assert image.content==raw;assert image.headers['cache-control']=='private, no-store'
     with sqlite3.connect(settings.database_path) as db:
         assert db.execute('SELECT photo,payload FROM photo_portraits').fetchone()==(None,None)

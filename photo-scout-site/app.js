@@ -377,10 +377,46 @@ function showHistorySearch(result,context,history){
  el('results').hidden=true;
  focusHistorySearch(context,result,history);
 }
+const savedPhoto=node('dialog',null,'photo-studio saved-photo');savedPhoto.setAttribute('aria-label','Saved photo');
+const savedPhotoTop=node('div',null,'studio-heading'),savedPhotoTitle=node('h2','Your saved selfie'),savedPhotoClose=node('button','Close ×');savedPhotoClose.type='button';savedPhotoTop.append(savedPhotoTitle,savedPhotoClose);
+const savedPhotoPlace=node('p',null,'small'),savedPhotoImage=node('img',null,'studio-result'),savedPhotoStatus=node('p',null,'studio-status'),savedPhotoParams=node('div',null,'saved-photo-params'),savedPhotoSave=node('button','Save to Photos','studio-save'),savedPhotoDownload=node('a','Download PNG','studio-save studio-download'),savedPhotoHint=node('p',null,'small');savedPhotoImage.alt='Saved AI-generated travel photo';savedPhotoStatus.setAttribute('role','status');savedPhotoDownload.download='photo-scout-ai-photo.png';
+savedPhoto.append(savedPhotoTop,savedPhotoPlace,savedPhotoImage,savedPhotoStatus,savedPhotoParams,savedPhotoSave,savedPhotoDownload,savedPhotoHint);document.body.append(savedPhoto);
+let savedPhotoGeneration=0,savedPhotoTimer=null,savedPhotoFile=null,savedPhotoUrl=null;
+function renderSavedPhotoParams(context,created){
+ savedPhotoPlace.textContent=(context?.name||'Saved selfie')+(context?.viewHeadingDegrees!=null?' · '+photoBearing(context).label:'');
+ const fields=[['Created',new Date(created*1000).toLocaleString()]];
+ if(context?.generation){const g=context.generation,label=(select,value)=>[...select.options].find(o=>o.value===value)?.textContent||value;
+  fields.push(['Style',portraitStyles.find(s=>s[0]===g.style)?.[1]||g.style],['Posture',label(studioPosture,g.posture)],['Weather & light',label(studioWeather,g.weather)],['Expression',label(studioExpression,g.expression)],['Your directions',g.directions||'None']);
+ }
+ const list=node('dl');for(const [label,value] of fields)list.append(node('dt',label),node('dd',value));
+ savedPhotoParams.replaceChildren(node('h3','Generation details'),list,...(context?.generation?[]:[node('p','The generation settings were not saved for this older photo.','small')]));
+}
+async function viewSavedPhoto(task){
+ const generation=++savedPhotoGeneration;clearTimeout(savedPhotoTimer);if(savedPhotoUrl)URL.revokeObjectURL(savedPhotoUrl);savedPhotoUrl=null;savedPhotoFile=null;
+ savedPhotoImage.hidden=true;savedPhotoImage.removeAttribute('src');savedPhotoSave.hidden=true;savedPhotoDownload.hidden=true;savedPhotoHint.textContent='';savedPhotoStatus.textContent='Loading your saved photo…';renderSavedPhotoParams(task.context,task.created);savedPhoto.showModal();
+ const refresh=async()=>{try{
+  const report=await json('/photo-scout/v1/portraits/'+encodeURIComponent(task.id));if(generation!==savedPhotoGeneration)return;
+  renderSavedPhotoParams(report.context||task.context,task.created);
+  if(report.state==='complete'){
+   const response=await fetch(api+'/photo-scout/v1/portraits/'+encodeURIComponent(task.id)+'/image',{credentials:'include'});if(!response.ok)throw Error('Could not load your saved photo');const blob=await response.blob(),preview=await readPhoto(blob);if(generation!==savedPhotoGeneration)return;
+   savedPhotoFile=new File([blob],'photo-scout-ai-photo.png',{type:'image/png'});savedPhotoUrl=URL.createObjectURL(blob);savedPhotoImage.src=preview;savedPhotoImage.hidden=false;savedPhotoSave.hidden=false;savedPhotoDownload.href=savedPhotoUrl;savedPhotoDownload.hidden=false;savedPhotoStatus.textContent='AI-generated photo · Saved for seven days.';savedPhotoHint.textContent='On iPhone, use Save to Photos or press and hold the photo to save it.';return;
+  }
+  if(report.state==='failed'){savedPhotoStatus.textContent=report.error||'This photo could not be created.';return;}
+  savedPhotoStatus.textContent=report.state==='queued'?'Your selfie is queued…':'Your selfie is being created…';savedPhotoTimer=setTimeout(refresh,4000);
+ }catch(error){if(generation===savedPhotoGeneration)savedPhotoStatus.textContent=error.message;}};
+ await refresh();
+}
+savedPhotoClose.addEventListener('click',()=>savedPhoto.close());savedPhoto.addEventListener('close',()=>{savedPhotoGeneration++;clearTimeout(savedPhotoTimer);if(savedPhotoUrl)URL.revokeObjectURL(savedPhotoUrl);savedPhotoUrl=null;savedPhotoFile=null;savedPhotoImage.removeAttribute('src');});
+savedPhotoSave.addEventListener('click',async()=>{
+ if(!savedPhotoFile)return;
+ const files=[savedPhotoFile];let supported=false;try{supported=typeof navigator.share==='function'&&typeof navigator.canShare==='function'&&navigator.canShare({files});}catch{}
+ if(!supported){savedPhotoHint.textContent='Press and hold the photo to save it, or use Download PNG.';savedPhotoImage.scrollIntoView({block:'center',behavior:'smooth'});return;}
+ savedPhotoSave.disabled=true;try{await navigator.share({files});}catch(error){if(error.name!=='AbortError')savedPhotoHint.textContent='The share menu could not open. Use Download PNG or press and hold the photo.';}finally{savedPhotoSave.disabled=false;}
+});
 async function viewSavedTask(task){
  el('search-history').open=false;
  if(task.kind==='search')el('results').hidden=true;
- if(task.kind==='portrait'){if(studioBusy&&studioJob?.id!==task.id){studio.showModal();return;}recoverStudio(task);studio.showModal();return;}
+ if(task.kind==='portrait'){await viewSavedPhoto(task);return;}
  try{
   const report=await json('/photo-scout/v1/report/'+encodeURIComponent(task.id)),context=report.context||task.context;
   if(report.state==='complete'){showHistorySearch(report.result,context,searchHistory.find(h=>h.id===task.id));return;}
@@ -395,6 +431,7 @@ function recoverStudio(task){
  studioBusy=true;studioJob={id:task.id};studioGenerate.disabled=true;studioUpload.disabled=true;studioPose.disabled=true;studioStyles.disabled=true;studioOptions.disabled=true;setStudioActivity(task.state);pollStudio();
 }
 function resetTaskRecovery(){
+ if(savedPhoto.open)savedPhoto.close();
  taskRecoveryGeneration++;clearTimeout(taskRefreshTimer);taskRecords=[];tasksReady=false;activeSearch=null;pollGeneration++;searchBusy=false;studioBusy=false;studioJob=null;clearTimeout(studioTimer);clearStudioOutput();studioPrepared=null;studioFile=null;studioUpload.value='';studioUpload.disabled=false;studioPose.disabled=false;studioStyles.disabled=false;studioOptions.disabled=false;studioGenerate.disabled=true;personPreview.hidden=true;personPreview.removeAttribute('src');studioTask.hidden=true;selfieActivityLayer.clearLayers();renderHistory();updateSubmitState();
 }
 async function restoreTasks(){
