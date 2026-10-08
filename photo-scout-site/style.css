@@ -71,7 +71,7 @@ html:has(body.photo-app),body.photo-app{height:100%;overflow:hidden}.photo-app m
  .progress-steps{flex-wrap:wrap}
 }
 @media(max-width:360px){.map-brand{font-size:13px}.map-brand small{display:none}.map-overlay-controls summary{font-size:9px}.dock-actions{max-width:122px}.dock-actions button,.dock-actions #toggle-results{font-size:9px;padding:7px}.studio-heading h2{font-size:17px}}
-@media(max-height:500px) and (max-width:1000px){
+@media(max-height:500px) and (max-width:1000px) and (orientation:landscape){
  .scout-dock{bottom:calc(18px + env(safe-area-inset-bottom));width:min(560px,calc(100% - 160px));max-height:calc(100dvh - 85px);left:12px;transform:none;padding:8px 12px}
  .map-overlay-controls{top:12px;right:12px;gap:4px}.map-brand{top:12px;left:12px;font-size:14px}.brand-mark{width:28px;height:28px}
  .photo-app:has(.map-overlay-controls details[open]) .scout-dock{visibility:hidden}
@@ -84,4 +84,12 @@ html:has(body.photo-app),body.photo-app{height:100%;overflow:hidden}.photo-app m
  .dock-toolbar{display:block;position:relative}.dock-actions{position:absolute;right:0;top:0}
  .map-controls>summary{padding-right:90px}.dock-toolbar:has(#toggle-results:not(:disabled)) .map-controls>summary{padding-right:152px}
  .photo-app:has(#map-controls[open]) .leaflet-control-zoom,.photo-app:has(#map-controls[open]) .map-overlay-controls .center-map,.photo-app:has(#map-controls[open]) .map-overlay-controls .leaflet-control-layers{display:none}
+}
+
+@media(max-width:760px){.photo-studio{max-width:calc(100vw - 20px)}}
+@media(max-height:500px) and (max-width:1000px) and (orientation:landscape){
+ .map-overlay-controls:has(details[open])> :not(details[open]){visibility:hidden}.map-overlay-controls details[open]{position:fixed;top:12px;right:12px}
+ .map-overlay-controls .map-tools,.map-overlay-controls .map-detail-menu,.map-overlay-controls .history-menu{position:fixed;top:62px;right:12px;width:min(340px,calc(100vw - 24px))}
+ #results{padding:14px}.results-heading{position:sticky;top:-14px;z-index:3;margin:-14px -14px 0;padding:10px 14px;background:#fffef9f5;border-bottom:1px solid #eee7ef}.back-button{min-height:40px;padding:8px 12px;font-size:12px}
+ .studio-heading{position:sticky;top:-14px;z-index:3;margin:-14px -14px 0;padding:10px 14px;background:#fffdf8;border-bottom:1px solid #eee7ef}
 }
