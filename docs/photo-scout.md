@@ -185,3 +185,15 @@ The Google daily image cap remains 180; this change does not raise it or change 
 Older static examples remain historical results from their labeled test runs.
 The total deadline stays below the existing five-minute fulfillment lease and gateway
 response window, so increasing inspection count cannot outlive those boundaries.
+
+## Temporary free website testing
+
+Set `PHOTO_SCOUT_HUMAN_FREE_PREVIEW=1` to enable live human searches without Stripe.
+The website calls `/photo-scout/v1/preview` through the existing authenticated
+gateway; the backend refuses new Checkout sessions while this flag is enabled.
+Existing paid reports and webhook delivery continue normally, and the agent
+`/discover` endpoint retains its configured per-call price. Free results are
+returned directly and are not persisted as paid reports; refreshing loses them.
+The same 30-run daily budget, one-run concurrency limit, source lookup throttle,
+Google image budget and 270-second timeout apply. Set the flag back to `0` to
+restore human Checkout.
