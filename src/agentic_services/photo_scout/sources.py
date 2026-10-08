@@ -378,7 +378,8 @@ async def google_image_data(reference):
     from pathlib import Path
     match=re.fullmatch(r'google-streetview://([A-Za-z0-9_-]{1,200})/(\d{1,3})',reference)
     if not match or int(match[2])>=360 or not google_enabled(): raise ValueError('Google imagery unavailable')
-    # Persistent shared cap counts failed fetches too; no unauthenticated image proxy.
+    # Keep request accounting; a positive limit is an optional operator setting.
+    # Development is uncapped by default. The signed image proxy remains protected.
     path=Path(os.getenv('WEB_EVIDENCE_DB','data/web-evidence.db'))
     path.parent.mkdir(parents=True,exist_ok=True)
     with sqlite3.connect(path,timeout=15) as db:
@@ -387,7 +388,8 @@ async def google_image_data(reference):
         day=datetime.now(timezone.utc).date().isoformat()
         db.execute('INSERT OR IGNORE INTO photo_scout_google_budget VALUES(?,0)',(day,))
         count=db.execute('SELECT requests FROM photo_scout_google_budget WHERE day=?',(day,)).fetchone()[0]
-        if count>=int(os.getenv('PHOTO_SCOUT_GOOGLE_DAILY_IMAGE_LIMIT','180')):
+        limit=int(os.getenv('PHOTO_SCOUT_GOOGLE_DAILY_IMAGE_LIMIT','0'))
+        if limit>0 and count>=limit:
             raise ValueError('Google image budget exhausted')
         db.execute('UPDATE photo_scout_google_budget SET requests=requests+1 WHERE day=?',(day,))
     async with httpx.AsyncClient(timeout=25,follow_redirects=False) as client:

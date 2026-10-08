@@ -52,3 +52,12 @@ Current coverage: POI-first Google metadata lookup targets the selected places
 combined candidate images are scored in fixed batches of six, with two batches
 in parallel. Download and scoring failures are counted explicitly. Daily Google
 image cap remains 180; no autonomous image-inspection tool or agent-turn loop remains.
+
+
+## Development image budget update (October 8, 2026)
+
+The earlier 180-request application cap has been disabled for development.
+`PHOTO_SCOUT_GOOGLE_DAILY_IMAGE_LIMIT=0` means no application daily limit (the default);
+a positive value enables an optional operator cap. Usage counters remain for accounting.
+Signed report authorization, per-request sampling and provider validation remain in place.
+This setting does not change Google account quotas or billing.

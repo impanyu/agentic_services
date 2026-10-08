@@ -211,6 +211,29 @@ def test_google_image_budget_and_reference_validation(tmp_path,monkeypatch):
     assert len(requests)==1
 
 
+@pytest.mark.parametrize('configured',[None,'0'])
+def test_google_image_development_requests_continue_past_existing_count(tmp_path,monkeypatch,configured):
+    import sqlite3
+    from datetime import datetime,timezone
+    import agentic_services.photo_scout.sources as sources
+    monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_ENABLED','1')
+    monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_API_KEY','secret-fixture')
+    monkeypatch.setenv('WEB_EVIDENCE_DB',str(tmp_path/'db'))
+    if configured is None:monkeypatch.delenv('PHOTO_SCOUT_GOOGLE_DAILY_IMAGE_LIMIT',raising=False)
+    else:monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_DAILY_IMAGE_LIMIT',configured)
+    day=datetime.now(timezone.utc).date().isoformat()
+    with sqlite3.connect(tmp_path/'db') as db:
+        db.execute('CREATE TABLE photo_scout_google_budget(day TEXT PRIMARY KEY,requests INTEGER NOT NULL)')
+        db.execute('INSERT INTO photo_scout_google_budget VALUES(?,180)',(day,))
+    requests=[]
+    def handler(request):requests.append(request);return httpx.Response(200,content=b'\xff\xd8\xfffixture')
+    real=httpx.AsyncClient
+    monkeypatch.setattr(sources.httpx,'AsyncClient',lambda **kw:real(transport=httpx.MockTransport(handler)))
+    for _ in range(2):assert asyncio.run(sources.google_image_data('google-streetview://fixture/90')).startswith('data:image/jpeg;base64,')
+    assert len(requests)==2
+    with sqlite3.connect(tmp_path/'db') as db:assert db.execute('SELECT requests FROM photo_scout_google_budget WHERE day=?',(day,)).fetchone()[0]==182
+
+
 def test_google_sampling_deduplicates_nearby_camera_points(monkeypatch):
     from agentic_services.photo_scout.sources import google_streetview,google_sampling_spacing,diverse_sample
     monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_API_KEY','secret-fixture')

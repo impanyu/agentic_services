@@ -339,3 +339,12 @@ The map, search form, task status and shortlist remain on one page. Rendering a 
 OpenFreeMap Liberty, Positron, Dark and Bright are global OSM-based styles. USGSImageryOnly and USGSTopo are optional U.S. aerial/topographic basemaps with explicit coverage labels and visible attribution. Leaflet overlays toggle search radius, OpenStreetMap candidate POIs and non-Google photo locations. Basemap layers support location selection, not the model's image-scoring input.
 
 Geolocation requests use a recent device position (up to 60 seconds old) without requiring a high-accuracy GPS fix. The button shows a busy state and actionable permission/error messages. A 20-second watchdog handles unresolved permission prompts; success updates coordinates and radius, clears analysis consent and scrolls to the map.
+
+
+## Development image budget update (October 8, 2026)
+
+The earlier 180-request application cap has been disabled for development.
+`PHOTO_SCOUT_GOOGLE_DAILY_IMAGE_LIMIT=0` means no application daily limit (the default);
+a positive value enables an optional operator cap. Usage counters remain for accounting.
+Signed report authorization, per-request sampling and provider validation remain in place.
+This setting does not change Google account quotas or billing.

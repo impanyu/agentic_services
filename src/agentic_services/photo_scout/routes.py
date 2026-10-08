@@ -269,7 +269,7 @@ def create_photo_router(settings,require_api,verification_store):
                 'kartaview':'not_connected'},
             'googleStreetView':{'credentialConfigured':bool(os.getenv('PHOTO_SCOUT_GOOGLE_API_KEY')),
                 'imageAnalysisEnabled':google_enabled(),
-                'dailyImageRequestLimit':int(os.getenv('PHOTO_SCOUT_GOOGLE_DAILY_IMAGE_LIMIT','180'))},
+                'dailyImageRequestLimit':max(0,int(os.getenv('PHOTO_SCOUT_GOOGLE_DAILY_IMAGE_LIMIT','0'))) or None},
             'limits':{'radiusMeters':5000,'sampledImages':24,'inspectedImages':24,'imagesPerBatch':6,'parallelBatches':2,'googleQueryLocations':25,'timeoutSeconds':270},
             'analysisMethod':'fixed-batch-scoring','discoveryMethod':'poi-first','poiProviders':{'openstreetmap':'enabled','google-places':'not_connected'},
             'privacy':'Coordinates/preferences are sent to imagery providers/OpenAI; paid reports retained for 30 days.'}
