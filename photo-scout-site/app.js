@@ -329,12 +329,13 @@ function showHistorySearch(result,context,history){
  el('search-history').open=false;
  if(history&&!history.checked){history.checked=true;persistHistory();renderHistory();}
  render(result,{save:false,mapUpdate:false});drawHistoryMap();
- // On phones show the selected area first; the full report stays in Shortlist.
- if(matchMedia('(max-width:760px)').matches)el('results').hidden=true;
+ // History View focuses the map on every screen; open Shortlist only on request.
+ el('results').hidden=true;
  focusHistorySearch(context,result,history);
 }
 async function viewSavedTask(task){
  el('search-history').open=false;
+ if(task.kind==='search')el('results').hidden=true;
  if(task.kind==='portrait'){if(studioBusy&&studioJob?.id!==task.id){studio.showModal();return;}recoverStudio(task);studio.showModal();return;}
  try{
   const report=await json('/photo-scout/v1/report/'+encodeURIComponent(task.id)),context=report.context||task.context;
