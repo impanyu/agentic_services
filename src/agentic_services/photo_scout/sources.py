@@ -202,18 +202,36 @@ def bearing(origin, target):
         math.cos(a)*math.sin(b)-math.sin(a)*math.cos(b)*math.cos(delta))))%360
 
 
+def google_query_points(lat,lon,radius):
+    """Bounded circular grid, spread over the whole requested area."""
+    step=max(80,radius/3)
+    count=math.ceil(radius/step)
+    offsets=[(x*step,y*step) for x in range(-count,count+1) for y in range(-count,count+1)
+        if math.hypot(x*step,y*step)<=radius]
+    chosen=[(0,0)]; offsets.remove((0,0))
+    while offsets and len(chosen)<25:
+        point=max(offsets,key=lambda p:min(math.hypot(p[0]-q[0],p[1]-q[1]) for q in chosen))
+        chosen.append(point); offsets.remove(point)
+    result=[]
+    for x,y in chosen:
+        p=(lat+y/111320,lon+x/(111320*max(.01,math.cos(math.radians(lat)))))
+        if abs(p[0])<=85 and abs(p[1])<=180: result.append(p)
+    return result
+
+
 async def google_streetview(client, lat, lon, radius):
     """Bounded outdoor panorama discovery. Never put the credential in candidate URLs."""
     import asyncio
     import re
     from urllib.parse import urlencode
     key=os.getenv('PHOTO_SCOUT_GOOGLE_API_KEY','')
-    dy=radius*.6/111320; dx=dy/max(.01,math.cos(math.radians(lat)))
-    points=[(lat,lon),(lat+dy,lon),(lat-dy,lon),(lat,lon+dx),(lat,lon-dx)]
+    points=google_query_points(lat,lon,radius)
+    slots=asyncio.Semaphore(5)
     async def search(p):
-        return await get_json(client,'https://maps.googleapis.com/maps/api/streetview/metadata',
-            {'location':f'{p[0]},{p[1]}','radius':min(200,max(50,radius//3)), 'source':'outdoor','key':key})
-    responses=await asyncio.gather(*(search(p) for p in points if abs(p[0])<=85 and abs(p[1])<=180),return_exceptions=True)
+        async with slots:
+            return await get_json(client,'https://maps.googleapis.com/maps/api/streetview/metadata',
+                {'location':f'{p[0]},{p[1]}','radius':min(200,max(50,radius//3)), 'source':'outdoor','key':key})
+    responses=await asyncio.gather(*(search(p) for p in points),return_exceptions=True)
     rows=[]; seen=set(); locations=[]; successful=False
     spacing=google_sampling_spacing(radius)
     for data in responses:
@@ -257,7 +275,12 @@ def diverse_sample(rows,limit=12):
         panoramas={}
         for row in groups['google-street-view']:
             panoramas.setdefault(row['imageUrl'].rsplit('/',1)[0],[]).append(row)
-        groups['google-street-view']=[r for batch in zip_longest(*panoramas.values()) for r in batch if r]
+        remaining=list(panoramas.values()); spread=[remaining.pop(0)]
+        while remaining:
+            group=max(remaining,key=lambda g:min(distance((g[0]['lat'],g[0]['lon']),
+                (s[0]['lat'],s[0]['lon'])) for s in spread))
+            spread.append(group); remaining.remove(group)
+        groups['google-street-view']=[r for batch in zip_longest(*spread) for r in batch if r]
     selected=[]
     for batch in zip_longest(*groups.values()):
         for row in batch:
@@ -286,13 +309,17 @@ async def candidates(lat,lon,radius):
             else:
                 statuses[name]={'status':'ok','eligibleImages':len(result)}; rows+=result
                 if name=='google-street-view':
-                    statuses[name].update(samplingSpacingMeters=google_sampling_spacing(radius),maxViewsPerLocation=2)
+                    statuses[name].update(samplingSpacingMeters=google_sampling_spacing(radius),maxViewsPerLocation=2,
+                        queriedLocations=len(google_query_points(lat,lon,radius)))
     valid=[]
     for row in rows:
         d=distance((lat,lon),(row['lat'],row['lon']))
         if d<=radius:
             row['distanceMeters']=round(d); valid.append(row)
-    return diverse_sample(valid),statuses
+    sampled=diverse_sample(valid,24)
+    for name,status in statuses.items():
+        if status['status']=='ok': status['sampledImages']=sum(r['provider']==name for r in sampled)
+    return sampled,statuses
 
 
 async def image_data(url):

@@ -46,3 +46,7 @@ images merit inspection; source diversity does not force a low-quality recommend
 Google refinement: adaptive 80–250 m minimum distance between actual panorama
 camera points; max two opposing 120-degree views, one per panorama before second
 views. No dense road traversal or exhaustive angle sweep.
+
+Coverage revision: up to 25 Google circular-grid metadata queries with concurrency
+5; minimum spacing still applies to snapped camera locations. Up to 24 combined
+candidates and 12 image inspection attempts. Daily Google image cap remains 180.

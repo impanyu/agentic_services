@@ -93,7 +93,7 @@ def create_photo_router(settings,require_api,verification_store):
     async def run(payload):
         enabled()
         if lock.locked(): raise HTTPException(429,'An exploration is in progress; try again shortly')
-        async with lock, asyncio.timeout(240):
+        async with lock, asyncio.timeout(360):
             rows,statuses=await candidates(payload.lat,payload.lon,payload.radius)
             if not any(s['status']=='ok' for s in statuses.values()):
                 raise HTTPException(503,'Image sources are temporarily unavailable')
@@ -116,7 +116,7 @@ def create_photo_router(settings,require_api,verification_store):
             'googleStreetView':{'credentialConfigured':bool(os.getenv('PHOTO_SCOUT_GOOGLE_API_KEY')),
                 'imageAnalysisEnabled':google_enabled(),
                 'dailyImageRequestLimit':int(os.getenv('PHOTO_SCOUT_GOOGLE_DAILY_IMAGE_LIMIT','180'))},
-            'limits':{'radiusMeters':5000,'sampledImages':12,'inspectedImages':6,'timeoutSeconds':240},
+            'limits':{'radiusMeters':5000,'sampledImages':24,'inspectedImages':12,'googleQueryLocations':25,'timeoutSeconds':360},
             'privacy':'Coordinates/preferences are sent to imagery providers/OpenAI; paid reports retained for 30 days.'}
 
     @router.post('/photo-scout/v1/candidates')

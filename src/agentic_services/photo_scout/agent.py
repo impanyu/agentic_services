@@ -36,7 +36,8 @@ Evaluate composition, scenic interest, distinctiveness, and photographic possibi
 When multiple sources are available, compare actual images from different sources when useful.
 If Google Street View candidates exist, attempt at least one Google image inspection.
 For panoramas, supplied headings describe the camera direction. Compare distinct directions
-when useful and base angle advice on the view you actually inspected.
+when useful. Prioritize distinct geographic locations before repeatedly inspecting
+the same panorama, and base angle advice on the view you actually inspected.
 Street-view camera points may be in a roadway; never instruct someone to stand in traffic.
 Prefer newer evidence when relevant, but a recent photograph does not prove current conditions.
 Do not recommend ordinary blank roads, hazards, private residences or restricted facilities.
@@ -49,7 +50,9 @@ Separate directly visible features from inference. Return English and explicit u
 Score MUST use a 0 to 100 scale (e.g. 75 means good photo potential), not a 0 to 10 scale.
 It is your subjective photographic assessment, not user reviews or popularity.
 Never claim global best: only best of the small inspected sample. Group nearby duplicates.
-Reserve your final turn for a structured result; at most 6 successful image inspections.
+When enough candidates are available, aim to compare 8 to 12 views spread over the
+search area rather than stopping after a few nearby views. Download failures may
+reduce the successful inspection count. Reserve your final turn for a structured result; at most 12 image inspection attempts.
 '''
 
 
@@ -75,9 +78,9 @@ async def explore(settings,payload,rows,statuses):
     by_id={r['id']:r for r in rows}
     @function_tool
     async def inspect_image(image_id: str):
-        """See the actual photograph for a supplied image ID. Max 6 successful inspections."""
+        """See the actual photograph for a supplied image ID. Max 12 inspection attempts."""
         nonlocal attempts
-        if image_id not in by_id or attempts>=6: return 'Image unavailable or inspection budget exhausted.'
+        if image_id not in by_id or attempts>=12: return 'Image unavailable or inspection budget exhausted.'
         attempts+=1
         try:
             data=await image_data(by_id[image_id]['imageUrl'])
@@ -92,7 +95,7 @@ async def explore(settings,payload,rows,statuses):
             model_settings=ModelSettings(max_tokens=2500,parallel_tool_calls=False,store=False))
         catalog=[{k:v for k,v in r.items() if k not in ('imageUrl','author')} for r in rows]
         result=await asyncio.wait_for(Runner.run(agent,json.dumps({'request':payload.model_dump(),
-            'images':catalog}),max_turns=8,run_config=RunConfig(tracing_disabled=True)),timeout=240)
+            'images':catalog}),max_turns=14,run_config=RunConfig(tracing_disabled=True)),timeout=300)
     return {'spots':validate_result(result.final_output,rows,inspected,payload.limit),
         'summary':result.final_output.summary,'sources':statuses,'inspectedImages':len(inspected),
         'inspectedImageSources':sorted({by_id[i]['provider'] for i in inspected}),

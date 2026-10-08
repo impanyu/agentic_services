@@ -18,7 +18,7 @@ under `/photo-scout/`. English UI, click on a Leaflet map or enter coordinates.
   These entries are explicitly NOT visually evaluated recommendations.
 - Google Street View: optional server-only metadata discovery and image inspection,
   enabled with `PHOTO_SCOUT_GOOGLE_ENABLED=1` and a dedicated IP/API-restricted key.
-  Queries five coarse locations, filters actual camera points by an adaptive 80–250 m
+  Queries up to 25 circular-grid locations, filters actual camera points by an adaptive 80–250 m
   minimum separation, and provides at most two opposing 120-degree views per panorama. Google imagery is sent to
   the agent transiently, never cached in reports or embedded beside the OSM map.
   Results include a Google panorama link and inspected heading. Google-specific
@@ -39,8 +39,9 @@ https://operations.osmfoundation.org/policies/tiles/
 ## Agent
 
 Existing Python Agents SDK; one agent chooses image-inspection tools and returns
-structured visual judgments. Reuses configured OpenAI key/model. Up to 12 diverse
-image candidates, 6 actual inspections, 8 turns, 240 seconds, 2500 output tokens/turn.
+structured visual judgments. Reuses configured OpenAI key/model. Up to 24 diverse
+image candidates, 12 inspection attempts, 14 turns, 300 seconds of agent work
+(360 seconds for the complete discovery), 2500 output tokens/turn.
 Server rejects unseen IDs, invented locations and duplicate mapped viewpoints.
 Image fetching is provider-host allowlisted, HTTPS only, only bounded Panoramax redirects to verified hosts, max 3 MB,
 JPEG/PNG/WebP signatures only. No arbitrary user image URL is fetched. Source/model
@@ -135,7 +136,7 @@ was fetched or sent to OpenAI in this credential setup.
 
 ## Google imagery integration
 
-With the source enabled, `inspect_image` fetches at most six total images across all
+With the source enabled, `inspect_image` fetches at most twelve total images across all
 providers per run. Google fetches use a persistent UTC daily request cap (default
 180; failed calls count), fixed 640x640 images with 120-degree field of view, strict internal panorama-reference
 validation, no redirects, and a 3 MB size ceiling. A per-run image is used in memory
@@ -161,11 +162,24 @@ internal Google-only test, while the paid product compares enabled sources.
 ## Spatial sampling refinement
 
 Google camera spacing is `clamp(radius * 0.2, 80, 250)` meters. Metadata queries
-remain bounded to five coarse locations; spatial filtering applies after Google's
+are bounded to 25 circular-grid locations; spatial filtering applies after Google's
 snapping, so different panorama IDs at nearby camera points do not consume repeated
 inspection slots. First view points toward the requested area's center, the second
 is opposite. Sampling offers one view per retained panorama before second views.
 Image fetches still happen only when selected by the agent, within the shared
-six-inspection budget. This is sparse geographic sampling, not exhaustive road or
+twelve-inspection budget. This is sparse geographic sampling, not exhaustive road or
 360-degree coverage; source timestamps remain capture dates, not live conditions.
 Historical free examples retain their original sampling/results.
+
+## Increased search-area coverage
+
+Google metadata lookup now uses up to 25 circular-grid points with at most five
+concurrent requests, instead of five center/cardinal probes. Query points cover the
+whole requested area, including diagonals, and are clipped at supported coordinate
+boundaries. Small areas can have fewer probes. Panorama minimum spacing remains
+80–250 m after snapping, so 25 query locations do not imply 25 distinct panoramas.
+Source-balanced selection retains at most 24 candidates. Google panorama ordering
+uses geographic spread and offers one view per location before second views. The
+agent can attempt 12 image inspections and aims for 8–12 views when coverage permits.
+The Google daily image cap remains 180; this change does not raise it or change price.
+Older static examples remain historical results from their labeled test runs.

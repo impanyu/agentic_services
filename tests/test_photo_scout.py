@@ -216,7 +216,7 @@ def test_google_sampling_deduplicates_nearby_camera_points(monkeypatch):
     monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_API_KEY','secret-fixture')
     positions=iter([(0,0),(0.0001,0),(0.003,0),(0,-0.003),(0,0.0001)])
     def handler(request):
-        lat,lon=next(positions)
+        lat,lon=next(positions,(0,0))
         return httpx.Response(200,json={'status':'OK','pano_id':f'pano_{lat}_{lon}'.replace('.','_'),
             'location':{'lat':lat,'lng':lon}})
     async def run():
@@ -230,3 +230,26 @@ def test_google_sampling_deduplicates_nearby_camera_points(monkeypatch):
     for r in rows:r['distanceMeters']=round(distance((0,0),(r['lat'],r['lon'])))
     sampled=diverse_sample(rows,3)
     assert len({(r['lat'],r['lon']) for r in sampled})==3
+
+
+def test_google_query_grid_covers_area_and_limits_concurrency(monkeypatch):
+    from agentic_services.photo_scout.sources import google_query_points,google_streetview
+    points=google_query_points(0,0,1000)
+    assert len(points)==25 and points[0]==(0,0)
+    assert all(distance((0,0),p)<1010 for p in points)
+    assert any(p[0]>0 and p[1]>0 for p in points)
+    assert any(p[0]<0 and p[1]<0 for p in points)
+    assert len(google_query_points(0,0,100))==5
+    monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_API_KEY','secret-fixture')
+    active=0; peak=0; requests=0
+    async def handler(request):
+        nonlocal active,peak,requests
+        active+=1;peak=max(peak,active);requests+=1
+        await asyncio.sleep(.001)
+        active-=1
+        return httpx.Response(200,json={'status':'ZERO_RESULTS'})
+    async def run():
+        async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as c:
+            return await google_streetview(c,0,0,1000)
+    assert asyncio.run(run())==[]
+    assert requests==25 and peak<=5
