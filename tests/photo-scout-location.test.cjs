@@ -30,17 +30,17 @@ test('denied permission never retries or substitutes a default location',()=>{
 // Run the actual page bindings: the map's location icon must request a device fix,
 // rather than recentering the default Chicago selection.
 function pageFixture(){
- const elements=new Map(),requests=[],moves=[],circles=[];
+ const elements=new Map(),requests=[],moves=[],circles=[];let created=0;
  const defaults={lat:'41.8827',lon:'-87.6233',radius:'1000',limit:'3'};
- function element(id){if(!elements.has(id))elements.set(id,{value:defaults[id]||'',textContent:'',listeners:{},addEventListener(type,fn){this.listeners[type]=fn;},setAttribute(){},querySelectorAll(){return [];},replaceChildren(){},append(){},classList:{add(){},remove(){}},reportValidity(){return true;},scrollIntoView(){}});return elements.get(id);}
- const layer=()=>({addTo(){return this;},on(){return this;},once(){return this;},setLatLng(p){this.position=p;return this;},setRadius(){return this;},clearLayers(){},getLayers(){return [];},getBounds(){return this.position;},getContainer(){return {};}});
+ function element(id){if(!elements.has(id))elements.set(id,{value:defaults[id]||'',textContent:'',dataset:{},showModal(){this.open=true;},close(){this.open=false;},listeners:{},addEventListener(type,fn){this.listeners[type]=fn;},setAttribute(){},querySelectorAll(){return [];},replaceChildren(){},append(){},classList:{add(){},remove(){}},reportValidity(){return true;},scrollIntoView(){}});return elements.get(id);}
+ const layer=()=>({addTo(){return this;},on(){return this;},once(){return this;},setLatLng(p){this.position=p;return this;},setRadius(){return this;},clearLayers(){this.clears=(this.clears||0)+1;},bindTooltip(content){this.tooltip=content;return this;},setTooltipContent(content){this.tooltip=content;return this;},getLayers(){return [];},getBounds(){return this.position;},getContainer(){return {};}});
  const map={setView(){return this;},on(){},hasLayer(){return true;},removeLayer(){},fitBounds(bounds){moves.push(bounds);}};
- const L={map:()=>map,control:{zoom:()=>layer(),layers:()=>layer()},tileLayer:()=>layer(),marker:()=>layer(),layerGroup:()=>layer(),circle:()=>{const c=layer();circles.push(c);return c;},divIcon:()=>({}),DomEvent:{disableClickPropagation(){},disableScrollPropagation(){}}};
+ const L={map:()=>map,control:{zoom:()=>layer(),layers:()=>layer()},tileLayer:()=>layer(),marker:p=>{const m=layer();m.position=p;return m;},layerGroup:()=>layer(),circle:()=>{const c=layer();circles.push(c);return c;},divIcon:()=>({}),DomEvent:{disableClickPropagation(){},disableScrollPropagation(){}}};
  const window={isSecureContext:true,addEventListener(){}},navigator={geolocation:{getCurrentPosition(success,error){requests.push({success,error});}}};
- const context={window,navigator,L,document:{createElement:()=>element('created'),body:{dataset:{},append(){}},getElementById:element,querySelector:element,querySelectorAll(){return [];},addEventListener(){}},location:{hostname:'test.invalid',search:''},localStorage:{removeItem(){}},sessionStorage:{},fetch:()=>new Promise(()=>{}),setTimeout:()=>1,clearTimeout(){},setInterval:()=>1,clearInterval(){},Number,URL,matchMedia:()=>({matches:true})};
+ const context={window,navigator,L,document:{createElement:()=>element('created'+(++created)),body:{dataset:{},append(){}},getElementById:element,querySelector:element,querySelectorAll(){return [];},addEventListener(){}},location:{hostname:'test.invalid',search:''},localStorage:{removeItem(){}},sessionStorage:{},fetch:()=>new Promise(()=>{}),setTimeout:()=>1,clearTimeout(){},setInterval:()=>1,clearInterval(){},Number,URL,matchMedia:()=>({matches:true})};
  vm.runInNewContext(readFileSync('photo-scout-site/location.js','utf8'),context);
  vm.runInNewContext(readFileSync('photo-scout-site/app.js','utf8'),context);
- return {interceptSubmission:fn=>{context.submitSearch=fn;},bearing:context.photoBearing,views:context.allPoiViews,element,requests,moves,circles,click:id=>element(id).listeners.click()};
+ return {activity(state,spot){context.activitySpot=spot;vm.runInNewContext('studioSpot=activitySpot;setStudioActivity('+JSON.stringify(state)+')',context);return vm.runInNewContext('({hidden:studioTask.hidden,state:studioTask.dataset.state,label:studioTaskLabel.textContent,position:studioActivityMarker?.position,clears:selfieActivityLayer.clears||0})',context);},closeStudio(){vm.runInNewContext('studioClose.listeners.click()',context);},openTask(){return vm.runInNewContext('studioTask.listeners.click();studio.open',context);},interceptSubmission:fn=>{context.submitSearch=fn;},bearing:context.photoBearing,views:context.allPoiViews,element,requests,moves,circles,click:id=>element(id).listeners.click()};
 }
 test('top-right location button waits for device coordinates and moves away from Chicago',()=>{
  const f=pageFixture();f.click('center-pin');assert.equal(f.requests.length,1);assert.equal(f.moves.length,0);assert.equal(f.element('center-pin').disabled,true);
@@ -70,4 +70,13 @@ test('map and shortlist retain scored images and their best heading, excluding u
  const missing={poi:{id:'poi3'},score:null,assessmentStatus:'no_verified_view'};
  const result=f.views({spots:[best],poiResults:[best,other,missing]});assert.equal(result.length,2);assert.equal(result[1].viewHeadingDegrees,90);
  assert.equal(f.views({spots:[],nearbyPois:[{id:'poi3'}]}).length,0);
+});
+
+
+test('selfie map activity uses the chosen place and survives dialog closure until completion',()=>{
+ const f=pageFixture(),spot={name:'Selected garden',poi:{lat:40.83,lon:-96.67}};
+ for(const state of ['uploading','queued','checking','running']){const view=f.activity(state,spot);assert.equal(view.hidden,false);assert.equal(view.state,state);assert.equal(view.position[0],40.83);assert.equal(view.position[1],-96.67);assert.equal(view.clears,0);}
+ f.closeStudio();assert.equal(f.openTask(),true);
+ const ready=f.activity('complete',spot);assert.equal(ready.position,undefined);assert.equal(ready.clears,1);assert.match(ready.label,/ready/);assert.equal(ready.hidden,false);
+ const failed=f.activity('failed',spot);assert.equal(failed.position,undefined);assert.match(failed.label,/attention/);
 });
