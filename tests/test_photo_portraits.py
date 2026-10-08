@@ -22,7 +22,9 @@ def test_portrait_validation_and_background_allowlist():
     assert portraits.background_reference('google-street-view','https://www.google.com/maps/@?map_action=pano&pano=abc&heading=90')=='google-streetview://abc/90'
 
 
-def test_private_job_edits_both_images_and_removes_upload(tmp_path,monkeypatch):
+@pytest.mark.parametrize('image_model',['gpt-image-2.5-sunburst','gpt-image-1.5'])
+def test_private_job_edits_both_images_and_removes_upload(tmp_path,monkeypatch,image_model):
+    monkeypatch.setenv('PHOTO_SCOUT_IMAGE_MODEL',image_model)
     calls=[];raw=photo()
     class Client:
         images=None
@@ -44,7 +46,11 @@ def test_private_job_edits_both_images_and_removes_upload(tmp_path,monkeypatch):
     assert client.get(path,headers=auth).status_code==404
     assert client.get(path,headers=owned).json()['state']=='queued'
     assert asyncio.run(app.state.process_photo_portrait())
-    assert len(calls[0]['image'])==2;assert calls[0]['input_fidelity']=='high';assert calls[0]['n']==1
+    assert len(calls[0]['image'])==2;assert calls[0]['model']==image_model;assert calls[0]['n']==1
+    if image_model=='gpt-image-1.5':
+        assert calls[0]['input_fidelity']=='high';assert calls[0]['quality']=='high'
+    else:
+        assert 'input_fidelity' not in calls[0];assert calls[0]['quality']=='max'
     assert 'keep the original clothing' in calls[0]['prompt']
     assert client.get(path,headers=owned).json()['state']=='complete'
     image=client.get(path+'/image',headers=owned);assert image.content==raw;assert image.headers['cache-control']=='private, no-store'

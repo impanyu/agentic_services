@@ -90,7 +90,7 @@ def validate_result(result,rows,inspected,limit):
 async def explore(settings,payload,rows,statuses):
     """Fixed download -> batched model scoring -> deterministic ranking; no tools."""
     rows=rows[:MAX_SCORED_IMAGES]
-    model=os.getenv('PHOTO_SCOUT_MODEL',settings.openai_model)
+    model=os.getenv('PHOTO_SCOUT_MODEL','gpt-6-astra')
     if not rows:
         return {'spots':[],'summary':'No eligible geolocated images were found in this sampled area.',
             'sources':statuses,'inspectedImages':0,'imageAssessments':[],
@@ -117,7 +117,7 @@ async def explore(settings,payload,rows,statuses):
             return row,data
         except Exception:
             return row,None
-    async with AsyncOpenAI(api_key=settings.openai_api_key,timeout=75,max_retries=0) as client:
+    async with AsyncOpenAI(api_key=settings.openai_api_key,timeout=180,max_retries=0) as client:
         async def score_batch(batch):
             async with batch_slots:
                 loaded=await asyncio.gather(*(download(row) for row in batch))
@@ -133,7 +133,7 @@ async def explore(settings,payload,rows,statuses):
                 try:
                     response=await client.responses.parse(model=model,instructions=INSTRUCTIONS,
                         input=[{'role':'user','content':content}],text_format=VisualBatch,
-                        max_output_tokens=6000,store=False)
+                        max_output_tokens=12000,store=False)
                     output=response.output_parsed
                     ids=[a.image_id for a in output.assessments] if output else []
                     if len(ids)!=len(set(ids)) or set(ids)!={r['id'] for r,_ in usable}:
