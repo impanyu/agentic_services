@@ -22,7 +22,7 @@ from pydantic import BaseModel, Field, model_validator
 from .styles import PHOTO_STYLES, mapped_categories, style_briefs
 from .scoring import explore
 from .intent import IntentRequest, resolve_intent
-from .sources import candidates, nearby_pois, google_enabled, google_image_data
+from .sources import candidates, nearby_pois, google_enabled, google_image_data, MAX_SCORED_IMAGES
 
 
 class ExploreRequest(BaseModel):
@@ -85,7 +85,7 @@ class PhotoStore:
             db.execute("UPDATE photo_scout_jobs SET state='failed',error='Search interrupted repeatedly. Please submit a new search.' WHERE kind='preview' AND state='running' AND lease_until<? AND attempts>=2",(now,))
             row=db.execute("SELECT * FROM photo_scout_jobs WHERE kind='preview' AND (state='queued' OR (state='running' AND lease_until<?)) ORDER BY created LIMIT 1",(now,)).fetchone()
             if row:
-                db.execute("UPDATE photo_scout_jobs SET state='running',lease_until=?,attempts=attempts+1 WHERE id=?",(now+360,row['id']))
+                db.execute("UPDATE photo_scout_jobs SET state='running',lease_until=?,attempts=attempts+1 WHERE id=?",(now+720,row['id']))
         return dict(row) if row else None
     def connect(self):
         db=sqlite3.connect(self.path,timeout=15); db.row_factory=sqlite3.Row; return db
@@ -244,7 +244,7 @@ def create_photo_router(settings,require_api,verification_store):
     async def run(payload,allow_expired=False):
         enabled()
         if lock.locked(): raise HTTPException(429,'An exploration is in progress; try again shortly')
-        async with lock, asyncio.timeout(270):
+        async with lock, asyncio.timeout(660):
             rows,statuses,pois=await catalog(payload,allow_expired)
             if rows and not any(s['status']=='ok' for n,s in statuses.items() if n!='openstreetmap'):
                 raise HTTPException(503,'Image sources are temporarily unavailable')
@@ -270,7 +270,7 @@ def create_photo_router(settings,require_api,verification_store):
             'googleStreetView':{'credentialConfigured':bool(os.getenv('PHOTO_SCOUT_GOOGLE_API_KEY')),
                 'imageAnalysisEnabled':google_enabled(),
                 'dailyImageRequestLimit':max(0,int(os.getenv('PHOTO_SCOUT_GOOGLE_DAILY_IMAGE_LIMIT','0'))) or None},
-            'limits':{'radiusMeters':20000,'sampledImages':24,'inspectedImages':24,'imagesPerBatch':6,'parallelBatches':2,'googleQueryLocations':25,'timeoutSeconds':270},
+            'limits':{'radiusMeters':20000,'sampledImages':MAX_SCORED_IMAGES,'inspectedImages':MAX_SCORED_IMAGES,'imagesPerBatch':6,'parallelBatches':4,'viewsPerPanorama':8,'googleQueryLocations':25,'timeoutSeconds':660},
             'analysisMethod':'fixed-batch-scoring','discoveryMethod':'poi-first','poiProviders':{'openstreetmap':'enabled','google-places':'not_connected'},
             'privacy':'Coordinates/preferences are sent to imagery providers/OpenAI; paid reports retained for 30 days.'}
 

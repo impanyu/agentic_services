@@ -180,11 +180,13 @@ def test_google_candidates_keep_angles_without_credentials(monkeypatch):
         async with httpx.AsyncClient(transport=httpx.MockTransport(lambda r:httpx.Response(200,json=data))) as c:
             return await google_streetview(c,0,0,1000)
     rows=asyncio.run(run())
-    assert len(rows)==2 and {r['viewHeadingDegrees'] for r in rows}=={0,180}
+    assert len(rows)==8 and {r['viewHeadingDegrees'] for r in rows}==set(range(0,360,45))
     assert all(r['viewFovDegrees']==120 for r in rows)
+    assert {r['viewPitchDegrees'] for r in rows}=={0}
+    assert all('pitch=0' in r['sourceUrl'] for r in rows)
     assert 'secret-fixture' not in json.dumps(rows)
     for r in rows:r['distanceMeters']=0
-    assert len(diverse_sample(rows))==2
+    assert len(diverse_sample(rows))==8
     choices=VisualResult(spots=[VisualChoice(image_id=rows[0]['id'],name='Park',score=80,visible_evidence='Trees',photo_tip='Frame trees',uncertainty='Old image',confidence='medium')],summary='Park')
     result=validate_result(choices,rows,{rows[0]['id']},3)
     assert result[0]['imageUrl'] is None and 'heading=0' in result[0]['sourceUrl']
@@ -248,7 +250,7 @@ def test_google_sampling_deduplicates_nearby_camera_points(monkeypatch):
     rows=asyncio.run(run())
     points={(r['lat'],r['lon']) for r in rows}
     assert points=={(0,0),(0.003,0),(0,-0.003)}
-    assert len(rows)==6
+    assert len(rows)==24
     assert google_sampling_spacing(100)==80 and google_sampling_spacing(1000)==200 and google_sampling_spacing(5000)==250
     for r in rows:r['distanceMeters']=round(distance((0,0),(r['lat'],r['lon'])))
     sampled=diverse_sample(rows,3)
@@ -338,8 +340,8 @@ def test_google_targets_poi_and_points_camera_at_it(monkeypatch):
         async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as c:
             return await google_streetview(c,0,0,1000,targets)
     rows=asyncio.run(run())
-    assert len(requests)==1 and len(rows)==2
-    assert {r['viewHeadingDegrees'] for r in rows}=={0,180}
+    assert len(requests)==1 and len(rows)==8
+    assert {r['viewHeadingDegrees'] for r in rows}==set(range(0,360,45))
     assert all(r['poi']['id']=='osm:node:1' for r in rows)
 
 
@@ -528,7 +530,7 @@ def test_fixed_pipeline_scores_every_image_and_globally_ranks(tmp_path,monkeypat
     assert result['inspectedImages']==13 and len(result['imageAssessments'])==13
     assert [spot['image_id'] for spot in result['spots']]==['12','11','10']
     assert result['analysisMethod']=='fixed-batch-scoring' and result['scoring']['batches']==3
-    assert result['usage']=={'requests':3,'inputTokens':30,'outputTokens':60} and peak<=2
+    assert result['usage']=={'requests':3,'inputTokens':30,'outputTokens':60} and peak<=4
 
 
 def test_fixed_pipeline_reports_partial_failures(tmp_path,monkeypatch):
@@ -641,3 +643,56 @@ def test_city_pois_sample_bounded_regions_in_one_request(monkeypatch):
     rows,status=asyncio.run(sources.nearby_pois(0,0,20000,['park']))
     assert len(rows)==5 and status['sampledAreas']==5 and status['areaRadiusMeters']==5000
     assert all(row['distanceMeters']<=20000 for row in rows)
+
+
+def test_multiangle_candidates_preserve_every_panorama_view(monkeypatch):
+    import agentic_services.photo_scout.sources as sources
+    monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_ENABLED','1')
+    monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_API_KEY','test')
+    monkeypatch.setenv('PHOTO_SCOUT_PANORAMAX_ENABLED','0')
+    monkeypatch.delenv('PHOTO_SCOUT_MAPILLARY_TOKEN',raising=False)
+    async def empty(*a): return []
+    async def google(*a,**kw):
+        return [{'id':f'{i}:{j}','provider':'google-street-view','lat':0,'lon':i*.001,
+            'imageUrl':f'google-streetview://pano{i}/{j*45}/0','poi':{'id':str(i),'lat':0,'lon':i*.001}}
+            for i in range(8) for j in range(8)]
+    monkeypatch.setattr(sources,'commons',empty)
+    monkeypatch.setattr(sources,'google_streetview',google)
+    rows,status=asyncio.run(sources.candidates(0,0,1000,[{'id':'test','lat':0,'lon':0}]))
+    assert len(rows)==64 and status['google-street-view']['sampledImages']==64
+    assert status['google-street-view']['maxViewsPerLocation']==8
+
+
+def test_multiangle_scoring_keeps_best_view_even_after_old_24_image_cap(tmp_path,monkeypatch):
+    import json
+    from types import SimpleNamespace
+    import agentic_services.photo_scout.scoring as visual
+    settings=Settings(openai_api_key='test',openai_model='test',database_path=tmp_path/'db',base_url='https://api.test')
+    rows=[{'id':str(i),'provider':'test','lat':0,'lon':0,'imageUrl':str(i),'viewHeadingDegrees':90,
+        'viewPitchDegrees':0,'poi':{'id':'same','name':'Tower','lat':0,'lon':0}} for i in range(30)]
+    async def image(url):return 'data:image/jpeg;base64,/9j/dGVzdA=='
+    async def parse(**kw):
+        batch=[json.loads(c['text'])['image'] for c in kw['input'][0]['content'][1:] if c['type']=='input_text']
+        return SimpleNamespace(output_parsed=visual.VisualBatch(assessments=[visual.ImageAssessment(
+            image_id=r['id'],poi_id='same',name='Tower',score=50+int(r['id']),recommend=True,
+            visible_evidence='Tower',photo_tip='Frame tower',uncertainty='Access unknown',confidence='high') for r in batch]),usage=None)
+    _scoring_client(monkeypatch,parse);monkeypatch.setattr(visual,'image_data',image)
+    result=asyncio.run(visual.explore(settings,ExploreRequest(lat=0,lon=0),rows,{}))
+    assert result['inspectedImages']==30
+    assert len(result['spots'])==1 and result['spots'][0]['image_id']=='29'
+    assert result['spots'][0]['viewPitchDegrees']==0
+
+
+def test_google_horizontal_reference_reaches_provider(tmp_path,monkeypatch):
+    import agentic_services.photo_scout.sources as sources
+    monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_ENABLED','1');monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_API_KEY','test')
+    monkeypatch.setenv('WEB_EVIDENCE_DB',str(tmp_path/'db'));monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_DAILY_IMAGE_LIMIT','0')
+    requests=[]
+    def handler(r):
+        requests.append(r); assert r.url.params['pitch']=='0' and r.url.params['heading']=='90'
+        return httpx.Response(200,content=b'\xff\xd8\xfftest')
+    real=httpx.AsyncClient
+    monkeypatch.setattr(sources.httpx,'AsyncClient',lambda **kw:real(transport=httpx.MockTransport(handler)))
+    asyncio.run(sources.google_image_data('google-streetview://fixture/90'))
+    with pytest.raises(ValueError):asyncio.run(sources.google_image_data('google-streetview://fixture/90/80'))
+    assert len(requests)==1

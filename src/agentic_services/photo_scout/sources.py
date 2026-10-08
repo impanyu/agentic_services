@@ -13,6 +13,9 @@ PANORAMAX_IMAGE_HOSTS = frozenset({
     'panoramax-storage-public-fast.s3.gra.perf.cloud.ovh.net',
 })
 
+MAX_SCORED_IMAGES = 224
+VIEWS_PER_PANORAMA = 8
+
 HEADERS = {'User-Agent': 'AISoupPhotoScout/0.1 (https://aisoup.net/contact/)'}
 
 
@@ -255,18 +258,19 @@ async def google_streetview(client, lat, lon, radius, targets=None):
         seen.add(pano)
         locations.append((lat2,lon2))
         poi=targets[index] if targets is not None else None
-        towards_center=bearing((lat2,lon2),(poi["lat"],poi["lon"]) if poi else (lat,lon))
-        for heading in (towards_center,(towards_center+180)%360):
+        # Eight compass headings cover 360 degrees with overlapping views.
+        views=[(heading,0) for heading in range(0,360,45)]
+        for heading,pitch in views:
             rows.append({'id':f'google:{pano}:{heading}','provider':'google-street-view',
-                'title':f'Outdoor Street View facing {heading} degrees','lat':lat2,'lon':lon2,
+                'title':f'Street View facing {heading} degrees, pitch {pitch} degrees','lat':lat2,'lon':lon2,
                 'locationType':'camera_geotag','imageUrl':f'google-streetview://{pano}/{heading}',
                 'sourceUrl':'https://www.google.com/maps/@?'+urlencode({'api':1,'map_action':'pano','pano':pano,
-                    'viewpoint':f'{lat2},{lon2}','heading':heading,'pitch':0,'fov':120}),
+                    'viewpoint':f'{lat2},{lon2}','heading':heading,'pitch':pitch,'fov':120}),
                 'author':text(data.get('copyright')) or 'Google Street View',
                 'license':'Google Maps Platform terms; not an open license',
                 'licenseUrl':'https://cloud.google.com/maps-platform/terms',
                 'sourceDate':data.get('date'),'capturedAt':data.get('date'),
-                'viewHeadingDegrees':heading,'viewPitchDegrees':0,'viewFovDegrees':120,
+                'viewHeadingDegrees':heading,'viewPitchDegrees':pitch,'viewFovDegrees':120,
                 'description':'Street View camera position; access and safe standing point unverified.',
                 **({'poi':poi,'poiCandidates':[poi],'poiDistanceMeters':round(distance((lat2,lon2),(poi['lat'],poi['lon'])))} if poi else {})})
     if not successful: raise ValueError('Google Street View metadata unavailable')
@@ -283,7 +287,7 @@ def diverse_sample(rows,limit=12):
         # One view from each spatially sampled panorama before any second view.
         panoramas={}
         for row in groups['google-street-view']:
-            panoramas.setdefault(row['imageUrl'].rsplit('/',1)[0],[]).append(row)
+            panoramas.setdefault(row['imageUrl'].split('/')[2],[]).append(row)
         remaining=list(panoramas.values()); spread=[remaining.pop(0)]
         while remaining:
             group=max(remaining,key=lambda g:min(distance((g[0]['lat'],g[0]['lon']),
@@ -322,7 +326,7 @@ async def candidates(lat,lon,radius,pois=None):
             else:
                 statuses[name]={'status':'ok','eligibleImages':len(result)}; rows+=result
                 if name=='google-street-view':
-                    statuses[name].update(samplingSpacingMeters=google_sampling_spacing(radius),maxViewsPerLocation=2,
+                    statuses[name].update(samplingSpacingMeters=google_sampling_spacing(radius),maxViewsPerLocation=VIEWS_PER_PANORAMA,
                         queriedLocations=len(pois) if pois is not None else len(google_query_points(lat,lon,radius)))
     valid=[]
     for row in rows:
@@ -335,7 +339,11 @@ async def candidates(lat,lon,radius,pois=None):
                 if separation>250: continue
                 row['poi']=nearest;row['poiCandidates']=[p for p in pois if distance((row['lat'],row['lon']),(p['lat'],p['lon']))<=250];row['poiDistanceMeters']=round(separation)
             row['distanceMeters']=round(d); valid.append(row)
-    sampled=diverse_sample(valid,24)
+    # Keep every angle of each discovered Google panorama; a global 24-image
+    # cut previously discarded most alternate views before the model saw them.
+    google_rows=[r for r in valid if r['provider']=='google-street-view']
+    other_rows=[r for r in valid if r['provider']!='google-street-view']
+    sampled=(google_rows+diverse_sample(other_rows,24))[:MAX_SCORED_IMAGES]
     for name,status in statuses.items():
         if status['status']=='ok': status['sampledImages']=sum(r['provider']==name for r in sampled)
     return sampled,statuses
