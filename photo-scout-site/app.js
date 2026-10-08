@@ -39,17 +39,23 @@ const searchArea=L.circle([41.8827,-87.6233],{radius:1000,color:'#375947',weight
 L.control.layers(null,{'Search radius':searchArea,'Candidate places':candidatePoiLayer,'Recommended places':photoLocationLayer},{collapsed:true}).addTo(map);
 function syncMapSelection(){const lat=Number(el('lat').value),lon=Number(el('lon').value);if(!Number.isFinite(lat)||!Number.isFinite(lon)||Math.abs(lat)>85||Math.abs(lon)>180)return;searchArea.setLatLng([lat,lon]).setRadius(Number(el('radius').value));el('map-selection').textContent=`${lat.toFixed(5)}, ${lon.toFixed(5)}`;el('coordinate-readout').textContent=el('map-selection').textContent;el('map-radius').textContent=`Searching within ${Number(el('radius').value)>=1000?Number(el('radius').value)/1000+' km':el('radius').value+' m'}`;}
 selected.on('dragend',()=>{const p=selected.getLatLng();pick(p.lat,p.lng);});
-el('center-pin').addEventListener('click',()=>map.fitBounds(searchArea.getBounds(),{padding:[32,32],maxZoom:16}));
+
 function coordinates(){const styles=[...el('style-options').querySelectorAll('input:checked')].map(i=>i.value).filter(s=>s!=='any');return {lat:Number(el('lat').value),lon:Number(el('lon').value),radius:Number(el('radius').value),photoStyles:styles.length?styles:null}}
 function updateSelection(){const count=el("poi-list").querySelectorAll("input:checked").length;el("poi-count").textContent=`${count} of ${poiCatalog?.nearbyPois.length||0} places selected`;updateSubmitState();}
 function invalidatePois(){catalogGeneration++;candidatePoiLayer.clearLayers();poiCatalog=null;el("poi-selection").hidden=true;el("poi-list").replaceChildren();}
 function pick(lat,lon){invalidatePois();el('lat').value=lat.toFixed(6);el('lon').value=lon.toFixed(6);selected.setLatLng([lat,lon]);syncMapSelection();}
 const locationStatus=s=>{el('location-status').textContent=s};
-el('locate').addEventListener('click',()=>{
+let locationPending=false;
+function locateCurrentPosition(){
+ if(locationPending)return;
  if(!window.isSecureContext||!navigator.geolocation){locationStatus('Location is unavailable in this browser. Open the HTTPS website, or choose a point on the map.');return;}
- const button=el('locate');
+ const button=el('locate'),mapButton=el('center-pin');
  window.PhotoScoutLocation.request({geolocation:navigator.geolocation,onState:state=>{
-  button.disabled=state.status==='pending';button.setAttribute('aria-busy',String(state.status==='pending'));button.textContent=state.status==='pending'?'⌖ Locating…':state.status==='success'?'✓ Located':'⌖ Near me';locationStatus(state.message);
+  locationPending=state.status==='pending';
+  for(const control of [button,mapButton]){control.disabled=locationPending;control.setAttribute('aria-busy',String(locationPending));}
+  button.textContent=locationPending?'⌖ Locating…':state.status==='success'?'✓ Located':'⌖ Near me';
+  mapButton.textContent=locationPending?'…':'⌖';locationStatus(state.message);
+  el('map-notice').textContent=state.message;
  },onPosition:position=>{
   const {latitude:lat,longitude:lon,accuracy}=position.coords;
   pick(lat,lon);map.fitBounds(searchArea.getBounds(),{padding:[32,32],maxZoom:16});
@@ -58,7 +64,8 @@ el('locate').addEventListener('click',()=>{
   el('map-heading').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
   runSearchPipeline();
  }});
-});
+}
+for(const id of ['locate','center-pin'])el(id).addEventListener('click',locateCurrentPosition);
 map.on('click',e=>pick(e.latlng.lat,e.latlng.lng));
 el('radius').addEventListener('change',()=>{invalidatePois();syncMapSelection();updateParameterSummary();});
 el('limit').addEventListener('change',updateParameterSummary);

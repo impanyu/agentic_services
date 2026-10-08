@@ -26,3 +26,29 @@ test('unavailable coarse fix retries precisely and accepts the new coordinates',
 test('denied permission never retries or substitutes a default location',()=>{
  const f=fixture();let calls=0;f.start({getCurrentPosition(success,error){calls++;error({code:1});}});assert.equal(calls,1);assert.equal(f.positions.length,0);assert.match(f.states.at(-1).message,/not your detected location/);
 });
+
+// Run the actual page bindings: the map's location icon must request a device fix,
+// rather than recentering the default Chicago selection.
+function pageFixture(){
+ const elements=new Map(),requests=[],moves=[],circles=[];
+ const defaults={lat:'41.8827',lon:'-87.6233',radius:'1000',limit:'3'};
+ function element(id){if(!elements.has(id))elements.set(id,{value:defaults[id]||'',textContent:'',listeners:{},addEventListener(type,fn){this.listeners[type]=fn;},setAttribute(){},querySelectorAll(){return [];},replaceChildren(){},reportValidity(){return true;},scrollIntoView(){}});return elements.get(id);}
+ const layer=()=>({addTo(){return this;},on(){return this;},once(){return this;},setLatLng(p){this.position=p;return this;},setRadius(){return this;},clearLayers(){},getBounds(){return this.position;}});
+ const map={setView(){return this;},on(){},hasLayer(){return true;},removeLayer(){},fitBounds(bounds){moves.push(bounds);}};
+ const L={map:()=>map,control:{zoom:()=>layer(),layers:()=>layer()},tileLayer:()=>layer(),marker:()=>layer(),layerGroup:()=>layer(),circle:()=>{const c=layer();circles.push(c);return c;},divIcon:()=>({}),DomEvent:{disableClickPropagation(){},disableScrollPropagation(){}}};
+ const window={isSecureContext:true,addEventListener(){}},navigator={geolocation:{getCurrentPosition(success,error){requests.push({success,error});}}};
+ const context={window,navigator,L,document:{body:{dataset:{}},getElementById:element,querySelector:element,querySelectorAll(){return [];},addEventListener(){}},location:{hostname:'test.invalid',search:''},localStorage:{removeItem(){}},sessionStorage:{},fetch:()=>new Promise(()=>{}),setTimeout:()=>1,clearTimeout(){},Number,URL,matchMedia:()=>({matches:true})};
+ vm.runInNewContext(readFileSync('photo-scout-site/location.js','utf8'),context);
+ vm.runInNewContext(readFileSync('photo-scout-site/app.js','utf8'),context);
+ return {element,requests,moves,circles,click:id=>element(id).listeners.click()};
+}
+test('top-right location button waits for device coordinates and moves away from Chicago',()=>{
+ const f=pageFixture();f.click('center-pin');assert.equal(f.requests.length,1);assert.equal(f.moves.length,0);assert.equal(f.element('center-pin').disabled,true);
+ f.requests[0].success({coords:{latitude:40.885231,longitude:-96.708139,accuracy:8}});
+ assert.equal(f.element('lat').value,'40.885231');assert.equal(f.element('lon').value,'-96.708139');assert.equal(f.moves.length,1);assert.equal(f.element('center-pin').disabled,false);
+});
+test('both location buttons share pending state and denial never recenters Chicago',()=>{
+ const f=pageFixture();f.click('center-pin');f.click('locate');assert.equal(f.requests.length,1);assert.equal(f.element('locate').disabled,true);
+ f.requests[0].error({code:1});assert.equal(f.moves.length,0);assert.equal(f.element('locate').disabled,false);assert.match(f.element('map-notice').textContent,/not your detected location/);
+ f.click('locate');assert.equal(f.requests.length,2);
+});
