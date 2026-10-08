@@ -30,3 +30,5 @@ html:has(body.photo-app),body.photo-app{height:100%;overflow:hidden}.photo-app m
 .map-overlay-controls{position:absolute;top:25px;right:25px;z-index:780;display:flex;flex-direction:column;align-items:flex-end;gap:10px}.map-overlay-controls .search-history,.map-overlay-controls .map-toolbar,.map-overlay-controls .center-map{position:relative;top:auto;right:auto}.map-overlay-controls .center-map{flex:none}.map-overlay-controls .history-menu{right:0;top:calc(100% + 10px)}.map-overlay-controls .map-tools{top:calc(100% + 10px)}
 @media(max-width:760px){.map-overlay-controls{top:18px;right:16px;gap:8px}.map-overlay-controls .search-history>summary{padding:9px 11px;font-size:10px;border-radius:11px}}
 .map-overlay-controls .leaflet-control{margin:0;float:none;clear:none}.map-overlay-controls .leaflet-control-layers{max-width:calc(100vw - 32px)}
+
+.map-overlay-controls .map-toolbar[open]{z-index:800}
