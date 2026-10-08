@@ -151,11 +151,10 @@ async def explore(settings,payload,rows,statuses):
     assessments=cached+fresh
     if not assessments: raise ValueError('No images could be scored; retry the search')
     scored={a.image_id for a in assessments}
-    eligible=[a for a in assessments if a.recommend and validate_result(
+    eligible=[a for a in assessments if validate_result(
         VisualResult(spots=[a],summary=''),rows,{a.image_id},1)]
-    spots=validate_result(VisualResult(spots=eligible,summary=''),rows,scored,payload.limit)
     # Keep the best identity-supported view for every POI, including low scores.
-    # Unsuitable places remain visible as assessed candidates, never as recommendations.
+    # Model suitability flags are advisory; rankings have no score or suitability cutoff.
     poi_results=[];seen_pois=set()
     for assessment in sorted(assessments,key=lambda a:a.score,reverse=True):
         view=validate_result(VisualResult(spots=[assessment],summary=''),rows,{assessment.image_id},1)
@@ -164,6 +163,7 @@ async def explore(settings,payload,rows,statuses):
         if poi_id in seen_pois:continue
         seen_pois.add(poi_id);item['recommend']=assessment.recommend
         item['assessmentStatus']='rated';poi_results.append(item)
+    spots=poi_results[:payload.limit] if poi_results else validate_result(VisualResult(spots=eligible,summary=''),rows,scored,payload.limit)
     mood=', '.join(s['label'] for s in style_briefs(payload.photoStyles))
     summary=(f'Highest-scoring photo opportunities{(" for "+mood) if mood else ""}: '+
         '; '.join(s['name'] for s in spots)+'. See the inspected visual evidence and composition ideas below.') if spots else (
@@ -180,7 +180,7 @@ async def explore(settings,payload,rows,statuses):
     downloaded=sum(r['downloaded'] for r in results);failed_downloads=sum(r['downloadFailed'] for r in results)
     failed_scoring=sum(r['scoringFailed'] for r in results)
     usages=[r['usage'] for r in results if r['usage']]
-    return {'spots':spots,'poiResults':poi_results,'summary':summary,'sources':statuses,
+    return {'topLimit':payload.limit,'spots':spots,'poiResults':poi_results,'summary':summary,'sources':statuses,
         'inspectedImages':len(scored),'inspectedImageSources':sorted({by_id[i]['provider'] for i in scored}),
         'imageAssessments':audit,'analysisMethod':'fixed-batch-scoring',
         'scoring':{'candidateImages':len(rows),'downloadedImages':downloaded,'scoredImages':len(scored),'cachedImages':len(cached),'newlyScoredImages':len(fresh),

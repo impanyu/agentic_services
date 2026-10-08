@@ -548,7 +548,8 @@ def test_fixed_pipeline_reports_partial_failures(tmp_path,monkeypatch):
         return SimpleNamespace(output_parsed=visual.VisualBatch(assessments=assessments),usage=SimpleNamespace(input_tokens=10,output_tokens=20))
     _scoring_client(monkeypatch,parse);monkeypatch.setattr(visual,'image_data',image)
     result=asyncio.run(visual.explore(settings,ExploreRequest(lat=0,lon=0),_scoring_rows(),{}))
-    assert result['spots']==[] and result['inspectedImages']==7
+    assert len(result['spots'])==3 and result['inspectedImages']==7
+    assert all(s['recommend'] is False for s in result['spots'])
     assert result['scoring']=={'candidateImages':13,'downloadedImages':12,'scoredImages':7,'downloadFailedImages':1,'scoringFailedImages':5,'batches':3,'cachedImages':0,'newlyScoredImages':7}
     assert len(result['imageAssessments'])==7 and 'could not be scored' in result['coverage']
 
@@ -768,3 +769,21 @@ def test_thumbnail_loads_do_not_consume_source_search_limit(tmp_path,monkeypatch
     url='https://www.google.com/maps/@?map_action=pano&pano=fixture&heading=315'
     signed=client.post('/photo-scout/v1/thumbnails',json={'sourceUrls':[url]},headers=headers).json()['imageUrls'][0]
     for _ in range(24):assert client.get(signed,headers=headers).status_code==200
+
+
+def test_low_scoring_unsuitable_pois_still_fill_selected_top_five(tmp_path,monkeypatch):
+    import json
+    from types import SimpleNamespace
+    import agentic_services.photo_scout.scoring as visual
+    settings=Settings(openai_api_key='test',openai_model='test',database_path=tmp_path/'db',base_url='https://api.test')
+    async def image(url):return 'data:image/jpeg;base64,/9j/dGVzdA=='
+    async def parse(**kw):
+        batch=[json.loads(c['text'])['image'] for c in kw['input'][0]['content'][1:] if c['type']=='input_text']
+        choices=[_scoring_assessment(visual,r,False).model_copy(update={'score':int(r['id'])}) for r in batch]
+        return SimpleNamespace(output_parsed=visual.VisualBatch(assessments=choices),usage=None)
+    _scoring_client(monkeypatch,parse);monkeypatch.setattr(visual,'image_data',image)
+    result=asyncio.run(visual.explore(settings,ExploreRequest(lat=0,lon=0,limit=5),_scoring_rows(),{}))
+    assert len(result['poiResults'])==13
+    assert result['topLimit']==5 and len(result['spots'])==5
+    assert [s['score'] for s in result['spots']]==[12,11,10,9,8]
+    assert all(s['recommend'] is False for s in result['spots'])
