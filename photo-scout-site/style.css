@@ -101,3 +101,10 @@ html:has(body.photo-app),body.photo-app{height:100%;overflow:hidden}.photo-app m
 @media(max-width:760px){.selfie-task{top:calc(62px + env(safe-area-inset-top));left:12px;transform:none;width:calc(100% - 150px);max-width:260px;padding:9px 10px;gap:7px;border-radius:14px}.selfie-task strong{font-size:11px}.selfie-task small{font-size:9px}.selfie-task-spark{width:23px;height:23px;font-size:19px}.photo-app:has(.selfie-task:not([hidden])) .map-notice{top:150px}.photo-app:has(.map-overlay-controls details[open]) .selfie-task{visibility:hidden}}
 @media(max-height:500px) and (orientation:landscape){.selfie-task{top:12px;left:50%;transform:translateX(-50%);width:280px}.photo-app:has(.map-overlay-controls details[open]) .selfie-task{visibility:hidden}}
 @media(prefers-reduced-motion:reduce){.selfie-task-spark,.selfie-star,.selfie-glow{animation:none}}
+
+/* Keep the brand readable above map labels, especially on small screens. */
+.map-brand{background:#fffefb;text-shadow:none;padding:6px 10px 6px 6px;border:1px solid #e9e5ed;border-radius:17px;box-shadow:0 4px 18px #302b4017;white-space:nowrap;gap:8px}
+.brand-mark{flex:0 0 auto;line-height:1;box-shadow:none}
+.brand-mark svg{display:block;width:24px;height:24px}
+.photo-app[data-map-style=night] .map-brand{background:#292c3b;border-color:#454052;text-shadow:none}
+@media(max-width:760px){.map-brand{padding:5px 8px 5px 5px;border-radius:14px;gap:7px}.brand-mark svg{width:21px;height:21px}}
