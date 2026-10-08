@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import base64
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urlsplit, parse_qs
 import hashlib
 import hmac
 import json
@@ -23,6 +23,10 @@ from .styles import PHOTO_STYLES, mapped_categories, style_briefs
 from .scoring import explore
 from .intent import IntentRequest, resolve_intent
 from .sources import candidates, nearby_pois, google_enabled, google_image_data, MAX_SCORED_IMAGES
+
+
+class ThumbnailRequest(BaseModel):
+    sourceUrls: list[str] = Field(max_length=24)
 
 
 class ExploreRequest(BaseModel):
@@ -225,6 +229,20 @@ def create_photo_router(settings,require_api,verification_store):
             sig=hmac.new(settings.service_api_key.encode(),f'{ref}|{expires}'.encode(),hashlib.sha256).hexdigest()
             spot['imageUrl']=settings.base_url+'/photo-scout/v1/street-view-image?'+urlencode({'reference':ref,'expires':expires,'signature':sig})
         return result
+
+    @router.post('/photo-scout/v1/thumbnails')
+    def thumbnails(payload:ThumbnailRequest,authorization:str|None=Header(None)):
+        require_api(authorization)
+        results=[]
+        for url in payload.sourceUrls:
+            if len(url)>4000:raise HTTPException(422,'Invalid Street View URL')
+            u=urlsplit(url);q=parse_qs(u.query)
+            pano=q.get('pano',[''])[0];heading=q.get('heading',[''])[0]
+            if u.scheme!='https' or u.netloc!='www.google.com' or u.path!='/maps/@' or q.get('map_action')!=['pano'] or not re.fullmatch(r'[A-Za-z0-9_-]{1,200}',pano) or not heading.isdigit() or not 0<=int(heading)<360:
+                raise HTTPException(422,'Invalid Street View URL')
+            result=image_links({'spots':[{'streetViewReference':f'google-streetview://{pano}/{int(heading)}'}]})
+            results.append(result['spots'][0].get('imageUrl'))
+        return Response(json.dumps({'imageUrls':results}),media_type='application/json',headers={'Cache-Control':'private, no-store'})
 
     @router.get('/photo-scout/v1/street-view-image')
     async def street_view_image(reference:str,expires:int,signature:str,authorization:str|None=Header(None)):

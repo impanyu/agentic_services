@@ -740,3 +740,19 @@ def test_score_cache_context_and_expiry(tmp_path,monkeypatch):
     cache.put([(key,{'score':70})]);assert cache.get(key)=={'score':70}
     monkeypatch.setattr(module.time,'time',lambda:9999999999)
     assert cache.get(key) is None
+
+
+def test_history_thumbnail_links_require_auth_and_valid_google_panorama(tmp_path):
+    from urllib.parse import urlsplit,parse_qs
+    settings=Settings(openai_api_key=None,openai_model='test',database_path=tmp_path/'db',base_url='https://api.test',service_api_key='private')
+    client=TestClient(create_app(settings=settings));headers={'Authorization':'Bearer private'}
+    url='https://www.google.com/maps/@?api=1&map_action=pano&pano=fixture_pano&heading=225'
+    assert client.post('/photo-scout/v1/thumbnails',json={'sourceUrls':[url]}).status_code==401
+    response=client.post('/photo-scout/v1/thumbnails',json={'sourceUrls':[url]},headers=headers)
+    assert response.status_code==200
+    assert response.headers['cache-control']=='private, no-store'
+    q=parse_qs(urlsplit(response.json()['imageUrls'][0]).query)
+    assert q['reference']==['google-streetview://fixture_pano/225']
+    assert len(q['signature'][0])==64
+    for bad in [url.replace('www.google.com','evil.test'),url.replace('225','360'),url.replace('https:','http:')]:
+        assert client.post('/photo-scout/v1/thumbnails',json={'sourceUrls':[bad]},headers=headers).status_code==422
