@@ -1,3 +1,8 @@
+# Current execution model
+
+Photo Scout uses a fixed image scoring pipeline. The agent-loop descriptions below
+are historical and superseded by the fixed-pipeline section at the end.
+
 # Photo Scout
 
 Human URL: `https://aisoup.net/photo-scout/`. Agent endpoint:
@@ -299,3 +304,28 @@ Catalog tokens bind both mapped categories and original mood IDs: changing from
 nature to waterside invalidates a previous catalog even though their category
 mappings overlap. Legacy category-only requests remain supported. Signed catalog
 tokens are excluded from the model prompt.
+
+
+## Fixed scoring pipeline (current)
+
+POI lookup and mood-to-category mapping stay deterministic. Source discovery selects
+at most 24 candidate images. The server attempts to load every selected image,
+then scores all successfully loaded images directly with the multimodal Responses
+API using structured output. No agent runner, tool calling, autonomous image
+selection, or model-turn limit remains in Photo Scout. Other services are unchanged.
+
+Images are processed in batches of six, at most two batches in parallel, with
+four concurrent downloads. Each batch requires exactly one score and suitability
+judgment for every supplied image ID. Missing, duplicated or invented IDs invalidate
+that batch. Scores use a shared rubric with mood fit, visual evidence, composition,
+photo tips and uncertainty. The server then filters unsuitable/unverified POIs,
+sorts all eligible scores globally, deduplicates POIs and nearby camera positions,
+and returns Top 3/5. The summary is generated deterministically from that shortlist.
+
+The API includes `analysisMethod: fixed-batch-scoring`, all `imageAssessments` and
+`scoring` counts for sampled, downloaded, scored and failed images. The results page
+shows all scores in an expandable section. A failed download or batch is explicitly
+reported; if no image can be scored, the request fails instead of returning a false
+no-recommendation result. Processing remains bounded to 240 seconds for download
+and scoring, 270 seconds for the overall request. Model retries are disabled.
+Images remain transient, credentials and signed catalog tokens never enter prompts.

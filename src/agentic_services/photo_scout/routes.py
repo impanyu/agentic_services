@@ -20,7 +20,7 @@ from fastapi import APIRouter, Header, HTTPException, Request, Response
 from pydantic import BaseModel, Field, model_validator
 
 from .styles import PHOTO_STYLES, mapped_categories, style_briefs
-from .agent import explore
+from .scoring import explore
 from .sources import candidates, nearby_pois, google_enabled, google_image_data
 
 
@@ -215,8 +215,8 @@ def create_photo_router(settings,require_api,verification_store):
             'googleStreetView':{'credentialConfigured':bool(os.getenv('PHOTO_SCOUT_GOOGLE_API_KEY')),
                 'imageAnalysisEnabled':google_enabled(),
                 'dailyImageRequestLimit':int(os.getenv('PHOTO_SCOUT_GOOGLE_DAILY_IMAGE_LIMIT','180'))},
-            'limits':{'radiusMeters':5000,'sampledImages':24,'inspectedImages':12,'googleQueryLocations':25,'timeoutSeconds':270},
-            'discoveryMethod':'poi-first','poiProviders':{'openstreetmap':'enabled','google-places':'not_connected'},
+            'limits':{'radiusMeters':5000,'sampledImages':24,'inspectedImages':24,'imagesPerBatch':6,'parallelBatches':2,'googleQueryLocations':25,'timeoutSeconds':270},
+            'analysisMethod':'fixed-batch-scoring','discoveryMethod':'poi-first','poiProviders':{'openstreetmap':'enabled','google-places':'not_connected'},
             'privacy':'Coordinates/preferences are sent to imagery providers/OpenAI; paid reports retained for 30 days.'}
 
     @router.post('/photo-scout/v1/candidates')

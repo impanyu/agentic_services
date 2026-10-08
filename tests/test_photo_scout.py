@@ -7,7 +7,7 @@ from fastapi.testclient import TestClient
 
 from agentic_services.config import Settings
 from agentic_services.main import create_app
-from agentic_services.photo_scout.agent import VisualChoice,VisualResult,validate_result
+from agentic_services.photo_scout.scoring import VisualChoice,VisualResult,validate_result
 from agentic_services.photo_scout.routes import ExploreRequest,PhotoStore,create_photo_router
 from agentic_services.photo_scout.sources import commons,distance,image_host
 from agentic_services.storage import VerificationStore
@@ -363,23 +363,6 @@ def test_visible_poi_must_be_in_image_candidates():
     assert out[0]['name']=='Verified Park' and out[0]['poi']['id']=='park'
 
 
-def test_image_budget_disables_tool_before_final_response(tmp_path,monkeypatch):
-    import json
-    from types import SimpleNamespace
-    from agents.tool_context import ToolContext
-    import agentic_services.photo_scout.agent as visual
-    settings=Settings(openai_api_key='test',openai_model='test',database_path=tmp_path/'db',base_url='https://api.test')
-    async def image(*a):return 'data:image/jpeg;base64,/9j/dGVzdA=='
-    async def runner(agent,*a,**kw):
-        tool=agent.tools[0];ctx=ToolContext(None,tool_name='inspect_image',tool_call_id='test',tool_arguments='{}')
-        for _ in range(12):
-            assert tool.is_enabled(ctx,agent)
-            await tool.on_invoke_tool(ctx,json.dumps({'image_id':'image'}))
-        assert not tool.is_enabled(ctx,agent)
-        return SimpleNamespace(final_output=VisualResult(spots=[],summary='Done'),context_wrapper=SimpleNamespace(usage=SimpleNamespace(requests=13,input_tokens=1,output_tokens=1)))
-    monkeypatch.setattr(visual,'image_data',image);monkeypatch.setattr(visual.Runner,'run',runner)
-    result=asyncio.run(visual.explore(settings,ExploreRequest(lat=0,lon=0),[{'id':'image','provider':'test','imageUrl':'https://upload.wikimedia.org/test.jpg','lat':0,'lon':0}],{}))
-    assert result['summary']=='Done' and result['inspectedImages']==1
 
 
 def test_poi_selection_catalog_is_bound_and_restricts_exploration(tmp_path,monkeypatch):
@@ -474,17 +457,82 @@ def test_photo_mood_maps_to_categories_and_is_bound_to_catalog(tmp_path,monkeypa
     assert calls==[['nature','park','viewpoint']]
 
 
-def test_agent_receives_style_brief_without_catalog_token(tmp_path,monkeypatch):
+
+
+def _scoring_client(monkeypatch,parse):
+    from types import SimpleNamespace
+    import agentic_services.photo_scout.scoring as visual
+    class Client:
+        def __init__(self,**kw):self.responses=SimpleNamespace(parse=parse)
+        async def __aenter__(self):return self
+        async def __aexit__(self,*args):pass
+    monkeypatch.setattr(visual,'AsyncOpenAI',Client)
+
+
+def _scoring_assessment(visual,row,recommend=True):
+    return visual.ImageAssessment(image_id=row['id'],poi_id=row['poi']['id'],name=row['poi']['name'],
+        score=30+int(row['id'])*5,recommend=recommend,visible_evidence='Visible trees and open water.',
+        photo_tip='Frame the water.',uncertainty='Current access unknown.',confidence='medium')
+
+
+def _scoring_rows():
+    return [{'id':str(i),'lat':0,'lon':i*.002,'provider':'test','imageUrl':str(i),
+        'poi':{'id':f'poi:{i}','name':f'Place {i}','lat':0,'lon':i*.002}} for i in range(13)]
+
+
+def test_fixed_pipeline_scores_every_image_and_globally_ranks(tmp_path,monkeypatch):
     import json
     from types import SimpleNamespace
-    import agentic_services.photo_scout.agent as visual
+    import agentic_services.photo_scout.scoring as visual
     settings=Settings(openai_api_key='test',openai_model='test',database_path=tmp_path/'db',base_url='https://api.test')
-    async def runner(agent,prompt,**kw):
-        data=json.loads(prompt)
-        assert data['photoStyleBriefs'][0]['label']=='Clean & minimal'
-        assert data['request']['photoStyles']==['minimal']
-        assert 'poiCatalogToken' not in data['request'] and 'large-private-token' not in prompt
-        assert 'prioritize visible style fit' in agent.instructions
-        return SimpleNamespace(final_output=VisualResult(spots=[],summary='No match'),context_wrapper=SimpleNamespace(usage=SimpleNamespace(requests=1,input_tokens=1,output_tokens=1)))
-    monkeypatch.setattr(visual.Runner,'run',runner)
-    asyncio.run(visual.explore(settings,ExploreRequest(lat=0,lon=0,photoStyles=['minimal'],poiCatalogToken='large-private-token'),[{'id':'image','provider':'test','lat':0,'lon':0}],{}))
+    downloaded=[];seen=[];active=0;peak=0
+    async def image(url):downloaded.append(url);return 'data:image/jpeg;base64,/9j/dGVzdA=='
+    async def parse(**kw):
+        nonlocal active,peak
+        assert 'tools' not in kw and kw['store'] is False
+        assert 'EVERY supplied image' in kw['instructions']
+        content=kw['input'][0]['content'];request=json.loads(content[0]['text'])
+        assert request['photoStyleBriefs'][0]['label']=='Water & reflections'
+        assert 'poiCatalogToken' not in request['request']
+        rows=[json.loads(c['text'])['image'] for c in content[1:] if c['type']=='input_text']
+        assert 1<=len(rows)<=6 and sum(c['type']=='input_image' for c in content)==len(rows)
+        seen.extend(row['id'] for row in rows);active+=1;peak=max(peak,active)
+        await asyncio.sleep(0);active-=1
+        return SimpleNamespace(output_parsed=visual.VisualBatch(assessments=[_scoring_assessment(visual,r) for r in rows]),usage=SimpleNamespace(input_tokens=10,output_tokens=20))
+    _scoring_client(monkeypatch,parse);monkeypatch.setattr(visual,'image_data',image)
+    result=asyncio.run(visual.explore(settings,ExploreRequest(lat=0,lon=0,photoStyles=['waterside'],poiCatalogToken='secret-token'),_scoring_rows(),{}))
+    assert set(downloaded)==set(seen)=={str(i) for i in range(13)}
+    assert result['inspectedImages']==13 and len(result['imageAssessments'])==13
+    assert [spot['image_id'] for spot in result['spots']]==['12','11','10']
+    assert result['analysisMethod']=='fixed-batch-scoring' and result['scoring']['batches']==3
+    assert result['usage']=={'requests':3,'inputTokens':30,'outputTokens':60} and peak<=2
+
+
+def test_fixed_pipeline_reports_partial_failures(tmp_path,monkeypatch):
+    import json
+    from types import SimpleNamespace
+    import agentic_services.photo_scout.scoring as visual
+    settings=Settings(openai_api_key='test',openai_model='test',database_path=tmp_path/'db',base_url='https://api.test')
+    async def image(url):
+        if url=='0':raise ValueError('Download failed')
+        return 'data:image/jpeg;base64,/9j/dGVzdA=='
+    async def parse(**kw):
+        rows=[json.loads(c['text'])['image'] for c in kw['input'][0]['content'][1:] if c['type']=='input_text']
+        assessments=[_scoring_assessment(visual,r,False) for r in rows]
+        if rows[0]['id']=='1':assessments=assessments[:-1]  # Incomplete batch must not pass as fully scored.
+        return SimpleNamespace(output_parsed=visual.VisualBatch(assessments=assessments),usage=SimpleNamespace(input_tokens=10,output_tokens=20))
+    _scoring_client(monkeypatch,parse);monkeypatch.setattr(visual,'image_data',image)
+    result=asyncio.run(visual.explore(settings,ExploreRequest(lat=0,lon=0),_scoring_rows(),{}))
+    assert result['spots']==[] and result['inspectedImages']==7
+    assert result['scoring']=={'candidateImages':13,'downloadedImages':12,'scoredImages':7,'downloadFailedImages':1,'scoringFailedImages':5,'batches':3}
+    assert len(result['imageAssessments'])==7 and 'could not be scored' in result['coverage']
+
+
+def test_fixed_pipeline_all_failed_is_an_error(tmp_path,monkeypatch):
+    import agentic_services.photo_scout.scoring as visual
+    settings=Settings(openai_api_key='test',openai_model='test',database_path=tmp_path/'db',base_url='https://api.test')
+    async def image(url):raise ValueError('Unavailable')
+    async def parse(**kw):raise AssertionError('No model request for failed downloads')
+    _scoring_client(monkeypatch,parse);monkeypatch.setattr(visual,'image_data',image)
+    with pytest.raises(ValueError,match='No images could be scored'):
+        asyncio.run(visual.explore(settings,ExploreRequest(lat=0,lon=0),_scoring_rows(),{}))
