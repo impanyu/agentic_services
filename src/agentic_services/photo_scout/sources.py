@@ -219,13 +219,13 @@ def google_query_points(lat,lon,radius):
     return result
 
 
-async def google_streetview(client, lat, lon, radius):
+async def google_streetview(client, lat, lon, radius, targets=None):
     """Bounded outdoor panorama discovery. Never put the credential in candidate URLs."""
     import asyncio
     import re
     from urllib.parse import urlencode
     key=os.getenv('PHOTO_SCOUT_GOOGLE_API_KEY','')
-    points=google_query_points(lat,lon,radius)
+    points=[(p["lat"],p["lon"]) for p in targets] if targets is not None else google_query_points(lat,lon,radius)
     slots=asyncio.Semaphore(5)
     async def search(p):
         async with slots:
@@ -234,7 +234,7 @@ async def google_streetview(client, lat, lon, radius):
     responses=await asyncio.gather(*(search(p) for p in points),return_exceptions=True)
     rows=[]; seen=set(); locations=[]; successful=False
     spacing=google_sampling_spacing(radius)
-    for data in responses:
+    for index,data in enumerate(responses):
         if not isinstance(data,dict): continue
         if data.get('status') in ('OK','ZERO_RESULTS'): successful=True
         if data.get('status')!='OK': continue
@@ -244,10 +244,11 @@ async def google_streetview(client, lat, lon, radius):
         except (KeyError,TypeError,ValueError): continue
         if not math.isfinite(lat2) or not math.isfinite(lon2) or abs(lat2)>85 or abs(lon2)>180: continue
         if distance((lat,lon),(lat2,lon2))>radius: continue
-        if any(distance((lat2,lon2),p)<spacing for p in locations): continue
+        if targets is None and any(distance((lat2,lon2),p)<spacing for p in locations): continue
         seen.add(pano)
         locations.append((lat2,lon2))
-        towards_center=bearing((lat2,lon2),(lat,lon))
+        poi=targets[index] if targets is not None else None
+        towards_center=bearing((lat2,lon2),(poi["lat"],poi["lon"]) if poi else (lat,lon))
         for heading in (towards_center,(towards_center+180)%360):
             rows.append({'id':f'google:{pano}:{heading}','provider':'google-street-view',
                 'title':f'Outdoor Street View facing {heading} degrees','lat':lat2,'lon':lon2,
@@ -259,7 +260,8 @@ async def google_streetview(client, lat, lon, radius):
                 'licenseUrl':'https://cloud.google.com/maps-platform/terms',
                 'sourceDate':data.get('date'),'capturedAt':data.get('date'),
                 'viewHeadingDegrees':heading,'viewPitchDegrees':0,'viewFovDegrees':120,
-                'description':'Street View camera position; access and safe standing point unverified.'})
+                'description':'Street View camera position; access and safe standing point unverified.',
+                **({'poi':poi,'poiDistanceMeters':round(distance((lat2,lon2),(poi['lat'],poi['lon'])))} if poi else {})})
     if not successful: raise ValueError('Google Street View metadata unavailable')
     return rows
 
@@ -292,12 +294,16 @@ def diverse_sample(rows,limit=12):
     return selected
 
 
-async def candidates(lat,lon,radius):
+async def candidates(lat,lon,radius,pois=None):
     import asyncio
     statuses={}; rows=[]
+    if pois == []: return [],statuses
     async with httpx.AsyncClient(timeout=25,headers=HEADERS,follow_redirects=False) as client:
         providers=[('wikimedia-commons',commons)]
-        if google_enabled(): providers.append(('google-street-view',google_streetview))
+        if google_enabled():
+            async def google(client,lat,lon,radius):
+                return await google_streetview(client,lat,lon,radius,targets=pois)
+            providers.append(('google-street-view',google))
         if os.getenv('PHOTO_SCOUT_PANORAMAX_ENABLED','1')=='1':
             providers.append(('panoramax',panoramax))
         if os.getenv('PHOTO_SCOUT_MAPILLARY_TOKEN'):
@@ -310,11 +316,17 @@ async def candidates(lat,lon,radius):
                 statuses[name]={'status':'ok','eligibleImages':len(result)}; rows+=result
                 if name=='google-street-view':
                     statuses[name].update(samplingSpacingMeters=google_sampling_spacing(radius),maxViewsPerLocation=2,
-                        queriedLocations=len(google_query_points(lat,lon,radius)))
+                        queriedLocations=len(pois) if pois is not None else len(google_query_points(lat,lon,radius)))
     valid=[]
     for row in rows:
         d=distance((lat,lon),(row['lat'],row['lon']))
         if d<=radius:
+            if pois is not None and not row.get('poi'):
+                if not pois: continue
+                nearest=min(pois,key=lambda p:distance((row['lat'],row['lon']),(p['lat'],p['lon'])))
+                separation=distance((row['lat'],row['lon']),(nearest['lat'],nearest['lon']))
+                if separation>250: continue
+                row['poi']=nearest;row['poiDistanceMeters']=round(separation)
             row['distanceMeters']=round(d); valid.append(row)
     sampled=diverse_sample(valid,24)
     for name,status in statuses.items():
@@ -385,21 +397,43 @@ async def google_image_data(reference):
 
 
 async def nearby_pois(lat,lon,radius):
-    query=f'[out:json][timeout:12];nwr(around:{radius},{lat},{lon})["name"]["tourism"~"^(attraction|viewpoint|artwork|museum)$"];out center 40;'
-    try:
-        async with httpx.AsyncClient(timeout=18,headers=HEADERS,follow_redirects=False) as client:
-            data=await get_json(client,'https://overpass-api.de/api/interpreter',{'data':query})
-        result=[]
-        for row in data.get('elements',[])[:40]:
-            coord=row.get('center',row);tags=row.get('tags',{})
-            if 'lat' not in coord or 'lon' not in coord: continue
-            d=distance((lat,lon),(coord['lat'],coord['lon']))
-            if d>radius: continue
-            result.append({'name':text(tags.get('name')),'lat':coord['lat'],'lon':coord['lon'],
-                'category':tags.get('tourism'),'distanceMeters':round(d),
-                'sourceUrl':f"https://www.openstreetmap.org/{row['type']}/{row['id']}",
-                'license':'ODbL 1.0','attribution':'OpenStreetMap contributors',
-                'visuallyAnalyzed':False})
-        return result,{'status':'ok','count':len(result)}
-    except Exception as e:
-        return [],{'status':'unavailable','errorType':type(e).__name__}
+    # OpenStreetMap names/categories are candidates, never proof of photographic quality.
+    area=f'(around:{radius},{lat},{lon})["name"]'
+    query=f'[out:json][timeout:10];(nwr{area}["tourism"~"^(attraction|viewpoint|artwork|museum)$"];nwr{area}["leisure"~"^(park|garden|nature_reserve|recreation_ground)$"];nwr{area}["historic"];nwr{area}["natural"~"^(beach|peak|water|wood)$"];);out center 80;'
+    errors=[];data=None
+    endpoints=('https://overpass.private.coffee/api/interpreter','https://overpass-api.de/api/interpreter')
+    async with httpx.AsyncClient(timeout=12,headers=HEADERS,follow_redirects=False) as client:
+        for endpoint in endpoints:
+            try:
+                data=await get_json(client,endpoint,{'data':query})
+                if not isinstance(data.get('elements'),list) or data.get('remark'):
+                    raise ValueError('Incomplete Overpass response')
+                break
+            except Exception as e:
+                errors.append({'endpoint':urlsplit(endpoint).hostname,'errorType':type(e).__name__,
+                    **({'httpStatus':e.response.status_code} if isinstance(e,httpx.HTTPStatusError) else {})})
+    if data is None or len(errors)==len(endpoints):
+        return [],{'status':'unavailable','attempts':errors}
+    result=[]
+    for row in data['elements'][:80]:
+        coord=row.get('center',row);tags=row.get('tags',{})
+        if 'lat' not in coord or 'lon' not in coord: continue
+        lat2,lon2=coord['lat'],coord['lon']
+        if not math.isfinite(lat2) or not math.isfinite(lon2): continue
+        d=distance((lat,lon),(lat2,lon2))
+        if d>radius: continue
+        name=text(tags.get('name'));category=tags.get('tourism') or tags.get('leisure') or tags.get('historic') or tags.get('natural')
+        # Deduplicate named node/area representations of the same place.
+        if any(name.casefold()==x['name'].casefold() and distance((lat2,lon2),(x['lat'],x['lon']))<150 for x in result): continue
+        result.append({'id':f"osm:{row['type']}:{row['id']}",'name':name,'lat':lat2,'lon':lon2,
+            'category':category,'distanceMeters':round(d),'provider':'openstreetmap',
+            'sourceUrl':f"https://www.openstreetmap.org/{row['type']}/{row['id']}",
+            'license':'ODbL 1.0','attribution':'OpenStreetMap contributors','visuallyAnalyzed':False})
+    # Prefer viewpoints, then rotate categories so dense artwork clusters cannot crowd out parks.
+    from itertools import zip_longest
+    groups={}
+    for p in sorted(result,key=lambda p:(p['category']!='viewpoint',p['distanceMeters'])):
+        groups.setdefault(p['category'],[]).append(p)
+    selected=[p for batch in zip_longest(*groups.values()) for p in batch if p][:24]
+    return selected,{'status':'ok','count':len(selected),'foundPois':len(result),
+        'endpoint':urlsplit(endpoint).hostname,'attempts':errors}

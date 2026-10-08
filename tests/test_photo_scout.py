@@ -283,3 +283,70 @@ def test_free_website_mode_auth_payment_and_budget(tmp_path,monkeypatch):
     assert result.status_code==200 and result.json()['summary']=='No good images'
     assert client.post('/photo-scout/v1/preview',json=payload,headers=headers).status_code==429
     assert calls==[1]
+
+
+def test_osm_poi_categories_and_fallback(monkeypatch):
+    import agentic_services.photo_scout.sources as sources
+    requests=[]
+    def handler(r):
+        requests.append(r)
+        assert 'nature_reserve' in r.url.params['data'] and 'park' in r.url.params['data']
+        if len(requests)==1: return httpx.Response(503)
+        return httpx.Response(200,json={'elements':[{'type':'node','id':1,'lat':0,'lon':0.001,'tags':{'name':'Park','leisure':'park'}}]})
+    real=httpx.AsyncClient
+    monkeypatch.setattr(sources.httpx,'AsyncClient',lambda **kw:real(transport=httpx.MockTransport(handler)))
+    rows,status=asyncio.run(sources.nearby_pois(0,0,1000))
+    assert rows[0]['category']=='park' and rows[0]['id']=='osm:node:1'
+    assert status['status']=='ok' and status['attempts'][0]['httpStatus']==503
+    assert len(requests)==2
+
+
+def test_google_targets_poi_and_points_camera_at_it(monkeypatch):
+    from agentic_services.photo_scout.sources import google_streetview
+    monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_API_KEY','secret-fixture')
+    targets=[{'id':'osm:node:1','name':'Park','lat':0.001,'lon':0}]
+    requests=[]
+    def handler(r):
+        requests.append(r)
+        assert r.url.params['location']=='0.001,0'
+        return httpx.Response(200,json={'status':'OK','pano_id':'fixture','location':{'lat':0,'lng':0}})
+    async def run():
+        async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as c:
+            return await google_streetview(c,0,0,1000,targets)
+    rows=asyncio.run(run())
+    assert len(requests)==1 and len(rows)==2
+    assert {r['viewHeadingDegrees'] for r in rows}=={0,180}
+    assert all(r['poi']['id']=='osm:node:1' for r in rows)
+
+
+def test_poi_first_and_signed_google_image_delivery(tmp_path,monkeypatch):
+    import agentic_services.photo_scout.routes as routes
+    monkeypatch.setenv('PHOTO_SCOUT_ENABLED','1');monkeypatch.setenv('PHOTO_SCOUT_HUMAN_FREE_PREVIEW','1')
+    settings=Settings(openai_api_key='test',openai_model='test',database_path=tmp_path/'db',base_url='https://api.test',service_api_key='private')
+    client=TestClient(create_app(settings=settings));calls=[]
+    poi={'id':'osm:node:1','lat':0,'lon':0,'name':'Park','category':'park'}
+    async def pois(*a):calls.append('pois');return [poi],{'status':'ok','count':1}
+    async def images(lat,lon,radius,targets):
+        calls.append('images');assert targets==[poi]
+        return [{'id':'test'}],{'google-street-view':{'status':'ok'}}
+    async def model(*a):
+        calls.append('agent');return {'spots':[{'provider':'google-street-view','streetViewReference':'google-streetview://fixture/90','imageUrl':None}], 'sources':{},'summary':'Park'}
+    monkeypatch.setattr(routes,'nearby_pois',pois);monkeypatch.setattr(routes,'candidates',images);monkeypatch.setattr(routes,'explore',model)
+    result=client.post('/photo-scout/v1/preview',json={'lat':0,'lon':0},headers={'Authorization':'Bearer private'})
+    assert result.status_code==200 and calls==['pois','images','agent']
+    body=result.json();assert body['candidatePoiCount']==1 and body['discoveryMethod']=='poi-first'
+    image_url=body['spots'][0]['imageUrl'];assert 'private' not in image_url
+    image_calls=[]
+    async def jpeg(ref):image_calls.append(ref);return 'data:image/jpeg;base64,/9j/dGVzdA=='
+    monkeypatch.setattr(routes,'google_image_data',jpeg)
+    assert client.get(image_url).status_code==401
+    assert client.get(image_url+'&signature=invalid',headers={'Authorization':'Bearer private'}).status_code==403
+    response=client.get(image_url,headers={'Authorization':'Bearer private'})
+    assert response.status_code==200 and response.headers['cache-control']=='private, no-store'
+    assert response.content.startswith(b'\xff\xd8\xff') and image_calls==['google-streetview://fixture/90']
+
+
+def test_recommendations_deduplicate_same_poi():
+    rows=[{'id':str(i),'lat':0,'lon':i*.01,'poi':{'id':'same'}} for i in range(2)]
+    choices=[VisualChoice(image_id=str(i),name='Park',score=80,visible_evidence='Trees',photo_tip='Frame trees',uncertainty='Unknown',confidence='medium') for i in range(2)]
+    assert len(validate_result(VisualResult(spots=choices,summary='Park'),rows,{'0','1'},3))==1

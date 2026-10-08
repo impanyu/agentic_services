@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import asyncio
+import base64
+from urllib.parse import urlencode
 import hashlib
 import hmac
 import json
@@ -15,7 +17,7 @@ from fastapi import APIRouter, Header, HTTPException, Request, Response
 from pydantic import BaseModel, Field
 
 from .agent import explore
-from .sources import candidates, nearby_pois, google_enabled
+from .sources import candidates, nearby_pois, google_enabled, google_image_data
 
 
 class ExploreRequest(BaseModel):
@@ -92,19 +94,51 @@ def create_photo_router(settings,require_api,verification_store):
                 r=await client.request(method,'https://api.stripe.com/v1/'+path,auth=(stripe_key(),''),data=data)
                 r.raise_for_status(); return r.json()
             except httpx.HTTPError as e: raise HTTPException(503,'Stripe is temporarily unavailable') from e
+    async def catalog(payload):
+        pois,poi_status=await nearby_pois(payload.lat,payload.lon,payload.radius)
+        if poi_status['status']!='ok': raise HTTPException(503,'Nearby place search is temporarily unavailable; please try again later')
+        rows,statuses=await candidates(payload.lat,payload.lon,payload.radius,pois)
+        statuses['openstreetmap']=poi_status
+        return rows,statuses,pois
+
+    def image_links(result):
+        if not result or not settings.service_api_key: return result
+        for spot in result.get('spots',[]):
+            ref=spot.get('streetViewReference')
+            if not ref: continue
+            expires=int(time.time())+1200
+            sig=hmac.new(settings.service_api_key.encode(),f'{ref}|{expires}'.encode(),hashlib.sha256).hexdigest()
+            spot['imageUrl']=settings.base_url+'/photo-scout/v1/street-view-image?'+urlencode({'reference':ref,'expires':expires,'signature':sig})
+        return result
+
+    @router.get('/photo-scout/v1/street-view-image')
+    async def street_view_image(reference:str,expires:int,signature:str,authorization:str|None=Header(None)):
+        require_api(authorization)
+        if not settings.service_api_key: raise HTTPException(503,'Private gateway credential is required')
+        now=int(time.time())
+        expected=hmac.new(settings.service_api_key.encode(),f'{reference}|{expires}'.encode(),hashlib.sha256).hexdigest()
+        if expires<now or expires>now+1200 or not hmac.compare_digest(signature,expected):
+            raise HTTPException(403,'Image link expired or invalid; reload the report')
+        source_limit()
+        try:
+            data=await google_image_data(reference)
+            return Response(base64.b64decode(data.split(',',1)[1]),media_type='image/jpeg',
+                headers={'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff'})
+        except Exception as e: raise HTTPException(503,'Street View image is temporarily unavailable') from e
+
     async def run(payload):
         enabled()
         if lock.locked(): raise HTTPException(429,'An exploration is in progress; try again shortly')
         async with lock, asyncio.timeout(270):
-            rows,statuses=await candidates(payload.lat,payload.lon,payload.radius)
-            if not any(s['status']=='ok' for s in statuses.values()):
+            rows,statuses,pois=await catalog(payload)
+            if rows and not any(s['status']=='ok' for n,s in statuses.items() if n!='openstreetmap'):
                 raise HTTPException(503,'Image sources are temporarily unavailable')
             store.reserve_run()
-            pois,poi_status=await nearby_pois(payload.lat,payload.lon,payload.radius)
             result=await explore(settings,payload,rows,statuses)
-            result["nearbyPois"]=pois
-            result["sources"]["openstreetmap"]=poi_status
-            return result
+            result['nearbyPois']=pois
+            result['discoveryMethod']='poi-first'
+            result['candidatePoiCount']=len(pois)
+            return image_links(result)
 
     @router.get('/photo-scout/v1/status')
     def status():
@@ -120,14 +154,15 @@ def create_photo_router(settings,require_api,verification_store):
                 'imageAnalysisEnabled':google_enabled(),
                 'dailyImageRequestLimit':int(os.getenv('PHOTO_SCOUT_GOOGLE_DAILY_IMAGE_LIMIT','180'))},
             'limits':{'radiusMeters':5000,'sampledImages':24,'inspectedImages':12,'googleQueryLocations':25,'timeoutSeconds':270},
+            'discoveryMethod':'poi-first','poiProviders':{'openstreetmap':'enabled','google-places':'not_connected'},
             'privacy':'Coordinates/preferences are sent to imagery providers/OpenAI; paid reports retained for 30 days.'}
 
     @router.post('/photo-scout/v1/candidates')
     async def preview(payload: ExploreRequest,authorization: str | None=Header(None)):
         require_api(authorization)
         source_limit()
-        rows,statuses=await candidates(payload.lat,payload.lon,payload.radius)
-        return {'candidates':rows,'sources':statuses,'visuallyAnalyzed':False}
+        rows,statuses,pois=await catalog(payload)
+        return {'candidates':rows,'sources':statuses,'nearbyPois':pois,'discoveryMethod':'poi-first','visuallyAnalyzed':False}
 
     @router.post('/photo-scout/v1/discover')
     async def discover(payload: ExploreRequest,authorization: str | None=Header(None)):
@@ -155,7 +190,7 @@ def create_photo_router(settings,require_api,verification_store):
         enabled(); source_limit(); cents=price()
         if cents<50: raise HTTPException(503,'Checkout pricing has not been enabled')
         # Verify imagery coverage before accepting payment; no model calls here.
-        rows,statuses=await candidates(payload.lat,payload.lon,payload.radius)
+        rows,statuses,pois=await catalog(payload)
         if not rows: raise HTTPException(422,'No eligible imagery found here. Choose another location.')
         job,token=store.create(payload,cents)
         session=await stripe_request('POST','checkout/sessions',{
@@ -212,7 +247,7 @@ def create_photo_router(settings,require_api,verification_store):
                     db.execute("UPDATE photo_scout_jobs SET state='queued' WHERE id=? AND state='unpaid'",(job_id,))
             verification_store.enqueue_stripe_fulfillment(job['session'],'photo-scout',job_id)
         return {'jobId':job_id,'state':store.get(job_id)['state'],
-            'result':json.loads(job['result']) if job['result'] else None,'error':job['error']}
+            'result':image_links(json.loads(job['result'])) if job['result'] else None,'error':job['error']}
 
     @router.get('/photo-scout/openapi.json')
     def openapi():

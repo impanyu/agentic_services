@@ -202,3 +202,26 @@ The human website also offers an optional “Use my current location” button. 
 requests browser geolocation only on click, recenters the map, displays estimated
 accuracy, and requires the user to review and submit the search separately.
 Permission denial, unavailable location and timeouts retain manual selection.
+
+## POI-first discovery (October 8 revision)
+
+Search now retrieves named POIs before images, including parks, gardens, nature
+reserves, viewpoints, artwork, museums, historic places and selected natural
+features. Private.coffee is the primary Overpass endpoint; the main FOSSGIS
+endpoint is a fallback. Failed attempts return error type and HTTP status where
+available. Candidate counts describe mapped places, not verified recommendations.
+Up to 24 category-balanced POIs guide Google panorama metadata lookups; the
+primary heading faces the POI, with an opposite view for comparison. Other
+imagery is associated only within 250 m of a candidate. The agent must verify
+that the nearby image supports the candidate, rather than assuming proximity
+proves visibility. Top 3/5 is selected from inspected evidence; duplicate POIs
+are suppressed. A park centroid is a representative map point, not an entrance.
+
+Google Places is not connected; this implementation uses OSM POIs and the
+existing Google Street View credential. No additional paid provider is enabled.
+Google result images use 20-minute signed URLs to an authenticated server route,
+fetch on demand under the existing daily image budget, and return no-store JPEGs.
+Source bytes are not stored in reports. The result screen hides the OSM selection
+map; choosing another location removes result images before showing the map.
+Preserve Google imagery attribution and source-date caveats. Existing uncertainty
+about permission for commercial model analysis is unchanged by this UI revision.
