@@ -33,7 +33,7 @@ function pageFixture(){
  const elements=new Map(),requests=[],moves=[],circles=[];
  const defaults={lat:'41.8827',lon:'-87.6233',radius:'1000',limit:'3'};
  function element(id){if(!elements.has(id))elements.set(id,{value:defaults[id]||'',textContent:'',listeners:{},addEventListener(type,fn){this.listeners[type]=fn;},setAttribute(){},querySelectorAll(){return [];},replaceChildren(){},append(){},classList:{add(){},remove(){}},reportValidity(){return true;},scrollIntoView(){}});return elements.get(id);}
- const layer=()=>({addTo(){return this;},on(){return this;},once(){return this;},setLatLng(p){this.position=p;return this;},setRadius(){return this;},clearLayers(){},getLayers(){return [];},getBounds(){return this.position;}});
+ const layer=()=>({addTo(){return this;},on(){return this;},once(){return this;},setLatLng(p){this.position=p;return this;},setRadius(){return this;},clearLayers(){},getLayers(){return [];},getBounds(){return this.position;},getContainer(){return {};}});
  const map={setView(){return this;},on(){},hasLayer(){return true;},removeLayer(){},fitBounds(bounds){moves.push(bounds);}};
  const L={map:()=>map,control:{zoom:()=>layer(),layers:()=>layer()},tileLayer:()=>layer(),marker:()=>layer(),layerGroup:()=>layer(),circle:()=>{const c=layer();circles.push(c);return c;},divIcon:()=>({}),DomEvent:{disableClickPropagation(){},disableScrollPropagation(){}}};
  const window={isSecureContext:true,addEventListener(){}},navigator={geolocation:{getCurrentPosition(success,error){requests.push({success,error});}}};
@@ -57,6 +57,9 @@ test('photo bearing preserves north, normalizes rotations and never invents miss
  const f=pageFixture();assert.equal(f.bearing({viewHeadingDegrees:0}).label,'Facing N · 0°');assert.equal(f.bearing({viewHeadingDegrees:90}).label,'Facing E · 90°');assert.equal(f.bearing({viewHeadingDegrees:-90}).heading,270);assert.equal(f.bearing({viewHeadingDegrees:360}).heading,0);for(const value of [null,undefined,NaN,'90'])assert.equal(f.bearing({viewHeadingDegrees:value}).heading,null);
 });
 
-test('device location passes typed text through the same submission handler',()=>{
- const f=pageFixture();f.element('prompt-query').value='Urban shots within 20 km';let submitted;f.interceptSubmission(()=>{submitted=f.element('prompt-query').value;});f.click('center-pin');f.requests[0].success({coords:{latitude:40.8,longitude:-96.7,accuracy:8}});assert.equal(submitted,'Urban shots within 20 km');
+test('location buttons select coordinates without submitting a search or altering the query',()=>{
+ for(const id of ['center-pin','locate']){
+  const f=pageFixture();f.element('prompt-query').value='Urban shots within 20 km';let submissions=0;f.interceptSubmission(()=>{submissions++;});f.click(id);f.requests[0].success({coords:{latitude:40.8,longitude:-96.7,accuracy:8}});
+  assert.equal(submissions,0);assert.equal(f.element('prompt-query').value,'Urban shots within 20 km');assert.equal(f.element('lat').value,'40.800000');assert.equal(f.element('lon').value,'-96.700000');assert.equal(f.moves.length,1);assert.match(f.element('location-status').textContent,/press Enter to search/);
+ }
 });

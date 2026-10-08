@@ -61,10 +61,9 @@ function locateCurrentPosition(){
  },onPosition:position=>{
   const {latitude:lat,longitude:lon,accuracy}=position.coords;
   pick(lat,lon);map.fitBounds(searchArea.getBounds(),{padding:[32,32],maxZoom:16});
-  locationStatus(`Device location selected${Number.isFinite(accuracy)?` (accuracy ±${Math.ceil(accuracy)} m)`:''}. Finding nearby places…`);
+  locationStatus(`Device location selected${Number.isFinite(accuracy)?` (accuracy ±${Math.ceil(accuracy)} m)`:''}. Click ↑ or press Enter to search.`);
   el('map-notice').textContent=`Your current location is selected${Number.isFinite(accuracy)?` · estimated accuracy ±${Math.ceil(accuracy)} m`:''}.`;
   el('map-heading').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
-  submitSearch();
  }});
 }
 for(const id of ['locate','center-pin'])el(id).addEventListener('click',locateCurrentPosition);
