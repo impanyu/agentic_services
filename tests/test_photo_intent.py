@@ -21,16 +21,14 @@ def test_resolve_map_context_and_explicit_place(monkeypatch):
     monkeypatch.setattr(intent,'parse_intent',map_plan)
     result=asyncio.run(intent.resolve_intent(None,payload));assert result['locations'][0]['lat']==41;assert len(seen)==1
 
-def test_clarification_and_unknown_place_never_guess_coordinates(monkeypatch):
-    async def parsed(settings,payload):return plan(clarification='Which place?')
-    async def geocode(query):raise AssertionError('Should not geocode unclear requests')
-    monkeypatch.setattr(intent,'parse_intent',parsed);monkeypatch.setattr(intent,'geocode',geocode)
-    payload=intent.IntentRequest(query='unclear',lat=0,lon=0)
-    assert asyncio.run(intent.resolve_intent(None,payload))['locations']==[]
-    async def explicit(settings,payload):return plan(locationQuery='unknown')
+def test_best_effort_unresolved_place_uses_map_without_followup(monkeypatch):
+    async def parsed(settings,payload):return plan(locationQuery='unknown',clarification='obsolete follow-up')
     async def empty(query):return []
-    monkeypatch.setattr(intent,'parse_intent',explicit);monkeypatch.setattr(intent,'geocode',empty)
-    result=asyncio.run(intent.resolve_intent(None,payload));assert result['clarification'];assert result['locations']==[]
+    monkeypatch.setattr(intent,'parse_intent',parsed);monkeypatch.setattr(intent,'geocode',empty)
+    payload=intent.IntentRequest(query='any sentence',lat=41,lon=-87)
+    result=asyncio.run(intent.resolve_intent(None,payload));assert result['clarification'] is None
+    assert result['locations'][0]['lat']==41;assert 'not resolved' in result['locations'][0]['label']
+
 
 def test_geocoder_validates_and_deduplicates_coordinates(monkeypatch):
     real=httpx.AsyncClient

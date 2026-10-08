@@ -2,7 +2,7 @@
 
 Photo Scout is a deterministic application pipeline. Models do not choose tools or execute code.
 
-- Text input: a structured-output model extracts a place, photo mood, radius, and preferences. Photon resolves the place to coordinates; the first provider-ranked match is used and its resolved name is displayed. The model never generates coordinates. Unresolvable inputs produce an explanation.
+- Text input: a structured-output model extracts a place, photo mood, radius, and preferences. Photon resolves the place to coordinates; the first provider-ranked match is used and its resolved name is displayed. The model never generates coordinates. Inputs use best-effort interpretation without clarification or candidate selection. When no place can be resolved, the selected map coordinate is used with an explicit explanation. Mentioned photo moods and search radius are applied automatically. Distances are converted to meters and clamped to the supported 100–5000 meter range.
 - Device location: browser geolocation supplies coordinates directly; the text model and geocoder are skipped. Permission failure never substitutes the default Chicago center.
 - Both entries then search nearby OpenStreetMap POIs, retrieve imagery around those POIs, batch-score images with the multimodal model, and rank suitable results. The user can optionally adjust map controls or choose POIs manually.
 - The map marks independently sourced POI coordinates; visual evidence, scores, attribution and camera links are shown in result cards. A POI listing alone is not a visually verified recommendation.
