@@ -90,7 +90,7 @@ def validate_result(result,rows,inspected,limit):
 async def explore(settings,payload,rows,statuses):
     """Fixed download -> batched model scoring -> deterministic ranking; no tools."""
     rows=rows[:MAX_SCORED_IMAGES]
-    model=os.getenv('PHOTO_SCOUT_MODEL','gpt-6-astra')
+    model=os.getenv('PHOTO_SCOUT_MODEL','gpt-6-luna')
     if not rows:
         return {'spots':[],'summary':'No eligible geolocated images were found in this sampled area.',
             'sources':statuses,'inspectedImages':0,'imageAssessments':[],

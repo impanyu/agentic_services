@@ -50,7 +50,7 @@ def test_private_job_edits_both_images_and_removes_upload(tmp_path,monkeypatch,i
     if image_model=='gpt-image-1.5':
         assert calls[0]['input_fidelity']=='high';assert calls[0]['quality']=='high'
     else:
-        assert 'input_fidelity' not in calls[0];assert calls[0]['quality']=='max'
+        assert 'input_fidelity' not in calls[0];assert calls[0]['quality']=='high'
     assert 'keep the original clothing' in calls[0]['prompt']
     assert client.get(path,headers=owned).json()['state']=='complete'
     image=client.get(path+'/image',headers=owned);assert image.content==raw;assert image.headers['cache-control']=='private, no-store'

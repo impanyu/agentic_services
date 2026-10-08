@@ -135,7 +135,7 @@ def create_portrait_router(settings,require_api):
                 async with AsyncOpenAI(api_key=settings.openai_api_key,timeout=550,max_retries=0) as client:
                     try:
                         async with asyncio.timeout(90):
-                            people=await check_people(client,bytes(row['photo']),os.getenv('PHOTO_SCOUT_MODEL','gpt-6-astra'))
+                            people=await check_people(client,bytes(row['photo']),os.getenv('PHOTO_SCOUT_MODEL','gpt-6-luna'))
                     except Exception:
                         with db() as c:c.execute("UPDATE photo_portraits SET state='failed',photo=NULL,payload=NULL,error='Could not check your photo. Please try again; no composite was created.' WHERE id=?",(row['id'],))
                         return True
@@ -149,7 +149,7 @@ def create_portrait_router(settings,require_api):
                     image_model=os.getenv('PHOTO_SCOUT_IMAGE_MODEL','gpt-image-2.5-sunburst')
                     # New image models always preserve inputs at high fidelity.
                     legacy=image_model.startswith('gpt-image-1')
-                    edit_options={'input_fidelity':'high','quality':'high'} if legacy else {'quality':'max' if image_model.startswith('gpt-image-2.5') else 'high'}
+                    edit_options={'input_fidelity':'high','quality':'high'} if legacy else {'quality':'high'}
                     result=await client.images.edit(model=image_model,image=[('person.png',bytes(row['photo']),'image/png'),('scene.'+ext,raw,'image/'+('jpeg' if ext=='jpg' else ext))],prompt=portrait_prompt(payload.get('style','natural'),payload['pose']),**edit_options,size='1024x1024',output_format='png',n=1)
                 generated=base64.b64decode(result.data[0].b64_json,validate=True)
                 if not generated.startswith(b'\x89PNG') or len(generated)>25000000:raise ValueError()
