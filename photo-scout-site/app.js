@@ -32,7 +32,7 @@ function switchMapStyle(style){
  }catch{el('map-notice').textContent='Map style unavailable. Showing the standard street map.';}
 }
 document.querySelectorAll('[data-map-style]').forEach(b=>b.addEventListener('click',()=>switchMapStyle(b.dataset.mapStyle)));
-switchMapStyle('minimal');
+switchMapStyle('topographic');
 let selected=L.marker([41.8827,-87.6233],{draggable:true,title:'Selected location: drag to move',icon:L.divIcon({className:'scout-pin',html:'<span aria-hidden="true">✳</span>',iconSize:[44,44],iconAnchor:[22,22]})}).addTo(map), resultPins=[];let humanFreePreview=false, serviceAvailable=false, poiCatalog=null, catalogGeneration=0, searchBusy=false, pollGeneration=0, resolving=false, pipelineBusy=false;
 const candidatePoiLayer=L.layerGroup().addTo(map),photoLocationLayer=L.layerGroup().addTo(map);
 const searchArea=L.circle([41.8827,-87.6233],{radius:1000,color:'#375947',weight:1.5,dashArray:'5 7',fillColor:'#acd69a',fillOpacity:.12,interactive:false}).addTo(map);
