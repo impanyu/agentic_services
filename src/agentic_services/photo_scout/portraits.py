@@ -135,7 +135,7 @@ def create_portrait_router(settings,require_api):
                 async with AsyncOpenAI(api_key=settings.openai_api_key,timeout=550,max_retries=0) as client:
                     try:
                         async with asyncio.timeout(90):
-                            people=await check_people(client,bytes(row['photo']),os.getenv('PHOTO_SCOUT_MODEL','gpt-6-luna'))
+                            people=await check_people(client,bytes(row['photo']),os.getenv('PHOTO_SCOUT_PERSON_MODEL','gpt-6-astra'))
                     except Exception:
                         with db() as c:c.execute("UPDATE photo_portraits SET state='failed',photo=NULL,payload=NULL,error='Could not check your photo. Please try again; no composite was created.' WHERE id=?",(row['id'],))
                         return True
