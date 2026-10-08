@@ -38,15 +38,17 @@ IGN image URLs redirect to a verified CDN. Fetching checks every hop against an 
 host allowlist (max two followed hops) and retains the existing 3 MB image limit and
 JPEG/PNG/WebP checks. Browser CSP permits the same verified provider/CDN hosts.
 
-Candidate selection rotates sources instead of taking twelve nearest from one
+Candidate selection rotates sources instead of taking only the nearest from one
 provider. Images from different providers at the same point can be compared, while
-final recommendations still deduplicate nearby locations. The model chooses which
-images merit inspection; source diversity does not force a low-quality recommendation.
+final recommendations still deduplicate nearby locations. The fixed pipeline scores every
+successfully loaded candidate image; source diversity does not force a low-quality recommendation.
 
 Google refinement: adaptive 80–250 m minimum distance between actual panorama
 camera points; max two opposing 120-degree views, one per panorama before second
 views. No dense road traversal or exhaustive angle sweep.
 
-Coverage revision: up to 25 Google circular-grid metadata queries with concurrency
-5; minimum spacing still applies to snapped camera locations. Up to 24 combined
-candidates and 12 image inspection attempts. Daily Google image cap remains 180.
+Current coverage: POI-first Google metadata lookup targets the selected places
+(up to 24); minimum spacing still applies to snapped camera locations. Up to 24
+combined candidate images are scored in fixed batches of six, with two batches
+in parallel. Download and scoring failures are counted explicitly. Daily Google
+image cap remains 180; no autonomous image-inspection tool or agent-turn loop remains.
