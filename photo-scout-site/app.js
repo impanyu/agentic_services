@@ -7,7 +7,7 @@ L.control.zoom({position:'bottomright'}).addTo(map);
 const controls=el('map-controls');controls.open=false;L.DomEvent.disableClickPropagation(controls);L.DomEvent.disableScrollPropagation(controls);L.DomEvent.disableClickPropagation(document.querySelector('.map-toolbar'));L.DomEvent.disableClickPropagation(el('prompt-form'));L.DomEvent.disableScrollPropagation(document.querySelector('.prompt-panel'));L.DomEvent.disableClickPropagation(document.querySelector('.scout-dock'));L.DomEvent.disableScrollPropagation(document.querySelector('.scout-dock'));L.DomEvent.disableClickPropagation(el('center-pin'));
 const streetTiles=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'});
 let rasterLayer=null;
-let vectorLayer=null,activeMapStyle='streets',mapStyleGeneration=0,vectorReady=false;
+let vectorLayer=null,activeMapStyle='streets',mapStyleGeneration=0,vectorReady=false,mapLoadTimer=null;
 const mapDetails={names:true,roads:true,roadNames:false,buildings:false,greenery:false,boundaries:false};
 let originalLayerVisibility=new Map();
 function mapDetailGroup(layer){const source=layer['source-layer']||'';if(source==='transportation_name')return 'roadNames';if(layer.type==='symbol')return 'names';if(['transportation','aeroway'].includes(source))return 'roads';if(source==='building')return 'buildings';if(['park','landcover','landuse'].includes(source))return 'greenery';if(source==='boundary')return 'boundaries';return null;}
@@ -16,21 +16,31 @@ L.DomEvent.disableClickPropagation(el('map-details'));L.DomEvent.disableScrollPr
 document.querySelectorAll('[data-map-detail]').forEach(input=>input.addEventListener('change',()=>{mapDetails[input.dataset.mapDetail]=input.checked;if(['aerial','topographic'].includes(activeMapStyle))switchMapStyle('minimal');else applyMapDetails();}));
 const mapStyles={streets:'liberty',minimal:'positron',night:'dark',bright:'bright'};
 async function switchMapStyle(style){
- vectorReady=false;activeMapStyle=style;document.body.dataset.mapStyle=style;const generation=++mapStyleGeneration;
+ clearTimeout(mapLoadTimer);vectorReady=false;activeMapStyle=style;document.body.dataset.mapStyle=style;const generation=++mapStyleGeneration;
  document.querySelectorAll('[data-map-style]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mapStyle===style)));
- el('map-notice').textContent='';
+ el('map-notice').textContent='Loading map…';
  if(vectorLayer){map.removeLayer(vectorLayer);vectorLayer=null;}
  if(rasterLayer){map.removeLayer(rasterLayer);rasterLayer=null;}
  if(map.hasLayer(streetTiles))map.removeLayer(streetTiles);
+ const fallback=note=>{
+  if(generation!==mapStyleGeneration)return;
+  ++mapStyleGeneration;clearTimeout(mapLoadTimer);vectorReady=false;
+  if(vectorLayer){if(map.hasLayer(vectorLayer))map.removeLayer(vectorLayer);vectorLayer=null;}
+  if(rasterLayer){if(map.hasLayer(rasterLayer))map.removeLayer(rasterLayer);rasterLayer=null;}
+  if(!map.hasLayer(streetTiles))streetTiles.addTo(map);
+  el('map-notice').textContent=note+' Showing the standard street map. You can retry from Map layers.';
+ };
+ const ready=()=>{if(generation!==mapStyleGeneration)return;clearTimeout(mapLoadTimer);el('map-notice').textContent='';};
+ // A stalled request may never emit an error. Bound the entire first render.
+ mapLoadTimer=setTimeout(()=>fallback('The selected basemap took too long to load.'),12000);
  if(style==='aerial'||style==='topographic'){
   const name=style==='aerial'?'USGSImageryOnly':'USGSTopo';
   const layer=L.tileLayer('https://basemap.nationalmap.gov/arcgis/rest/services/'+name+'/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:style==='aerial'?'USDA · USGS The National Map — Orthoimagery':'USGS The National Map · USGS, USFS, NOAA and contributors'});rasterLayer=layer;
-  let failed=false;
-  layer.once('load',()=>{if(generation===mapStyleGeneration&&!failed&&map.hasLayer(streetTiles))map.removeLayer(streetTiles);});
-  layer.on('tileerror',()=>{if(generation!==mapStyleGeneration||failed)return;failed=true;map.removeLayer(layer);rasterLayer=null;el('map-notice').textContent='This U.S. basemap is unavailable here. Showing the standard street map.';if(!map.hasLayer(streetTiles))streetTiles.addTo(map);});
+  layer.once('load',ready);
+  layer.on('tileerror',()=>fallback('This U.S. basemap is unavailable here.'));
   layer.addTo(map);return;
  }
- if(!window.maplibregl||!L.maplibreGL){streetTiles.addTo(map);el('map-notice').textContent='This browser is using the standard street map.';return;}
+ if(!window.maplibregl||!L.maplibreGL||(typeof window.maplibregl.supported==='function'&&!window.maplibregl.supported())){fallback('This browser cannot use the selected basemap.');return;}
  try{
   // Apply detail visibility before MapLibre paints its first frame.
   const response=await fetch('https://tiles.openfreemap.org/styles/'+mapStyles[style]);
@@ -39,10 +49,11 @@ async function switchMapStyle(style){
   if(generation!==mapStyleGeneration)return;
   originalLayerVisibility=new Map(preparedStyle.layers.map(l=>[l.id,l.layout?.visibility||'visible']));
   for(const l of preparedStyle.layers){const group=mapDetailGroup(l);if(group&&(!mapDetails[group]||(group==='roadNames'&&!mapDetails.roads)))l.layout={...l.layout,visibility:'none'};}
-  const layer=L.maplibreGL({style:preparedStyle,attribution:'<a href="https://openfreemap.org/">OpenFreeMap</a> · <a href="https://openmaptiles.org/">OpenMapTiles</a> · © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',interactive:false}).addTo(map);vectorLayer=layer;
-  const gl=layer.getMaplibreMap();gl.once('load',()=>{if(generation!==mapStyleGeneration)return;vectorReady=true;applyMapDetails();if(map.hasLayer(streetTiles))map.removeLayer(streetTiles);});
-  gl.on('error',()=>{if(generation!==mapStyleGeneration)return;mapStyleGeneration++;if(map.hasLayer(layer))map.removeLayer(layer);vectorLayer=null;if(!map.hasLayer(streetTiles))streetTiles.addTo(map);el('map-notice').textContent='Map style unavailable. Showing the standard street map.';});
- }catch{if(generation!==mapStyleGeneration)return;if(!map.hasLayer(streetTiles))streetTiles.addTo(map);el('map-notice').textContent='Map style unavailable. Showing the standard street map.';}
+  const layer=L.maplibreGL({style:preparedStyle,attribution:'<a href="https://openfreemap.org/">OpenFreeMap</a> · <a href="https://openmaptiles.org/">OpenMapTiles</a> · © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',interactive:false});vectorLayer=layer;layer.addTo(map);
+  const gl=layer.getMaplibreMap();gl.once('load',()=>{if(generation!==mapStyleGeneration)return;vectorReady=true;applyMapDetails();ready();});
+  gl.on('error',()=>fallback('The selected basemap is unavailable.'));
+  gl.on('webglcontextlost',()=>fallback('Map graphics were interrupted.'));
+ }catch{fallback('The selected basemap is unavailable.');}
 }
 // Only one map popover is open; keep it clear of expanded search settings.
 const mapMenus=[...document.querySelectorAll('.map-overlay-controls details')];
