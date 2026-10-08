@@ -29,7 +29,7 @@ aisoup.net, www.aisoup.net {
 			Strict-Transport-Security "max-age=31536000; includeSubDomains"
 			X-Content-Type-Options "nosniff"
 			Referrer-Policy "strict-origin-when-cross-origin"
-			Content-Security-Policy "default-src 'self'; connect-src 'self' https://api.aisoup.net; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' data: https://api.aisoup.net https://tile.openstreetmap.org https://upload.wikimedia.org https://*.fbcdn.net https://panoramax.ign.fr https://panoramax.openstreetmap.fr https://panoramax-storage-public-fast.s3.gra.perf.cloud.ovh.net; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
+			Content-Security-Policy "default-src 'self'; connect-src 'self' https://api.aisoup.net https://tiles.openfreemap.org; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' data: https://api.aisoup.net https://tile.openstreetmap.org https://upload.wikimedia.org https://*.fbcdn.net https://panoramax.ign.fr https://panoramax.openstreetmap.fr https://panoramax-storage-public-fast.s3.gra.perf.cloud.ovh.net; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
 		}
 		file_server
 	}

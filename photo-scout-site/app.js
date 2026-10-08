@@ -2,12 +2,33 @@
 const api=location.hostname==='localhost'||location.hostname==='127.0.0.1'?'': 'https://api.aisoup.net';
 const el=id=>document.getElementById(id), message=s=>{el('message').textContent=s};
 const map=L.map('map').setView([41.8827,-87.6233],15);
-L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'}).addTo(map);
-let selected=L.marker([41.8827,-87.6233]).addTo(map), resultPins=[];let humanFreePreview=false, serviceAvailable=false, poiCatalog=null, catalogGeneration=0, searchBusy=false, pollGeneration=0;
+const streetTiles=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'}).addTo(map);
+let vectorLayer=null,activeMapStyle='streets',mapStyleGeneration=0;
+const mapStyles={streets:'liberty',minimal:'positron',night:'dark'};
+function switchMapStyle(style){
+ activeMapStyle=style;const generation=++mapStyleGeneration;
+ document.querySelectorAll('[data-map-style]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mapStyle===style)));
+ el('map-notice').textContent='';
+ if(vectorLayer){map.removeLayer(vectorLayer);vectorLayer=null;}
+ if(!map.hasLayer(streetTiles))streetTiles.addTo(map);
+ if(!window.maplibregl||!L.maplibreGL){el('map-notice').textContent='This browser is using the standard street map.';return;}
+ try{
+  const layer=L.maplibreGL({style:'https://tiles.openfreemap.org/styles/'+mapStyles[style],attribution:'<a href="https://openfreemap.org/">OpenFreeMap</a> · <a href="https://openmaptiles.org/">OpenMapTiles</a> · © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',interactive:false}).addTo(map);vectorLayer=layer;
+  const gl=layer.getMaplibreMap();gl.once('load',()=>{if(generation===mapStyleGeneration&&map.hasLayer(streetTiles))map.removeLayer(streetTiles);});
+  gl.on('error',()=>{if(generation!==mapStyleGeneration)return;mapStyleGeneration++;if(map.hasLayer(layer))map.removeLayer(layer);vectorLayer=null;if(!map.hasLayer(streetTiles))streetTiles.addTo(map);el('map-notice').textContent='Map style unavailable. Showing the standard street map.';});
+ }catch{el('map-notice').textContent='Map style unavailable. Showing the standard street map.';}
+}
+document.querySelectorAll('[data-map-style]').forEach(b=>b.addEventListener('click',()=>switchMapStyle(b.dataset.mapStyle)));
+switchMapStyle('streets');
+let selected=L.marker([41.8827,-87.6233],{draggable:true,title:'Selected location: drag to move',icon:L.divIcon({className:'scout-pin',html:'<span aria-hidden="true">✳</span>',iconSize:[44,44],iconAnchor:[22,22]})}).addTo(map), resultPins=[];let humanFreePreview=false, serviceAvailable=false, poiCatalog=null, catalogGeneration=0, searchBusy=false, pollGeneration=0;
+const searchArea=L.circle([41.8827,-87.6233],{radius:1000,color:'#375947',weight:1.5,dashArray:'5 7',fillColor:'#acd69a',fillOpacity:.12,interactive:false}).addTo(map);
+function syncMapSelection(){const lat=Number(el('lat').value),lon=Number(el('lon').value);if(!Number.isFinite(lat)||!Number.isFinite(lon)||Math.abs(lat)>85||Math.abs(lon)>180)return;searchArea.setLatLng([lat,lon]).setRadius(Number(el('radius').value));el('map-selection').textContent=`${lat.toFixed(5)}, ${lon.toFixed(5)}`;el('map-radius').textContent=`Searching within ${Number(el('radius').value)>=1000?Number(el('radius').value)/1000+' km':el('radius').value+' m'}`;}
+selected.on('dragend',()=>{const p=selected.getLatLng();pick(p.lat,p.lng);});
+el('center-pin').addEventListener('click',()=>map.fitBounds(searchArea.getBounds(),{padding:[32,32],maxZoom:16}));
 function coordinates(){const style=el('style-options').querySelector('input:checked')?.value;return {lat:Number(el('lat').value),lon:Number(el('lon').value),radius:Number(el('radius').value),photoStyles:style&&style!=='any'?[style]:null}}
 function updateSelection(){const count=el("poi-list").querySelectorAll("input:checked").length;el("poi-count").textContent=`${count} of ${poiCatalog?.nearbyPois.length||0} places selected`;el("submit").disabled=searchBusy||!serviceAvailable||!count;}
 function invalidatePois(){catalogGeneration++;poiCatalog=null;el("poi-selection").hidden=true;el("poi-list").replaceChildren();el("submit").disabled=true;}
-function pick(lat,lon){invalidatePois();el('lat').value=lat.toFixed(6);el('lon').value=lon.toFixed(6);selected.setLatLng([lat,lon]);}
+function pick(lat,lon){invalidatePois();el('lat').value=lat.toFixed(6);el('lon').value=lon.toFixed(6);selected.setLatLng([lat,lon]);syncMapSelection();}
 const locationStatus=s=>{el('location-status').textContent=s};
 el('locate').addEventListener('click',()=>{
  if(!window.isSecureContext||!navigator.geolocation){locationStatus('Location is unavailable in this browser. Select a point on the map or enter coordinates instead.');return;}
@@ -22,12 +43,12 @@ el('locate').addEventListener('click',()=>{
  catch{finish();locationStatus('Location is unavailable. Select a point on the map or enter coordinates instead.');}
 });
 map.on('click',e=>pick(e.latlng.lat,e.latlng.lng));
-for(const id of ['lat','lon']) el(id).addEventListener('input',()=>{invalidatePois();const lat=Number(el('lat').value),lon=Number(el('lon').value);if(Number.isFinite(lat)&&Number.isFinite(lon)&&Math.abs(lat)<=85&&Math.abs(lon)<=180){selected.setLatLng([lat,lon]);map.setView([lat,lon],15)}});
-el('radius').addEventListener('change',invalidatePois);
+for(const id of ['lat','lon']) el(id).addEventListener('input',()=>{invalidatePois();const lat=Number(el('lat').value),lon=Number(el('lon').value);if(Number.isFinite(lat)&&Number.isFinite(lon)&&Math.abs(lat)<=85&&Math.abs(lon)<=180){selected.setLatLng([lat,lon]);map.setView([lat,lon],15);syncMapSelection()}});
+el('radius').addEventListener('change',()=>{invalidatePois();syncMapSelection();});
 function styleChanged(){invalidatePois();message('Photo mood updated. Find places to refresh the list.');}
 function renderStyles(styles){
  const options=[{id:'any',label:'Surprise me',description:'Find distinctive photo opportunities across all moods.'},...styles];
- for(const style of options){const label=node('label',null,'style-choice'),input=document.createElement('input');input.type='radio';input.name='photo-style';input.value=style.id;input.checked=style.id==='any';input.addEventListener('change',styleChanged);const text=node('span');text.append(node('strong',style.label),node('span',style.description,'style-description'));label.append(input,text);el('style-options').append(label);}
+ for(const style of options){const label=node('label',null,'style-choice'),input=document.createElement('input');input.type='radio';input.name='photo-style';input.value=style.id;input.checked=style.id==='any';input.addEventListener('change',styleChanged);const text=node('span');const icons={any:'✳',nature:'❋',urban:'▥',vintage:'◷',iconic:'✦',artistic:'◈',waterside:'≈',minimal:'□',adventure:'△'};const icon=node('span',icons[style.id]||'✳','mood-icon');icon.setAttribute('aria-hidden','true');label.append(icon);text.append(node('strong',style.label),node('span',style.description,'style-description'));label.append(input,text);el('style-options').append(label);}
 }
 el('find-pois').addEventListener('click',async()=>{
  if(!el('search').reportValidity()||!serviceAvailable)return;
