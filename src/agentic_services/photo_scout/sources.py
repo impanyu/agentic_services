@@ -90,7 +90,8 @@ async def commons(client, lat, lon, radius):
             'locationType':'file_geotag_not_verified_camera_position',
             'imageUrl':image,'sourceUrl':row.get('descriptionurl'),
             'author':val('Artist'),'license':lic,'licenseUrl':licurl,
-            'capturedAt':val('DateTimeOriginal') or None,
+            'sourceDate':val('DateTimeOriginal') or None,
+            'capturedAt':(val('DateTimeOriginal') or None) if 'upload' not in val('DateTimeOriginal').lower() else None,
             'description':val('ImageDescription')})
     return found
 

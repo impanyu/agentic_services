@@ -97,3 +97,33 @@ def test_paid_fulfillment_is_reused(tmp_path,monkeypatch):
     session={'client_reference_id':job}
     asyncio.run(fulfill(session));asyncio.run(fulfill(session))
     assert len(calls)==1;assert store.get(job)['state']=='complete'
+
+
+def test_shared_webhook_queues_photo_delivery_without_success_page(tmp_path,monkeypatch):
+    import hashlib,hmac,json,time
+    import agentic_services.photo_scout.routes as routes
+    monkeypatch.setenv('PHOTO_SCOUT_ENABLED','1')
+    monkeypatch.setenv('CONTRACTOR_STRIPE_SECRET_KEY','sk_test_fixture')
+    monkeypatch.setenv('HUMAN_STRIPE_WEBHOOK_SECRET','whsec_fixture')
+    settings=Settings(openai_api_key='test',openai_model='test',database_path=tmp_path/'db',base_url='https://api.test',service_api_key='private')
+    app=create_app(settings=settings);client=TestClient(app)
+    store=PhotoStore(settings.database_path);job,token=store.create(ExploreRequest(lat=0,lon=0),200)
+    store.update(job,session='cs_test_abc')
+    session={'id':'cs_test_abc','client_reference_id':job,'metadata':{'serviceId':'photo-scout'},'currency':'usd','amount_total':200,'mode':'payment','payment_status':'paid','livemode':False}
+    real=httpx.AsyncClient
+    monkeypatch.setattr(routes.httpx,'AsyncClient',lambda **kw:real(transport=httpx.MockTransport(lambda r:httpx.Response(200,json=session))))
+    async def images(*a): return [{'id':'test'}],{'test':{'status':'ok'}}
+    async def pois(*a): return [],{'status':'ok'}
+    calls=[]
+    async def model(*a): calls.append(1);return {'spots':[],'sources':{},'summary':'No good images'}
+    monkeypatch.setattr(routes,'candidates',images);monkeypatch.setattr(routes,'nearby_pois',pois);monkeypatch.setattr(routes,'explore',model)
+    event={'type':'checkout.session.completed','data':{'object':session}}
+    body=json.dumps(event).encode();stamp=str(int(time.time()))
+    sig=hmac.new(b'whsec_fixture',stamp.encode()+b'.'+body,hashlib.sha256).hexdigest()
+    assert client.post('/v1/stripe/checkout-webhook',content=body).status_code==400
+    for _ in range(2):
+        response=client.post('/v1/stripe/checkout-webhook',content=body,headers={'Stripe-Signature':f't={stamp},v1={sig}'})
+        assert response.json()=={'status':'queued'}
+        asyncio.run(app.state.process_stripe_fulfillment())
+    assert calls==[1]
+    assert store.get(job)['state']=='complete'

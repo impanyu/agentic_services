@@ -80,3 +80,19 @@ no prefetch/download. Self-host or use a commercial tile provider at scale.
 Tests: `python -m pytest tests/test_photo_scout.py`; provider tests mocked and labeled.
 A bounded real-model Chicago smoke run saw four actual images and returned three spots;
 that is a smoke check, not evaluation of broad geographical quality.
+
+## October 8 release verification
+
+Production preview uses $2 per exploration for humans and agents, with a 30-run UTC
+daily cap. Company catalog lists the service as both and Preview. Wikimedia imagery
+and OSM POI queries were verified live; Mapillary token is not configured and Google
+Street View remains disabled. Real-model Chicago example inspected four images and
+returned three recommendations. Source dates can be upload dates; they are not
+unconditionally presented as capture timestamps.
+
+92 Python tests and gateway TypeScript check passed. Public UI/sample/OpenAPI/status
+returned 200; unpaid agent call 402 with MPP challenge; Checkout CORS 204; actual
+Stripe live-mode Checkout creation 200; unpaid private report 402; test Checkout
+expired 200 without paying; unsigned webhook 400. Shared webhook queue delivery and
+replay were tested with mocked paid Stripe responses, not a new live paid transaction.
+No marketplace listings were submitted.

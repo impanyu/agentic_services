@@ -22,7 +22,8 @@
       "uncertainty": "The photo shows this kind of park-side skyline, but its geotag may describe the pictured area rather than the camera position; the exact viewpoint is uncertain.",
       "confidence": "medium",
       "accessStatus": "unknown",
-      "coordinateWarning": "Mapped image point; exact standing spot and access are not verified."
+      "coordinateWarning": "Mapped image point; exact standing spot and access are not verified.",
+      "sourceDate": "2006-11-28 16:09"
     },
     {
       "id": "commons:53352578",
@@ -36,7 +37,7 @@
       "author": "Roman Eugeniusz",
       "license": "CC BY-SA 3.0",
       "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
-      "capturedAt": "17 April 2011 (original upload date)",
+      "capturedAt": null,
       "distanceMeters": 629,
       "image_id": "commons:53352578",
       "name": "Downtown architectural canyon with a Gothic spire",
@@ -46,7 +47,8 @@
       "uncertainty": "The image is an older street scene and does not establish the precise present-day camera location. Its geotag is unverified and may refer to the subject area.",
       "confidence": "medium",
       "accessStatus": "unknown",
-      "coordinateWarning": "Mapped image point; exact standing spot and access are not verified."
+      "coordinateWarning": "Mapped image point; exact standing spot and access are not verified.",
+      "sourceDate": "17 April 2011 (original upload date)"
     },
     {
       "id": "commons:60668153",
@@ -70,7 +72,8 @@
       "uncertainty": "The photograph is from 2017, and its geotag may indicate the tower rather than the photographer\u2019s position. This recommendation is for an exterior view, not interior access.",
       "confidence": "medium",
       "accessStatus": "unknown",
-      "coordinateWarning": "Mapped image point; exact standing spot and access are not verified."
+      "coordinateWarning": "Mapped image point; exact standing spot and access are not verified.",
+      "sourceDate": "2017-06-17 12:54"
     }
   ],
   "summary": "These are subjective photo-potential picks from the small inspected sample near your search point. The skyline and street scenes are archival examples, and geotags are unverified camera positions, so treat them as clues to the subject or area rather than exact shooting spots.",
