@@ -40,7 +40,7 @@ function pageFixture(){
  const context={window,navigator,L,document:{body:{dataset:{}},getElementById:element,querySelector:element,querySelectorAll(){return [];},addEventListener(){}},location:{hostname:'test.invalid',search:''},localStorage:{removeItem(){}},sessionStorage:{},fetch:()=>new Promise(()=>{}),setTimeout:()=>1,clearTimeout(){},Number,URL,matchMedia:()=>({matches:true})};
  vm.runInNewContext(readFileSync('photo-scout-site/location.js','utf8'),context);
  vm.runInNewContext(readFileSync('photo-scout-site/app.js','utf8'),context);
- return {element,requests,moves,circles,click:id=>element(id).listeners.click()};
+ return {bearing:context.photoBearing,element,requests,moves,circles,click:id=>element(id).listeners.click()};
 }
 test('top-right location button waits for device coordinates and moves away from Chicago',()=>{
  const f=pageFixture();f.click('center-pin');assert.equal(f.requests.length,1);assert.equal(f.moves.length,0);assert.equal(f.element('center-pin').disabled,true);
@@ -51,4 +51,8 @@ test('both location buttons share pending state and denial never recenters Chica
  const f=pageFixture();f.click('center-pin');f.click('locate');assert.equal(f.requests.length,1);assert.equal(f.element('locate').disabled,true);
  f.requests[0].error({code:1});assert.equal(f.moves.length,0);assert.equal(f.element('locate').disabled,false);assert.match(f.element('map-notice').textContent,/not your detected location/);
  f.click('locate');assert.equal(f.requests.length,2);
+});
+
+test('photo bearing preserves north, normalizes rotations and never invents missing directions',()=>{
+ const f=pageFixture();assert.equal(f.bearing({viewHeadingDegrees:0}).label,'Facing N · 0°');assert.equal(f.bearing({viewHeadingDegrees:90}).label,'Facing E · 90°');assert.equal(f.bearing({viewHeadingDegrees:-90}).heading,270);assert.equal(f.bearing({viewHeadingDegrees:360}).heading,0);for(const value of [null,undefined,NaN,'90'])assert.equal(f.bearing({viewHeadingDegrees:value}).heading,null);
 });

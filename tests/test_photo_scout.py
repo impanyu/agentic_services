@@ -14,7 +14,7 @@ from agentic_services.storage import VerificationStore
 
 
 def test_coordinates_and_image_hosts():
-    for changes in ({'lat':float('nan')},{'lon':181},{'radius':5001},{'lat':86}):
+    for changes in ({'lat':float('nan')},{'lon':181},{'radius':20001},{'lat':86}):
         with pytest.raises(ValueError): ExploreRequest(**({'lat':0,'lon':0}|changes))
     assert distance((0,179.999),(0,-179.999))<230
     assert image_host('https://upload.wikimedia.org/a.jpg')
@@ -615,3 +615,16 @@ def test_preview_leases_recover_and_failed_reads_do_not_charge(tmp_path,monkeypa
     assert store.get(job) is None
     store.prune()
     with store.connect() as db: assert db.execute('SELECT count(*) FROM photo_scout_jobs').fetchone()[0]==0
+
+
+def test_city_scale_radius_and_commons_provider_limit(monkeypatch):
+    assert ExploreRequest(lat=0,lon=0,radius=20000).radius==20000
+    requested=[]
+    async def response(client,url,params):
+        requested.append(params['gsradius'])
+        assert params['gsradius']<=10000
+        return {'query':{'geosearch':[]}}
+    import agentic_services.photo_scout.sources as sources
+    monkeypatch.setattr(sources,'get_json',response)
+    assert asyncio.run(commons(None,0,0,20000))==[]
+    assert len(requested)==5 and set(requested)=={10000}

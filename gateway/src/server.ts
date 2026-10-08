@@ -590,7 +590,7 @@ function mountPhotoRoute(handler: PaymentHandler): void {
     const input = await c.req.raw.clone().json().catch(() => null)
     if (!input || !Number.isFinite(input.lat) || !Number.isFinite(input.lon)
         || Math.abs(input.lat) > 85 || Math.abs(input.lon) > 180
-        || (input.radius !== undefined && (!Number.isInteger(input.radius) || input.radius < 100 || input.radius > 5000))
+        || (input.radius !== undefined && (!Number.isInteger(input.radius) || input.radius < 100 || input.radius > 20000))
         || (input.limit !== undefined && (!Number.isInteger(input.limit) || input.limit < 1 || input.limit > 5))
         || (input.preferences !== undefined && (typeof input.preferences !== 'string' || input.preferences.length > 500))) return c.text('Invalid discovery input', 422)
     const coverage = await proxyRequest(new Request(c.req.url, { method: 'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify(input) }), '/photo-scout/v1/candidates')

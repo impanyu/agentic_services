@@ -28,7 +28,7 @@ from .sources import candidates, nearby_pois, google_enabled, google_image_data
 class ExploreRequest(BaseModel):
     lat: float = Field(ge=-85,le=85,allow_inf_nan=False)
     lon: float = Field(ge=-180,le=180,allow_inf_nan=False)
-    radius: int = Field(default=1000,ge=100,le=5000)
+    radius: int = Field(default=1000,ge=100,le=20000)
     limit: int = Field(default=3,ge=1,le=5)
     photoStyles: list[Literal['nature','urban','vintage','iconic','artistic','waterside','minimal','adventure']] | None = Field(default=None,min_length=1,max_length=8)
     categories: list[Literal['viewpoint','park','attraction','museum','artwork','historic','nature','recreation']] | None = Field(default=None,min_length=1,max_length=8)
@@ -270,7 +270,7 @@ def create_photo_router(settings,require_api,verification_store):
             'googleStreetView':{'credentialConfigured':bool(os.getenv('PHOTO_SCOUT_GOOGLE_API_KEY')),
                 'imageAnalysisEnabled':google_enabled(),
                 'dailyImageRequestLimit':max(0,int(os.getenv('PHOTO_SCOUT_GOOGLE_DAILY_IMAGE_LIMIT','0'))) or None},
-            'limits':{'radiusMeters':5000,'sampledImages':24,'inspectedImages':24,'imagesPerBatch':6,'parallelBatches':2,'googleQueryLocations':25,'timeoutSeconds':270},
+            'limits':{'radiusMeters':20000,'sampledImages':24,'inspectedImages':24,'imagesPerBatch':6,'parallelBatches':2,'googleQueryLocations':25,'timeoutSeconds':270},
             'analysisMethod':'fixed-batch-scoring','discoveryMethod':'poi-first','poiProviders':{'openstreetmap':'enabled','google-places':'not_connected'},
             'privacy':'Coordinates/preferences are sent to imagery providers/OpenAI; paid reports retained for 30 days.'}
 

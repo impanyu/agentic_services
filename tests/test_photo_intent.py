@@ -54,3 +54,21 @@ def test_text_resolve_auth_and_no_store(tmp_path,monkeypatch):
     response=client.post('/photo-scout/v1/resolve',json=payload,headers={'Authorization':'Bearer private'})
     assert response.status_code==200;assert response.headers['cache-control']=='private, no-store'
     assert client.post('/photo-scout/v1/resolve',json=payload|{'lat':91},headers={'Authorization':'Bearer private'}).status_code==422
+
+def test_text_parameters_override_conflicting_ui_defaults(monkeypatch):
+    async def parsed(settings,payload):
+        assert payload.radius==500 and payload.limit==3 and payload.photoStyles==['nature']
+        return plan(locationQuery='Chicago',useMapCenter=False,radiusMeters=20000,limit=5,photoStyles=['urban'],preferences='Architectural river views')
+    async def located(query):return [{'lat':41.88,'lon':-87.63,'label':'Chicago','source':'photon/openstreetmap'}]
+    monkeypatch.setattr(intent,'parse_intent',parsed);monkeypatch.setattr(intent,'geocode',located)
+    payload=intent.IntentRequest(query='Urban photos in Chicago within 20 km, top 5',lat=40,lon=-96,radius=500,limit=3,photoStyles=['nature'])
+    result=asyncio.run(intent.resolve_intent(None,payload))
+    assert result['radiusMeters']==20000 and result['limit']==5 and result['photoStyles']==['urban']
+    assert result['locations'][0]['lat']==41.88 and result['preferences']=='Architectural river views'
+
+
+def test_city_radius_validation():
+    for model,field in [(intent.IntentRequest,'radius'),(intent.PhotoIntent,'radiusMeters')]:
+        payload={'query':'here','lat':0,'lon':0} if model is intent.IntentRequest else plan().model_dump()
+        assert getattr(model(**(payload|{field:20000})),field)==20000
+        with pytest.raises(ValueError):model(**(payload|{field:20001}))

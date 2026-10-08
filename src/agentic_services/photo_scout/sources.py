@@ -54,7 +54,7 @@ async def commons(client, lat, lon, radius):
     async def search(point):
         return await get_json(client, 'https://commons.wikimedia.org/w/api.php', {
             'action':'query','format':'json','list':'geosearch','gsnamespace':6,
-            'gscoord':f'{point[0]}|{point[1]}','gsradius':max(100,round(radius*.6)),'gslimit':30})
+            'gscoord':f'{point[0]}|{point[1]}','gsradius':min(10000,max(100,round(radius*.6))),'gslimit':30})
     responses=await asyncio.gather(*(search(p) for p in points if abs(p[0])<90 and abs(p[1])<=180),return_exceptions=True)
     if all(isinstance(r,Exception) for r in responses): raise ValueError('Commons searches unavailable')
     seen=set(); geo=[]
