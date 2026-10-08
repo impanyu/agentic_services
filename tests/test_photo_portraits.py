@@ -46,7 +46,7 @@ def test_private_job_edits_both_images_and_removes_upload(tmp_path,monkeypatch,i
     body.update(posture='walking',weather='golden_hour',expression='big_smile')
     result=client.post('/photo-scout/v1/portraits',json=body,headers=auth);assert result.status_code==202
     job=result.json();path='/photo-scout/v1/portraits/'+job['id'];owned=auth|{'X-Report-Token':job['token']}
-    assert client.get(path,headers=auth).status_code==404
+    assert TestClient(app,base_url='https://api.test').get(path,headers=auth).status_code==404
     assert client.get(path,headers=owned).json()['state']=='queued'
     assert asyncio.run(app.state.process_photo_portrait())
     assert len(calls[0]['image'])==2;assert calls[0]['model']==image_model;assert calls[0]['n']==1
