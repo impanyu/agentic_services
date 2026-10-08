@@ -113,6 +113,8 @@ def create_photo_router(settings,require_api,verification_store):
                 'mapillary':'configured' if os.getenv('PHOTO_SCOUT_MAPILLARY_TOKEN') else 'needs_token',
                 'google-street-view':'disabled_pending_appropriate_authorization',
                 'kartaview':'not_connected'},
+            'googleStreetView':{'credentialConfigured':bool(os.getenv('PHOTO_SCOUT_GOOGLE_API_KEY')),
+                'imageAnalysisEnabled':False},
             'limits':{'radiusMeters':5000,'sampledImages':12,'inspectedImages':6,'timeoutSeconds':240},
             'privacy':'Coordinates/preferences are sent to imagery providers/OpenAI; paid reports retained for 30 days.'}
 

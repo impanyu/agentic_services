@@ -110,3 +110,19 @@ six actual images and returned one Panoramax 2025 street scene and one Wikimedia
 landscape photograph. Public free sample is `sample-paris.json`. No paid transaction
 was made for this source expansion; existing pricing is unchanged. KartaView timed
 out in both local and VM probes and remains unconnected.
+
+## Google Street View credential setup
+
+`PHOTO_SCOUT_GOOGLE_API_KEY` is a server-only production credential in the existing
+`impanyu` Google Cloud project. Street View Static API is enabled. The dedicated key
+is restricted to the production VM outbound IP and
+`street-view-image-backend.googleapis.com`; never put it in a browser URL, sample,
+report, log or version control. Rotate/restrict the key when the VM outbound IP changes.
+The status endpoint exposes only `credentialConfigured` and `imageAnalysisEnabled`
+booleans. Credential availability does not mean imagery analysis is enabled or
+commercial inference rights have been verified. Metadata probes incur no image
+charges; actual image fetches are a separate billable operation.
+
+October 8 credential verification: production VM metadata request returned HTTP 200,
+provider status `OK`, and panorama imagery date `2025-10`. No actual Google image
+was fetched or sent to OpenAI in this credential setup.
