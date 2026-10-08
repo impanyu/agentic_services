@@ -40,7 +40,7 @@ function pageFixture(){
  const context={window,navigator,L,document:{body:{dataset:{}},getElementById:element,querySelector:element,querySelectorAll(){return [];},addEventListener(){}},location:{hostname:'test.invalid',search:''},localStorage:{removeItem(){}},sessionStorage:{},fetch:()=>new Promise(()=>{}),setTimeout:()=>1,clearTimeout(){},Number,URL,matchMedia:()=>({matches:true})};
  vm.runInNewContext(readFileSync('photo-scout-site/location.js','utf8'),context);
  vm.runInNewContext(readFileSync('photo-scout-site/app.js','utf8'),context);
- return {bearing:context.photoBearing,element,requests,moves,circles,click:id=>element(id).listeners.click()};
+ return {interceptSubmission:fn=>{context.submitSearch=fn;},bearing:context.photoBearing,element,requests,moves,circles,click:id=>element(id).listeners.click()};
 }
 test('top-right location button waits for device coordinates and moves away from Chicago',()=>{
  const f=pageFixture();f.click('center-pin');assert.equal(f.requests.length,1);assert.equal(f.moves.length,0);assert.equal(f.element('center-pin').disabled,true);
@@ -55,4 +55,8 @@ test('both location buttons share pending state and denial never recenters Chica
 
 test('photo bearing preserves north, normalizes rotations and never invents missing directions',()=>{
  const f=pageFixture();assert.equal(f.bearing({viewHeadingDegrees:0}).label,'Facing N · 0°');assert.equal(f.bearing({viewHeadingDegrees:90}).label,'Facing E · 90°');assert.equal(f.bearing({viewHeadingDegrees:-90}).heading,270);assert.equal(f.bearing({viewHeadingDegrees:360}).heading,0);for(const value of [null,undefined,NaN,'90'])assert.equal(f.bearing({viewHeadingDegrees:value}).heading,null);
+});
+
+test('device location passes typed text through the same submission handler',()=>{
+ const f=pageFixture();f.element('prompt-query').value='Urban shots within 20 km';let submitted;f.interceptSubmission(()=>{submitted=f.element('prompt-query').value;});f.click('center-pin');f.requests[0].success({coords:{latitude:40.8,longitude:-96.7,accuracy:8}});assert.equal(submitted,'Urban shots within 20 km');
 });
