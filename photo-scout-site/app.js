@@ -6,10 +6,16 @@ L.control.zoom({position:'bottomright'}).addTo(map);
 const controls=el('map-controls');controls.open=false;L.DomEvent.disableClickPropagation(controls);L.DomEvent.disableScrollPropagation(controls);L.DomEvent.disableClickPropagation(document.querySelector('.map-toolbar'));L.DomEvent.disableClickPropagation(el('prompt-form'));L.DomEvent.disableScrollPropagation(document.querySelector('.prompt-panel'));L.DomEvent.disableClickPropagation(document.querySelector('.scout-dock'));L.DomEvent.disableScrollPropagation(document.querySelector('.scout-dock'));L.DomEvent.disableClickPropagation(el('center-pin'));
 const streetTiles=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'}).addTo(map);
 let rasterLayer=null;
-let vectorLayer=null,activeMapStyle='streets',mapStyleGeneration=0;
+let vectorLayer=null,activeMapStyle='streets',mapStyleGeneration=0,vectorReady=false;
+const mapDetails={names:true,roads:true,roadNames:true,buildings:true,greenery:true,boundaries:true};
+let originalLayerVisibility=new Map();
+function mapDetailGroup(layer){const source=layer['source-layer']||'';if(source==='transportation_name')return 'roadNames';if(layer.type==='symbol')return 'names';if(['transportation','aeroway'].includes(source))return 'roads';if(source==='building')return 'buildings';if(['park','landcover','landuse'].includes(source))return 'greenery';if(source==='boundary')return 'boundaries';return null;}
+function applyMapDetails(){if(!vectorLayer||!vectorReady)return;const gl=vectorLayer.getMaplibreMap();for(const layer of gl.getStyle().layers){const group=mapDetailGroup(layer);if(!group)continue;const show=mapDetails[group]&&(group!=='roadNames'||mapDetails.roads);gl.setLayoutProperty(layer.id,'visibility',show?(originalLayerVisibility.get(layer.id)||'visible'):'none');}}
+L.DomEvent.disableClickPropagation(el('map-details'));L.DomEvent.disableScrollPropagation(el('map-details'));
+document.querySelectorAll('[data-map-detail]').forEach(input=>input.addEventListener('change',()=>{mapDetails[input.dataset.mapDetail]=input.checked;if(['aerial','topographic'].includes(activeMapStyle))switchMapStyle('minimal');else applyMapDetails();}));
 const mapStyles={streets:'liberty',minimal:'positron',night:'dark',bright:'bright'};
 function switchMapStyle(style){
- activeMapStyle=style;document.body.dataset.mapStyle=style;const generation=++mapStyleGeneration;
+ vectorReady=false;activeMapStyle=style;document.body.dataset.mapStyle=style;const generation=++mapStyleGeneration;
  document.querySelectorAll('[data-map-style]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mapStyle===style)));
  el('map-notice').textContent='';
  if(vectorLayer){map.removeLayer(vectorLayer);vectorLayer=null;}
@@ -26,7 +32,7 @@ function switchMapStyle(style){
  if(!window.maplibregl||!L.maplibreGL){el('map-notice').textContent='This browser is using the standard street map.';return;}
  try{
   const layer=L.maplibreGL({style:'https://tiles.openfreemap.org/styles/'+mapStyles[style],attribution:'<a href="https://openfreemap.org/">OpenFreeMap</a> · <a href="https://openmaptiles.org/">OpenMapTiles</a> · © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',interactive:false}).addTo(map);vectorLayer=layer;
-  const gl=layer.getMaplibreMap();gl.once('load',()=>{if(generation===mapStyleGeneration&&map.hasLayer(streetTiles))map.removeLayer(streetTiles);});
+  const gl=layer.getMaplibreMap();gl.once('load',()=>{if(generation!==mapStyleGeneration)return;vectorReady=true;originalLayerVisibility=new Map(gl.getStyle().layers.map(l=>[l.id,l.layout?.visibility||'visible']));applyMapDetails();if(map.hasLayer(streetTiles))map.removeLayer(streetTiles);});
   gl.on('error',()=>{if(generation!==mapStyleGeneration)return;mapStyleGeneration++;if(map.hasLayer(layer))map.removeLayer(layer);vectorLayer=null;if(!map.hasLayer(streetTiles))streetTiles.addTo(map);el('map-notice').textContent='Map style unavailable. Showing the standard street map.';});
  }catch{el('map-notice').textContent='Map style unavailable. Showing the standard street map.';}
 }
