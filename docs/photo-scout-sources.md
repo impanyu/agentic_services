@@ -42,3 +42,7 @@ Candidate selection rotates sources instead of taking twelve nearest from one
 provider. Images from different providers at the same point can be compared, while
 final recommendations still deduplicate nearby locations. The model chooses which
 images merit inspection; source diversity does not force a low-quality recommendation.
+
+Google refinement: adaptive 80–250 m minimum distance between actual panorama
+camera points; max two opposing 120-degree views, one per panorama before second
+views. No dense road traversal or exhaustive angle sweep.

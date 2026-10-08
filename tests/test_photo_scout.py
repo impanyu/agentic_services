@@ -180,10 +180,11 @@ def test_google_candidates_keep_angles_without_credentials(monkeypatch):
         async with httpx.AsyncClient(transport=httpx.MockTransport(lambda r:httpx.Response(200,json=data))) as c:
             return await google_streetview(c,0,0,1000)
     rows=asyncio.run(run())
-    assert len(rows)==4 and {r['viewHeadingDegrees'] for r in rows}=={0,90,180,270}
+    assert len(rows)==2 and {r['viewHeadingDegrees'] for r in rows}=={0,180}
+    assert all(r['viewFovDegrees']==120 for r in rows)
     assert 'secret-fixture' not in json.dumps(rows)
     for r in rows:r['distanceMeters']=0
-    assert len(diverse_sample(rows))==4
+    assert len(diverse_sample(rows))==2
     choices=VisualResult(spots=[VisualChoice(image_id=rows[0]['id'],name='Park',score=80,visible_evidence='Trees',photo_tip='Frame trees',uncertainty='Old image',confidence='medium')],summary='Park')
     result=validate_result(choices,rows,{rows[0]['id']},3)
     assert result[0]['imageUrl'] is None and 'heading=0' in result[0]['sourceUrl']
@@ -208,3 +209,24 @@ def test_google_image_budget_and_reference_validation(tmp_path,monkeypatch):
     assert asyncio.run(sources.google_image_data('google-streetview://fixture/90')).startswith('data:image/jpeg;base64,')
     with pytest.raises(ValueError): asyncio.run(sources.google_image_data('google-streetview://fixture/90'))
     assert len(requests)==1
+
+
+def test_google_sampling_deduplicates_nearby_camera_points(monkeypatch):
+    from agentic_services.photo_scout.sources import google_streetview,google_sampling_spacing,diverse_sample
+    monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_API_KEY','secret-fixture')
+    positions=iter([(0,0),(0.0001,0),(0.003,0),(0,-0.003),(0,0.0001)])
+    def handler(request):
+        lat,lon=next(positions)
+        return httpx.Response(200,json={'status':'OK','pano_id':f'pano_{lat}_{lon}'.replace('.','_'),
+            'location':{'lat':lat,'lng':lon}})
+    async def run():
+        async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as c:
+            return await google_streetview(c,0,0,1000)
+    rows=asyncio.run(run())
+    points={(r['lat'],r['lon']) for r in rows}
+    assert points=={(0,0),(0.003,0),(0,-0.003)}
+    assert len(rows)==6
+    assert google_sampling_spacing(100)==80 and google_sampling_spacing(1000)==200 and google_sampling_spacing(5000)==250
+    for r in rows:r['distanceMeters']=round(distance((0,0),(r['lat'],r['lon'])))
+    sampled=diverse_sample(rows,3)
+    assert len({(r['lat'],r['lon']) for r in sampled})==3

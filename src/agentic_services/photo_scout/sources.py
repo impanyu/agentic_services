@@ -191,6 +191,17 @@ def google_enabled():
     return os.getenv('PHOTO_SCOUT_GOOGLE_ENABLED') == '1' and bool(os.getenv('PHOTO_SCOUT_GOOGLE_API_KEY'))
 
 
+def google_sampling_spacing(radius):
+    return round(max(80,min(250,radius*.2)))
+
+
+def bearing(origin, target):
+    a,b=map(math.radians,(origin[0],target[0]))
+    delta=math.radians(target[1]-origin[1])
+    return round(math.degrees(math.atan2(math.sin(delta)*math.cos(b),
+        math.cos(a)*math.sin(b)-math.sin(a)*math.cos(b)*math.cos(delta))))%360
+
+
 async def google_streetview(client, lat, lon, radius):
     """Bounded outdoor panorama discovery. Never put the credential in candidate URLs."""
     import asyncio
@@ -203,7 +214,8 @@ async def google_streetview(client, lat, lon, radius):
         return await get_json(client,'https://maps.googleapis.com/maps/api/streetview/metadata',
             {'location':f'{p[0]},{p[1]}','radius':min(200,max(50,radius//3)), 'source':'outdoor','key':key})
     responses=await asyncio.gather(*(search(p) for p in points if abs(p[0])<=85 and abs(p[1])<=180),return_exceptions=True)
-    rows=[]; seen=set(); successful=False
+    rows=[]; seen=set(); locations=[]; successful=False
+    spacing=google_sampling_spacing(radius)
     for data in responses:
         if not isinstance(data,dict): continue
         if data.get('status') in ('OK','ZERO_RESULTS'): successful=True
@@ -214,18 +226,21 @@ async def google_streetview(client, lat, lon, radius):
         except (KeyError,TypeError,ValueError): continue
         if not math.isfinite(lat2) or not math.isfinite(lon2) or abs(lat2)>85 or abs(lon2)>180: continue
         if distance((lat,lon),(lat2,lon2))>radius: continue
+        if any(distance((lat2,lon2),p)<spacing for p in locations): continue
         seen.add(pano)
-        for heading in (0,90,180,270):
+        locations.append((lat2,lon2))
+        towards_center=bearing((lat2,lon2),(lat,lon))
+        for heading in (towards_center,(towards_center+180)%360):
             rows.append({'id':f'google:{pano}:{heading}','provider':'google-street-view',
                 'title':f'Outdoor Street View facing {heading} degrees','lat':lat2,'lon':lon2,
                 'locationType':'camera_geotag','imageUrl':f'google-streetview://{pano}/{heading}',
                 'sourceUrl':'https://www.google.com/maps/@?'+urlencode({'api':1,'map_action':'pano','pano':pano,
-                    'viewpoint':f'{lat2},{lon2}','heading':heading,'pitch':0,'fov':90}),
+                    'viewpoint':f'{lat2},{lon2}','heading':heading,'pitch':0,'fov':120}),
                 'author':text(data.get('copyright')) or 'Google Street View',
                 'license':'Google Maps Platform terms; not an open license',
                 'licenseUrl':'https://cloud.google.com/maps-platform/terms',
                 'sourceDate':data.get('date'),'capturedAt':data.get('date'),
-                'viewHeadingDegrees':heading,'viewPitchDegrees':0,'viewFovDegrees':90,
+                'viewHeadingDegrees':heading,'viewPitchDegrees':0,'viewFovDegrees':120,
                 'description':'Street View camera position; access and safe standing point unverified.'})
     if not successful: raise ValueError('Google Street View metadata unavailable')
     return rows
@@ -237,6 +252,12 @@ def diverse_sample(rows,limit=12):
     groups={}
     for row in sorted(rows,key=lambda r:r['distanceMeters']):
         groups.setdefault(row['provider'],[]).append(row)
+    if 'google-street-view' in groups:
+        # One view from each spatially sampled panorama before any second view.
+        panoramas={}
+        for row in groups['google-street-view']:
+            panoramas.setdefault(row['imageUrl'].rsplit('/',1)[0],[]).append(row)
+        groups['google-street-view']=[r for batch in zip_longest(*panoramas.values()) for r in batch if r]
     selected=[]
     for batch in zip_longest(*groups.values()):
         for row in batch:
@@ -264,6 +285,8 @@ async def candidates(lat,lon,radius):
                 statuses[name]={'status':'unavailable','errorType':type(result).__name__}
             else:
                 statuses[name]={'status':'ok','eligibleImages':len(result)}; rows+=result
+                if name=='google-street-view':
+                    statuses[name].update(samplingSpacingMeters=google_sampling_spacing(radius),maxViewsPerLocation=2)
     valid=[]
     for row in rows:
         d=distance((lat,lon),(row['lat'],row['lon']))
@@ -307,8 +330,8 @@ async def google_image_data(reference):
     import sqlite3
     from datetime import datetime, timezone
     from pathlib import Path
-    match=re.fullmatch(r'google-streetview://([A-Za-z0-9_-]{1,200})/(0|90|180|270)',reference)
-    if not match or not google_enabled(): raise ValueError('Google imagery unavailable')
+    match=re.fullmatch(r'google-streetview://([A-Za-z0-9_-]{1,200})/(\d{1,3})',reference)
+    if not match or int(match[2])>=360 or not google_enabled(): raise ValueError('Google imagery unavailable')
     # Persistent shared cap counts failed fetches too; no unauthenticated image proxy.
     path=Path(os.getenv('WEB_EVIDENCE_DB','data/web-evidence.db'))
     path.parent.mkdir(parents=True,exist_ok=True)
@@ -323,7 +346,7 @@ async def google_image_data(reference):
         db.execute('UPDATE photo_scout_google_budget SET requests=requests+1 WHERE day=?',(day,))
     async with httpx.AsyncClient(timeout=25,follow_redirects=False) as client:
         async with client.stream('GET','https://maps.googleapis.com/maps/api/streetview',params={
-            'pano':match[1],'heading':match[2],'pitch':0,'fov':90,'size':'640x640',
+            'pano':match[1],'heading':match[2],'pitch':0,'fov':120,'size':'640x640',
             'return_error_code':'true','key':os.environ['PHOTO_SCOUT_GOOGLE_API_KEY']}) as response:
             if response.status_code!=200: raise ValueError('Google image request failed')
             data=bytearray()

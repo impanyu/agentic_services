@@ -18,7 +18,8 @@ under `/photo-scout/`. English UI, click on a Leaflet map or enter coordinates.
   These entries are explicitly NOT visually evaluated recommendations.
 - Google Street View: optional server-only metadata discovery and image inspection,
   enabled with `PHOTO_SCOUT_GOOGLE_ENABLED=1` and a dedicated IP/API-restricted key.
-  Queries five locations and four headings per panorama. Google imagery is sent to
+  Queries five coarse locations, filters actual camera points by an adaptive 80–250 m
+  minimum separation, and provides at most two opposing 120-degree views per panorama. Google imagery is sent to
   the agent transiently, never cached in reports or embedded beside the OSM map.
   Results include a Google panorama link and inspected heading. Google-specific
   commercial inference permission has NOT been verified; technical access is not
@@ -136,7 +137,7 @@ was fetched or sent to OpenAI in this credential setup.
 
 With the source enabled, `inspect_image` fetches at most six total images across all
 providers per run. Google fetches use a persistent UTC daily request cap (default
-180; failed calls count), fixed 640x640 images, strict internal panorama-reference
+180; failed calls count), fixed 640x640 images with 120-degree field of view, strict internal panorama-reference
 validation, no redirects, and a 3 MB size ceiling. A per-run image is used in memory
 only. Report rows have `imageUrl: null` for Google and expose only source links,
 provider credit/date, coordinates and camera heading. No public image proxy exists.
@@ -156,3 +157,15 @@ returned two photo spots with 180-degree camera headings. Sanitized report metad
 and recommendations are published as `sample-google.json`; source image bytes and
 provider credentials are not in the sample. This sample is an explicitly labeled
 internal Google-only test, while the paid product compares enabled sources.
+
+## Spatial sampling refinement
+
+Google camera spacing is `clamp(radius * 0.2, 80, 250)` meters. Metadata queries
+remain bounded to five coarse locations; spatial filtering applies after Google's
+snapping, so different panorama IDs at nearby camera points do not consume repeated
+inspection slots. First view points toward the requested area's center, the second
+is opposite. Sampling offers one view per retained panorama before second views.
+Image fetches still happen only when selected by the agent, within the shared
+six-inspection budget. This is sparse geographic sampling, not exhaustive road or
+360-degree coverage; source timestamps remain capture dates, not live conditions.
+Historical free examples retain their original sampling/results.
