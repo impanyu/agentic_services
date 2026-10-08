@@ -48,3 +48,24 @@ def test_private_job_edits_both_images_and_removes_upload(tmp_path,monkeypatch):
         assert db.execute('SELECT photo,payload FROM photo_portraits').fetchone()==(None,None)
         db.execute('UPDATE photo_portraits SET expires=0')
     assert client.get(path,headers=owned).status_code==404
+
+
+def test_phone_heic_and_48mp_jpeg_are_resized_without_metadata():
+    # Phone-format content may be labelled JPEG by a browser/exporter.
+    for kind,size in [('HEIF',(48,64)),('JPEG',(8064,6048))]:
+        image=Image.new('RGB',size,'blue');exif=Image.Exif();exif[274]=6;exif[270]='private camera metadata'
+        buffer=io.BytesIO();image.save(buffer,format=kind,exif=exif)
+        cleaned=portraits.clean_photo('data:image/jpeg;base64,'+base64.b64encode(buffer.getvalue()).decode())
+        with Image.open(io.BytesIO(cleaned)) as result:
+            assert max(result.size)<=2048
+            assert result.height>=result.width
+            assert not result.getexif()
+
+
+def test_oversized_upload_has_specific_error():
+    import pytest
+    from fastapi import HTTPException
+    with pytest.raises(HTTPException) as error:
+        portraits.clean_photo('data:image/jpeg;base64,'+base64.b64encode(b'x'*20_000_001).decode())
+    assert error.value.status_code==413
+    assert '20 MB' in error.value.detail

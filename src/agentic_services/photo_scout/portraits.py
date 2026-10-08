@@ -6,10 +6,13 @@ from fastapi import APIRouter, Header, HTTPException, Request, Response
 from pydantic import BaseModel,Field
 from openai import AsyncOpenAI
 from PIL import Image,ImageOps
+from pillow_heif import register_heif_opener
+
+register_heif_opener(thumbnails=False,decode_threads=2)
 from .sources import image_data,image_host
 
 class PortraitRequest(BaseModel):
-    portrait: str = Field(max_length=8500000)
+    portrait: str = Field(max_length=27000000)
     background: str = Field(max_length=4000)
     provider: str = Field(max_length=50)
     place: str = Field(max_length=300)
@@ -19,14 +22,16 @@ class PortraitRequest(BaseModel):
 def clean_photo(value):
     try:
         prefix,encoded=value.split(',',1)
-        if prefix not in ('data:image/jpeg;base64','data:image/png;base64','data:image/webp;base64'):raise ValueError()
+        if prefix not in ('data:image/jpeg;base64','data:image/png;base64','data:image/webp;base64','data:image/heic;base64','data:image/heif;base64','data:application/octet-stream;base64'):raise ValueError()
         raw=base64.b64decode(encoded,validate=True)
-        if len(raw)>6_000_000:raise ValueError()
+        if len(raw)>20_000_000:raise HTTPException(413,'Choose a photo up to 20 MB. Large camera photos are automatically resized.')
         with Image.open(io.BytesIO(raw)) as im:
-            if im.format not in ('JPEG','PNG','WEBP') or im.width*im.height>25000000:raise ValueError()
+            if im.format not in ('JPEG','PNG','WEBP','HEIF'):raise ValueError()
+            if im.width*im.height>80_000_000:raise HTTPException(422,'This photo exceeds 80 megapixels. Export a smaller copy and try again.')
             im=ImageOps.exif_transpose(im).convert('RGB');im.thumbnail((2048,2048))
             out=io.BytesIO();im.save(out,format='PNG');return out.getvalue()
-    except Exception as e:raise HTTPException(422,'Upload a valid JPG, PNG or WebP photo, at most 6 MB and 25 megapixels.') from e
+    except HTTPException:raise
+    except Exception as e:raise HTTPException(422,'This file could not be decoded as a photo. Choose a JPG, PNG, WebP or HEIC image, or export a JPEG copy from Photos.') from e
 
 
 def background_reference(provider,url):
@@ -64,7 +69,7 @@ def create_portrait_router(settings,require_api):
         body=bytearray()
         async for part in request.stream():
             body.extend(part)
-            if len(body)>8600000:raise HTTPException(413,'Photo upload is too large')
+            if len(body)>27100000:raise HTTPException(413,'Photo upload is too large')
         try:payload=PortraitRequest.model_validate_json(body)
         except Exception as e:raise HTTPException(422,'Invalid photo request') from e
         photo=await asyncio.to_thread(clean_photo,payload.portrait)
