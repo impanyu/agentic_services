@@ -399,9 +399,9 @@ async def google_image_data(reference):
 async def nearby_pois(lat,lon,radius):
     # OpenStreetMap names/categories are candidates, never proof of photographic quality.
     area=f'(around:{radius},{lat},{lon})["name"]'
-    query=f'[out:json][timeout:10];(nwr{area}["tourism"~"^(attraction|viewpoint|artwork|museum)$"];nwr{area}["leisure"~"^(park|garden|nature_reserve|recreation_ground)$"];nwr{area}["historic"];nwr{area}["natural"~"^(beach|peak|water|wood)$"];);out center 80;'
+    query=f'[out:json][timeout:10][maxsize:16777216];(nwr{area}["tourism"~"^(attraction|viewpoint|artwork|museum)$"];nwr{area}["leisure"~"^(park|garden|nature_reserve|recreation_ground)$"];nwr{area}["historic"];nwr{area}["natural"~"^(beach|peak|water|wood)$"];);out center 80;'
     errors=[];data=None
-    endpoints=('https://overpass.private.coffee/api/interpreter','https://overpass-api.de/api/interpreter')
+    endpoints=('https://overpass-api.de/api/interpreter','https://overpass.private.coffee/api/interpreter')
     async with httpx.AsyncClient(timeout=12,headers=HEADERS,follow_redirects=False) as client:
         for endpoint in endpoints:
             try:

@@ -207,8 +207,11 @@ Permission denial, unavailable location and timeouts retain manual selection.
 
 Search now retrieves named POIs before images, including parks, gardens, nature
 reserves, viewpoints, artwork, museums, historic places and selected natural
-features. Private.coffee is the primary Overpass endpoint; the main FOSSGIS
-endpoint is a fallback. Failed attempts return error type and HTTP status where
+features. The main FOSSGIS endpoint is primary and Private.coffee is a fallback.
+The query requests only 16 MiB of server memory instead of the 512 MiB default;
+a live VM probe returned 504 with default allocation and 200 with the smaller
+allocation. The independent Private.coffee status endpoint returned 500 during
+verification. Failed attempts return error type and HTTP status where
 available. Candidate counts describe mapped places, not verified recommendations.
 Up to 24 category-balanced POIs guide Google panorama metadata lookups; the
 primary heading faces the POI, with an opposite view for comparison. Other

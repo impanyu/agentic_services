@@ -291,6 +291,7 @@ def test_osm_poi_categories_and_fallback(monkeypatch):
     def handler(r):
         requests.append(r)
         assert 'nature_reserve' in r.url.params['data'] and 'park' in r.url.params['data']
+        assert '[maxsize:16777216]' in r.url.params['data']
         if len(requests)==1: return httpx.Response(503)
         return httpx.Response(200,json={'elements':[{'type':'node','id':1,'lat':0,'lon':0.001,'tags':{'name':'Park','leisure':'park'}}]})
     real=httpx.AsyncClient
