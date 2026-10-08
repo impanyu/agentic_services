@@ -43,6 +43,11 @@ async function switchMapStyle(style){
   gl.on('error',()=>{if(generation!==mapStyleGeneration)return;mapStyleGeneration++;if(map.hasLayer(layer))map.removeLayer(layer);vectorLayer=null;if(!map.hasLayer(streetTiles))streetTiles.addTo(map);el('map-notice').textContent='Map style unavailable. Showing the standard street map.';});
  }catch{if(generation!==mapStyleGeneration)return;if(!map.hasLayer(streetTiles))streetTiles.addTo(map);el('map-notice').textContent='Map style unavailable. Showing the standard street map.';}
 }
+// Only one map popover is open; keep it clear of expanded search settings.
+const mapMenus=[...document.querySelectorAll('.map-overlay-controls details')];
+for(const menu of mapMenus)menu.addEventListener('toggle',()=>{if(!menu.open)return;for(const other of mapMenus)if(other!==menu)other.open=false;controls.open=false;});
+controls.addEventListener('toggle',()=>{if(controls.open)for(const menu of mapMenus)menu.open=false;});
+if(window.ResizeObserver)new window.ResizeObserver(entries=>{document.body.style.setProperty('--scout-dock-height',entries[0].target.getBoundingClientRect().height+'px');}).observe(document.querySelector('.scout-dock'));
 document.querySelectorAll('[data-map-style]').forEach(b=>b.addEventListener('click',()=>switchMapStyle(b.dataset.mapStyle)));
 switchMapStyle('minimal');
 let selected=L.marker([41.8827,-87.6233],{draggable:true,title:'Selected location: drag to move',icon:L.divIcon({className:'scout-pin',html:'<span aria-hidden="true">✳</span>',iconSize:[44,44],iconAnchor:[22,22]})}).addTo(map), resultPins=[];let humanFreePreview=false, serviceAvailable=false, poiCatalog=null, catalogGeneration=0, searchBusy=false, pollGeneration=0, resolving=false, pipelineBusy=false;
@@ -104,7 +109,7 @@ function node(tag,txt,cls){const n=document.createElement(tag);if(txt)n.textCont
 function link(label,url){const n=node('a',label);try{const u=new URL(url);if(u.protocol!=='https:')return node('span',label);n.href=u.href;n.target='_blank';n.rel='noopener noreferrer';}catch{return node('span',label)}return n;}
 function photoBearing(spot){const raw=spot.viewHeadingDegrees;if(typeof raw!=='number'||!Number.isFinite(raw))return {heading:null,label:'Direction unavailable'};const heading=Math.round(((raw%360)+360)%360)%360;const compass=['N','NE','E','SE','S','SW','W','NW'][Math.round(heading/45)%8];return {heading,label:`Facing ${compass} · ${heading}°`};}
 function photographerIcon(spot,index){const bearing=photoBearing(spot);return L.divIcon({className:'photographer-pin'+(bearing.heading===null?' direction-unknown':''),html:`<span class="photographer-turn" style="transform:rotate(${bearing.heading??0}deg)"><span class="camera-cone"></span><img src="./photographer.svg" width="48" height="56" alt=""></span><span class="photo-rank">${index+1}</span><span class="photo-bearing">${bearing.heading===null?'?':bearing.heading+'°'}</span>`,iconSize:[64,76],iconAnchor:[32,40],popupAnchor:[0,-38]});}
-function render(result,{scroll=true,save=true,mapUpdate=true}={}){const root=el('results');controls.open=false;root.hidden=false;el('toggle-results').disabled=false;
+function render(result,{scroll=true,save=true,mapUpdate=true}={}){const root=el('results');controls.open=false;for(const menu of mapMenus)menu.open=false;root.hidden=false;el('toggle-results').disabled=false;
  const edit=node('button','Close ×','back-button');edit.type='button';edit.addEventListener('click',()=>{root.hidden=true;});
  const heading=node('div',null,'results-heading');heading.append(node('div','YOUR SHORTLIST','eyebrow'),edit);
  root.replaceChildren(heading,node('h2','Your nearby photo shortlist'),node('p',result.summary));
