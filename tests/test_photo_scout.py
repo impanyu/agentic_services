@@ -628,3 +628,16 @@ def test_city_scale_radius_and_commons_provider_limit(monkeypatch):
     monkeypatch.setattr(sources,'get_json',response)
     assert asyncio.run(commons(None,0,0,20000))==[]
     assert len(requested)==5 and set(requested)=={10000}
+
+
+def test_city_pois_sample_bounded_regions_in_one_request(monkeypatch):
+    import agentic_services.photo_scout.sources as sources
+    real=httpx.AsyncClient
+    def handler(r):
+        query=r.url.params['data']
+        assert query.count('out center 40;')==5 and '(around:20000,' not in query
+        return httpx.Response(200,json={'elements':[{'type':'node','id':i,'lat':lat,'lon':lon,'tags':{'name':f'Park {i}','leisure':'park'}} for i,(lat,lon) in enumerate([(0,0),(.116,0),(-.116,0),(0,.116),(0,-.116)])]})
+    monkeypatch.setattr(sources.httpx,'AsyncClient',lambda **kw:real(transport=httpx.MockTransport(handler)))
+    rows,status=asyncio.run(sources.nearby_pois(0,0,20000,['park']))
+    assert len(rows)==5 and status['sampledAreas']==5 and status['areaRadiusMeters']==5000
+    assert all(row['distanceMeters']<=20000 for row in rows)

@@ -420,16 +420,27 @@ POI_CATEGORY_FILTERS = {
 async def nearby_pois(lat,lon,radius,categories=None):
     # Apply category filters at the source, before the bounded POI selection.
     allowed=list(POI_CATEGORY_FILTERS) if categories is None else categories
-    area=f'(around:{radius},{lat},{lon})["name"]'
-    clauses=[]
-    for category in allowed:
-        for tag,values in POI_CATEGORY_FILTERS[category].items():
-            selector=f'["{tag}"]' if values is None else f'["{tag}"~"^({"|".join(values)})$"]'
-            clauses.append(f'nwr{area}{selector};')
-    query='[out:json][timeout:10][maxsize:16777216];('+''.join(clauses)+');out center 80;'
+    points=[(lat,lon)]
+    if radius>5000:
+        dy=radius*.65/111320;dx=dy/max(.01,math.cos(math.radians(lat)))
+        points.extend([(lat+dy,lon),(lat-dy,lon),(lat,lon+dx),(lat,lon-dx)])
+        points=[(y,((x+180)%360)-180) for y,x in points if abs(y)<=85]
+    sample_radius=min(radius,5000)
+    blocks=[]
+    for y,x in points:
+        area=f'(around:{sample_radius},{y},{x})["name"]'
+        clauses=[]
+        for category in allowed:
+            for tag,values in POI_CATEGORY_FILTERS[category].items():
+                selector=f'["{tag}"]' if values is None else f'["{tag}"~"^({"|".join(values)})$"]'
+                clauses.append(f'nwr{area}{selector};')
+        # Multiple bounded outputs in one request, so city searches sample regions
+        # without many parallel requests against public Overpass servers.
+        blocks.append('('+''.join(clauses)+f');out center {40 if len(points)>1 else 80};')
+    query=f'[out:json][timeout:{30 if len(points)>1 else 10}][maxsize:{67108864 if len(points)>1 else 16777216}];'+''.join(blocks)
     errors=[];data=None
     endpoints=('https://overpass-api.de/api/interpreter','https://overpass.private.coffee/api/interpreter')
-    async with httpx.AsyncClient(timeout=12,headers=HEADERS,follow_redirects=False) as client:
+    async with httpx.AsyncClient(timeout=35 if len(points)>1 else 12,headers=HEADERS,follow_redirects=False) as client:
         for endpoint in endpoints:
             try:
                 data=await get_json(client,endpoint,{'data':query})
@@ -442,7 +453,7 @@ async def nearby_pois(lat,lon,radius,categories=None):
     if data is None or len(errors)==len(endpoints):
         return [],{'status':'unavailable','attempts':errors}
     result=[]
-    for row in data['elements'][:80]:
+    for row in data['elements'][:max(80,40*len(points))]:
         coord=row.get('center',row);tags=row.get('tags',{})
         if 'lat' not in coord or 'lon' not in coord: continue
         lat2,lon2=coord['lat'],coord['lon']
@@ -463,7 +474,9 @@ async def nearby_pois(lat,lon,radius,categories=None):
     from itertools import zip_longest
     groups={}
     for p in sorted(result,key=lambda p:(p['category']!='viewpoint',p['distanceMeters'])):
-        groups.setdefault(p['category'],[]).append(p)
+        region=min(range(len(points)),key=lambda i:distance(points[i],(p['lat'],p['lon'])))
+        groups.setdefault((region,p['category']),[]).append(p)
     selected=[p for batch in zip_longest(*groups.values()) for p in batch if p][:24]
     return selected,{'status':'ok','count':len(selected),'foundPois':len(result),
-        'endpoint':urlsplit(endpoint).hostname,'attempts':errors}
+        'endpoint':urlsplit(endpoint).hostname,'attempts':errors,
+        'sampledAreas':len(points),'areaRadiusMeters':sample_radius,'coverage':'bounded-area-sample'}

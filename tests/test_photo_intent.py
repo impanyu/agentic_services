@@ -72,3 +72,10 @@ def test_city_radius_validation():
         payload={'query':'here','lat':0,'lon':0} if model is intent.IntentRequest else plan().model_dump()
         assert getattr(model(**(payload|{field:20000})),field)==20000
         with pytest.raises(ValueError):model(**(payload|{field:20001}))
+
+
+def test_city_geocoder_prefers_named_city_point_to_boundary_centroid(monkeypatch):
+    real=httpx.AsyncClient
+    features=[{'geometry':{'coordinates':[-87.57,41.72]},'properties':{'name':'Chicago','osm_key':'boundary'}},{'geometry':{'coordinates':[-87.62,41.87]},'properties':{'name':'Chicago','osm_key':'place','osm_value':'city'}}]
+    monkeypatch.setattr(intent.httpx,'AsyncClient',lambda **kw:real(transport=httpx.MockTransport(lambda r:httpx.Response(200,json={'features':features}))))
+    assert asyncio.run(intent.geocode('Chicago, Illinois, USA'))[0]['lat']==41.87

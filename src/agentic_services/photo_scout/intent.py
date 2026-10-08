@@ -44,7 +44,12 @@ async def geocode(query):
         r=await client.get('https://photon.komoot.io/api/',params={'q':query,'limit':5,'lang':'en'},headers={'User-Agent':'AISoup-PhotoScout/1.0 (https://aisoup.net/photo-scout/)'})
         r.raise_for_status(); data=r.json()
     result=[]
-    for feature in data.get('features',[])[:5]:
+    features=data.get('features',[])[:5]
+    # When resolving a city name, prefer its named place point over a boundary
+    # centroid or station with the same name; keep provider ranking for other POIs.
+    name=query.split(',')[0].strip().casefold()
+    features=sorted(features,key=lambda f:not (f.get('properties',{}).get('osm_key')=='place' and str(f.get('properties',{}).get('name','')).casefold()==name))
+    for feature in features:
         coords=feature.get('geometry',{}).get('coordinates',[]);props=feature.get('properties',{})
         if len(coords)!=2 or any(not isinstance(v,(int,float)) or not math.isfinite(v) for v in coords):continue
         lon,lat=coords
