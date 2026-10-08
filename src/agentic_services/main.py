@@ -31,6 +31,7 @@ from .admin_dashboard import admin_dashboard_html
 from .growth import GrowthStore, create_growth_router
 from .config import Settings
 from .contractor_routes import create_contractor_router
+from .photo_scout.routes import create_photo_router
 from .contact import send_contact_email, send_email
 from .models import (
     CapabilitiesResponse,
@@ -365,6 +366,8 @@ def create_app(
     contractor_router, fulfill_contractor_checkout, retrieve_contractor_checkout = create_contractor_router(
         store, require_service_api_key, sign_receipt, resolved_settings.base_url, checkout_lock, growth=growth,
     )
+    photo_router, retrieve_photo_checkout, fulfill_photo_checkout = create_photo_router(resolved_settings, require_service_api_key, store)
+    app.include_router(photo_router)
     app.include_router(contractor_router)
     app.include_router(create_niche_router(resolved_settings))
     app.include_router(create_manager_router(resolved_settings))
@@ -1042,6 +1045,8 @@ def create_app(
         return result
 
     async def retrieve_paid_checkout(service_id: str, session_id: str) -> dict[str, object]:
+        if service_id == "photo-scout":
+            return await retrieve_photo_checkout(session_id)
         if service_id == "contractor-check":
             session = await retrieve_contractor_checkout(session_id)
         else:
@@ -1079,7 +1084,7 @@ def create_app(
         session_data = event.get("data", {}).get("object", {})
         session_id = session_data.get("id") if isinstance(session_data, dict) else None
         service_id = session_data.get("metadata", {}).get("serviceId") if isinstance(session_data, dict) else None
-        if service_id not in {"web-evidence", "contractor-check"}:
+        if service_id not in {"web-evidence", "contractor-check", "photo-scout"}:
             return {"status": "ignored"}
         if not isinstance(session_id, str) or not re.fullmatch(r"cs_(?:test|live)_[A-Za-z0-9]+", session_id):
             raise HTTPException(status_code=422, detail="Invalid Checkout session")
@@ -1095,7 +1100,9 @@ def create_app(
         try:
             async with checkout_lock(session_id):
                 session = await retrieve_paid_checkout(service_id, session_id)
-                if service_id == "contractor-check":
+                if service_id == "photo-scout":
+                    await fulfill_photo_checkout(session)
+                elif service_id == "contractor-check":
                     fulfill_contractor_checkout(session)
                 else:
                     worker_request = Request({"type": "http", "app": app, "method": "POST", "path": "/v1/stripe/checkout-webhook", "headers": []})

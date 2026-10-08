@@ -10,7 +10,11 @@
       "cta": "Open AgenticWiKi",
       "number": "01",
       "accent": "lime",
-      "capabilities": ["Research", "Knowledge", "Workspace"]
+      "capabilities": [
+        "Research",
+        "Knowledge",
+        "Workspace"
+      ]
     },
     {
       "name": "Web Evidence",
@@ -22,7 +26,11 @@
       "cta": "Verify a claim",
       "number": "02",
       "accent": "coral",
-      "capabilities": ["Stripe Checkout", "API", "MCP"]
+      "capabilities": [
+        "Stripe Checkout",
+        "API",
+        "MCP"
+      ]
     },
     {
       "name": "California C-10 Contractor Check",
@@ -34,7 +42,11 @@
       "cta": "Check a contractor",
       "number": "03",
       "accent": "lime",
-      "capabilities": ["Stripe Checkout", "API", "CSLB source"]
+      "capabilities": [
+        "Stripe Checkout",
+        "API",
+        "CSLB source"
+      ]
     },
     {
       "name": "Niche Discovery",
@@ -47,7 +59,29 @@
       "number": "04",
       "accent": "lime",
       "status": "Preview",
-      "capabilities": ["$9.99/month", "Agent API", "Per-call"]
+      "capabilities": [
+        "$9.99/month",
+        "Agent API",
+        "Per-call"
+      ]
+    },
+    {
+      "name": "Photo Scout",
+      "audience": "both",
+      "eyebrow": "Human + agent service",
+      "description": "Choose a location and discover nearby photo spots through real-image analysis, with coordinates, visual evidence and source attribution.",
+      "url": "https://aisoup.net/photo-scout/",
+      "domain": "aisoup.net/photo-scout/",
+      "cta": "Find photo spots",
+      "number": "05",
+      "accent": "lime",
+      "status": "Preview",
+      "capabilities": [
+        "Map UI",
+        "Multimodal agent",
+        "API",
+        "Stripe"
+      ]
     }
   ]
 }

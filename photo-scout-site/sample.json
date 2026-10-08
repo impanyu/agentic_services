@@ -1,0 +1,92 @@
+{
+  "spots": [
+    {
+      "id": "commons:76313388",
+      "provider": "wikimedia-commons",
+      "title": "Noch mehr Wolkenkratzer (326299068).jpg",
+      "lat": 41.882638,
+      "lon": -87.614888,
+      "locationType": "file_geotag_not_verified_camera_position",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/9/91/Noch_mehr_Wolkenkratzer_%28326299068%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Noch_mehr_Wolkenkratzer_(326299068).jpg",
+      "author": "Claus-Peter Fr\u00f6hlich from Berlin, Germany",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+      "capturedAt": "2006-11-28 16:09",
+      "distanceMeters": 696,
+      "image_id": "commons:76313388",
+      "name": "Downtown skyline from a park lawn (viewpoint uncertain)",
+      "score": 83,
+      "visible_evidence": "A broad grassy foreground and leafless trees frame a cluster of tall downtown buildings beneath a textured cloudy sky. The open foreground gives the skyline more breathing room than a street-level view.",
+      "photo_tip": "Try a wide frame that keeps some lawn or trees in the foreground; if the light allows, use the buildings\u2019 vertical lines as a graphic contrast to the cloud texture.",
+      "uncertainty": "The photo shows this kind of park-side skyline, but its geotag may describe the pictured area rather than the camera position; the exact viewpoint is uncertain.",
+      "confidence": "medium",
+      "accessStatus": "unknown",
+      "coordinateWarning": "Mapped image point; exact standing spot and access are not verified."
+    },
+    {
+      "id": "commons:53352578",
+      "provider": "wikimedia-commons",
+      "title": "Chicago,Illinois,USA. - panoramio (36).jpg",
+      "lat": 41.88279,
+      "lon": -87.630901,
+      "locationType": "file_geotag_not_verified_camera_position",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/b/bd/Chicago%2CIllinois%2CUSA._-_panoramio_%2836%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Chicago,Illinois,USA._-_panoramio_(36).jpg",
+      "author": "Roman Eugeniusz",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "capturedAt": "17 April 2011 (original upload date)",
+      "distanceMeters": 629,
+      "image_id": "commons:53352578",
+      "name": "Downtown architectural canyon with a Gothic spire",
+      "score": 79,
+      "visible_evidence": "A pale pointed Gothic spire rises among taller modern buildings, framed by dark buildings along a street. The contrast in architectural styles creates a distinctive upward-looking composition.",
+      "photo_tip": "A low viewpoint and a tighter crop could emphasize the spire against the high-rises; consider avoiding or minimizing the street-level traffic visible in the example.",
+      "uncertainty": "The image is an older street scene and does not establish the precise present-day camera location. Its geotag is unverified and may refer to the subject area.",
+      "confidence": "medium",
+      "accessStatus": "unknown",
+      "coordinateWarning": "Mapped image point; exact standing spot and access are not verified."
+    },
+    {
+      "id": "commons:60668153",
+      "provider": "wikimedia-commons",
+      "title": "Trump Tower (35679607585).jpg",
+      "lat": 41.888386,
+      "lon": -87.623062,
+      "locationType": "file_geotag_not_verified_camera_position",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/d/d1/Trump_Tower_%2835679607585%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Trump_Tower_(35679607585).jpg",
+      "author": "piet theisohn from Leverkusen, Germany",
+      "license": "CC BY 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+      "capturedAt": "2017-06-17 12:54",
+      "distanceMeters": 633,
+      "image_id": "commons:60668153",
+      "name": "Trump Tower and surrounding riverfront skyline",
+      "score": 76,
+      "visible_evidence": "A tall reflective glass tower dominates the frame, with neighboring buildings at its base and large clouds filling much of the sky. Its tiered form stands out against the surrounding skyline.",
+      "photo_tip": "A public exterior viewpoint that includes nearby buildings could add scale; clouds or reflections may add visual texture when conditions suit.",
+      "uncertainty": "The photograph is from 2017, and its geotag may indicate the tower rather than the photographer\u2019s position. This recommendation is for an exterior view, not interior access.",
+      "confidence": "medium",
+      "accessStatus": "unknown",
+      "coordinateWarning": "Mapped image point; exact standing spot and access are not verified."
+    }
+  ],
+  "summary": "These are subjective photo-potential picks from the small inspected sample near your search point. The skyline and street scenes are archival examples, and geotags are unverified camera positions, so treat them as clues to the subject or area rather than exact shooting spots.",
+  "sources": {
+    "wikimedia-commons": {
+      "status": "ok",
+      "eligibleImages": 4
+    }
+  },
+  "inspectedImages": 4,
+  "coverage": "Subjective recommendations from a bounded image sample; not all nearby POIs.",
+  "model": "gpt-6-luna",
+  "usage": {
+    "requests": 5,
+    "inputTokens": 19470,
+    "outputTokens": 1151
+  },
+  "sampleNote": "Internal live-model example generated on October 8, 2026 near Millennium Park, Chicago. Not a customer report or a current conditions check."
+}

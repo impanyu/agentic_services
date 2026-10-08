@@ -22,6 +22,8 @@ const contractorOperation = {
   path: '/contractor-check/v1/check',
   price: '1.00',
 }
+const photoPriceCents = Number(process.env.PHOTO_SCOUT_PRICE_CENTS ?? '0')
+const photoOperation = { id: 'photo-scout', path: '/photo-scout/v1/discover', price: (photoPriceCents / 100).toFixed(2) }
 const nicheSearchPrice = process.env.NICHE_SEARCH_PRICE_USD ?? '0.05'
 const nichePerCallPrice = process.env.NICHE_PER_CALL_PRICE_USD ?? '0.25'
 const indexNowKey = process.env.INDEXNOW_KEY
@@ -517,6 +519,10 @@ if (stripeSecretKey) {
     [stripeCharge, { amount: contractorOperation.price, description: 'California C-10 contractor license preflight' }],
   )
   mountContractorRoute(contractorHandler)
+  mountPhotoRoute(payments.compose(
+    [evmCharge, { amount: photoOperation.price, description: 'Nearby image-grounded photo spot discovery' }],
+    [stripeCharge, { amount: photoOperation.price, description: 'Nearby image-grounded photo spot discovery' }],
+  ))
   mountNicheSearchRoute(payments.evm.charge({ amount:nicheSearchPrice, description:'One database-only Niche Discovery search, up to 20 evaluations' }))
   mountNichePerCallRoute(payments.evm.charge({
     amount: nichePerCallPrice,
@@ -529,6 +535,7 @@ if (stripeSecretKey) {
     handler: toHonoPayment(payments.evm.charge(paymentOptions(tier)), tier),
   }))
   mountPaidRoutes(payments, paidTiers)
+  mountPhotoRoute(payments.evm.charge({ amount: photoOperation.price, description: 'Nearby image-grounded photo spot discovery' }))
   mountContractorRoute(payments.evm.charge({
     amount: contractorOperation.price,
     description: 'California C-10 contractor license preflight',
@@ -544,6 +551,7 @@ app.all('*', async (c) => {
   const path = new URL(c.req.url).pathname
   const humanPath = path.startsWith('/contractor-check/v1/')
     || path === '/web-evidence/v1/checkout' || path === '/web-evidence/v1/report'
+    || path.startsWith('/photo-scout/')
     || path === '/v1/usage/events'
   const origin = c.req.header('Origin')
   const allowed = origin === 'https://aisoup.net' || origin === 'https://www.aisoup.net'
@@ -552,10 +560,11 @@ app.all('*', async (c) => {
     return new Response(null, { status: 204, headers: {
       'Access-Control-Allow-Origin': origin,
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, X-Usage-Session, X-Usage-Source, X-Usage-Campaign, X-Usage-Test',
+      'Access-Control-Allow-Headers': 'Content-Type, X-Report-Token, X-Usage-Session, X-Usage-Source, X-Usage-Campaign, X-Usage-Test',
       Vary: 'Origin',
     } })
   }
+  if (path === '/photo-scout/v1/discover') return c.text('Use the paid discovery endpoint', 403)
   const upstream = await proxyRequest(c.req.raw, path)
   if (!humanPath || !allowed) return upstream
   const headers = new Headers(upstream.headers)
@@ -573,6 +582,26 @@ function paymentOptions(tier: VerificationTier) {
     amount: tier.price,
     description: `${tier.id} verification of one factual claim against current web evidence`,
   }
+}
+
+function mountPhotoRoute(handler: PaymentHandler): void {
+  app.post(photoOperation.path, async (c, next) => {
+    if (process.env.PHOTO_SCOUT_ENABLED !== '1' || photoPriceCents < 50) return c.text('Photo Scout paid exploration is not enabled', 503)
+    const input = await c.req.raw.clone().json().catch(() => null)
+    if (!input || !Number.isFinite(input.lat) || !Number.isFinite(input.lon)
+        || Math.abs(input.lat) > 85 || Math.abs(input.lon) > 180
+        || (input.radius !== undefined && (!Number.isInteger(input.radius) || input.radius < 100 || input.radius > 5000))
+        || (input.limit !== undefined && (!Number.isInteger(input.limit) || input.limit < 1 || input.limit > 5))
+        || (input.preferences !== undefined && (typeof input.preferences !== 'string' || input.preferences.length > 500))) return c.text('Invalid discovery input', 422)
+    const coverage = await proxyRequest(new Request(c.req.url, { method: 'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify(input) }), '/photo-scout/v1/candidates')
+    if (!coverage.ok) return coverage
+    const sample = await coverage.json() as { candidates?: unknown[] }
+    if (!sample.candidates?.length) return c.text('No eligible imagery in this sampled area; choose another location', 422)
+    const payment = await handler(withPublicUrl(c.req.raw.clone()))
+    if (payment.status === 402) return payment.challenge
+    await next()
+    c.res = payment.withReceipt(c.res)
+  }, async (c) => proxyRequest(c.req.raw, photoOperation.path))
 }
 
 function mountContractorRoute(handler: PaymentHandler): void {

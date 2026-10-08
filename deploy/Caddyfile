@@ -18,6 +18,22 @@ status.aisoup.net {
 }
 
 aisoup.net, www.aisoup.net {
+	handle /photo-scout {
+		redir /photo-scout/ permanent
+	}
+
+	handle_path /photo-scout/* {
+		root * /mnt/disks/agentic-services/app/photo-scout-site
+		encode zstd gzip
+		header {
+			Strict-Transport-Security "max-age=31536000; includeSubDomains"
+			X-Content-Type-Options "nosniff"
+			Referrer-Policy "strict-origin-when-cross-origin"
+			Content-Security-Policy "default-src 'self'; connect-src 'self' https://api.aisoup.net; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' data: https://tile.openstreetmap.org https://upload.wikimedia.org https://*.fbcdn.net; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
+		}
+		file_server
+	}
+
 	handle /wiki {
 		redir https://wiki.aisoup.net/ permanent
 	}

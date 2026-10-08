@@ -102,3 +102,28 @@ adds registration, verified leases and renewal to existing signed callback/polli
 support. [Database-only query service](niche-query-service.md) retains anonymized search interests to inspire later agent research; queries are not contributed demand signals. On-request generation is deferred. This expansion still
 does not claim all-platform coverage; commercial shopping/review/social access remains
 tracked above and must be connected individually.
+
+## October 7 verified snapshot; follow-up paused October 8
+
+User asked to record this state and return to source expansion later. Snapshot was
+verified against production `/niche-discovery/v1/sources` and the VM database on
+October 7; counts are historical, not a current live claim.
+
+| Enabled source | Verified scope | Stored raw signals |
+|---|---|---:|
+| GitHub Issues | woocommerce/woocommerce, home-assistant/core | 92 |
+| Hacker News | Community question/discussion candidates | 8 |
+| Stack Exchange | diy, gardening, money, travel, bicycles, cooking; titles/tags with attribution | 123 |
+| CPSC | Product recall context | 73 |
+| Federal Register | Regulatory context | 58 |
+| Global Voices RSS | Licensed headlines; active verified WebSub push lease at inspection | 16 |
+
+Total: 370 raw signals, not 370 validated markets or evidence of willingness to pay.
+All six most recent collection runs succeeded. Reddit, search discovery, GDELT,
+NYC 311 and CFPB adapters remained disabled. Shopping reviews (Amazon, eBay, Etsy,
+Taobao, JD) and mainstream social platforms (X, Facebook, TikTok) were not connected.
+
+When returning: prioritize direct customer pain from authorized commerce reviews
+and social/community sources; verify provider access, permitted use, stored results
+and repeat collection before marking any new source as running. Existing source
+configuration is preserved; this pause does not disable deployed collectors.
