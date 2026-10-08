@@ -16,8 +16,13 @@ under `/photo-scout/`. English UI, click on a Leaflet map or enter coordinates.
   contributor credit and CC BY-SA license retained. Not live-verified without token.
 - OpenStreetMap Overpass: separate nearby tourism POIs; attribution/ODbL returned.
   These entries are explicitly NOT visually evaluated recommendations.
-- Google Street View: deliberately disabled pending appropriate usage authorization.
-  Do not send Google imagery to the multimodal agent or put it beside the OSM map.
+- Google Street View: optional server-only metadata discovery and image inspection,
+  enabled with `PHOTO_SCOUT_GOOGLE_ENABLED=1` and a dedicated IP/API-restricted key.
+  Queries five locations and four headings per panorama. Google imagery is sent to
+  the agent transiently, never cached in reports or embedded beside the OSM map.
+  Results include a Google panorama link and inspected heading. Google-specific
+  commercial inference permission has NOT been verified; technical access is not
+  evidence of that permission. Enabled following the owner's explicit instruction.
 - KartaView: official endpoint probe timed out; not connected. Future alternatives:
   Flickr geotag search (API/license review), licensed tourism-board open imagery,
   owner-authorized location-specific photo collections, commercial imagery licenses.
@@ -119,10 +124,22 @@ is restricted to the production VM outbound IP and
 `street-view-image-backend.googleapis.com`; never put it in a browser URL, sample,
 report, log or version control. Rotate/restrict the key when the VM outbound IP changes.
 The status endpoint exposes only `credentialConfigured` and `imageAnalysisEnabled`
-booleans. Credential availability does not mean imagery analysis is enabled or
-commercial inference rights have been verified. Metadata probes incur no image
+booleans. Credential availability alone does not enable image analysis; the explicit feature
+flag is also required. Commercial inference rights have not been verified. Metadata probes incur no image
 charges; actual image fetches are a separate billable operation.
 
 October 8 credential verification: production VM metadata request returned HTTP 200,
 provider status `OK`, and panorama imagery date `2025-10`. No actual Google image
 was fetched or sent to OpenAI in this credential setup.
+
+## Google imagery integration
+
+With the source enabled, `inspect_image` fetches at most six total images across all
+providers per run. Google fetches use a persistent UTC daily request cap (default
+180; failed calls count), fixed 640x640 images, strict internal panorama-reference
+validation, no redirects, and a 3 MB size ceiling. A per-run image is used in memory
+only. Report rows have `imageUrl: null` for Google and expose only source links,
+provider credit/date, coordinates and camera heading. No public image proxy exists.
+The agent must attempt a Google inspection if Google candidates exist, but it can
+return zero Google recommendations when scenes are unsuitable or downloads fail.
+The feature flag is also the operational kill switch.

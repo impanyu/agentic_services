@@ -15,7 +15,7 @@ from fastapi import APIRouter, Header, HTTPException, Request, Response
 from pydantic import BaseModel, Field
 
 from .agent import explore
-from .sources import candidates, nearby_pois
+from .sources import candidates, nearby_pois, google_enabled
 
 
 class ExploreRequest(BaseModel):
@@ -111,10 +111,11 @@ def create_photo_router(settings,require_api,verification_store):
             'sources':{'wikimedia-commons':'enabled',
                 'panoramax':'enabled' if os.getenv('PHOTO_SCOUT_PANORAMAX_ENABLED','1')=='1' else 'disabled',
                 'mapillary':'configured' if os.getenv('PHOTO_SCOUT_MAPILLARY_TOKEN') else 'needs_token',
-                'google-street-view':'disabled_pending_appropriate_authorization',
+                'google-street-view':'enabled' if google_enabled() else 'disabled',
                 'kartaview':'not_connected'},
             'googleStreetView':{'credentialConfigured':bool(os.getenv('PHOTO_SCOUT_GOOGLE_API_KEY')),
-                'imageAnalysisEnabled':False},
+                'imageAnalysisEnabled':google_enabled(),
+                'dailyImageRequestLimit':int(os.getenv('PHOTO_SCOUT_GOOGLE_DAILY_IMAGE_LIMIT','180'))},
             'limits':{'radiusMeters':5000,'sampledImages':12,'inspectedImages':6,'timeoutSeconds':240},
             'privacy':'Coordinates/preferences are sent to imagery providers/OpenAI; paid reports retained for 30 days.'}
 
@@ -211,5 +212,5 @@ def create_photo_router(settings,require_api,verification_store):
             'apiUrl':settings.base_url+'/photo-scout/v1/discover',
             'openapiUrl':settings.base_url+'/photo-scout/openapi.json',
             'payment':{'protocol':'mpp','perCallUsd':f'{price()/100:.2f}' if price()>0 else None},
-            'description':'Image-grounded nearby photography locations from a bounded licensed image sample.'}
+            'description':'Image-grounded nearby photography locations from a bounded provider image sample.'}
     return router,retrieve_paid,fulfill

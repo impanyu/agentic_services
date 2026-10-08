@@ -169,3 +169,42 @@ def test_image_redirects_only_follow_verified_panoramax_hosts(monkeypatch):
     def hostile(r): return httpx.Response(302,headers={'Location':'http://127.0.0.1/secret'})
     monkeypatch.setattr(sources.httpx,'AsyncClient',lambda **kw:real(transport=httpx.MockTransport(hostile)))
     with pytest.raises(ValueError): asyncio.run(sources.image_data('https://panoramax.ign.fr/api/pic.jpg'))
+
+
+def test_google_candidates_keep_angles_without_credentials(monkeypatch):
+    import json
+    from agentic_services.photo_scout.sources import google_streetview,diverse_sample
+    monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_API_KEY','secret-fixture')
+    data={'status':'OK','pano_id':'pano_fixture','location':{'lat':0,'lng':0},'date':'2025-10','copyright':'Google'}
+    async def run():
+        async with httpx.AsyncClient(transport=httpx.MockTransport(lambda r:httpx.Response(200,json=data))) as c:
+            return await google_streetview(c,0,0,1000)
+    rows=asyncio.run(run())
+    assert len(rows)==4 and {r['viewHeadingDegrees'] for r in rows}=={0,90,180,270}
+    assert 'secret-fixture' not in json.dumps(rows)
+    for r in rows:r['distanceMeters']=0
+    assert len(diverse_sample(rows))==4
+    choices=VisualResult(spots=[VisualChoice(image_id=rows[0]['id'],name='Park',score=80,visible_evidence='Trees',photo_tip='Frame trees',uncertainty='Old image',confidence='medium')],summary='Park')
+    result=validate_result(choices,rows,{rows[0]['id']},3)
+    assert result[0]['imageUrl'] is None and 'heading=0' in result[0]['sourceUrl']
+
+
+def test_google_image_budget_and_reference_validation(tmp_path,monkeypatch):
+    import agentic_services.photo_scout.sources as sources
+    monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_ENABLED','1')
+    monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_API_KEY','secret-fixture')
+    monkeypatch.setenv('WEB_EVIDENCE_DB',str(tmp_path/'db'))
+    monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_DAILY_IMAGE_LIMIT','1')
+    requests=[]
+    def handler(r):
+        requests.append(r)
+        assert r.url.host=='maps.googleapis.com'
+        assert r.url.params['heading']=='90'
+        return httpx.Response(200,content=b'\xff\xd8\xfftest')
+    real=httpx.AsyncClient
+    monkeypatch.setattr(sources.httpx,'AsyncClient',lambda **kw:real(transport=httpx.MockTransport(handler)))
+    with pytest.raises(ValueError): asyncio.run(sources.google_image_data('google-streetview://evil.example/path?key=bad'))
+    assert not requests
+    assert asyncio.run(sources.google_image_data('google-streetview://fixture/90')).startswith('data:image/jpeg;base64,')
+    with pytest.raises(ValueError): asyncio.run(sources.google_image_data('google-streetview://fixture/90'))
+    assert len(requests)==1

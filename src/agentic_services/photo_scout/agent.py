@@ -34,6 +34,9 @@ Before recommending a location you MUST inspect its actual image. Metadata alone
 visual evidence. Only cite supplied IDs; never invent locations, coordinates or images.
 Evaluate composition, scenic interest, distinctiveness, and photographic possibilities.
 When multiple sources are available, compare actual images from different sources when useful.
+If Google Street View candidates exist, attempt at least one Google image inspection.
+For panoramas, supplied headings describe the camera direction. Compare distinct directions
+when useful and base angle advice on the view you actually inspected.
 Street-view camera points may be in a roadway; never instruct someone to stand in traffic.
 Prefer newer evidence when relevant, but a recent photograph does not prove current conditions.
 Do not recommend ordinary blank roads, hazards, private residences or restricted facilities.
@@ -56,7 +59,9 @@ def validate_result(result,rows,inspected,limit):
         if choice.image_id not in inspected or choice.image_id not in by_id: continue
         row=by_id[choice.image_id]
         if any(distance((row['lat'],row['lon']),(x['lat'],x['lon']))<35 for x in out): continue
-        out.append({**row,**choice.model_dump(),'accessStatus':'unknown',
+        public_row={**row}
+        if row.get('provider')=='google-street-view': public_row['imageUrl']=None
+        out.append({**public_row,**choice.model_dump(),'accessStatus':'unknown',
             'coordinateWarning':'Mapped image point; exact standing spot and access are not verified.'})
         if len(out)==limit: break
     return out
@@ -90,6 +95,7 @@ async def explore(settings,payload,rows,statuses):
             'images':catalog}),max_turns=8,run_config=RunConfig(tracing_disabled=True)),timeout=240)
     return {'spots':validate_result(result.final_output,rows,inspected,payload.limit),
         'summary':result.final_output.summary,'sources':statuses,'inspectedImages':len(inspected),
+        'inspectedImageSources':sorted({by_id[i]['provider'] for i in inspected}),
         'coverage':'Subjective recommendations from a bounded image sample; not all nearby POIs.',
         'model':os.getenv('PHOTO_SCOUT_MODEL',settings.openai_model),
         'usage':{'requests':result.context_wrapper.usage.requests,
