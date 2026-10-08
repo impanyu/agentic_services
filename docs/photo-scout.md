@@ -143,3 +143,16 @@ provider credit/date, coordinates and camera heading. No public image proxy exis
 The agent must attempt a Google inspection if Google candidates exist, but it can
 return zero Google recommendations when scenes are unsuitable or downloads fail.
 The feature flag is also the operational kill switch.
+
+October 8 Google integration verification: 97 tests passed. A production multi-source
+Paris run inspected six real images across Google Street View, Panoramax and Commons;
+Google image attempt count increased by four, with successful Google inspection
+recorded by the agent. It recommended only a Commons scene; the agent did not force
+a Google recommendation merely because the provider was present. This is an internal
+smoke test, not a customer payment or proof of Google commercial permission.
+
+A second Google-only Pont d Iena smoke run inspected six real Google images and
+returned two photo spots with 180-degree camera headings. Sanitized report metadata
+and recommendations are published as `sample-google.json`; source image bytes and
+provider credentials are not in the sample. This sample is an explicitly labeled
+internal Google-only test, while the paid product compares enabled sources.

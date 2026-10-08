@@ -1,0 +1,86 @@
+{
+  "spots": [
+    {
+      "id": "google:CAoSF0NJSE0wb2dLRUlDQWdJRGszYUs2OHdF:180",
+      "provider": "google-street-view",
+      "title": "Outdoor Street View facing 180 degrees",
+      "lat": 48.86020972172752,
+      "lon": 2.291978123474415,
+      "locationType": "camera_geotag",
+      "imageUrl": null,
+      "sourceUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=CAoSF0NJSE0wb2dLRUlDQWdJRGszYUs2OHdF&viewpoint=48.86020972172752%2C2.291978123474415&heading=180&pitch=0&fov=90",
+      "author": "\u00a9 Davide Pedretti Biagioni",
+      "license": "Google Maps Platform terms; not an open license",
+      "licenseUrl": "https://cloud.google.com/maps-platform/terms",
+      "sourceDate": "2019-07",
+      "capturedAt": "2019-07",
+      "viewHeadingDegrees": 180,
+      "viewPitchDegrees": 0,
+      "viewFovDegrees": 90,
+      "description": "Street View camera position; access and safe standing point unverified.",
+      "distanceMeters": 12,
+      "image_id": "google:CAoSF0NJSE0wb2dLRUlDQWdJRGszYUs2OHdF:180",
+      "name": "Eiffel Tower approach by Pont d\u2019I\u00e9na",
+      "score": 83,
+      "visible_evidence": "Facing 180\u00b0 shows the Eiffel Tower\u2019s lower structure and arch filling much of the frame, with trees at the sides and a crosswalk and traffic in the foreground. This is the strongest direct tower view in the inspected headings.",
+      "photo_tip": "From a pedestrian area well clear of the roadway, try a vertical frame to emphasize the tower\u2019s height; keep the crosswalk and traffic out of the composition if you want a cleaner architectural shot.",
+      "uncertainty": "Google Street View imagery is from July 2019. The camera point is geotagged near the road, not a recommended place to stand; use a lawful pedestrian viewpoint and check present-day access. The tower\u2019s visible position suggests this is an approach near its base, but the image alone does not establish a formal viewpoint name.",
+      "confidence": "high",
+      "accessStatus": "unknown",
+      "coordinateWarning": "Mapped image point; exact standing spot and access are not verified."
+    },
+    {
+      "id": "google:x_5dqlOqyjCRkg3fzQH7zA:180",
+      "provider": "google-street-view",
+      "title": "Outdoor Street View facing 180 degrees",
+      "lat": 48.86023750086665,
+      "lon": 2.294318392180097,
+      "locationType": "camera_geotag",
+      "imageUrl": null,
+      "sourceUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=x_5dqlOqyjCRkg3fzQH7zA&viewpoint=48.86023750086665%2C2.294318392180097&heading=180&pitch=0&fov=90",
+      "author": "\u00a9 Google",
+      "license": "Google Maps Platform terms; not an open license",
+      "licenseUrl": "https://cloud.google.com/maps-platform/terms",
+      "sourceDate": "2022-11",
+      "capturedAt": "2022-11",
+      "viewHeadingDegrees": 180,
+      "viewPitchDegrees": 0,
+      "viewFovDegrees": 90,
+      "description": "Street View camera position; access and safe standing point unverified.",
+      "distanceMeters": 177,
+      "image_id": "google:x_5dqlOqyjCRkg3fzQH7zA:180",
+      "name": "Tree-framed Eiffel Tower view",
+      "score": 76,
+      "visible_evidence": "Facing 180\u00b0 shows the tower partly screened by tall trees, with a broad open paved foreground and strong backlighting in this image. The foliage creates a more layered, less direct composition than the other view.",
+      "photo_tip": "From the pedestrian path, use the trees as a natural frame and shift your position to reveal more or less of the tower. If conditions allow, softer light could reduce the strong glare visible here.",
+      "uncertainty": "Google Street View imagery is from November 2022; foliage and light are specific to that capture and may differ now. The geotag marks the camera position, not necessarily the best or permitted standing spot. This appears to be an open path or plaza near the tower, but access is not verified.",
+      "confidence": "medium",
+      "accessStatus": "unknown",
+      "coordinateWarning": "Mapped image point; exact standing spot and access are not verified."
+    }
+  ],
+  "summary": "The clearest tower composition in this small inspected sample is the 180\u00b0 view at the Pont d\u2019I\u00e9na approach; the nearby 180\u00b0 view offers a more atmospheric, tree-framed alternative. Other inspected directions were dominated by roadway, vehicles, or street furniture. Images are historical, so they do not establish current access or conditions.",
+  "sources": {
+    "google-street-view": {
+      "status": "ok",
+      "eligibleImages": 16
+    }
+  },
+  "inspectedImages": 6,
+  "inspectedImageSources": [
+    "google-street-view"
+  ],
+  "coverage": "Subjective recommendations from a bounded image sample; not all nearby POIs.",
+  "model": "gpt-6-luna",
+  "usage": {
+    "requests": 7,
+    "inputTokens": 38570,
+    "outputTokens": 1182
+  },
+  "sampleNotice": "Internal Google-only agent test, October 8, 2026. Not a paid customer report or current conditions check.",
+  "sampleLocation": {
+    "lat": 48.8603,
+    "lon": 2.2919,
+    "radius": 300
+  }
+}
