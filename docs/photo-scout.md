@@ -40,8 +40,8 @@ https://operations.osmfoundation.org/policies/tiles/
 
 Existing Python Agents SDK; one agent chooses image-inspection tools and returns
 structured visual judgments. Reuses configured OpenAI key/model. Up to 24 diverse
-image candidates, 12 inspection attempts, 14 turns, 300 seconds of agent work
-(360 seconds for the complete discovery), 2500 output tokens/turn.
+image candidates, 12 inspection attempts, 14 turns, 240 seconds of agent work
+(270 seconds for the complete discovery), 2500 output tokens/turn.
 Server rejects unseen IDs, invented locations and duplicate mapped viewpoints.
 Image fetching is provider-host allowlisted, HTTPS only, only bounded Panoramax redirects to verified hosts, max 3 MB,
 JPEG/PNG/WebP signatures only. No arbitrary user image URL is fetched. Source/model
@@ -183,3 +183,5 @@ uses geographic spread and offers one view per location before second views. The
 agent can attempt 12 image inspections and aims for 8–12 views when coverage permits.
 The Google daily image cap remains 180; this change does not raise it or change price.
 Older static examples remain historical results from their labeled test runs.
+The total deadline stays below the existing five-minute fulfillment lease and gateway
+response window, so increasing inspection count cannot outlive those boundaries.

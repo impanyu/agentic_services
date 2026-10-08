@@ -95,7 +95,7 @@ async def explore(settings,payload,rows,statuses):
             model_settings=ModelSettings(max_tokens=2500,parallel_tool_calls=False,store=False))
         catalog=[{k:v for k,v in r.items() if k not in ('imageUrl','author')} for r in rows]
         result=await asyncio.wait_for(Runner.run(agent,json.dumps({'request':payload.model_dump(),
-            'images':catalog}),max_turns=14,run_config=RunConfig(tracing_disabled=True)),timeout=300)
+            'images':catalog}),max_turns=14,run_config=RunConfig(tracing_disabled=True)),timeout=240)
     return {'spots':validate_result(result.final_output,rows,inspected,payload.limit),
         'summary':result.final_output.summary,'sources':statuses,'inspectedImages':len(inspected),
         'inspectedImageSources':sorted({by_id[i]['provider'] for i in inspected}),
