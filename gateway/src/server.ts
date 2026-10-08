@@ -560,7 +560,8 @@ app.all('*', async (c) => {
     return new Response(null, { status: 204, headers: {
       'Access-Control-Allow-Origin': origin,
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, X-Report-Token, X-Request-Token, X-Usage-Session, X-Usage-Source, X-Usage-Campaign, X-Usage-Test',
+      'Access-Control-Allow-Credentials': 'true',
+      'Access-Control-Allow-Headers': 'Content-Type, X-CSRF-Token, X-Report-Token, X-Request-Token, X-Usage-Session, X-Usage-Source, X-Usage-Campaign, X-Usage-Test',
       Vary: 'Origin',
     } })
   }
@@ -569,6 +570,7 @@ app.all('*', async (c) => {
   if (!humanPath || !allowed) return upstream
   const headers = new Headers(upstream.headers)
   headers.set('Access-Control-Allow-Origin', origin)
+  headers.set('Access-Control-Allow-Credentials', 'true')
   headers.set('Vary', 'Origin')
   return new Response(upstream.body, {
     status: upstream.status, statusText: upstream.statusText, headers,
@@ -1164,6 +1166,7 @@ async function proxyRequest(request: Request, path: string): Promise<Response> {
     method: request.method,
     headers,
     body: ['GET', 'HEAD'].includes(request.method) ? undefined : request.body,
+    redirect: path.startsWith('/photo-scout/v1/auth/') ? 'manual' : 'follow',
     duplex: 'half',
   } as RequestInit)
 }

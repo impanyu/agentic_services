@@ -715,6 +715,7 @@ def test_score_cache_reuses_successful_views_without_download_or_model(tmp_path,
     assert len(downloads)==13 and len(calls)==3
     assert first['scoring']['newlyScoredImages']==13
     assert second['scoring']['cachedImages']==13 and second['scoring']['newlyScoredImages']==0
+    assert len(second['poiResults'])==13 and any(p['recommend'] is False for p in second['poiResults'])
     assert second['usage']['requests']==0 and second['scoring']['downloadedImages']==0
     assert all(a['scoreFromCache'] for a in second['imageAssessments'])
     assert second['imageAssessments'][-1]['recommend'] is False

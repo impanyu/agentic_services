@@ -32,12 +32,12 @@ test('denied permission never retries or substitutes a default location',()=>{
 function pageFixture(){
  const elements=new Map(),requests=[],moves=[],circles=[];
  const defaults={lat:'41.8827',lon:'-87.6233',radius:'1000',limit:'3'};
- function element(id){if(!elements.has(id))elements.set(id,{value:defaults[id]||'',textContent:'',listeners:{},addEventListener(type,fn){this.listeners[type]=fn;},setAttribute(){},querySelectorAll(){return [];},replaceChildren(){},reportValidity(){return true;},scrollIntoView(){}});return elements.get(id);}
- const layer=()=>({addTo(){return this;},on(){return this;},once(){return this;},setLatLng(p){this.position=p;return this;},setRadius(){return this;},clearLayers(){},getBounds(){return this.position;}});
+ function element(id){if(!elements.has(id))elements.set(id,{value:defaults[id]||'',textContent:'',listeners:{},addEventListener(type,fn){this.listeners[type]=fn;},setAttribute(){},querySelectorAll(){return [];},replaceChildren(){},append(){},classList:{add(){},remove(){}},reportValidity(){return true;},scrollIntoView(){}});return elements.get(id);}
+ const layer=()=>({addTo(){return this;},on(){return this;},once(){return this;},setLatLng(p){this.position=p;return this;},setRadius(){return this;},clearLayers(){},getLayers(){return [];},getBounds(){return this.position;}});
  const map={setView(){return this;},on(){},hasLayer(){return true;},removeLayer(){},fitBounds(bounds){moves.push(bounds);}};
  const L={map:()=>map,control:{zoom:()=>layer(),layers:()=>layer()},tileLayer:()=>layer(),marker:()=>layer(),layerGroup:()=>layer(),circle:()=>{const c=layer();circles.push(c);return c;},divIcon:()=>({}),DomEvent:{disableClickPropagation(){},disableScrollPropagation(){}}};
  const window={isSecureContext:true,addEventListener(){}},navigator={geolocation:{getCurrentPosition(success,error){requests.push({success,error});}}};
- const context={window,navigator,L,document:{body:{dataset:{}},getElementById:element,querySelector:element,querySelectorAll(){return [];},addEventListener(){}},location:{hostname:'test.invalid',search:''},localStorage:{removeItem(){}},sessionStorage:{},fetch:()=>new Promise(()=>{}),setTimeout:()=>1,clearTimeout(){},Number,URL,matchMedia:()=>({matches:true})};
+ const context={window,navigator,L,document:{createElement:()=>element('created'),body:{dataset:{}},getElementById:element,querySelector:element,querySelectorAll(){return [];},addEventListener(){}},location:{hostname:'test.invalid',search:''},localStorage:{removeItem(){}},sessionStorage:{},fetch:()=>new Promise(()=>{}),setTimeout:()=>1,clearTimeout(){},setInterval:()=>1,clearInterval(){},Number,URL,matchMedia:()=>({matches:true})};
  vm.runInNewContext(readFileSync('photo-scout-site/location.js','utf8'),context);
  vm.runInNewContext(readFileSync('photo-scout-site/app.js','utf8'),context);
  return {interceptSubmission:fn=>{context.submitSearch=fn;},bearing:context.photoBearing,element,requests,moves,circles,click:id=>element(id).listeners.click()};

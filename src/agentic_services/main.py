@@ -32,6 +32,7 @@ from .growth import GrowthStore, create_growth_router
 from .config import Settings
 from .contractor_routes import create_contractor_router
 from .photo_scout.routes import create_photo_router
+from .photo_scout.accounts import create_accounts_router
 from .contact import send_contact_email, send_email
 from .models import (
     CapabilitiesResponse,
@@ -383,6 +384,7 @@ def create_app(
     photo_router, retrieve_photo_checkout, fulfill_photo_checkout = create_photo_router(resolved_settings, require_service_api_key, store)
     app.state.process_photo_preview = photo_router.process_preview
     app.include_router(photo_router)
+    app.include_router(create_accounts_router(resolved_settings,require_service_api_key))
     app.include_router(contractor_router)
     app.include_router(create_niche_router(resolved_settings))
     app.include_router(create_manager_router(resolved_settings))

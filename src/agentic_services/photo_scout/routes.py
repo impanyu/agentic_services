@@ -218,7 +218,7 @@ def create_photo_router(settings,require_api,verification_store):
 
     def image_links(result):
         if not result or not settings.service_api_key: return result
-        for spot in result.get('spots',[]):
+        for spot in result.get('spots',[])+result.get('poiResults',[]):
             ref=spot.get('streetViewReference')
             if not ref: continue
             expires=int(time.time())+1200
@@ -250,6 +250,12 @@ def create_photo_router(settings,require_api,verification_store):
                 raise HTTPException(503,'Image sources are temporarily unavailable')
             store.reserve_run()
             result=await explore(settings,payload,rows,statuses)
+            assessed={p['poi']['id'] for p in result.get('poiResults',[]) if p.get('poi')}
+            result.setdefault('poiResults',[]).extend({'poi':p,'name':p['name'],'score':None,
+                'assessmentStatus':'no_verified_view','viewHeadingDegrees':None,
+                'visible_evidence':'No scored image could be confidently matched to this place.',
+                'uncertainty':'No verified camera direction is available.','coordinateWarning':'Candidate POI; imagery not verified.'}
+                for p in pois if p['id'] not in assessed)
             result['nearbyPois']=pois
             result['discoveryMethod']='poi-first'
             result['candidatePoiCount']=len(pois)
