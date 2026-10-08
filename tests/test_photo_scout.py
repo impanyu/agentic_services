@@ -361,3 +361,22 @@ def test_visible_poi_must_be_in_image_candidates():
     choice.poi_id='park'
     out=validate_result(VisualResult(spots=[choice],summary='Park'),rows,{'image'},3)
     assert out[0]['name']=='Verified Park' and out[0]['poi']['id']=='park'
+
+
+def test_image_budget_disables_tool_before_final_response(tmp_path,monkeypatch):
+    import json
+    from types import SimpleNamespace
+    from agents.tool_context import ToolContext
+    import agentic_services.photo_scout.agent as visual
+    settings=Settings(openai_api_key='test',openai_model='test',database_path=tmp_path/'db',base_url='https://api.test')
+    async def image(*a):return 'data:image/jpeg;base64,/9j/dGVzdA=='
+    async def runner(agent,*a,**kw):
+        tool=agent.tools[0];ctx=ToolContext(None,tool_name='inspect_image',tool_call_id='test',tool_arguments='{}')
+        for _ in range(12):
+            assert tool.is_enabled(ctx,agent)
+            await tool.on_invoke_tool(ctx,json.dumps({'image_id':'image'}))
+        assert not tool.is_enabled(ctx,agent)
+        return SimpleNamespace(final_output=VisualResult(spots=[],summary='Done'),context_wrapper=SimpleNamespace(usage=SimpleNamespace(requests=13,input_tokens=1,output_tokens=1)))
+    monkeypatch.setattr(visual,'image_data',image);monkeypatch.setattr(visual.Runner,'run',runner)
+    result=asyncio.run(visual.explore(settings,ExploreRequest(lat=0,lon=0),[{'id':'image','provider':'test','imageUrl':'https://upload.wikimedia.org/test.jpg','lat':0,'lon':0}],{}))
+    assert result['summary']=='Done' and result['inspectedImages']==1
