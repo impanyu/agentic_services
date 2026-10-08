@@ -408,3 +408,38 @@ def test_poi_selection_catalog_is_bound_and_restricts_exploration(tmp_path,monke
     assert calls==['pois','images','agent']  # Reuses authenticated catalog, no repeated provider query.
     monkeypatch.setattr(routes.time,'time',lambda: 9999999999)
     assert client.post('/photo-scout/v1/preview',json=payload,headers=headers).status_code==422
+
+
+def test_category_filter_applied_before_poi_limit(monkeypatch):
+    import agentic_services.photo_scout.sources as sources
+    requests=[]
+    def handler(r):
+        query=r.url.params['data'];requests.append(query)
+        assert 'park|garden|nature_reserve' in query
+        assert 'tourism' not in query and 'historic' not in query
+        # Provider results can include unexpected rows; don't let them fill the limit.
+        elements=[{'type':'node','id':i,'lat':0,'lon':i*.00001,'tags':{'name':f'Art {i}','tourism':'artwork'}} for i in range(40)]
+        elements.append({'type':'node','id':99,'lat':0,'lon':0.001,'tags':{'name':'Garden','leisure':'garden'}})
+        return httpx.Response(200,json={'elements':elements})
+    real=httpx.AsyncClient
+    monkeypatch.setattr(sources.httpx,'AsyncClient',lambda **kw:real(transport=httpx.MockTransport(handler)))
+    rows,status=asyncio.run(sources.nearby_pois(0,0,1000,['park']))
+    assert [row['name'] for row in rows]==['Garden']
+    assert rows[0]['categoryGroups']==['park'] and status['count']==1
+    assert len(requests)==1
+
+
+def test_category_api_validation_and_catalog_binding(tmp_path,monkeypatch):
+    import agentic_services.photo_scout.routes as routes
+    settings=Settings(openai_api_key='test',openai_model='test',base_url='https://api.test',database_path=tmp_path/'db',service_api_key='private')
+    client=TestClient(create_app(settings=settings));headers={'Authorization':'Bearer private'};calls=[]
+    async def pois(lat,lon,radius,categories):
+        calls.append(categories);return [{'id':'park','name':'Park','category':'park'}],{'status':'ok'}
+    monkeypatch.setattr(routes,'nearby_pois',pois)
+    for categories in ([],['unknown']):
+        assert client.post('/photo-scout/v1/pois',headers=headers,json={'lat':0,'lon':0,'categories':categories}).status_code==422
+    response=client.post('/photo-scout/v1/pois',headers=headers,json={'lat':0,'lon':0,'categories':['park']})
+    assert response.status_code==200 and calls==[['park']]
+    payload={'lat':0,'lon':0,'categories':['museum'],'selectedPoiIds':['park'],'poiCatalogToken':response.json()['poiCatalogToken']}
+    assert client.post('/photo-scout/v1/candidates',headers=headers,json=payload).status_code==422
+    assert calls==[['park']]

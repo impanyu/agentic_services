@@ -252,3 +252,18 @@ Tokens are bound to coordinates and radius; unknown IDs, duplicates, empty
 selections, modified tokens and expired selections are rejected. Omit both fields
 for the existing automatic POI selection. Already-paid jobs retain their authenticated
 selection when fulfilled later, even after the interactive token expiry.
+
+### POI category filters
+
+The website offers multiple category checkboxes before lookup: viewpoints, parks
+and gardens, tourist attractions, museums, public art, historic places, nature and
+landscapes, and recreation areas. All are selected by default. Changing categories
+invalidates any loaded POI list; at least one category is required.
+
+API requests accept `categories`: `viewpoint`, `park`, `attraction`, `museum`,
+`artwork`, `historic`, `nature`, `recreation`. Omit the field to search all types.
+For example, `{"lat":48.8603,"lon":2.2919,"radius":1000,"categories":["park","viewpoint"]}`.
+Filters constrain the Overpass query and returned records before the 24-place cap.
+Pass the same categories when using a signed catalog and selected POI IDs; a
+changed category set requires a new lookup. Category labels group several OSM tags
+(e.g. parks includes gardens and nature reserves); they are metadata, not ratings.

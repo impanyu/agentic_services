@@ -4,7 +4,7 @@ const el=id=>document.getElementById(id), message=s=>{el('message').textContent=
 const map=L.map('map').setView([41.8827,-87.6233],15);
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'}).addTo(map);
 let selected=L.marker([41.8827,-87.6233]).addTo(map), resultPins=[];let humanFreePreview=false, serviceAvailable=false, poiCatalog=null, catalogGeneration=0;
-function coordinates(){return {lat:Number(el("lat").value),lon:Number(el("lon").value),radius:Number(el("radius").value)}}
+function coordinates(){return {lat:Number(el("lat").value),lon:Number(el("lon").value),radius:Number(el("radius").value),categories:[...el("poi-categories").querySelectorAll("input:checked")].map(c=>c.value)}}
 function updateSelection(){const count=el("poi-list").querySelectorAll("input:checked").length;el("poi-count").textContent=`${count} of ${poiCatalog?.nearbyPois.length||0} places selected`;el("submit").disabled=!serviceAvailable||!count;}
 function invalidatePois(){catalogGeneration++;poiCatalog=null;el("poi-selection").hidden=true;el("poi-list").replaceChildren();el("submit").disabled=true;}
 function pick(lat,lon){invalidatePois();el('lat').value=lat.toFixed(6);el('lon').value=lon.toFixed(6);selected.setLatLng([lat,lon]);}
@@ -24,14 +24,17 @@ el('locate').addEventListener('click',()=>{
 map.on('click',e=>pick(e.latlng.lat,e.latlng.lng));
 for(const id of ['lat','lon']) el(id).addEventListener('input',()=>{invalidatePois();const lat=Number(el('lat').value),lon=Number(el('lon').value);if(Number.isFinite(lat)&&Number.isFinite(lon)&&Math.abs(lat)<=85&&Math.abs(lon)<=180){selected.setLatLng([lat,lon]);map.setView([lat,lon],15)}});
 el('radius').addEventListener('change',invalidatePois);
+function categoriesChanged(){invalidatePois();const count=el('poi-categories').querySelectorAll('input:checked').length;el('find-pois').disabled=!count;message(count?'Categories updated. Find nearby places to refresh the list.':'Select at least one POI category.');}
+for(const input of el('poi-categories').querySelectorAll('input'))input.addEventListener('change',categoriesChanged);
+for(const [id,checked] of [['categories-all',true],['categories-none',false]])el(id).addEventListener('click',()=>{el('poi-categories').querySelectorAll('input').forEach(c=>c.checked=checked);categoriesChanged();});
 el('find-pois').addEventListener('click',async()=>{
- if(!el('search').reportValidity())return;
+ if(!el('search').reportValidity())return;if(!coordinates().categories.length){message('Select at least one POI category.');return;}
  invalidatePois();const generation=catalogGeneration,coords=coordinates();el('find-pois').disabled=true;message('Finding nearby places…');
  try{const data=await json('/photo-scout/v1/pois',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(coords)});
   if(generation!==catalogGeneration)return;poiCatalog={...data,coords};
   for(const p of data.nearbyPois){const row=node('label',null,'poi-choice'),check=document.createElement('input');check.type='checkbox';check.value=p.id;check.checked=true;check.addEventListener('change',updateSelection);row.append(check,node('span',`${p.name} · ${p.category} · ${p.distanceMeters} m`));el('poi-list').append(row);}
   el('poi-selection').hidden=false;updateSelection();message(data.nearbyPois.length?'Select the places you want the agent to compare, then analyze their views.':'No candidate places found. Try a larger radius or another location.');
- }catch(err){if(generation===catalogGeneration)message(err.message);}finally{el('find-pois').disabled=false;}
+ }catch(err){if(generation===catalogGeneration)message(err.message);}finally{el('find-pois').disabled=!el('poi-categories').querySelectorAll('input:checked').length;}
 });
 for(const [id,checked] of [['poi-all',true],['poi-none',false]])el(id).addEventListener('click',()=>{el('poi-list').querySelectorAll('input').forEach(c=>c.checked=checked);updateSelection();});
 function node(tag,txt,cls){const n=document.createElement(tag);if(txt)n.textContent=txt;if(cls)n.className=cls;return n;}

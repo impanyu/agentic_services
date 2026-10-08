@@ -403,10 +403,28 @@ async def google_image_data(reference):
     return 'data:image/jpeg;base64,'+base64.b64encode(data).decode()
 
 
-async def nearby_pois(lat,lon,radius):
-    # OpenStreetMap names/categories are candidates, never proof of photographic quality.
+POI_CATEGORY_FILTERS = {
+    'viewpoint': {'tourism': ['viewpoint']},
+    'park': {'leisure': ['park','garden','nature_reserve']},
+    'attraction': {'tourism': ['attraction']},
+    'museum': {'tourism': ['museum']},
+    'artwork': {'tourism': ['artwork']},
+    'historic': {'historic': None},
+    'nature': {'natural': ['beach','peak','water','wood']},
+    'recreation': {'leisure': ['recreation_ground']},
+}
+
+
+async def nearby_pois(lat,lon,radius,categories=None):
+    # Apply category filters at the source, before the bounded POI selection.
+    allowed=list(POI_CATEGORY_FILTERS) if categories is None else categories
     area=f'(around:{radius},{lat},{lon})["name"]'
-    query=f'[out:json][timeout:10][maxsize:16777216];(nwr{area}["tourism"~"^(attraction|viewpoint|artwork|museum)$"];nwr{area}["leisure"~"^(park|garden|nature_reserve|recreation_ground)$"];nwr{area}["historic"];nwr{area}["natural"~"^(beach|peak|water|wood)$"];);out center 80;'
+    clauses=[]
+    for category in allowed:
+        for tag,values in POI_CATEGORY_FILTERS[category].items():
+            selector=f'["{tag}"]' if values is None else f'["{tag}"~"^({"|".join(values)})$"]'
+            clauses.append(f'nwr{area}{selector};')
+    query='[out:json][timeout:10][maxsize:16777216];('+''.join(clauses)+');out center 80;'
     errors=[];data=None
     endpoints=('https://overpass-api.de/api/interpreter','https://overpass.private.coffee/api/interpreter')
     async with httpx.AsyncClient(timeout=12,headers=HEADERS,follow_redirects=False) as client:
@@ -429,11 +447,14 @@ async def nearby_pois(lat,lon,radius):
         if not math.isfinite(lat2) or not math.isfinite(lon2): continue
         d=distance((lat,lon),(lat2,lon2))
         if d>radius: continue
-        name=text(tags.get('name'));category=tags.get('tourism') or tags.get('leisure') or tags.get('historic') or tags.get('natural')
+        groups=[key for key in allowed if any(tag in tags and (values is None or tags[tag] in values) for tag,values in POI_CATEGORY_FILTERS[key].items())]
+        if not groups: continue
+        name=text(tags.get('name'))
+        category=next(tags[tag] for key in groups for tag,values in POI_CATEGORY_FILTERS[key].items() if tag in tags and (values is None or tags[tag] in values))
         # Deduplicate named node/area representations of the same place.
         if any(name.casefold()==x['name'].casefold() and distance((lat2,lon2),(x['lat'],x['lon']))<150 for x in result): continue
         result.append({'id':f"osm:{row['type']}:{row['id']}",'name':name,'lat':lat2,'lon':lon2,
-            'category':category,'distanceMeters':round(d),'provider':'openstreetmap',
+            'category':category,'categoryGroups':groups,'distanceMeters':round(d),'provider':'openstreetmap',
             'sourceUrl':f"https://www.openstreetmap.org/{row['type']}/{row['id']}",
             'license':'ODbL 1.0','attribution':'OpenStreetMap contributors','visuallyAnalyzed':False})
     # Prefer viewpoints, then rotate categories so dense artwork clusters cannot crowd out parks.
