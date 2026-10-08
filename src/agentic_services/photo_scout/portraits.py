@@ -149,7 +149,7 @@ def create_portrait_router(settings,require_api):
                     image_model=os.getenv('PHOTO_SCOUT_IMAGE_MODEL','gpt-image-2.5-sunburst')
                     # New image models always preserve inputs at high fidelity.
                     legacy=image_model.startswith('gpt-image-1')
-                    edit_options={'input_fidelity':'high','quality':'high'} if legacy else {'quality':'high'}
+                    edit_options={'input_fidelity':'high','quality':'high'} if legacy else {'quality':'max' if image_model.startswith('gpt-image-2.5') else 'high'}
                     result=await client.images.edit(model=image_model,image=[('person.png',bytes(row['photo']),'image/png'),('scene.'+ext,raw,'image/'+('jpeg' if ext=='jpg' else ext))],prompt=portrait_prompt(payload.get('style','natural'),payload['pose']),**edit_options,size='1024x1024',output_format='png',n=1)
                 generated=base64.b64decode(result.data[0].b64_json,validate=True)
                 if not generated.startswith(b'\x89PNG') or len(generated)>25000000:raise ValueError()
