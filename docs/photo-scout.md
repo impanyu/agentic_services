@@ -235,3 +235,20 @@ scene; the server rejects unlisted POIs and displays the chosen source name.
 
 Image inspection is disabled dynamically after 12 attempts, leaving the final
 agent turn without tools so it must produce its structured recommendation.
+
+## User-selected POIs
+
+The website now retrieves a candidate list before visual analysis. Users can
+select all, clear, or individually select places. Names, categories and straight-line
+distances come from OpenStreetMap; selection alone is not visual verification.
+Changing coordinates or radius invalidates the list. Zero selections disable analysis.
+
+`POST /photo-scout/v1/pois` with `lat`, `lon`, `radius` returns `nearbyPois` and a
+signed `poiCatalogToken`, valid for one hour. This lookup does not fetch imagery or
+invoke the agent. Pass that token and `selectedPoiIds` to `discover` (agent paid API)
+or `preview` (temporary free website testing). Only selected, server-verified POIs
+are passed to imagery discovery and analysis; the provider lookup is not repeated.
+Tokens are bound to coordinates and radius; unknown IDs, duplicates, empty
+selections, modified tokens and expired selections are rejected. Omit both fields
+for the existing automatic POI selection. Already-paid jobs retain their authenticated
+selection when fulfilled later, even after the interactive token expiry.

@@ -9,3 +9,5 @@
 [hidden]{display:none!important}.back-button{width:auto;margin-bottom:16px}.card img{object-fit:contain;background:#e8ecdf}
 
 .GMP-attribution{font-family:Arial,sans-serif;font-weight:400;font-style:normal;font-size:14px!important;color:#1f1f1f;white-space:nowrap;letter-spacing:normal}
+
+#poi-selection{margin:20px 0}#poi-list{max-height:340px;overflow:auto;border:1px solid var(--line);border-radius:10px;padding:8px}.poi-choice{display:flex;gap:10px;align-items:flex-start;padding:8px;margin:0}.poi-choice input{width:18px;flex:none;margin-top:5px}.poi-actions{display:flex;gap:8px;margin-bottom:10px}.poi-actions button{padding:9px;font-size:13px;background:#e7ebdf}#submit{margin-top:16px}

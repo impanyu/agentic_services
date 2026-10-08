@@ -27,6 +27,8 @@ class ExploreRequest(BaseModel):
     lon: float = Field(ge=-180,le=180,allow_inf_nan=False)
     radius: int = Field(default=1000,ge=100,le=5000)
     limit: int = Field(default=3,ge=1,le=5)
+    selectedPoiIds: list[str] | None = Field(default=None,max_length=24)
+    poiCatalogToken: str | None = Field(default=None,max_length=40000)
     preferences: str = Field(default='Scenic, distinctive public places for photography',max_length=500)
 
 
@@ -96,14 +98,52 @@ def create_photo_router(settings,require_api,verification_store):
                 r=await client.request(method,'https://api.stripe.com/v1/'+path,auth=(stripe_key(),''),data=data)
                 r.raise_for_status(); return r.json()
             except httpx.HTTPError as e: raise HTTPException(503,'Stripe is temporarily unavailable') from e
-    async def catalog(payload):
-        pois,poi_status=await nearby_pois(payload.lat,payload.lon,payload.radius)
-        if poi_status['status']!='ok':
-            logging.getLogger(__name__).warning('Photo Scout POI search failed: %s',poi_status.get('attempts',[]))
+    async def lookup_pois(payload):
+        pois,status=await nearby_pois(payload.lat,payload.lon,payload.radius)
+        if status['status']!='ok':
+            logging.getLogger(__name__).warning('Photo Scout POI search failed: %s',status.get('attempts',[]))
             raise HTTPException(503,'Nearby place search is temporarily unavailable; please try again later')
+        return pois,status
+
+    def sign_catalog(payload,pois,status):
+        if not settings.service_api_key: raise HTTPException(503,'Private gateway credential is required')
+        data={'lat':payload.lat,'lon':payload.lon,'radius':payload.radius,'expires':int(time.time())+3600,'pois':pois,'status':status}
+        encoded=base64.urlsafe_b64encode(json.dumps(data,separators=(',',':')).encode()).decode().rstrip('=')
+        signature=hmac.new(settings.service_api_key.encode(),('poi-catalog:'+encoded).encode(),hashlib.sha256).hexdigest()
+        return encoded+'.'+signature
+
+    async def chosen_pois(payload,allow_expired=False):
+        if payload.selectedPoiIds is None:
+            if payload.poiCatalogToken: raise HTTPException(422,'Select places from the supplied catalog')
+            return await lookup_pois(payload)
+        if not payload.selectedPoiIds or len(set(payload.selectedPoiIds))!=len(payload.selectedPoiIds):
+            raise HTTPException(422,'Select at least one place, without duplicates')
+        try:
+            encoded,signature=payload.poiCatalogToken.rsplit('.',1)
+            expected=hmac.new(settings.service_api_key.encode(),('poi-catalog:'+encoded).encode(),hashlib.sha256).hexdigest()
+            if not hmac.compare_digest(signature,expected): raise ValueError()
+            data=json.loads(base64.urlsafe_b64decode(encoded+'='*(-len(encoded)%4)))
+            if not allow_expired and data['expires']<time.time(): raise ValueError()
+            if any(data[k]!=getattr(payload,k) for k in ('lat','lon','radius')): raise ValueError()
+            wanted=set(payload.selectedPoiIds)
+            pois=[p for p in data['pois'] if p['id'] in wanted]
+            if len(pois)!=len(wanted): raise ValueError()
+        except (AttributeError,ValueError,KeyError,TypeError):
+            raise HTTPException(422,'Place selection is invalid or expired; find nearby places again')
+        return pois,{**data['status'],'count':len(pois),'catalogCount':len(data['pois'])}
+
+    async def catalog(payload,allow_expired=False):
+        pois,poi_status=await chosen_pois(payload,allow_expired)
         rows,statuses=await candidates(payload.lat,payload.lon,payload.radius,pois)
         statuses['openstreetmap']=poi_status
         return rows,statuses,pois
+
+    @router.post('/photo-scout/v1/pois')
+    async def list_pois(payload: ExploreRequest,authorization: str | None=Header(None)):
+        require_api(authorization); source_limit()
+        pois,status=await lookup_pois(payload)
+        return Response(json.dumps({'nearbyPois':pois,'source':status,'poiCatalogToken':sign_catalog(payload,pois,status),
+            'selectionExpiresInSeconds':3600,'visuallyAnalyzed':False}),media_type='application/json',headers={'Cache-Control':'private, no-store'})
 
     def image_links(result):
         if not result or not settings.service_api_key: return result
@@ -130,11 +170,11 @@ def create_photo_router(settings,require_api,verification_store):
                 headers={'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff'})
         except Exception as e: raise HTTPException(503,'Street View image is temporarily unavailable') from e
 
-    async def run(payload):
+    async def run(payload,allow_expired=False):
         enabled()
         if lock.locked(): raise HTTPException(429,'An exploration is in progress; try again shortly')
         async with lock, asyncio.timeout(270):
-            rows,statuses,pois=await catalog(payload)
+            rows,statuses,pois=await catalog(payload,allow_expired)
             if rows and not any(s['status']=='ok' for n,s in statuses.items() if n!='openstreetmap'):
                 raise HTTPException(503,'Image sources are temporarily unavailable')
             store.reserve_run()
@@ -234,7 +274,7 @@ def create_photo_router(settings,require_api,verification_store):
         # Shared durable Stripe worker serializes jobs; report reads never invoke a model.
         store.update(job['id'],state='running',error=None)
         try:
-            result=await run(ExploreRequest.model_validate_json(job['payload']))
+            result=await run(ExploreRequest.model_validate_json(job['payload']),allow_expired=True)
             store.update(job['id'],state='complete',result=json.dumps(result))
         except Exception:
             store.update(job['id'],state='failed',error='Exploration failed. Retry or contact support for a refund review.')

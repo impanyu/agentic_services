@@ -380,3 +380,31 @@ def test_image_budget_disables_tool_before_final_response(tmp_path,monkeypatch):
     monkeypatch.setattr(visual,'image_data',image);monkeypatch.setattr(visual.Runner,'run',runner)
     result=asyncio.run(visual.explore(settings,ExploreRequest(lat=0,lon=0),[{'id':'image','provider':'test','imageUrl':'https://upload.wikimedia.org/test.jpg','lat':0,'lon':0}],{}))
     assert result['summary']=='Done' and result['inspectedImages']==1
+
+
+def test_poi_selection_catalog_is_bound_and_restricts_exploration(tmp_path,monkeypatch):
+    import agentic_services.photo_scout.routes as routes
+    monkeypatch.setenv('PHOTO_SCOUT_ENABLED','1');monkeypatch.setenv('PHOTO_SCOUT_HUMAN_FREE_PREVIEW','1')
+    settings=Settings(openai_api_key='test',openai_model='test',base_url='https://api.test',database_path=tmp_path/'db',service_api_key='private')
+    client=TestClient(create_app(settings=settings));headers={'Authorization':'Bearer private'};calls=[]
+    places=[{'id':str(i),'name':f'Park {i}','lat':0,'lon':0,'category':'park'} for i in range(2)]
+    async def pois(*a):calls.append('pois');return places,{'status':'ok','count':2}
+    async def images(lat,lon,radius,targets):
+        calls.append('images');assert targets==[places[1]]
+        return [{'id':'image'}],{'panoramax':{'status':'ok'}}
+    async def model(*a):calls.append('agent');return {'spots':[]}
+    monkeypatch.setattr(routes,'nearby_pois',pois);monkeypatch.setattr(routes,'candidates',images);monkeypatch.setattr(routes,'explore',model)
+    assert client.post('/photo-scout/v1/pois',json={'lat':0,'lon':0}).status_code==401
+    response=client.post('/photo-scout/v1/pois',json={'lat':0,'lon':0},headers=headers)
+    assert response.status_code==200 and calls==['pois']
+    assert response.headers['cache-control']=='private, no-store'
+    token=response.json()['poiCatalogToken']
+    payload={'lat':0,'lon':0,'selectedPoiIds':['1'],'poiCatalogToken':token}
+    for change in ({'selectedPoiIds':[]},{'selectedPoiIds':['1','1']},{'selectedPoiIds':['unknown']},{'lat':1},{'radius':2000},{'poiCatalogToken':token+'x'},{'poiCatalogToken':None}):
+        assert client.post('/photo-scout/v1/preview',json={**payload,**change},headers=headers).status_code==422
+    assert calls==['pois']
+    result=client.post('/photo-scout/v1/preview',json=payload,headers=headers)
+    assert result.status_code==200 and result.json()['nearbyPois']==[places[1]]
+    assert calls==['pois','images','agent']  # Reuses authenticated catalog, no repeated provider query.
+    monkeypatch.setattr(routes.time,'time',lambda: 9999999999)
+    assert client.post('/photo-scout/v1/preview',json=payload,headers=headers).status_code==422
