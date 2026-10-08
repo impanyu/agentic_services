@@ -114,7 +114,7 @@ class PhotoStore:
             db.execute("INSERT OR IGNORE INTO photo_scout_budget VALUES(?,0)",(day,))
             runs=db.execute("SELECT runs FROM photo_scout_budget WHERE day=?",(day,)).fetchone()[0]
             if runs>=int(os.getenv("PHOTO_SCOUT_DAILY_RUN_LIMIT","30")):
-                raise HTTPException(429,"Daily exploration limit reached; paid jobs will retry later")
+                raise HTTPException(429,"Today's photo search capacity has been reached. Please try again later.")
             db.execute("UPDATE photo_scout_budget SET runs=runs+1 WHERE day=?",(day,))
     def get(self,job):
         with self.connect() as db:
@@ -325,7 +325,7 @@ def create_photo_router(settings,require_api,verification_store):
             store.update(job['id'],state='complete',result=json.dumps(result),error=None,lease_until=0)
         except Exception as error:
             logging.getLogger(__name__).warning('Photo Scout background search failed: %s',type(error).__name__)
-            store.update(job['id'],state='failed',lease_until=0,error='Search could not be completed. Please try again later.')
+            store.update(job['id'],state='failed',lease_until=0,error=str(error.detail) if isinstance(error,HTTPException) else 'Search could not be completed. Please try again later.')
         return True
 
     router.process_preview=process_preview
