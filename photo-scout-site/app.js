@@ -6,7 +6,7 @@ const map=L.map('map',{zoomControl:false}).setView([41.8827,-87.6233],15);
 L.control.zoom({position:'bottomright'}).addTo(map);
 const controls=el('map-controls');controls.open=false;L.DomEvent.disableClickPropagation(controls);L.DomEvent.disableScrollPropagation(controls);L.DomEvent.disableClickPropagation(document.querySelector('.map-toolbar'));L.DomEvent.disableClickPropagation(el('prompt-form'));L.DomEvent.disableScrollPropagation(document.querySelector('.prompt-panel'));L.DomEvent.disableClickPropagation(document.querySelector('.scout-dock'));L.DomEvent.disableScrollPropagation(document.querySelector('.scout-dock'));L.DomEvent.disableClickPropagation(el('center-pin'));
 const streetTiles=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'});
-let rasterLayer=null;
+let rasterLayer=null,previewLayer=null,previewTimer=null;
 let vectorLayer=null,activeMapStyle='streets',mapStyleGeneration=0,vectorReady=false,mapLoadTimer=null;
 const mapDetails={names:true,roads:true,roadNames:false,buildings:false,greenery:false,boundaries:false};
 let originalLayerVisibility=new Map();
@@ -16,19 +16,35 @@ L.DomEvent.disableClickPropagation(el('map-details'));L.DomEvent.disableScrollPr
 document.querySelectorAll('[data-map-detail]').forEach(input=>input.addEventListener('change',()=>{mapDetails[input.dataset.mapDetail]=input.checked;if(['aerial','topographic'].includes(activeMapStyle))switchMapStyle('minimal');else applyMapDetails();}));
 const mapStyles={streets:'liberty',minimal:'positron',night:'dark',bright:'bright'};
 async function switchMapStyle(style){
- clearTimeout(mapLoadTimer);vectorReady=false;activeMapStyle=style;document.body.dataset.mapStyle=style;const generation=++mapStyleGeneration;
+ clearTimeout(mapLoadTimer);clearTimeout(previewTimer);vectorReady=false;activeMapStyle=style;document.body.dataset.mapStyle=style;const generation=++mapStyleGeneration;
  document.querySelectorAll('[data-map-style]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mapStyle===style)));
  el('map-notice').textContent='Loading map…';
  if(vectorLayer){map.removeLayer(vectorLayer);vectorLayer=null;}
  if(rasterLayer){map.removeLayer(rasterLayer);rasterLayer=null;}
  if(map.hasLayer(streetTiles))map.removeLayer(streetTiles);
+ if(previewLayer){map.removeLayer(previewLayer);previewLayer=null;}
+ // Fetch a quiet, non-WebGL base immediately, independently of vector styles.
+ // It contains no labels, so the detailed layer cannot flash before filtering.
+ const preview=L.tileLayer('https://basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png',{maxZoom:20,zIndex:0,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'});
+ previewLayer=preview;let previewLoaded=false,backupStarted=false;
+ const backup=()=>{
+  if(generation!==mapStyleGeneration||previewLoaded||backupStarted)return;
+  backupStarted=true;clearTimeout(previewTimer);
+  if(map.hasLayer(preview))map.removeLayer(preview);
+  previewLayer=null;if(!map.hasLayer(streetTiles))streetTiles.addTo(map);
+ };
+ preview.on('tileload',()=>{previewLoaded=true;clearTimeout(previewTimer);});
+ preview.on('tileerror',backup);preview.addTo(map);
+ previewTimer=setTimeout(backup,4000);
+ let abandoned=false;
  const fallback=note=>{
-  if(generation!==mapStyleGeneration)return;
-  ++mapStyleGeneration;clearTimeout(mapLoadTimer);vectorReady=false;
+  if(generation!==mapStyleGeneration||abandoned)return;
+  abandoned=true;
+  if(!map.hasLayer(preview)&&!map.hasLayer(streetTiles)){previewLoaded=false;backupStarted=false;previewLayer=preview;preview.addTo(map);previewTimer=setTimeout(backup,4000);}
+  clearTimeout(mapLoadTimer);vectorReady=false;
   if(vectorLayer){if(map.hasLayer(vectorLayer))map.removeLayer(vectorLayer);vectorLayer=null;}
   if(rasterLayer){if(map.hasLayer(rasterLayer))map.removeLayer(rasterLayer);rasterLayer=null;}
-  if(!map.hasLayer(streetTiles))streetTiles.addTo(map);
-  el('map-notice').textContent=note+' Showing the standard street map. You can retry from Map layers.';
+  el('map-notice').textContent=note+' Using the backup map. You can retry from Map layers.';
  };
  const ready=()=>{if(generation!==mapStyleGeneration)return;clearTimeout(mapLoadTimer);el('map-notice').textContent='';};
  // A stalled request may never emit an error. Bound the entire first render.
@@ -36,7 +52,8 @@ async function switchMapStyle(style){
  if(style==='aerial'||style==='topographic'){
   const name=style==='aerial'?'USGSImageryOnly':'USGSTopo';
   const layer=L.tileLayer('https://basemap.nationalmap.gov/arcgis/rest/services/'+name+'/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:style==='aerial'?'USDA · USGS The National Map — Orthoimagery':'USGS The National Map · USGS, USFS, NOAA and contributors'});rasterLayer=layer;
-  layer.once('load',ready);
+  let rasterLoaded=false;layer.on('tileload',()=>{rasterLoaded=true;});
+  layer.once('load',()=>{if(!rasterLoaded||generation!==mapStyleGeneration||abandoned)return;ready();clearTimeout(previewTimer);if(previewLayer===preview){map.removeLayer(preview);previewLayer=null;}if(map.hasLayer(streetTiles))map.removeLayer(streetTiles);});
   layer.on('tileerror',()=>fallback('This U.S. basemap is unavailable here.'));
   layer.addTo(map);return;
  }
@@ -46,11 +63,15 @@ async function switchMapStyle(style){
   const response=await fetch('https://tiles.openfreemap.org/styles/'+mapStyles[style]);
   if(!response.ok)throw Error('Map style unavailable');
   const preparedStyle=await response.json();
-  if(generation!==mapStyleGeneration)return;
+  if(generation!==mapStyleGeneration||abandoned)return;
   originalLayerVisibility=new Map(preparedStyle.layers.map(l=>[l.id,l.layout?.visibility||'visible']));
   for(const l of preparedStyle.layers){const group=mapDetailGroup(l);if(group&&(!mapDetails[group]||(group==='roadNames'&&!mapDetails.roads)))l.layout={...l.layout,visibility:'none'};}
   const layer=L.maplibreGL({style:preparedStyle,attribution:'<a href="https://openfreemap.org/">OpenFreeMap</a> · <a href="https://openmaptiles.org/">OpenMapTiles</a> · © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',interactive:false});vectorLayer=layer;layer.addTo(map);
-  const gl=layer.getMaplibreMap();gl.once('load',()=>{if(generation!==mapStyleGeneration)return;vectorReady=true;applyMapDetails();ready();});
+  const gl=layer.getMaplibreMap();
+  gl.getContainer().style.zIndex='2';gl.getCanvas().style.opacity='0';
+  gl.once('load',()=>{if(generation!==mapStyleGeneration||abandoned)return;vectorReady=true;applyMapDetails();});
+  // 'load' alone does not establish a fully painted, current viewport.
+  gl.once('idle',()=>{if(generation!==mapStyleGeneration||abandoned)return;gl.getCanvas().style.opacity='1';ready();clearTimeout(previewTimer);if(previewLayer===preview){map.removeLayer(preview);previewLayer=null;}if(map.hasLayer(streetTiles))map.removeLayer(streetTiles);});
   gl.on('error',()=>fallback('The selected basemap is unavailable.'));
   gl.on('webglcontextlost',()=>fallback('Map graphics were interrupted.'));
  }catch{fallback('The selected basemap is unavailable.');}
