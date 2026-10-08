@@ -380,9 +380,17 @@ function showHistorySearch(result,context,history){
 const savedPhoto=node('dialog',null,'photo-studio saved-photo');savedPhoto.setAttribute('aria-label','Saved photo');
 const savedPhotoTop=node('div',null,'studio-heading'),savedPhotoTitle=node('h2','Your saved selfie'),savedPhotoClose=node('button','Close ×');savedPhotoClose.type='button';savedPhotoTop.append(savedPhotoTitle,savedPhotoClose);
 const savedPhotoPlace=node('p',null,'small'),savedPhotoImage=node('img',null,'studio-result'),savedPhotoStatus=node('p',null,'studio-status'),savedPhotoParams=node('div',null,'saved-photo-params'),savedPhotoSave=node('button','Save to Photos','studio-save'),savedPhotoDownload=node('a','Download PNG','studio-save studio-download'),savedPhotoHint=node('p',null,'small');savedPhotoImage.alt='Saved AI-generated travel photo';savedPhotoStatus.setAttribute('role','status');savedPhotoDownload.download='photo-scout-ai-photo.png';
-savedPhoto.append(savedPhotoTop,savedPhotoPlace,savedPhotoImage,savedPhotoStatus,savedPhotoParams,savedPhotoSave,savedPhotoDownload,savedPhotoHint);document.body.append(savedPhoto);
+const savedPhotoNav=node('nav',null,'saved-photo-nav');savedPhotoNav.setAttribute('aria-label','Navigate to this photo location');
+savedPhoto.append(savedPhotoTop,savedPhotoPlace,savedPhotoNav,savedPhotoImage,savedPhotoStatus,savedPhotoParams,savedPhotoSave,savedPhotoDownload,savedPhotoHint);document.body.append(savedPhoto);
 let savedPhotoGeneration=0,savedPhotoTimer=null,savedPhotoFile=null,savedPhotoUrl=null;
+function savedPhotoNavigation(context){
+ const {lat,lon}=context?.poi||{};
+ if(!Number.isFinite(lat)||!Number.isFinite(lon)||Math.abs(lat)>90||Math.abs(lon)>180)return [];
+ const destination=lat+','+lon;
+ return [['Navigate here · Google Maps','https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(destination)],['Apple Maps','https://maps.apple.com/?daddr='+encodeURIComponent(destination)]];
+}
 function renderSavedPhotoParams(context,created){
+ const routes=savedPhotoNavigation(context);savedPhotoNav.replaceChildren(...routes.map(([label,url])=>link(label,url)));savedPhotoNav.hidden=!routes.length;
  savedPhotoPlace.textContent=(context?.name||'Saved selfie')+(context?.viewHeadingDegrees!=null?' · '+photoBearing(context).label:'');
  const fields=[['Created',new Date(created*1000).toLocaleString()]];
  if(context?.generation){const g=context.generation,label=(select,value)=>[...select.options].find(o=>o.value===value)?.textContent||value;
