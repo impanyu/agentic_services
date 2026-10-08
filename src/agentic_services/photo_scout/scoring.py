@@ -142,7 +142,10 @@ async def explore(settings,payload,rows,statuses):
         'The scored images do not support a suitable recommendation'+(f' for {mood}.' if mood else '.'))
     by_id={r['id']:r for r in rows}
     audit=[{**a.model_dump(),'provider':by_id[a.image_id]['provider'],
-        'eligibleForRecommendation':a in eligible} for a in sorted(assessments,key=lambda a:a.score,reverse=True)]
+        'eligibleForRecommendation':a in eligible,
+        'exclusionReason':None if a in eligible else (
+            'The pictured place could not be matched to a candidate POI.' if by_id[a.image_id].get('poi') and a.poi_id not in {p['id'] for p in by_id[a.image_id].get('poiCandidates',[by_id[a.image_id]['poi']])} else
+            'The model judged this image unsuitable for recommendation; see the evidence and uncertainty.')} for a in sorted(assessments,key=lambda a:a.score,reverse=True)]
     downloaded=sum(r['downloaded'] for r in results);failed_downloads=sum(r['downloadFailed'] for r in results)
     failed_scoring=sum(r['scoringFailed'] for r in results)
     usages=[r['usage'] for r in results if r['usage']]
