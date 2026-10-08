@@ -93,3 +93,6 @@ html:has(body.photo-app),body.photo-app{height:100%;overflow:hidden}.photo-app m
  #results{padding:14px}.results-heading{position:sticky;top:-14px;z-index:3;margin:-14px -14px 0;padding:10px 14px;background:#fffef9f5;border-bottom:1px solid #eee7ef}.back-button{min-height:40px;padding:8px 12px;font-size:12px}
  .studio-heading{position:sticky;top:-14px;z-index:3;margin:-14px -14px 0;padding:10px 14px;background:#fffdf8;border-bottom:1px solid #eee7ef}
 }
+
+.studio-styles{min-width:0;border:0;padding:0;margin:16px 0}.studio-styles legend{font-size:13px;font-weight:600;margin-bottom:9px}.studio-style-grid{display:flex;flex-wrap:wrap;gap:7px}.studio-style{display:flex;align-items:center;gap:6px;padding:9px 12px;border:1px solid #ddd0e8;border-radius:99px;background:#fff;cursor:pointer;font-size:12px;min-height:40px}.studio-style input{position:absolute;opacity:0;width:1px;height:1px}.studio-style:has(input:checked){background:#eee5f8;border-color:#a784c3;color:#654182}.studio-style:focus-within{outline:2px solid #9272c9;outline-offset:2px}.studio-styles:disabled{opacity:.6}.studio-styles p{margin:8px 0;line-height:1.5}.studio-styles p:last-child{font-size:10px;color:#998b9f}
+@media(max-width:760px){.studio-styles{margin:12px 0}.studio-style-grid{gap:6px}.studio-style{font-size:12px;padding:8px 11px;min-height:40px}}

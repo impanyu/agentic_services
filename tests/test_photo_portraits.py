@@ -38,12 +38,14 @@ def test_private_job_edits_both_images_and_removes_upload(tmp_path,monkeypatch):
     app=create_app(settings=settings);client=TestClient(app);auth={'Authorization':'Bearer private'}
     body={'portrait':'data:image/png;base64,'+base64.b64encode(raw).decode(),'background':'https://www.google.com/maps/@?map_action=pano&pano=abc&heading=90','provider':'google-street-view','place':'Test park'}
     assert client.post('/photo-scout/v1/portraits',json=body).status_code==401
+    assert client.post('/photo-scout/v1/portraits',json=body|{'style':'unsupported'},headers=auth).status_code==422
     result=client.post('/photo-scout/v1/portraits',json=body,headers=auth);assert result.status_code==202
     job=result.json();path='/photo-scout/v1/portraits/'+job['id'];owned=auth|{'X-Report-Token':job['token']}
     assert client.get(path,headers=auth).status_code==404
     assert client.get(path,headers=owned).json()['state']=='queued'
     assert asyncio.run(app.state.process_photo_portrait())
     assert len(calls[0]['image'])==2;assert calls[0]['input_fidelity']=='high';assert calls[0]['n']==1
+    assert 'keep the original clothing' in calls[0]['prompt']
     assert client.get(path,headers=owned).json()['state']=='complete'
     image=client.get(path+'/image',headers=owned);assert image.content==raw;assert image.headers['cache-control']=='private, no-store'
     with sqlite3.connect(settings.database_path) as db:
@@ -91,6 +93,7 @@ def test_person_check_blocks_empty_and_failed_checks_but_allows_groups(tmp_path,
     settings=Settings(openai_api_key='fixture',openai_model='test',database_path=tmp_path/'db',base_url='https://api.test',service_api_key='private')
     app=create_app(settings=settings);client=TestClient(app);auth={'Authorization':'Bearer private'}
     body={'portrait':'data:image/png;base64,'+base64.b64encode(raw).decode(),'background':'https://www.google.com/maps/@?map_action=pano&pano=abc&heading=90','provider':'google-street-view','place':'Park'}
+    if count==3:body['style']='cinematic'
     job=client.post('/photo-scout/v1/portraits',json=body,headers=auth).json()
     assert asyncio.run(app.state.process_photo_portrait())
     state=client.get('/photo-scout/v1/portraits/'+job['id'],headers=auth|{'X-Report-Token':job['token']}).json()
@@ -98,6 +101,8 @@ def test_person_check_blocks_empty_and_failed_checks_but_allows_groups(tmp_path,
     if count==3:
         assert state['state']=='complete';assert [c[0] for c in calls]==['check','background','edit']
         assert 'EVERY visible person' in calls[-1][1]['prompt']
+        assert 'thoughtful natural expression' in calls[-1][1]['prompt']
+        assert 'Keep the original background, camera viewpoint' in calls[-1][1]['prompt']
     else:
         assert state['state']=='failed';assert len(calls)==1
         assert ('at least one person' if count==0 else 'Could not check') in state['error']

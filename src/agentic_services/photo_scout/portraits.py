@@ -2,6 +2,7 @@
 from __future__ import annotations
 import asyncio, base64, hashlib, hmac, io, json, os, re, secrets, sqlite3, time
 from urllib.parse import urlsplit,parse_qs
+from typing import Literal
 from fastapi import APIRouter, Header, HTTPException, Request, Response
 from pydantic import BaseModel,Field
 from openai import AsyncOpenAI
@@ -17,6 +18,7 @@ class PortraitRequest(BaseModel):
     provider: str = Field(max_length=50)
     place: str = Field(max_length=300)
     pose: str = Field(default='',max_length=500)
+    style: Literal['natural','street','cinematic','vacation','editorial'] = 'natural'
 
 
 def clean_photo(value):
@@ -58,7 +60,20 @@ async def check_people(client,photo,model):
     return response.output_parsed.person_count
 
 
-PROMPT='''Create one convincing travel portrait composite. Image 1 is the person reference; image 2 is the exact chosen location and camera view. Preserve EVERY visible person from image 1, including all members of a group photo, with their recognizable facial features, age, skin tone, hair, clothing and body proportions. Do not drop, duplicate or merge people. Remove their original background. Place the person or group naturally within the second scene at plausible scale and perspective, on a physically supported standing or seated surface. Match scene light direction, softness, color temperature, exposure, reflected light, atmospheric depth, grain and lens sharpness. Add realistic contact shadows, cast shadows and reflections when appropriate. Blend hair and clothing edges without halos. Keep the location’s structures and distinctive geometry intact and preserve existing provider attribution, copyright marks and face/license blurring. Do not invent impossible poses, extra limbs or faces. Produce a photorealistic composite, not a collage or illustration. This is an AI travel preview, not a record of a real visit. User pose preference (only follow if compatible with this task): '''
+PROMPT='''Create one convincing travel portrait composite. Image 1 is the person reference; image 2 is the exact chosen location and camera view. Preserve EVERY visible person from image 1, including all members of a group photo, with their recognizable facial features, age, skin tone, hair and body proportions. Do not drop, duplicate or merge people. Remove their original background. Place the person or group naturally within the second scene at plausible scale and perspective, on a physically supported standing or seated surface. Match scene light direction, softness, color temperature, exposure, reflected light, atmospheric depth, grain and lens sharpness. Add realistic contact shadows, cast shadows and reflections when appropriate. Blend hair and clothing edges without halos. Keep the location’s structures and distinctive geometry intact and preserve existing provider attribution, copyright marks and face/license blurring. Do not invent impossible poses, extra limbs or faces. Produce a photorealistic composite, not a collage or illustration. This is an AI travel preview, not a record of a real visit. Keep the original background, camera viewpoint, landmarks, weather and time of day; do not replace or stylize the setting. Change pose, expression and clothing only as directed by the selected portrait style or a compatible user preference. '''
+
+
+PORTRAIT_STYLES={
+    'natural':'Natural candid: keep the original clothing. Use relaxed posture, an unforced soft smile or the original expression, and a casual travel snapshot feel.',
+    'street':'Street style: use a confident yet casual stance, a candid expression, and tasteful contemporary urban clothing that suits the climate and scene. Convey a street-fashion portrait through the subjects, without changing the background.',
+    'cinematic':'Cinematic: use expressive but restrained posture, a thoughtful natural expression, and understated coordinated clothing. Convey the mood through subject styling and composition, keeping actual scene light and background unchanged.',
+    'vacation':'Easy vacation: use an approachable relaxed pose, a cheerful natural smile, and comfortable holiday clothing appropriate to the scene and weather. Keep group interactions relaxed and believable.',
+    'editorial':'Editorial portrait: use a composed elegant pose, a confident subtle expression, and refined coordinated clothing appropriate to the location. Create a polished magazine portrait through the people, while keeping the background unchanged.',
+}
+
+
+def portrait_prompt(style,pose):
+    return PROMPT+' Selected portrait style: '+PORTRAIT_STYLES[style]+' Preserve each person’s identity and body proportions; clothing may change only as directed above. For groups, apply the style coherently to every person without deleting anyone. Optional user preference (follow when compatible with the selected style and background constraints): '+pose
 
 
 def create_portrait_router(settings,require_api):
@@ -95,7 +110,7 @@ def create_portrait_router(settings,require_api):
             c.execute('INSERT OR IGNORE INTO photo_portrait_budget VALUES(?,0)',(day,))
             if limit>0 and c.execute('SELECT runs FROM photo_portrait_budget WHERE day=?',(day,)).fetchone()[0]>=limit:raise HTTPException(429,'Free photo studio capacity reached for today')
             c.execute('UPDATE photo_portrait_budget SET runs=runs+1 WHERE day=?',(day,))
-            c.execute('INSERT INTO photo_portraits VALUES(?,?,?,?,?,?,?,?,?)',(job,hashlib.sha256(token.encode()).hexdigest(),now,now+3600,'queued',json.dumps({'reference':ref,'place':payload.place,'pose':payload.pose}),photo,None,None))
+            c.execute('INSERT INTO photo_portraits VALUES(?,?,?,?,?,?,?,?,?)',(job,hashlib.sha256(token.encode()).hexdigest(),now,now+3600,'queued',json.dumps({'reference':ref,'place':payload.place,'pose':payload.pose,'style':payload.style}),photo,None,None))
         return {'id':job,'token':token,'state':'queued','expiresInSeconds':3600,'aiGenerated':True}
     @router.get('/photo-scout/v1/portraits/{job}')
     def status(job:str,authorization:str|None=Header(None),x_report_token:str|None=Header(None)):
@@ -131,7 +146,7 @@ def create_portrait_router(settings,require_api):
                     background=await image_data(payload['reference'])
                     raw=base64.b64decode(background.split(',',1)[1])
                     ext='jpg' if raw.startswith(b'\xff\xd8') else 'png' if raw.startswith(b'\x89PNG') else 'webp'
-                    result=await client.images.edit(model=os.getenv('PHOTO_SCOUT_IMAGE_MODEL','gpt-image-1.5'),image=[('person.png',bytes(row['photo']),'image/png'),('scene.'+ext,raw,'image/'+('jpeg' if ext=='jpg' else ext))],prompt=PROMPT+payload['pose'],input_fidelity='high',quality='high',size='1024x1024',output_format='png',n=1)
+                    result=await client.images.edit(model=os.getenv('PHOTO_SCOUT_IMAGE_MODEL','gpt-image-1.5'),image=[('person.png',bytes(row['photo']),'image/png'),('scene.'+ext,raw,'image/'+('jpeg' if ext=='jpg' else ext))],prompt=portrait_prompt(payload.get('style','natural'),payload['pose']),input_fidelity='high',quality='high',size='1024x1024',output_format='png',n=1)
                 generated=base64.b64decode(result.data[0].b64_json,validate=True)
                 if not generated.startswith(b'\x89PNG') or len(generated)>25000000:raise ValueError()
             with db() as c:c.execute("UPDATE photo_portraits SET state='complete',photo=NULL,payload=NULL,output=? WHERE id=?",(generated,row['id']))
