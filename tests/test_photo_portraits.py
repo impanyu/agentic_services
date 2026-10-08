@@ -1,4 +1,5 @@
 import asyncio,base64,io,sqlite3
+import pytest
 from types import SimpleNamespace
 from PIL import Image
 from fastapi.testclient import TestClient
@@ -25,9 +26,10 @@ def test_private_job_edits_both_images_and_removes_upload(tmp_path,monkeypatch):
     calls=[];raw=photo()
     class Client:
         images=None
-        def __init__(self,**kwargs):self.images=self
+        def __init__(self,**kwargs):self.images=self;self.responses=self
         async def __aenter__(self):return self
         async def __aexit__(self,*args):pass
+        async def parse(self,**kwargs):return SimpleNamespace(output_parsed=portraits.PersonCheck(person_count=1))
         async def edit(self,**kwargs):
             calls.append(kwargs);return SimpleNamespace(data=[SimpleNamespace(b64_json=base64.b64encode(raw).decode())])
     async def background(ref):return 'data:image/png;base64,'+base64.b64encode(raw).decode()
@@ -69,3 +71,35 @@ def test_oversized_upload_has_specific_error():
         portraits.clean_photo('data:image/jpeg;base64,'+base64.b64encode(b'x'*20_000_001).decode())
     assert error.value.status_code==413
     assert '20 MB' in error.value.detail
+
+
+@pytest.mark.parametrize('count',[0,3,None])
+def test_person_check_blocks_empty_and_failed_checks_but_allows_groups(tmp_path,monkeypatch,count):
+    calls=[];raw=photo()
+    class Client:
+        def __init__(self,**kwargs):self.responses=self;self.images=self
+        async def __aenter__(self):return self
+        async def __aexit__(self,*args):pass
+        async def parse(self,**kwargs):
+            calls.append(('check',kwargs))
+            return SimpleNamespace(output_parsed=portraits.PersonCheck(person_count=count) if count is not None else None)
+        async def edit(self,**kwargs):
+            calls.append(('edit',kwargs));return SimpleNamespace(data=[SimpleNamespace(b64_json=base64.b64encode(raw).decode())])
+    async def background(ref):
+        calls.append(('background',ref));return 'data:image/png;base64,'+base64.b64encode(raw).decode()
+    monkeypatch.setattr(portraits,'AsyncOpenAI',Client);monkeypatch.setattr(portraits,'image_data',background)
+    settings=Settings(openai_api_key='fixture',openai_model='test',database_path=tmp_path/'db',base_url='https://api.test',service_api_key='private')
+    app=create_app(settings=settings);client=TestClient(app);auth={'Authorization':'Bearer private'}
+    body={'portrait':'data:image/png;base64,'+base64.b64encode(raw).decode(),'background':'https://www.google.com/maps/@?map_action=pano&pano=abc&heading=90','provider':'google-street-view','place':'Park'}
+    job=client.post('/photo-scout/v1/portraits',json=body,headers=auth).json()
+    assert asyncio.run(app.state.process_photo_portrait())
+    state=client.get('/photo-scout/v1/portraits/'+job['id'],headers=auth|{'X-Report-Token':job['token']}).json()
+    assert calls[0][0]=='check';assert calls[0][1]['store'] is False
+    if count==3:
+        assert state['state']=='complete';assert [c[0] for c in calls]==['check','background','edit']
+        assert 'EVERY visible person' in calls[-1][1]['prompt']
+    else:
+        assert state['state']=='failed';assert len(calls)==1
+        assert ('at least one person' if count==0 else 'Could not check') in state['error']
+    with sqlite3.connect(settings.database_path) as db:
+        assert db.execute('SELECT photo,payload FROM photo_portraits').fetchone()==(None,None)
