@@ -549,7 +549,7 @@ def test_fixed_pipeline_reports_partial_failures(tmp_path,monkeypatch):
     _scoring_client(monkeypatch,parse);monkeypatch.setattr(visual,'image_data',image)
     result=asyncio.run(visual.explore(settings,ExploreRequest(lat=0,lon=0),_scoring_rows(),{}))
     assert result['spots']==[] and result['inspectedImages']==7
-    assert result['scoring']=={'candidateImages':13,'downloadedImages':12,'scoredImages':7,'downloadFailedImages':1,'scoringFailedImages':5,'batches':3}
+    assert result['scoring']=={'candidateImages':13,'downloadedImages':12,'scoredImages':7,'downloadFailedImages':1,'scoringFailedImages':5,'batches':3,'cachedImages':0,'newlyScoredImages':7}
     assert len(result['imageAssessments'])==7 and 'could not be scored' in result['coverage']
 
 
@@ -696,3 +696,46 @@ def test_google_horizontal_reference_reaches_provider(tmp_path,monkeypatch):
     asyncio.run(sources.google_image_data('google-streetview://fixture/90'))
     with pytest.raises(ValueError):asyncio.run(sources.google_image_data('google-streetview://fixture/90/80'))
     assert len(requests)==1
+
+
+def test_score_cache_reuses_successful_views_without_download_or_model(tmp_path,monkeypatch):
+    import json
+    from types import SimpleNamespace
+    import agentic_services.photo_scout.scoring as visual
+    settings=Settings(openai_api_key='test',openai_model='test',database_path=tmp_path/'db',base_url='https://api.test')
+    downloads=[];calls=[]
+    async def image(url):downloads.append(url);return 'data:image/jpeg;base64,/9j/dGVzdA=='
+    async def parse(**kw):
+        batch=[json.loads(c['text'])['image'] for c in kw['input'][0]['content'][1:] if c['type']=='input_text']
+        calls.append([r['id'] for r in batch])
+        return SimpleNamespace(output_parsed=visual.VisualBatch(assessments=[_scoring_assessment(visual,r,int(r['id'])!=0) for r in batch]),usage=None)
+    _scoring_client(monkeypatch,parse);monkeypatch.setattr(visual,'image_data',image)
+    first=asyncio.run(visual.explore(settings,ExploreRequest(lat=0,lon=0),_scoring_rows(),{}))
+    second=asyncio.run(visual.explore(settings,ExploreRequest(lat=.001,lon=0,radius=2000,limit=5),_scoring_rows(),{}))
+    assert len(downloads)==13 and len(calls)==3
+    assert first['scoring']['newlyScoredImages']==13
+    assert second['scoring']['cachedImages']==13 and second['scoring']['newlyScoredImages']==0
+    assert second['usage']['requests']==0 and second['scoring']['downloadedImages']==0
+    assert all(a['scoreFromCache'] for a in second['imageAssessments'])
+    assert second['imageAssessments'][-1]['recommend'] is False
+    changed=_scoring_rows();changed[-1]['sourceDate']='new-version'
+    third=asyncio.run(visual.explore(settings,ExploreRequest(lat=0,lon=0),changed,{}))
+    assert third['scoring']['cachedImages']==12 and third['scoring']['newlyScoredImages']==1
+    assert len(downloads)==14 and len(calls)==4
+
+
+def test_score_cache_context_and_expiry(tmp_path,monkeypatch):
+    from agentic_services.photo_scout.score_cache import ScoreCache
+    import agentic_services.photo_scout.score_cache as module
+    row=_scoring_rows()[0];payload=ExploreRequest(lat=0,lon=0)
+    cache=ScoreCache(tmp_path/'db');key=cache.key(row,payload,'model','prompt')
+    assert key==cache.key({**row,'distanceMeters':90,'poiDistanceMeters':10},ExploreRequest(lat=1,lon=1,radius=2000,limit=5),'model','prompt')
+    for image,request,model,prompt in [({**row,'viewHeadingDegrees':45},payload,'model','prompt'),
+        ({**row,'poi':{**row['poi'],'id':'other'}},payload,'model','prompt'),
+        (row,ExploreRequest(lat=0,lon=0,photoStyles=['urban']),'model','prompt'),
+        (row,ExploreRequest(lat=0,lon=0,preferences='golden hour'),'model','prompt'),
+        (row,payload,'new-model','prompt'),(row,payload,'model','new-prompt')]:
+        assert key!=cache.key(image,request,model,prompt)
+    cache.put([(key,{'score':70})]);assert cache.get(key)=={'score':70}
+    monkeypatch.setattr(module.time,'time',lambda:9999999999)
+    assert cache.get(key) is None

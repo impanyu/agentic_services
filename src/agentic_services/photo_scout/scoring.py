@@ -9,6 +9,7 @@ from typing import Literal
 from openai import AsyncOpenAI
 from pydantic import BaseModel, Field
 
+from .score_cache import ScoreCache
 from .styles import style_briefs
 from .sources import distance, image_data, MAX_SCORED_IMAGES
 
@@ -94,7 +95,20 @@ async def explore(settings,payload,rows,statuses):
         return {'spots':[],'summary':'No eligible geolocated images were found in this sampled area.',
             'sources':statuses,'inspectedImages':0,'imageAssessments':[],
             'analysisMethod':'fixed-batch-scoring','coverage':'Bounded sample; not complete nearby coverage.'}
-    batches=[rows[i:i+6] for i in range(0,len(rows),6)]
+    cache=ScoreCache(settings.database_path)
+    keys={r['id']:cache.key(r,payload,model,INSTRUCTIONS) for r in rows}
+    cached=[];missing=[]
+    for row in rows:
+        saved=cache.get(keys[row['id']])
+        try:
+            assessment=ImageAssessment.model_validate(saved) if saved else None
+        except ValueError:
+            assessment=None
+        if assessment and assessment.image_id==row['id']:
+            cached.append(assessment)
+        else:
+            missing.append(row)
+    batches=[missing[i:i+6] for i in range(0,len(missing),6)]
     batch_slots=asyncio.Semaphore(4);download_slots=asyncio.Semaphore(8)
     async def download(row):
         try:
@@ -110,10 +124,10 @@ async def explore(settings,payload,rows,statuses):
                 usable=[(row,data) for row,data in loaded if data]
                 if not usable: return {'assessments':[],'downloaded':0,'downloadFailed':len(batch),'scoringFailed':0,'usage':None}
                 content=[{'type':'input_text','text':json.dumps({
-                    'request':payload.model_dump(exclude={'poiCatalogToken','selectedPoiIds'}),
+                    'request':{'preferences':payload.preferences.strip(),'photoStyles':sorted(payload.photoStyles or [])},
                     'photoStyleBriefs':style_briefs(payload.photoStyles)})}]
                 for row,data in usable:
-                    content.extend([{'type':'input_text','text':json.dumps({'image':{k:v for k,v in row.items() if k not in ('imageUrl','author')}})},
+                    content.extend([{'type':'input_text','text':json.dumps({'image':{k:v for k,v in row.items() if k not in ('imageUrl','author','distanceMeters','poiDistanceMeters')}})},
                         {'type':'input_image','image_url':data,'detail':'high'}])
                 response=None
                 try:
@@ -124,6 +138,7 @@ async def explore(settings,payload,rows,statuses):
                     ids=[a.image_id for a in output.assessments] if output else []
                     if len(ids)!=len(set(ids)) or set(ids)!={r['id'] for r,_ in usable}:
                         raise ValueError('Incomplete or invalid image scoring')
+                    cache.put([(keys[a.image_id],a.model_dump()) for a in output.assessments])
                     return {'assessments':output.assessments,'downloaded':len(usable),
                         'downloadFailed':len(batch)-len(usable),'scoringFailed':0,'usage':response.usage}
                 except Exception as error:
@@ -132,7 +147,8 @@ async def explore(settings,payload,rows,statuses):
                         'scoringFailed':len(usable),'usage':response.usage if response else None}
         async with asyncio.timeout(600):
             results=await asyncio.gather(*(score_batch(batch) for batch in batches))
-    assessments=[a for result in results for a in result['assessments']]
+    fresh=[a for result in results for a in result['assessments']]
+    assessments=cached+fresh
     if not assessments: raise ValueError('No images could be scored; retry the search')
     scored={a.image_id for a in assessments}
     eligible=[a for a in assessments if a.recommend and validate_result(
@@ -146,6 +162,7 @@ async def explore(settings,payload,rows,statuses):
     audit=[{**a.model_dump(),'provider':by_id[a.image_id]['provider'],
         'viewHeadingDegrees':by_id[a.image_id].get('viewHeadingDegrees'),
         'viewPitchDegrees':by_id[a.image_id].get('viewPitchDegrees'),
+        'scoreFromCache':a.image_id in {c.image_id for c in cached},
         'eligibleForRecommendation':a in eligible,
         'exclusionReason':None if a in eligible else (
             'The pictured place could not be matched to a candidate POI.' if by_id[a.image_id].get('poi') and a.poi_id not in {p['id'] for p in by_id[a.image_id].get('poiCandidates',[by_id[a.image_id]['poi']])} else
@@ -156,8 +173,8 @@ async def explore(settings,payload,rows,statuses):
     return {'spots':spots,'summary':summary,'sources':statuses,
         'inspectedImages':len(scored),'inspectedImageSources':sorted({by_id[i]['provider'] for i in scored}),
         'imageAssessments':audit,'analysisMethod':'fixed-batch-scoring',
-        'scoring':{'candidateImages':len(rows),'downloadedImages':downloaded,'scoredImages':len(scored),
+        'scoring':{'candidateImages':len(rows),'downloadedImages':downloaded,'scoredImages':len(scored),'cachedImages':len(cached),'newlyScoredImages':len(fresh),
             'downloadFailedImages':failed_downloads,'scoringFailedImages':failed_scoring,'batches':len(batches)},
-        'coverage':f'Scored {len(scored)} of {len(rows)} sampled images; {failed_downloads} downloads failed; {failed_scoring} images could not be scored. Subjective scores, not complete nearby coverage.',
+        'coverage':f'Rated {len(scored)} of {len(rows)} sampled images ({len(cached)} cached, {len(fresh)} newly scored);  {failed_downloads} downloads failed; {failed_scoring} images could not be scored. Subjective scores, not complete nearby coverage.',
         'model':model,'usage':{'requests':sum(bool(r['downloaded']) for r in results),
             'inputTokens':sum(u.input_tokens for u in usages),'outputTokens':sum(u.output_tokens for u in usages)}}
