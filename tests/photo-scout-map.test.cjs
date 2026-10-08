@@ -46,7 +46,7 @@ function loadingFixture(cold=false){
 }
 
 test('a quiet base loads immediately and survives a hanging vector style',async()=>{
- const f=loadingFixture(),preview=f.rasters[1];assert.ok(f.layers.includes(preview));assert.match(preview.url,/light_nolabels/);
+ const f=loadingFixture(),preview=f.rasters[1];assert.ok(f.layers.includes(preview));assert.match(preview.url,/World_Light_Gray_Base/);
  await new Promise(resolve=>setImmediate(resolve));preview.events.tileload();const timeout=f.timers.find(t=>t.delay===12000);timeout.fn();
  assert.ok(f.layers.includes(preview));assert.match(f.el('map-notice').textContent,/backup map/);
  await f.resolve();assert.equal(f.vectors.length,0);

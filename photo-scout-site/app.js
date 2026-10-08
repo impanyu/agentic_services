@@ -33,8 +33,8 @@ async function switchMapStyle(style){
  if(map.hasLayer(streetTiles))map.removeLayer(streetTiles);
  if(previewLayer){map.removeLayer(previewLayer);previewLayer=null;}
  // Fetch a quiet, non-WebGL base immediately, independently of vector styles.
- // It contains no labels, so the detailed layer cannot flash before filtering.
- const preview=L.tileLayer('https://basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png',{maxZoom:20,zIndex:0,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'});
+ // Its muted design avoids flashing a busy street map before filtering.
+ const preview=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',{maxZoom:20,maxNativeZoom:16,zIndex:0,attribution:'Esri · HERE · Garmin · OpenStreetMap contributors'});
  previewLayer=preview;let previewLoaded=false,backupStarted=false;
  const backup=()=>{
   if(generation!==mapStyleGeneration||previewLoaded||backupStarted)return;
