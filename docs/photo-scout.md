@@ -348,3 +348,11 @@ The earlier 180-request application cap has been disabled for development.
 a positive value enables an optional operator cap. Usage counters remain for accounting.
 Signed report authorization, per-request sampling and provider validation remain in place.
 This setting does not change Google account quotas or billing.
+
+## Photo studio
+
+Every imagery-backed shortlist card has **Picture me here**. The modal accepts a user portrait (JPG/PNG/WebP, up to 6 MB and 25 MP), previews the selected camera view and allows an optional pose instruction. `POST /photo-scout/v1/portraits` queues an image edit; `GET /photo-scout/v1/portraits/{id}` and `/image` require the private `X-Report-Token` returned on submission, plus the internal gateway credential. The generated output is explicitly an AI composite. Model default: `PHOTO_SCOUT_IMAGE_MODEL=gpt-image-1.5`, high input fidelity, high quality, 1024 square.
+
+A separate durable worker runs sequentially; switching tabs or closing the dialog does not stop the job. Refreshing loses its page-memory token. Upload metadata is removed; portrait bytes and job payload are removed after completion/failure. Output and job records expire after one hour and are pruned by the worker. No portrait/output is inserted into search history. Up to eight jobs may queue; `PHOTO_SCOUT_PORTRAIT_DAILY_LIMIT` defaults to 100 (0 disables this operator cap). Provider originals and copyright attribution should be retained; generated images must not be represented as actual visits.
+
+Map detail controls default to place names and roads/railways only, using the Minimal vector basemap. Other styles remain available; toggling details on a raster basemap selects Minimal.

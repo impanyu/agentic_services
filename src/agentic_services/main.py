@@ -32,6 +32,7 @@ from .growth import GrowthStore, create_growth_router
 from .config import Settings
 from .contractor_routes import create_contractor_router
 from .photo_scout.routes import create_photo_router
+from .photo_scout.portraits import create_portrait_router
 from .photo_scout.accounts import create_accounts_router
 from .contact import send_contact_email, send_email
 from .models import (
@@ -216,6 +217,12 @@ def create_app(
                     worked=False
                 if not worked: await asyncio.sleep(5)
         photo_task=asyncio.create_task(photo_worker())
+        async def portrait_worker():
+            while True:
+                try:worked=await app.state.process_photo_portrait()
+                except Exception:worked=False
+                if not worked:await asyncio.sleep(3)
+        portrait_task=asyncio.create_task(portrait_worker())
         async def niche_collector() -> None:
             store = ManagerStore(resolved_settings.database_path)
             while True:
@@ -256,6 +263,9 @@ def create_app(
             task.cancel()
             niche_task.cancel()
             photo_task.cancel()
+            portrait_task.cancel()
+            try:await portrait_task
+            except asyncio.CancelledError:pass
             try:
                 await photo_task
             except asyncio.CancelledError:
@@ -384,6 +394,9 @@ def create_app(
     photo_router, retrieve_photo_checkout, fulfill_photo_checkout = create_photo_router(resolved_settings, require_service_api_key, store)
     app.state.process_photo_preview = photo_router.process_preview
     app.include_router(photo_router)
+    portrait_router,portrait_process=create_portrait_router(resolved_settings,require_service_api_key)
+    app.include_router(portrait_router)
+    app.state.process_photo_portrait=portrait_process
     app.include_router(create_accounts_router(resolved_settings,require_service_api_key))
     app.include_router(contractor_router)
     app.include_router(create_niche_router(resolved_settings))
