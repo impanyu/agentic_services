@@ -41,6 +41,9 @@ def test_private_job_edits_both_images_and_removes_upload(tmp_path,monkeypatch,i
     body={'portrait':'data:image/png;base64,'+base64.b64encode(raw).decode(),'background':'https://www.google.com/maps/@?map_action=pano&pano=abc&heading=90','provider':'google-street-view','place':'Test park'}
     assert client.post('/photo-scout/v1/portraits',json=body).status_code==401
     assert client.post('/photo-scout/v1/portraits',json=body|{'style':'unsupported'},headers=auth).status_code==422
+    for field in ['posture','weather','expression']:
+        assert client.post('/photo-scout/v1/portraits',json=body|{field:'unsupported'},headers=auth).status_code==422
+    body.update(posture='walking',weather='golden_hour',expression='big_smile')
     result=client.post('/photo-scout/v1/portraits',json=body,headers=auth);assert result.status_code==202
     job=result.json();path='/photo-scout/v1/portraits/'+job['id'];owned=auth|{'X-Report-Token':job['token']}
     assert client.get(path,headers=auth).status_code==404
@@ -52,6 +55,10 @@ def test_private_job_edits_both_images_and_removes_upload(tmp_path,monkeypatch,i
     else:
         assert 'input_fidelity' not in calls[0];assert calls[0]['quality']=='max'
     assert 'keep the original clothing' in calls[0]['prompt']
+    assert 'mid-step walking' in calls[0]['prompt']
+    assert 'golden-hour light' in calls[0]['prompt']
+    assert 'cheerful broad smile' in calls[0]['prompt']
+    assert 'relight the entire scene and subjects together' in calls[0]['prompt']
     assert client.get(path,headers=owned).json()['state']=='complete'
     image=client.get(path+'/image',headers=owned);assert image.content==raw;assert image.headers['cache-control']=='private, no-store'
     with sqlite3.connect(settings.database_path) as db:

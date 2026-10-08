@@ -143,3 +143,6 @@ html:has(body.photo-app),body.photo-app{height:100%;overflow:hidden}.photo-app m
  .leaflet-bottom.leaflet-right{bottom:calc(var(--scout-dock-height,90px) + 22px + env(safe-area-inset-bottom))}
 }
 @media(max-width:760px){.prompt-row textarea{white-space:pre;overflow-wrap:normal;overflow-x:auto;overflow-y:hidden;scrollbar-width:none}.prompt-row textarea::-webkit-scrollbar{display:none}}
+
+.studio-options{min-width:0;border:0;padding:0;margin:16px 0}.studio-options legend{font-size:13px;font-weight:600;margin-bottom:9px}.studio-options-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.studio-options-grid label{display:flex;flex-direction:column;gap:7px;font-size:12px;min-width:0}.studio-options-grid select{width:100%;min-width:0;min-height:44px;border:1px solid #ddd0e8;border-radius:12px;padding:9px;background:#fff;color:#514857;font:inherit}.studio-options-grid select:focus-visible{outline:2px solid #9272c9;outline-offset:2px}.studio-options:disabled{opacity:.6}
+@media(max-width:760px){.studio-options-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.studio-options-grid label:last-child{grid-column:1/-1}.studio-options-grid select{font-size:16px}.studio-options{margin:12px 0}}

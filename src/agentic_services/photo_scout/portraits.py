@@ -22,6 +22,9 @@ class PortraitRequest(BaseModel):
     lat: float | None = Field(default=None,ge=-85,le=85,allow_inf_nan=False)
     lon: float | None = Field(default=None,ge=-180,le=180,allow_inf_nan=False)
     style: Literal['natural','street','cinematic','vacation','editorial'] = 'natural'
+    posture: Literal['auto','standing','walking','sitting','looking_back','playful'] = 'auto'
+    weather: Literal['original','sunny','golden_hour','overcast','rainy','snowy'] = 'original'
+    expression: Literal['auto','soft_smile','big_smile','thoughtful','serious','surprised'] = 'auto'
 
 
 def clean_photo(value):
@@ -65,7 +68,7 @@ async def check_subjects(client,photo,model):
     return response.output_parsed.human_count+response.output_parsed.cartoon_count+response.output_parsed.animal_count
 
 
-PROMPT='''Create one convincing travel composite. Image 1 is the subject reference; image 2 is the exact chosen location and camera view. Preserve EVERY visible foreground subject from image 1, including people, cartoon or illustrated characters, animals and mixed groups. Preserve real people's recognizable facial features, age, skin tone, hair and body proportions. Preserve cartoon characters' original art style, recognizable design, colors, outlines and proportions; do not turn them into real humans or animals. Preserve animals' species, markings, fur or feather colors, body proportions and recognizable features; do not humanize them. Do not drop, duplicate or merge subjects. Remove their original background. Place every subject naturally within the second scene at plausible scale and perspective, on a physically supported standing, seated or resting surface. Match scene light direction, softness, color temperature, exposure, reflected light, atmospheric depth, grain and lens sharpness, while retaining each subject's original medium. Add realistic contact shadows, cast shadows and reflections when appropriate. Blend hair, fur, feathers and clothing edges without halos. Keep the location's structures and distinctive geometry intact and preserve existing provider attribution, copyright marks and face/license blurring. Do not invent impossible poses, extra limbs or faces. Keep real humans and animals photorealistic; illustrated subjects should retain their illustration style but be convincingly integrated into the real scene. This is an AI travel preview, not a record of a real visit. Keep the original background, camera viewpoint, landmarks, weather and time of day; do not replace or stylize the setting. Change pose, expression and clothing only as directed by the selected portrait style or a compatible user preference. For animals, interpret style through natural posture and composition; preserve their coat and avoid adding human clothing unless explicitly requested. For cartoon characters, preserve signature costumes and character design unless explicitly asked otherwise. '''
+PROMPT='''Create one convincing travel composite. Image 1 is the subject reference; image 2 is the exact chosen location and camera view. Preserve EVERY visible foreground subject from image 1, including people, cartoon or illustrated characters, animals and mixed groups. Preserve real people's recognizable facial features, age, skin tone, hair and body proportions. Preserve cartoon characters' original art style, recognizable design, colors, outlines and proportions; do not turn them into real humans or animals. Preserve animals' species, markings, fur or feather colors, body proportions and recognizable features; do not humanize them. Do not drop, duplicate or merge subjects. Remove their original background. Place every subject naturally within the second scene at plausible scale and perspective, on a physically supported standing, seated or resting surface. Match scene light direction, softness, color temperature, exposure, reflected light, atmospheric depth, grain and lens sharpness, while retaining each subject's original medium. Add realistic contact shadows, cast shadows and reflections when appropriate. Blend hair, fur, feathers and clothing edges without halos. Keep the location's structures and distinctive geometry intact and preserve existing provider attribution, copyright marks and face/license blurring. Do not invent impossible poses, extra limbs or faces. Keep real humans and animals photorealistic; illustrated subjects should retain their illustration style but be convincingly integrated into the real scene. This is an AI travel preview, not a record of a real visit. Keep the original background, camera viewpoint, landmarks. Preserve original weather and time of day unless explicitly changed by the selected weather option; never replace the setting. Change pose, expression and clothing only as directed by the selected portrait style or a compatible user preference. For animals, interpret style through natural posture and composition; preserve their coat and avoid adding human clothing unless explicitly requested. For cartoon characters, preserve signature costumes and character design unless explicitly asked otherwise. '''
 
 
 PORTRAIT_STYLES={
@@ -77,8 +80,39 @@ PORTRAIT_STYLES={
 }
 
 
-def portrait_prompt(style,pose):
-    return PROMPT+' Selected portrait style: '+PORTRAIT_STYLES[style]+' Preserve each subject’s identity and body proportions. Adapt the selected style to the subject type while respecting the animal and cartoon constraints above. For groups, apply the style coherently to every subject without deleting anyone. Optional user preference (follow when compatible with the selected style and background constraints): '+pose
+POSTURES={
+    'auto':'Choose a natural posture appropriate to the style and scene.',
+    'standing':'Stand naturally in a relaxed, balanced stance on a safe supported surface.',
+    'walking':'A candid mid-step walking pose with believable movement and balance.',
+    'sitting':'Sit naturally on an existing plausible seat or resting surface; do not invent furniture.',
+    'looking_back':'Turn slightly away and look back toward the camera, with natural anatomy.',
+    'playful':'A lively playful pose appropriate to the subject and surroundings, with natural anatomy.',
+}
+WEATHERS={
+    'original':'Preserve the original scene weather, time of day and lighting.',
+    'sunny':'Clear sunny daylight, physically consistent sun direction and natural shadows.',
+    'golden_hour':'Warm golden-hour light with a low sun, soft warm highlights and consistent long shadows.',
+    'overcast':'Soft overcast daylight with diffused lighting and subdued natural shadows.',
+    'rainy':'A gentle rainy atmosphere, overcast light and plausible wet surfaces and reflections. Keep the subjects clearly visible.',
+    'snowy':'A gentle snowfall and cold soft light with plausible light snow on surfaces; retain recognizable landmarks and paths.',
+}
+EXPRESSIONS={
+    'auto':'Choose an expression appropriate to the style and subject.',
+    'soft_smile':'A subtle relaxed smile and warm natural expression.',
+    'big_smile':'A cheerful broad smile or a happy candid laugh.',
+    'thoughtful':'A calm thoughtful expression and reflective gaze.',
+    'serious':'A composed confident expression without a smile.',
+    'surprised':'A playful pleasantly surprised expression, avoiding exaggerated distortion.',
+}
+
+
+def portrait_prompt(style,pose,posture='auto',weather='original',expression='auto'):
+    return (PROMPT+' Selected portrait style: '+PORTRAIT_STYLES[style]+
+        ' Selected posture: '+POSTURES[posture]+' Selected expression: '+EXPRESSIONS[expression]+
+        ' Selected weather: '+WEATHERS[weather]+
+        ' Explicit posture and expression choices override style defaults. Non-original weather overrides instructions to preserve scene lighting and weather: relight the entire scene and subjects together, preserving location geometry, camera viewpoint, landmarks and provider attribution. '+
+        'Preserve each subject’s identity and body proportions. Adapt all choices to the subject type: animals retain species-appropriate posture and expressions, without human teeth or anatomy; cartoons retain their design and medium. For groups, apply the choices coherently to every subject without deleting anyone. '+
+        'Optional user preference (follow when compatible with selected controls and background constraints): '+pose)
 
 
 def create_portrait_router(settings,require_api):
@@ -116,7 +150,7 @@ def create_portrait_router(settings,require_api):
             c.execute('INSERT OR IGNORE INTO photo_portrait_budget VALUES(?,0)',(day,))
             if limit>0 and c.execute('SELECT runs FROM photo_portrait_budget WHERE day=?',(day,)).fetchone()[0]>=limit:raise HTTPException(429,'Free photo studio capacity reached for today')
             c.execute('UPDATE photo_portrait_budget SET runs=runs+1 WHERE day=?',(day,))
-            c.execute('INSERT INTO photo_portraits VALUES(?,?,?,?,?,?,?,?,?)',(job,hashlib.sha256(token.encode()).hexdigest(),now,now+retention,'queued',json.dumps({'reference':ref,'place':payload.place,'pose':payload.pose,'style':payload.style}),photo,None,None))
+            c.execute('INSERT INTO photo_portraits VALUES(?,?,?,?,?,?,?,?,?)',(job,hashlib.sha256(token.encode()).hexdigest(),now,now+retention,'queued',json.dumps({'reference':ref,'place':payload.place,'pose':payload.pose,'style':payload.style,'posture':payload.posture,'weather':payload.weather,'expression':payload.expression}),photo,None,None))
             tasks.bind_in(c,'portrait',job,identity,{'name':payload.place,'provider':payload.provider,'sourceUrl':payload.background,'poi':{'lat':payload.lat,'lon':payload.lon},'viewHeadingDegrees':int(ref.rsplit('/',1)[-1]) if payload.provider=='google-street-view' else None})
         response.headers['Cache-Control']='private, no-store'
         return {'id':job,'token':token,'state':'queued','expiresInSeconds':retention,'aiGenerated':True}
@@ -158,7 +192,7 @@ def create_portrait_router(settings,require_api):
                     # New image models always preserve inputs at high fidelity.
                     legacy=image_model.startswith('gpt-image-1')
                     edit_options={'input_fidelity':'high','quality':'high'} if legacy else {'quality':'max' if image_model.startswith('gpt-image-2.5') else 'high'}
-                    result=await client.images.edit(model=image_model,image=[('person.png',bytes(row['photo']),'image/png'),('scene.'+ext,raw,'image/'+('jpeg' if ext=='jpg' else ext))],prompt=portrait_prompt(payload.get('style','natural'),payload['pose']),**edit_options,size='1024x1024',output_format='png',n=1)
+                    result=await client.images.edit(model=image_model,image=[('person.png',bytes(row['photo']),'image/png'),('scene.'+ext,raw,'image/'+('jpeg' if ext=='jpg' else ext))],prompt=portrait_prompt(payload.get('style','natural'),payload['pose'],payload.get('posture','auto'),payload.get('weather','original'),payload.get('expression','auto')),**edit_options,size='1024x1024',output_format='png',n=1)
                 generated=base64.b64decode(result.data[0].b64_json,validate=True)
                 if not generated.startswith(b'\x89PNG') or len(generated)>25000000:raise ValueError()
             with db() as c:c.execute("UPDATE photo_portraits SET state='complete',photo=NULL,payload=NULL,output=? WHERE id=?",(generated,row['id']))
