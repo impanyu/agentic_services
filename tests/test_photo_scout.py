@@ -348,6 +348,16 @@ def test_poi_first_and_signed_google_image_delivery(tmp_path,monkeypatch):
 
 
 def test_recommendations_deduplicate_same_poi():
-    rows=[{'id':str(i),'lat':0,'lon':i*.01,'poi':{'id':'same'}} for i in range(2)]
-    choices=[VisualChoice(image_id=str(i),name='Park',score=80,visible_evidence='Trees',photo_tip='Frame trees',uncertainty='Unknown',confidence='medium') for i in range(2)]
+    rows=[{'id':str(i),'lat':0,'lon':i*.01,'poi':{'id':'same','name':'Park','lat':0,'lon':0}} for i in range(2)]
+    choices=[VisualChoice(image_id=str(i),name='Park',poi_id='same',score=80,visible_evidence='Trees',photo_tip='Frame trees',uncertainty='Unknown',confidence='medium') for i in range(2)]
     assert len(validate_result(VisualResult(spots=choices,summary='Park'),rows,{'0','1'},3))==1
+
+
+def test_visible_poi_must_be_in_image_candidates():
+    park={'id':'park','name':'Verified Park','lat':0,'lon':0}
+    rows=[{'id':'image','lat':0,'lon':0,'poi':park,'poiCandidates':[park]}]
+    choice=VisualChoice(image_id='image',poi_id='invented',name='Invented',score=90,visible_evidence='Trees',photo_tip='Frame trees',uncertainty='Unknown',confidence='medium')
+    assert validate_result(VisualResult(spots=[choice],summary='Park'),rows,{'image'},3)==[]
+    choice.poi_id='park'
+    out=validate_result(VisualResult(spots=[choice],summary='Park'),rows,{'image'},3)
+    assert out[0]['name']=='Verified Park' and out[0]['poi']['id']=='park'

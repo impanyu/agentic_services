@@ -14,6 +14,7 @@ from .sources import distance, image_data
 
 class VisualChoice(BaseModel):
     image_id: str
+    poi_id: str | None = None
     name: str = Field(max_length=140)
     score: int = Field(ge=0,le=100)
     visible_evidence: str = Field(max_length=1200)
@@ -30,7 +31,10 @@ class VisualResult(BaseModel):
 INSTRUCTIONS='''You are Photo Scout, a multimodal photo-location discovery agent.
 Choose which available images to inspect using inspect_image. Select a diverse handful of
 visually compelling nearby POIs and photo/check-in locations tailored to the user's preferences.
-Each image's poi field is an OSM candidate location; evaluate those candidate POIs.
+Each image's poiCandidates (or poi) field lists OSM candidates; evaluate those POIs.
+Set poi_id to the supplied ID of the POI actually visible in the inspected image.
+If a nearby memorial is not visible but a listed tower is visible, select the tower's ID.
+Never select an unlisted POI or recommend a POI whose identity is not visually supported.
 Proximity alone does not prove the POI is visible. Reject unrelated roadway images.
 Use the supplied POI name when it is visually supported; do not invent a venue name.
 Compare different POIs before additional angles of the same POI.
@@ -65,13 +69,18 @@ def validate_result(result,rows,inspected,limit):
     by_id={r['id']:r for r in rows}; out=[]
     for choice in sorted(result.spots,key=lambda c:c.score,reverse=True):
         if choice.image_id not in inspected or choice.image_id not in by_id: continue
-        row=by_id[choice.image_id]
+        row={**by_id[choice.image_id]}
+        if row.get('poi'):
+            matches={p['id']:p for p in row.get('poiCandidates',[row['poi']])}
+            if choice.poi_id not in matches: continue
+            row['poi']=matches[choice.poi_id]
+            row['poiDistanceMeters']=round(distance((row['lat'],row['lon']),(row['poi']['lat'],row['poi']['lon'])))
         if row.get('poi') and any(x.get('poi',{}).get('id')==row['poi']['id'] for x in out): continue
         if any(distance((row['lat'],row['lon']),(x['lat'],x['lon']))<35 for x in out): continue
         public_row={**row}
         if row.get('provider')=='google-street-view':
             public_row['streetViewReference']=row['imageUrl'];public_row['imageUrl']=None
-        out.append({**public_row,**choice.model_dump(),'accessStatus':'unknown',
+        out.append({**public_row,**choice.model_dump(),**({'name':row['poi']['name']} if row.get('poi') else {}),'accessStatus':'unknown',
             'coordinateWarning':'Mapped image point; exact standing spot and access are not verified.'})
         if len(out)==limit: break
     return out

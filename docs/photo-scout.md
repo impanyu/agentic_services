@@ -228,3 +228,7 @@ Source bytes are not stored in reports. The result screen hides the OSM selectio
 map; choosing another location removes result images before showing the map.
 Preserve Google imagery attribution and source-date caveats. Existing uncertainty
 about permission for commercial model analysis is unchanged by this UI revision.
+
+When one panorama is near multiple queried POIs, the image catalog retains those
+possible matches. The agent chooses a supplied `poi_id` supported by the visible
+scene; the server rejects unlisted POIs and displays the chosen source name.

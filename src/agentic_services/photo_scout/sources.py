@@ -239,11 +239,18 @@ async def google_streetview(client, lat, lon, radius, targets=None):
         if data.get('status') in ('OK','ZERO_RESULTS'): successful=True
         if data.get('status')!='OK': continue
         pano=data.get('pano_id',''); loc=data.get('location',{})
-        if not re.fullmatch(r'[A-Za-z0-9_-]{1,200}',pano) or pano in seen: continue
+        if not re.fullmatch(r'[A-Za-z0-9_-]{1,200}',pano): continue
         try: lat2,lon2=float(loc['lat']),float(loc['lng'])
         except (KeyError,TypeError,ValueError): continue
         if not math.isfinite(lat2) or not math.isfinite(lon2) or abs(lat2)>85 or abs(lon2)>180: continue
         if distance((lat,lon),(lat2,lon2))>radius: continue
+        if pano in seen:
+            if targets is not None:
+                poi=targets[index]
+                for row in rows:
+                    if row['imageUrl'].startswith(f'google-streetview://{pano}/'):
+                        if all(p['id']!=poi['id'] for p in row['poiCandidates']):row['poiCandidates'].append(poi)
+            continue
         if targets is None and any(distance((lat2,lon2),p)<spacing for p in locations): continue
         seen.add(pano)
         locations.append((lat2,lon2))
@@ -261,7 +268,7 @@ async def google_streetview(client, lat, lon, radius, targets=None):
                 'sourceDate':data.get('date'),'capturedAt':data.get('date'),
                 'viewHeadingDegrees':heading,'viewPitchDegrees':0,'viewFovDegrees':120,
                 'description':'Street View camera position; access and safe standing point unverified.',
-                **({'poi':poi,'poiDistanceMeters':round(distance((lat2,lon2),(poi['lat'],poi['lon'])))} if poi else {})})
+                **({'poi':poi,'poiCandidates':[poi],'poiDistanceMeters':round(distance((lat2,lon2),(poi['lat'],poi['lon'])))} if poi else {})})
     if not successful: raise ValueError('Google Street View metadata unavailable')
     return rows
 
@@ -326,7 +333,7 @@ async def candidates(lat,lon,radius,pois=None):
                 nearest=min(pois,key=lambda p:distance((row['lat'],row['lon']),(p['lat'],p['lon'])))
                 separation=distance((row['lat'],row['lon']),(nearest['lat'],nearest['lon']))
                 if separation>250: continue
-                row['poi']=nearest;row['poiDistanceMeters']=round(separation)
+                row['poi']=nearest;row['poiCandidates']=[p for p in pois if distance((row['lat'],row['lon']),(p['lat'],p['lon']))<=250];row['poiDistanceMeters']=round(separation)
             row['distanceMeters']=round(d); valid.append(row)
     sampled=diverse_sample(valid,24)
     for name,status in statuses.items():
