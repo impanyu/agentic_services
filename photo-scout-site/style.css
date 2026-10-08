@@ -142,3 +142,4 @@ html:has(body.photo-app),body.photo-app{height:100%;overflow:hidden}.photo-app m
  .search-progress[data-state=error] .progress-heading p{max-height:32px}
  .leaflet-bottom.leaflet-right{bottom:calc(var(--scout-dock-height,90px) + 22px + env(safe-area-inset-bottom))}
 }
+@media(max-width:760px){.prompt-row textarea{white-space:pre;overflow-wrap:normal;overflow-x:auto;overflow-y:hidden;scrollbar-width:none}.prompt-row textarea::-webkit-scrollbar{display:none}}
