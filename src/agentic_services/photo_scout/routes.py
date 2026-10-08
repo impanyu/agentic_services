@@ -6,6 +6,8 @@ from urllib.parse import urlencode
 import hashlib
 import hmac
 import json
+import logging
+import traceback
 import os
 import re
 import secrets
@@ -96,7 +98,9 @@ def create_photo_router(settings,require_api,verification_store):
             except httpx.HTTPError as e: raise HTTPException(503,'Stripe is temporarily unavailable') from e
     async def catalog(payload):
         pois,poi_status=await nearby_pois(payload.lat,payload.lon,payload.radius)
-        if poi_status['status']!='ok': raise HTTPException(503,'Nearby place search is temporarily unavailable; please try again later')
+        if poi_status['status']!='ok':
+            logging.getLogger(__name__).warning('Photo Scout POI search failed: %s',poi_status.get('attempts',[]))
+            raise HTTPException(503,'Nearby place search is temporarily unavailable; please try again later')
         rows,statuses=await candidates(payload.lat,payload.lon,payload.radius,pois)
         statuses['openstreetmap']=poi_status
         return rows,statuses,pois
@@ -181,7 +185,9 @@ def create_photo_router(settings,require_api,verification_store):
         source_limit()
         try: return await run(payload)
         except HTTPException: raise
-        except Exception as e: raise HTTPException(503,'Visual exploration failed; please try again later') from e
+        except Exception as e:
+            logging.getLogger(__name__).warning('Photo Scout exploration failed: %s frames=%s',type(e).__name__,[(f.name,f.lineno) for f in traceback.extract_tb(e.__traceback__)[-6:]])
+            raise HTTPException(503,'Visual exploration failed; please try again later') from e
 
     @router.post('/photo-scout/v1/checkout')
     async def checkout(payload: ExploreRequest,authorization: str | None=Header(None)):
