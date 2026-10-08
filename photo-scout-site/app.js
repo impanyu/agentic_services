@@ -79,7 +79,7 @@ el('find-pois').addEventListener('click',loadPois);
 for(const [id,checked] of [['poi-all',true],['poi-none',false]])el(id).addEventListener('click',()=>{el('poi-list').querySelectorAll('input').forEach(c=>c.checked=checked);updateSelection();});
 function node(tag,txt,cls){const n=document.createElement(tag);if(txt)n.textContent=txt;if(cls)n.className=cls;return n;}
 function link(label,url){const n=node('a',label);try{const u=new URL(url);if(u.protocol!=='https:')return node('span',label);n.href=u.href;n.target='_blank';n.rel='noopener noreferrer';}catch{return node('span',label)}return n;}
-function render(result,{scroll=true}={}){const root=el('results');root.hidden=false;el('toggle-results').disabled=false;
+function render(result,{scroll=true}={}){const root=el('results');if(matchMedia('(max-width:899px)').matches)controls.open=false;root.hidden=false;el('toggle-results').disabled=false;
  const edit=node('button','Close ×','back-button');edit.type='button';edit.addEventListener('click',()=>{root.hidden=true;});
  const heading=node('div',null,'results-heading');heading.append(node('div','YOUR SHORTLIST','eyebrow'),edit);
  root.replaceChildren(heading,node('h2','Your nearby photo shortlist'),node('p',result.summary));
@@ -98,7 +98,7 @@ let activeSearch=null;
 async function poll(job,token){const generation=++pollGeneration;searchBusy=true;updateSelection();
  while(generation===pollGeneration){
   try{const d=await json('/photo-scout/v1/report/'+encodeURIComponent(job),{headers:{'X-Report-Token':token}});if(generation!==pollGeneration)return;
-   if(d.state==='complete'){render(d.result);message('Your report is ready below. Refreshing starts fresh.');activeSearch=null;searchBusy=false;updateSelection();return;}
+   if(d.state==='complete'){render(d.result);message('Your shortlist is ready on the map. Refreshing starts fresh.');activeSearch=null;searchBusy=false;updateSelection();return;}
    if(d.state==='failed'){message(d.error||'Search failed. Please try again.');activeSearch=null;searchBusy=false;updateSelection();return;}
    message(d.state==='queued'?'Search queued on the server. You can switch tabs; keep this page open.':'Scoring nearby images. You can switch tabs; refreshing will clear this search.');
   }catch(e){if(generation!==pollGeneration)return;if(/not found|expired/i.test(e.message)){message(e.message);activeSearch=null;searchBusy=false;updateSelection();return;}message('Connection interrupted. Your task continues on the server; reconnecting…');}
