@@ -253,3 +253,33 @@ def test_google_query_grid_covers_area_and_limits_concurrency(monkeypatch):
             return await google_streetview(c,0,0,1000)
     assert asyncio.run(run())==[]
     assert requests==25 and peak<=5
+
+
+def test_free_website_mode_auth_payment_and_budget(tmp_path,monkeypatch):
+    import agentic_services.photo_scout.routes as routes
+    monkeypatch.setenv('PHOTO_SCOUT_ENABLED','1')
+    monkeypatch.setenv('PHOTO_SCOUT_HUMAN_FREE_PREVIEW','0')
+    monkeypatch.setenv('PHOTO_SCOUT_PRICE_CENTS','200')
+    monkeypatch.setenv('PHOTO_SCOUT_DAILY_RUN_LIMIT','1')
+    settings=Settings(openai_api_key='test',openai_model='test',database_path=tmp_path/'db',base_url='https://api.test',service_api_key='private')
+    client=TestClient(create_app(settings=settings))
+    payload={'lat':0,'lon':0};headers={'Authorization':'Bearer private'}
+    assert client.post('/photo-scout/v1/preview',json=payload).status_code==401
+    assert client.post('/photo-scout/v1/preview',json=payload,headers=headers).status_code==403
+    monkeypatch.setenv('PHOTO_SCOUT_HUMAN_FREE_PREVIEW','1')
+    assert client.get('/photo-scout/v1/status').json()['humanPriceUsd']=='0.00'
+    assert client.get('/photo-scout/v1/status').json()['humanFreePreview'] is True
+    async def images(*a): return [{'id':'test'}],{'test':{'status':'ok'}}
+    async def pois(*a): return [],{'status':'ok'}
+    calls=[]
+    async def model(*a): calls.append(1);return {'spots':[],'sources':{},'summary':'No good images'}
+    monkeypatch.setattr(routes,'candidates',images)
+    monkeypatch.setattr(routes,'nearby_pois',pois)
+    monkeypatch.setattr(routes,'explore',model)
+    # No Stripe client should ever be constructed in free mode.
+    monkeypatch.setattr(routes.httpx,'AsyncClient',lambda **kw:pytest.fail('Unexpected payment request'))
+    assert client.post('/photo-scout/v1/checkout',json=payload,headers=headers).status_code==409
+    result=client.post('/photo-scout/v1/preview',json=payload,headers=headers)
+    assert result.status_code==200 and result.json()['summary']=='No good images'
+    assert client.post('/photo-scout/v1/preview',json=payload,headers=headers).status_code==429
+    assert calls==[1]

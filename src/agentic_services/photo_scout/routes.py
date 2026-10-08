@@ -74,6 +74,8 @@ def create_photo_router(settings,require_api,verification_store):
         if len(source_requests)>=10: raise HTTPException(429,"Source lookup limit reached; try again in a minute")
         source_requests.append(now)
 
+    def free_preview():
+        return os.getenv("PHOTO_SCOUT_HUMAN_FREE_PREVIEW", "0") == "1"
     def price():
         return int(os.getenv('PHOTO_SCOUT_PRICE_CENTS','0'))
     def enabled():
@@ -107,7 +109,8 @@ def create_photo_router(settings,require_api,verification_store):
     @router.get('/photo-scout/v1/status')
     def status():
         return {'serviceId':'photo-scout','enabled':os.getenv('PHOTO_SCOUT_ENABLED')=='1' and bool(settings.openai_api_key),
-            'humanPriceUsd':f'{price()/100:.2f}' if price()>0 else None,
+            'humanFreePreview':free_preview(),
+            'humanPriceUsd':'0.00' if free_preview() else (f'{price()/100:.2f}' if price()>0 else None),
             'sources':{'wikimedia-commons':'enabled',
                 'panoramax':'enabled' if os.getenv('PHOTO_SCOUT_PANORAMAX_ENABLED','1')=='1' else 'disabled',
                 'mapillary':'configured' if os.getenv('PHOTO_SCOUT_MAPILLARY_TOKEN') else 'needs_token',
@@ -135,9 +138,21 @@ def create_photo_router(settings,require_api,verification_store):
         except HTTPException: raise
         except Exception as e: raise HTTPException(503,'Visual exploration failed; contact support if charged') from e
 
+    @router.post('/photo-scout/v1/preview')
+    async def free_exploration(payload: ExploreRequest,authorization: str | None=Header(None)):
+        require_api(authorization)
+        if not settings.service_api_key: raise HTTPException(503,'Private gateway credential is required')
+        if not free_preview(): raise HTTPException(403,'Free website testing is not enabled')
+        source_limit()
+        try: return await run(payload)
+        except HTTPException: raise
+        except Exception as e: raise HTTPException(503,'Visual exploration failed; please try again later') from e
+
     @router.post('/photo-scout/v1/checkout')
     async def checkout(payload: ExploreRequest,authorization: str | None=Header(None)):
-        require_api(authorization); enabled(); source_limit(); cents=price()
+        require_api(authorization)
+        if free_preview(): raise HTTPException(409,'Website testing is free; use the preview endpoint')
+        enabled(); source_limit(); cents=price()
         if cents<50: raise HTTPException(503,'Checkout pricing has not been enabled')
         # Verify imagery coverage before accepting payment; no model calls here.
         rows,statuses=await candidates(payload.lat,payload.lon,payload.radius)
