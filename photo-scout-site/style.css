@@ -108,3 +108,5 @@ html:has(body.photo-app),body.photo-app{height:100%;overflow:hidden}.photo-app m
 .brand-mark svg{display:block;width:24px;height:24px}
 .photo-app[data-map-style=night] .map-brand{background:#292c3b;border-color:#454052;text-shadow:none}
 @media(max-width:760px){.map-brand{padding:5px 8px 5px 5px;border-radius:14px;gap:7px}.brand-mark svg{width:21px;height:21px}}
+
+.studio-save{display:block;width:100%;min-height:44px;padding:14px;border:0;border-radius:14px;background:#72508b;color:#fff;font-size:14px;font-weight:650;cursor:pointer}.studio-save:disabled{opacity:.6;cursor:wait}.studio-download{margin-top:9px;background:#eee6f5;color:#65477c;border:1px solid #d9c9e5}.studio-save-hint{margin:10px 0 0}.studio-result{-webkit-touch-callout:default;user-select:auto}

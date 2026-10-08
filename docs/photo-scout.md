@@ -358,3 +358,5 @@ Before fetching the background or editing an image, the worker checks for at lea
 Map detail controls default to place names and roads/railways only, using the Minimal vector basemap. Other styles remain available; toggling details on a raster basemap selects Minimal.
 
 Photo Scout model overrides are independent of the platform-wide `OPENAI_MODEL`. Scoring caches include the model ID, so upgrading the vision model rescans images without reusing older-model scores. Vision scoring allows 180 seconds per batch and 12,000 output tokens; person validation allows 4,000 output tokens.
+
+Completed selfies provide **Save to Photos** using native file sharing (the PNG File is prepared before the button click to retain user activation), plus **Download PNG**. Browsers cannot silently write to a photo library or confirm the chosen share target. Unsupported browsers show long-press instructions on the displayed photo; download remains available. Canceled shares keep the result available and sharing failures show fallback instructions. Personal images remain local to the page when opening the save menu.

@@ -2,6 +2,7 @@ const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const {readFileSync}=require('node:fs');
 const vm=require('node:vm');
+const {File,Blob}=require('node:buffer');
 function fixture(){
  const timers=[],window={},states=[],positions=[];
  vm.runInNewContext(readFileSync('photo-scout-site/location.js','utf8'),{window,setTimeout:fn=>{const t={fn};timers.push(t);return t;},clearTimeout:t=>{t.cleared=true;},Number});
@@ -32,15 +33,15 @@ test('denied permission never retries or substitutes a default location',()=>{
 function pageFixture(){
  const elements=new Map(),requests=[],moves=[],circles=[];let created=0;
  const defaults={lat:'41.8827',lon:'-87.6233',radius:'1000',limit:'3'};
- function element(id){if(!elements.has(id))elements.set(id,{value:defaults[id]||'',textContent:'',dataset:{},showModal(){this.open=true;},close(){this.open=false;},listeners:{},addEventListener(type,fn){this.listeners[type]=fn;},setAttribute(){},querySelectorAll(){return [];},replaceChildren(){},append(){},classList:{add(){},remove(){}},reportValidity(){return true;},scrollIntoView(){}});return elements.get(id);}
+ function element(id){if(!elements.has(id))elements.set(id,{value:defaults[id]||'',textContent:'',dataset:{},showModal(){this.open=true;},close(){this.open=false;},removeAttribute(name){delete this[name];},listeners:{},addEventListener(type,fn){this.listeners[type]=fn;},setAttribute(){},querySelectorAll(){return [];},replaceChildren(){},append(){},classList:{add(){},remove(){}},reportValidity(){return true;},scrollIntoView(){}});return elements.get(id);}
  const layer=()=>({addTo(){return this;},on(){return this;},once(){return this;},setLatLng(p){this.position=p;return this;},setRadius(){return this;},clearLayers(){this.clears=(this.clears||0)+1;},bindTooltip(content){this.tooltip=content;return this;},setTooltipContent(content){this.tooltip=content;return this;},getLayers(){return [];},getBounds(){return this.position;},getContainer(){return {};}});
  const map={setView(){return this;},on(){},hasLayer(){return true;},removeLayer(){},fitBounds(bounds){moves.push(bounds);}};
  const L={map:()=>map,control:{zoom:()=>layer(),layers:()=>layer()},tileLayer:()=>layer(),marker:p=>{const m=layer();m.position=p;return m;},layerGroup:()=>layer(),circle:()=>{const c=layer();circles.push(c);return c;},divIcon:()=>({}),DomEvent:{disableClickPropagation(){},disableScrollPropagation(){}}};
  const window={isSecureContext:true,addEventListener(){}},navigator={geolocation:{getCurrentPosition(success,error){requests.push({success,error});}}};
- const context={window,navigator,L,document:{createElement:()=>element('created'+(++created)),body:{dataset:{},append(){}},getElementById:element,querySelector:element,querySelectorAll(){return [];},addEventListener(){}},location:{hostname:'test.invalid',search:''},localStorage:{removeItem(){}},sessionStorage:{},fetch:()=>new Promise(()=>{}),setTimeout:()=>1,clearTimeout(){},setInterval:()=>1,clearInterval(){},Number,URL,matchMedia:()=>({matches:true})};
+ const context={window,navigator,L,File,Blob,document:{createElement:()=>element('created'+(++created)),body:{dataset:{},append(){}},getElementById:element,querySelector:element,querySelectorAll(){return [];},addEventListener(){}},location:{hostname:'test.invalid',search:''},localStorage:{removeItem(){}},sessionStorage:{},fetch:()=>new Promise(()=>{}),setTimeout:()=>1,clearTimeout(){},setInterval:()=>1,clearInterval(){},Number,URL,matchMedia:()=>({matches:true})};
  vm.runInNewContext(readFileSync('photo-scout-site/location.js','utf8'),context);
  vm.runInNewContext(readFileSync('photo-scout-site/app.js','utf8'),context);
- return {activity(state,spot){context.activitySpot=spot;vm.runInNewContext('studioSpot=activitySpot;setStudioActivity('+JSON.stringify(state)+')',context);return vm.runInNewContext('({hidden:studioTask.hidden,state:studioTask.dataset.state,label:studioTaskLabel.textContent,position:studioActivityMarker?.position,clears:selfieActivityLayer.clears||0})',context);},closeStudio(){vm.runInNewContext('studioClose.listeners.click()',context);},openTask(){return vm.runInNewContext('studioTask.listeners.click();studio.open',context);},interceptSubmission:fn=>{context.submitSearch=fn;},bearing:context.photoBearing,views:context.allPoiViews,element,requests,moves,circles,click:id=>element(id).listeners.click()};
+ return {output(blob){context.outputBlob=blob;vm.runInNewContext('showStudioOutput(outputBlob)',context);return vm.runInNewContext('({saveHidden:studioSave.hidden,downloadHidden:studioDownload.hidden,file:studioOutputFile})',context);},shareSupport(canShare,share){navigator.canShare=canShare;navigator.share=share;},save(){return vm.runInNewContext('studioSave.listeners.click()',context);},saveState(){return vm.runInNewContext('({disabled:studioSave.disabled,hint:studioSaveHint.textContent,visible:!studioResult.hidden})',context);},clearOutput(){vm.runInNewContext('clearStudioOutput()',context);},activity(state,spot){context.activitySpot=spot;vm.runInNewContext('studioSpot=activitySpot;setStudioActivity('+JSON.stringify(state)+')',context);return vm.runInNewContext('({hidden:studioTask.hidden,state:studioTask.dataset.state,label:studioTaskLabel.textContent,position:studioActivityMarker?.position,clears:selfieActivityLayer.clears||0})',context);},closeStudio(){vm.runInNewContext('studioClose.listeners.click()',context);},openTask(){return vm.runInNewContext('studioTask.listeners.click();studio.open',context);},interceptSubmission:fn=>{context.submitSearch=fn;},bearing:context.photoBearing,views:context.allPoiViews,element,requests,moves,circles,click:id=>element(id).listeners.click()};
 }
 test('top-right location button waits for device coordinates and moves away from Chicago',()=>{
  const f=pageFixture();f.click('center-pin');assert.equal(f.requests.length,1);assert.equal(f.moves.length,0);assert.equal(f.element('center-pin').disabled,true);
@@ -79,4 +80,22 @@ test('selfie map activity uses the chosen place and survives dialog closure unti
  f.closeStudio();assert.equal(f.openTask(),true);
  const ready=f.activity('complete',spot);assert.equal(ready.position,undefined);assert.equal(ready.clears,1);assert.match(ready.label,/ready/);assert.equal(ready.hidden,false);
  const failed=f.activity('failed',spot);assert.equal(failed.position,undefined);assert.match(failed.label,/attention/);
+});
+
+
+test('save to Photos shares the actual prepared PNG immediately from the click',async()=>{
+ const f=pageFixture(),blob=new Blob(['generated-photo'],{type:'image/png'}),ready=f.output(blob);let handed;
+ assert.equal(ready.saveHidden,false);assert.equal(ready.downloadHidden,false);
+ f.shareSupport(data=>data.files[0]===ready.file,data=>{handed=data;return Promise.resolve();});
+ const done=f.save();assert.equal(handed.files[0],ready.file);await done;
+ assert.equal(handed.files[0].name,'photo-scout-ai-photo.png');assert.equal(handed.files[0].type,'image/png');assert.equal(await handed.files[0].text(),'generated-photo');assert.equal(f.saveState().disabled,false);
+});
+test('save fallback and canceled or failed shares preserve the photo',async()=>{
+ for(const mode of ['unsupported','canceled','failed']){
+  const f=pageFixture();f.output(new Blob(['photo'],{type:'image/png'}));let calls=0;
+  f.shareSupport(()=>mode!=='unsupported',()=>{calls++;return Promise.reject(Object.assign(new Error('test'),{name:mode==='canceled'?'AbortError':'NotAllowedError'}));});
+  await f.save();assert.equal(calls,mode==='unsupported'?0:1);assert.equal(f.saveState().visible,true);assert.equal(f.saveState().disabled,mode==='unsupported'?undefined:false);
+  if(mode!=='canceled')assert.match(f.saveState().hint,/Press and hold/);
+  f.clearOutput();await f.save();assert.equal(calls,mode==='unsupported'?0:1);
+ }
 });
