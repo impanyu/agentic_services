@@ -26,7 +26,7 @@ class PhotoIntent(BaseModel):
     explanation: str=Field(max_length=400)
     clarification: str | None=Field(max_length=300)
 INSTRUCTIONS='''Interpret a user's place or photography question for Photo Scout.
-Extract a geocoding locationQuery in the original place spelling, with city/country when stated.
+Extract one canonical geocoding locationQuery, with city/country when stated. For translated place names, prefer the common English or local-language spelling recognized by map data: e.g. 巴黎铁塔 -> Eiffel Tower, Paris, France. Do not send a literal translated nickname when a canonical name is known.
 NEVER invent latitude/longitude. A deterministic geocoder resolves explicit place names.
 Use useMapCenter=true only for 'here', 'near me', selected pin/map, or photo requests without an explicit place. The supplied center is a map selection, not necessarily device location.
 Try your best to map ANY sentence to one practical place/address or the supplied map selection. Infer reasonable intent and choose the most likely place from context; never ask a follow-up or present alternatives. If no place can reasonably be inferred, useMapCenter=true and locationQuery=null. clarification MUST always be null. When the user mentions photo moods, select all matching photoStyles automatically.
