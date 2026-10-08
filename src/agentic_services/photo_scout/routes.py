@@ -93,7 +93,7 @@ def create_photo_router(settings,require_api,verification_store):
     async def run(payload):
         enabled()
         if lock.locked(): raise HTTPException(429,'An exploration is in progress; try again shortly')
-        async with lock:
+        async with lock, asyncio.timeout(240):
             rows,statuses=await candidates(payload.lat,payload.lon,payload.radius)
             if not any(s['status']=='ok' for s in statuses.values()):
                 raise HTTPException(503,'Image sources are temporarily unavailable')
@@ -188,8 +188,10 @@ def create_photo_router(settings,require_api,verification_store):
         response.headers['Cache-Control']='private, no-store'
         if job['state'] in ('unpaid','failed'):
             session=await retrieve_paid(job['session'])
+            if job['state']=='unpaid':
+                with store.connect() as db:
+                    db.execute("UPDATE photo_scout_jobs SET state='queued' WHERE id=? AND state='unpaid'",(job_id,))
             verification_store.enqueue_stripe_fulfillment(job['session'],'photo-scout',job_id)
-            if job['state']=='unpaid': store.update(job_id,state='queued')
         return {'jobId':job_id,'state':store.get(job_id)['state'],
             'result':json.loads(job['result']) if job['result'] else None,'error':job['error']}
 
