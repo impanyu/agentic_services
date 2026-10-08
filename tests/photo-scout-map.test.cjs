@@ -20,32 +20,34 @@ test('first vector frame uses selected details without a full street-map placeho
  const source=readFileSync('photo-scout-site/app.js','utf8').split('let selected=')[0];
  vm.runInNewContext(source,context);
  assert.equal(added.length,2,'a quiet raster base is added immediately while vector style loads');
+ await new Promise(resolve=>setImmediate(resolve));
  requests[0]({ok:true,json:async()=>structuredClone(original)});
  await new Promise(resolve=>setImmediate(resolve));
  assert.equal(styles.length,1);
  const visibility=Object.fromEntries(styles[0].layers.map(l=>[l.id,l.layout?.visibility||'visible']));
  assert.deepEqual(visibility,{road:'visible',name:'visible','road-name':'none',building:'none',park:'none',boundary:'none','hidden-name':'none'});
  // An older style response must never paint over a newer choice.
- const old=context.switchMapStyle('night'),latest=context.switchMapStyle('bright');
+ const old=context.switchMapStyle('night');await new Promise(resolve=>setImmediate(resolve));const latest=context.switchMapStyle('bright');
+ await new Promise(resolve=>setImmediate(resolve));
  requests[2]({ok:true,json:async()=>structuredClone(original)});await latest;
  requests[1]({ok:true,json:async()=>structuredClone(original)});await old;
  assert.equal(styles.length,2);
 });
 
-function loadingFixture(){
- const layers=[],timers=[],requests=[],vectors=[],rasters=[];
+function loadingFixture(cold=false){
+ const layers=[],timers=[],requests=[],vectors=[],rasters=[],scripts=[];
  const elements=new Map();const el=id=>{if(!elements.has(id))elements.set(id,{open:false,textContent:'',addEventListener(){},setAttribute(){}});return elements.get(id);};
  const map={setView(){return this;},hasLayer:l=>layers.includes(l),removeLayer(l){layers.splice(layers.indexOf(l),1);}};
  const layer=()=>{const events={};return {events,addTo(){layers.push(this);return this;},once(name,fn){events[name]=fn;},on(name,fn){events[name]=fn;}};};
  const L={map:()=>map,control:{zoom:layer},DomEvent:{disableClickPropagation(){},disableScrollPropagation(){}},tileLayer(url){const l=layer();l.url=url;rasters.push(l);return l;},maplibreGL(options){const l=layer(),events={};l.gl={events,container:{style:{}},canvas:{style:{}},getContainer(){return this.container;},getCanvas(){return this.canvas;},once(name,fn){events[name]=fn;},on(name,fn){events[name]=fn;},getStyle(){return options.style;},setLayoutProperty(){}};l.getMaplibreMap=()=>l.gl;vectors.push(l);return l;}};
- const context={L,window:{maplibregl:{}},document:{body:{dataset:{}},getElementById:el,querySelector:el,querySelectorAll:()=>[]},location:{hostname:'test'},fetch:()=>new Promise(resolve=>requests.push(resolve)),setTimeout(fn,delay){timers.push({fn,delay,cleared:false});return timers.length;},clearTimeout(id){if(timers[id-1])timers[id-1].cleared=true;}};
+ const context={L,window:cold?{}:{maplibregl:{}},document:{head:{append:tag=>scripts.push(tag)},createElement:()=>({}),body:{dataset:{}},getElementById:el,querySelector:el,querySelectorAll:()=>[]},location:{hostname:'test'},fetch:()=>new Promise(resolve=>requests.push(resolve)),setTimeout(fn,delay){timers.push({fn,delay,cleared:false});return timers.length;},clearTimeout(id){if(timers[id-1])timers[id-1].cleared=true;}};
  vm.runInNewContext(readFileSync('photo-scout-site/app.js','utf8').split('let selected=')[0],context);
- return {context,layers,timers,requests,vectors,rasters,el,async resolve(index=0){requests[index]({ok:true,json:async()=>({version:8,sources:{},layers:[]})});await new Promise(resolve=>setImmediate(resolve));}};
+ return {context,layers,timers,requests,vectors,rasters,scripts,el,async resolve(index=0){await new Promise(resolve=>setImmediate(resolve));requests[index]({ok:true,json:async()=>({version:8,sources:{},layers:[]})});await new Promise(resolve=>setImmediate(resolve));}};
 }
 
 test('a quiet base loads immediately and survives a hanging vector style',async()=>{
  const f=loadingFixture(),preview=f.rasters[1];assert.ok(f.layers.includes(preview));assert.match(preview.url,/light_nolabels/);
- preview.events.tileload();const timeout=f.timers.find(t=>t.delay===12000);timeout.fn();
+ await new Promise(resolve=>setImmediate(resolve));preview.events.tileload();const timeout=f.timers.find(t=>t.delay===12000);timeout.fn();
  assert.ok(f.layers.includes(preview));assert.match(f.el('map-notice').textContent,/backup map/);
  await f.resolve();assert.equal(f.vectors.length,0);
 });
@@ -86,4 +88,10 @@ test('raster completion with no successful images never clears the backup',()=>{
  const f=loadingFixture();f.context.switchMapStyle('aerial');const raster=f.rasters.at(-1),preview=f.rasters.at(-2);
  raster.events.load();assert.ok(f.layers.includes(preview));assert.match(f.el('map-notice').textContent,/Loading/);
  raster.events.tileload();raster.events.load();assert.ok(!f.layers.includes(preview));
+});
+
+test('a cold renderer downloads in the background after the simple map starts',async()=>{
+ const f=loadingFixture(true);assert.ok(f.layers.includes(f.rasters[1]));assert.equal(f.requests.length,0);assert.match(f.scripts[0].src,/maplibre-gl.js$/);
+ f.context.window.maplibregl={};f.scripts[0].onload();await new Promise(resolve=>setImmediate(resolve));
+ assert.match(f.scripts[1].src,/leaflet-maplibre-gl.js$/);f.scripts[1].onload();await f.resolve();assert.equal(f.vectors.length,1);
 });

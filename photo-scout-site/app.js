@@ -14,6 +14,15 @@ function mapDetailGroup(layer){const source=layer['source-layer']||'';if(source=
 function applyMapDetails(){if(!vectorLayer||!vectorReady)return;const gl=vectorLayer.getMaplibreMap();for(const layer of gl.getStyle().layers){const group=mapDetailGroup(layer);if(!group)continue;const show=mapDetails[group]&&(group!=='roadNames'||mapDetails.roads);gl.setLayoutProperty(layer.id,'visibility',show?(originalLayerVisibility.get(layer.id)||'visible'):'none');}}
 L.DomEvent.disableClickPropagation(el('map-details'));L.DomEvent.disableScrollPropagation(el('map-details'));
 document.querySelectorAll('[data-map-detail]').forEach(input=>input.addEventListener('change',()=>{mapDetails[input.dataset.mapDetail]=input.checked;if(['aerial','topographic'].includes(activeMapStyle))switchMapStyle('minimal');else applyMapDetails();}));
+let vectorRuntime=null;
+function loadVectorRuntime(){
+ if(window.maplibregl&&L.maplibreGL)return Promise.resolve();
+ if(!vectorRuntime){
+  const script=src=>new Promise((resolve,reject)=>{const tag=document.createElement('script');tag.src=src;tag.onload=resolve;tag.onerror=()=>reject(Error('Map renderer unavailable'));document.head.append(tag);});
+  vectorRuntime=script('./vendor/maplibre-gl.js').then(()=>script('./vendor/leaflet-maplibre-gl.js')).catch(error=>{vectorRuntime=null;throw error;});
+ }
+ return vectorRuntime;
+}
 const mapStyles={streets:'liberty',minimal:'positron',night:'dark',bright:'bright'};
 async function switchMapStyle(style){
  clearTimeout(mapLoadTimer);clearTimeout(previewTimer);vectorReady=false;activeMapStyle=style;document.body.dataset.mapStyle=style;const generation=++mapStyleGeneration;
@@ -57,6 +66,8 @@ async function switchMapStyle(style){
   layer.on('tileerror',()=>fallback('This U.S. basemap is unavailable here.'));
   layer.addTo(map);return;
  }
+ try{await loadVectorRuntime();}catch{fallback('The selected map renderer is unavailable.');return;}
+ if(generation!==mapStyleGeneration||abandoned)return;
  if(!window.maplibregl||!L.maplibreGL||(typeof window.maplibregl.supported==='function'&&!window.maplibregl.supported())){fallback('This browser cannot use the selected basemap.');return;}
  try{
   // Apply detail visibility before MapLibre paints its first frame.
