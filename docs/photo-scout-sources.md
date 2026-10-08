@@ -7,7 +7,7 @@ must disclose actual sampled sources; no claim of whole-world street-view covera
 | Source | Purpose | Current state | Next step |
 |---|---|---|---|
 | Wikimedia Commons | Geotagged landmark/scenic photos | Connected and live image/model test verified | Broaden regional quality tests; preserve file-level license, author and geotag caveat |
-| Panoramax federated catalog | Street-level camera imagery from public institutions and community instances | Adapter + Paris metadata/image retrieval verified; approved image hosts IGN and OSM France only | Deploy, verify VM access and bounded multimodal comparison |
+| Panoramax federated catalog | Street-level camera imagery from public institutions and community instances | Deployed; Paris metadata + actual image retrieval verified on production VM; six-image multimodal comparison and live browser example verified; approved image hosts IGN and OSM France only | Broaden regional coverage/freshness tests |
 | Mapillary | Crowdsourced street-level imagery | Adapter exists; no token configured; not live-verified | Obtain developer token through secure configuration; verify real imagery and attribution |
 | KartaView | Crowdsourced street imagery | Official public API probed twice; timeouts; not connected | Resolve network/API availability before enabling |
 | Google Street View | Interactive viewing and possible licensed image analysis | Ordinary image-analysis path disabled | Investigate Maps Imagery Grounding private preview and exact commercial downstream permissions; viewing and inference are separate |
