@@ -19,6 +19,7 @@ import httpx
 from fastapi import APIRouter, Header, HTTPException, Request, Response
 from pydantic import BaseModel, Field, model_validator
 
+from .tasks import TaskStore, SEARCH_RETENTION
 from .styles import PHOTO_STYLES, mapped_categories, style_briefs
 from .scoring import explore
 from .intent import IntentRequest, resolve_intent
@@ -50,6 +51,10 @@ class ExploreRequest(BaseModel):
         return mapped_categories(self.photoStyles) if self.photoStyles is not None else self.categories
 
 
+class SearchTaskRequest(ExploreRequest):
+    query: str = Field(default='',max_length=1000)
+
+
 class PhotoStore:
     def __init__(self,path):
         self.path=path
@@ -65,8 +70,8 @@ class PhotoStore:
                 if name not in columns: db.execute(f'ALTER TABLE photo_scout_jobs ADD COLUMN {name} {definition}')
     def prune(self):
         with self.connect() as db:
-            db.execute("DELETE FROM photo_scout_jobs WHERE created<? OR (kind='preview' AND created<?)",(time.time()-30*86400,time.time()-86400))
-    def enqueue_preview(self,payload,token):
+            db.execute('DELETE FROM photo_scout_jobs WHERE created<?',(time.time()-SEARCH_RETENTION,))
+    def enqueue_preview(self,payload,token,on_admit=None):
         self.prune()
         job='ps_'+hashlib.sha256(token.encode()).hexdigest()[:32]
         encoded=payload.model_dump_json()
@@ -76,10 +81,12 @@ class PhotoStore:
             if existing:
                 if existing['kind']!='preview' or existing['payload']!=encoded:
                     raise HTTPException(409,'This request token was already used for another search')
+                if on_admit:on_admit(db,job)
                 return job
             count=db.execute("SELECT COUNT(*) FROM photo_scout_jobs WHERE kind='preview' AND state IN ('queued','running')").fetchone()[0]
             if count>=10: raise HTTPException(429,'The search queue is full; try again later')
             db.execute("INSERT INTO photo_scout_jobs(id,token_hash,payload,created,price,state,kind) VALUES(?,?,?,?,0,'queued','preview')",(job,hashlib.sha256(token.encode()).hexdigest(),encoded,time.time()))
+            if on_admit:on_admit(db,job)
         return job
     def claim_preview(self):
         self.prune()
@@ -123,7 +130,6 @@ class PhotoStore:
     def get(self,job):
         with self.connect() as db:
             row=db.execute('SELECT * FROM photo_scout_jobs WHERE id=? AND created>?',(job,time.time()-30*86400)).fetchone()
-        if row and row['kind']=='preview' and row['created']<time.time()-86400: return None
         return dict(row) if row else None
     def update(self,job,**values):
         with self.connect() as db:
@@ -131,7 +137,7 @@ class PhotoStore:
 
 
 def create_photo_router(settings,require_api,verification_store):
-    router=APIRouter(tags=['Photo Scout']); store=PhotoStore(settings.database_path)
+    router=APIRouter(tags=['Photo Scout']); store=PhotoStore(settings.database_path); tasks=TaskStore(settings.database_path)
     lock=asyncio.Lock()
     source_requests=[]
     image_requests=[]
@@ -266,11 +272,14 @@ def create_photo_router(settings,require_api,verification_store):
                 headers={'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff'})
         except Exception as e: raise HTTPException(503,'Street View image is temporarily unavailable') from e
 
-    async def run(payload,allow_expired=False):
+    async def run(payload,allow_expired=False,task_id=None):
         enabled()
         if lock.locked(): raise HTTPException(429,'An exploration is in progress; try again shortly')
         async with lock, asyncio.timeout(660):
             rows,statuses,pois=await catalog(payload,allow_expired)
+            if task_id:
+                context=tasks.context('search',task_id) or payload.model_dump()
+                context['nearbyPois']=pois;context['stage']='scoring';tasks.update_context('search',task_id,context)
             if rows and not any(s['status']=='ok' for n,s in statuses.items() if n!='openstreetmap'):
                 raise HTTPException(503,'Image sources are temporarily unavailable')
             store.reserve_run()
@@ -334,7 +343,7 @@ def create_photo_router(settings,require_api,verification_store):
             raise HTTPException(503,'Visual exploration failed; please try again later') from e
 
     @router.post('/photo-scout/v1/jobs',status_code=202)
-    async def submit_preview(payload: ExploreRequest,response: Response,authorization: str | None=Header(None),x_request_token: str | None=Header(None)):
+    async def submit_preview(payload: SearchTaskRequest,request: Request,response: Response,authorization: str | None=Header(None),x_request_token: str | None=Header(None)):
         require_api(authorization); enabled()
         if not settings.service_api_key: raise HTTPException(503,'Private gateway credential is required')
         if not free_preview(): raise HTTPException(403,'Free website testing is not enabled')
@@ -343,16 +352,28 @@ def create_photo_router(settings,require_api,verification_store):
         source_limit()
         # Validate signed place selection before durable admission, without fetching images.
         if payload.selectedPoiIds is not None: await chosen_pois(payload)
-        job=store.enqueue_preview(payload,x_request_token)
+        identity=tasks.identity(request,response)
+        job=store.enqueue_preview(payload,x_request_token,lambda db,job:tasks.bind_in(db,'search',job,identity,payload.model_dump()))
         response.headers['Cache-Control']='private, no-store'
-        return {'jobId':job,'reportToken':x_request_token,'state':store.get(job)['state'],'expiresAt':store.get(job)['created']+86400}
+        return {'jobId':job,'reportToken':x_request_token,'state':store.get(job)['state'],'expiresAt':store.get(job)['created']+SEARCH_RETENTION,'context':tasks.context('search',job)}
 
     async def process_preview():
         if lock.locked(): return False
         job=store.claim_preview()
         if not job: return False
         try:
-            result=await run(ExploreRequest.model_validate_json(job['payload']),allow_expired=True)
+            submitted=SearchTaskRequest.model_validate_json(job['payload'])
+            values=submitted.model_dump(exclude={'query'})
+            context=tasks.context('search',job['id']) or submitted.model_dump()
+            if submitted.query.strip():
+                store.reserve_intent()
+                plan=await resolve_intent(settings,IntentRequest(query=submitted.query,lat=submitted.lat,lon=submitted.lon,radius=submitted.radius,limit=submitted.limit,photoStyles=submitted.photoStyles or [],preferences=submitted.preferences))
+                place=plan['locations'][0]
+                values.update(lat=place['lat'],lon=place['lon'],radius=plan['radiusMeters'],limit=plan['limit'],photoStyles=plan['photoStyles'] or None,preferences=plan['preferences'],categories=None,selectedPoiIds=None,poiCatalogToken=None)
+                context['locationLabel']=place['label'];context['explanation']=plan['explanation']
+            payload=ExploreRequest.model_validate(values)
+            context.update(payload.model_dump());context['stage']='sources';tasks.update_context('search',job['id'],context)
+            result=await run(payload,allow_expired=True,task_id=job['id'])
             store.update(job['id'],state='complete',result=json.dumps(result),error=None,lease_until=0)
         except Exception as error:
             logging.getLogger(__name__).warning('Photo Scout background search failed: %s',type(error).__name__)
@@ -413,9 +434,9 @@ def create_photo_router(settings,require_api,verification_store):
             raise
 
     @router.get('/photo-scout/v1/report/{job_id}')
-    async def report(job_id: str,response: Response,x_report_token: str | None=Header(None)):
+    async def report(job_id: str,request: Request,response: Response,x_report_token: str | None=Header(None)):
         job=store.get(job_id)
-        if not job or not hmac.compare_digest(job['token_hash'],hashlib.sha256((x_report_token or '').encode()).hexdigest()):
+        if not job or not (hmac.compare_digest(job['token_hash'],hashlib.sha256((x_report_token or '').encode()).hexdigest()) or tasks.allowed('search',job_id,request)):
             raise HTTPException(404,'Report not found')
         response.headers['Cache-Control']='private, no-store'
         if job['kind']=='paid' and job['state'] in ('unpaid','failed'):
@@ -425,7 +446,7 @@ def create_photo_router(settings,require_api,verification_store):
                     db.execute("UPDATE photo_scout_jobs SET state='queued' WHERE id=? AND state='unpaid'",(job_id,))
             verification_store.enqueue_stripe_fulfillment(job['session'],'photo-scout',job_id)
         return {'jobId':job_id,'state':store.get(job_id)['state'],
-            'result':image_links(json.loads(job['result'])) if job['result'] else None,'error':job['error']}
+            'result':image_links(json.loads(job['result'])) if job['result'] else None,'error':job['error'],'context':tasks.context('search',job_id)}
 
     @router.get('/photo-scout/openapi.json')
     def openapi():

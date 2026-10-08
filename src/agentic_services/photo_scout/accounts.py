@@ -15,6 +15,8 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import JSONResponse, RedirectResponse
 from pydantic import BaseModel, Field
 
+from .tasks import TaskStore
+
 COOKIE='photo_scout_session'
 STATE_COOKIE='photo_scout_oauth_state'
 
@@ -100,6 +102,7 @@ def create_accounts_router(settings,require_api):
         with db() as d:
             d.execute('DELETE FROM photo_sessions WHERE expires<?',(time.time(),))
             d.execute('INSERT INTO photo_sessions VALUES(?,?,?,?,?)',(digest(token),user['id'],json.dumps(user),csrf,time.time()+30*86400))
+        TaskStore(settings.database_path).attach_user(request,user['id'])
         response=cookie(RedirectResponse(origin+'/photo-scout/',302),COOKIE,token,30*86400)
         return cookie(response,STATE_COOKIE,'',0)
     @router.post('/photo-scout/v1/auth/logout')

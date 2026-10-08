@@ -613,7 +613,7 @@ def test_preview_leases_recover_and_failed_reads_do_not_charge(tmp_path,monkeypa
     assert store.get(job)['state']=='failed'
     response=TestClient(create_app(settings=settings)).get('/photo-scout/v1/report/'+job,headers={'X-Report-Token':'b'*32})
     assert response.status_code==200 and response.json()['state']=='failed'
-    store.update(job,created=time.time()-86401)
+    store.update(job,created=time.time()-30*86400-1)
     assert store.get(job) is None
     store.prune()
     with store.connect() as db: assert db.execute('SELECT count(*) FROM photo_scout_jobs').fetchone()[0]==0

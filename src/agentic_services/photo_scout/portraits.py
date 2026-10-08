@@ -11,6 +11,7 @@ from pillow_heif import register_heif_opener
 
 register_heif_opener(thumbnails=False,decode_threads=2)
 from .sources import image_data,image_host
+from .tasks import TaskStore
 
 class PortraitRequest(BaseModel):
     portrait: str = Field(max_length=27000000)
@@ -18,6 +19,8 @@ class PortraitRequest(BaseModel):
     provider: str = Field(max_length=50)
     place: str = Field(max_length=300)
     pose: str = Field(default='',max_length=500)
+    lat: float | None = Field(default=None,ge=-85,le=85,allow_inf_nan=False)
+    lon: float | None = Field(default=None,ge=-180,le=180,allow_inf_nan=False)
     style: Literal['natural','street','cinematic','vacation','editorial'] = 'natural'
 
 
@@ -77,20 +80,20 @@ def portrait_prompt(style,pose):
 
 
 def create_portrait_router(settings,require_api):
-    router=APIRouter(tags=['Photo Scout'])
+    router=APIRouter(tags=['Photo Scout']);tasks=TaskStore(settings.database_path)
     def db():
         c=sqlite3.connect(settings.database_path,timeout=15);c.row_factory=sqlite3.Row;c.execute('PRAGMA secure_delete=ON');return c
     with db() as c:
         c.execute('CREATE TABLE IF NOT EXISTS photo_portrait_budget (day INTEGER PRIMARY KEY, runs INTEGER NOT NULL)')
         c.execute('CREATE TABLE IF NOT EXISTS photo_portraits (id TEXT PRIMARY KEY, token_hash TEXT NOT NULL, created REAL NOT NULL, expires REAL NOT NULL, state TEXT NOT NULL, payload TEXT, photo BLOB, output BLOB, error TEXT)')
     def prune(c):c.execute('DELETE FROM photo_portraits WHERE expires<?',(time.time(),))
-    def owned(job,token):
+    def owned(job,token,request):
         with db() as c:
             prune(c);row=c.execute('SELECT * FROM photo_portraits WHERE id=?',(job,)).fetchone()
-        if not row or not token or not hmac.compare_digest(row['token_hash'],hashlib.sha256(token.encode()).hexdigest()):raise HTTPException(404,'Photo preview unavailable or expired')
+        if not row or not ((token and hmac.compare_digest(row['token_hash'],hashlib.sha256(token.encode()).hexdigest())) or tasks.allowed('portrait',job,request)):raise HTTPException(404,'Photo preview unavailable or expired')
         return row
     @router.post('/photo-scout/v1/portraits',status_code=202)
-    async def submit(request:Request,authorization:str|None=Header(None)):
+    async def submit(request:Request,response:Response,authorization:str|None=Header(None)):
         require_api(authorization)
         if not settings.openai_api_key:raise HTTPException(503,'Photo generation is not configured')
         # Bound the streaming body before parsing or storing personal photos.
@@ -102,7 +105,8 @@ def create_portrait_router(settings,require_api):
         except Exception as e:raise HTTPException(422,'Invalid photo request') from e
         photo=await asyncio.to_thread(clean_photo,payload.portrait)
         ref=background_reference(payload.provider,payload.background)
-        job=secrets.token_urlsafe(18);token=secrets.token_urlsafe(32);now=time.time()
+        job=secrets.token_urlsafe(18);token=secrets.token_urlsafe(32);now=time.time();retention=max(1,min(30,int(os.getenv('PHOTO_SCOUT_PORTRAIT_RETENTION_DAYS','7'))))*86400
+        identity=tasks.identity(request,response)
         with db() as c:
             c.execute('BEGIN IMMEDIATE');prune(c)
             if c.execute("SELECT count(*) FROM photo_portraits WHERE state IN ('queued','checking','running')").fetchone()[0]>=8:raise HTTPException(429,'Photo studio is busy; please retry shortly')
@@ -110,15 +114,17 @@ def create_portrait_router(settings,require_api):
             c.execute('INSERT OR IGNORE INTO photo_portrait_budget VALUES(?,0)',(day,))
             if limit>0 and c.execute('SELECT runs FROM photo_portrait_budget WHERE day=?',(day,)).fetchone()[0]>=limit:raise HTTPException(429,'Free photo studio capacity reached for today')
             c.execute('UPDATE photo_portrait_budget SET runs=runs+1 WHERE day=?',(day,))
-            c.execute('INSERT INTO photo_portraits VALUES(?,?,?,?,?,?,?,?,?)',(job,hashlib.sha256(token.encode()).hexdigest(),now,now+3600,'queued',json.dumps({'reference':ref,'place':payload.place,'pose':payload.pose,'style':payload.style}),photo,None,None))
-        return {'id':job,'token':token,'state':'queued','expiresInSeconds':3600,'aiGenerated':True}
+            c.execute('INSERT INTO photo_portraits VALUES(?,?,?,?,?,?,?,?,?)',(job,hashlib.sha256(token.encode()).hexdigest(),now,now+retention,'queued',json.dumps({'reference':ref,'place':payload.place,'pose':payload.pose,'style':payload.style}),photo,None,None))
+            tasks.bind_in(c,'portrait',job,identity,{'name':payload.place,'provider':payload.provider,'sourceUrl':payload.background,'poi':{'lat':payload.lat,'lon':payload.lon},'viewHeadingDegrees':int(ref.rsplit('/',1)[-1]) if payload.provider=='google-street-view' else None})
+        response.headers['Cache-Control']='private, no-store'
+        return {'id':job,'token':token,'state':'queued','expiresInSeconds':retention,'aiGenerated':True}
     @router.get('/photo-scout/v1/portraits/{job}')
-    def status(job:str,authorization:str|None=Header(None),x_report_token:str|None=Header(None)):
-        require_api(authorization);row=owned(job,x_report_token)
+    def status(job:str,request:Request,authorization:str|None=Header(None),x_report_token:str|None=Header(None)):
+        require_api(authorization);row=owned(job,x_report_token,request)
         return Response(json.dumps({'id':job,'state':row['state'],'error':row['error'],'aiGenerated':True}),media_type='application/json',headers={'Cache-Control':'private, no-store'})
     @router.get('/photo-scout/v1/portraits/{job}/image')
-    def output(job:str,authorization:str|None=Header(None),x_report_token:str|None=Header(None)):
-        require_api(authorization);row=owned(job,x_report_token)
+    def output(job:str,request:Request,authorization:str|None=Header(None),x_report_token:str|None=Header(None)):
+        require_api(authorization);row=owned(job,x_report_token,request)
         if row['state']!='complete':raise HTTPException(409,'Photo is not ready')
         return Response(row['output'],media_type='image/png',headers={'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff'})
     async def process():
