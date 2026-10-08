@@ -76,7 +76,7 @@ selected.on('dragend',()=>{const p=selected.getLatLng();pick(p.lat,p.lng);});
 function coordinates(){const styles=[...el('style-options').querySelectorAll('input:checked')].map(i=>i.value).filter(s=>s!=='any');return {lat:Number(el('lat').value),lon:Number(el('lon').value),radius:Number(el('radius').value),photoStyles:styles.length?styles:null}}
 function invalidatePois(){stopPoiScan();catalogGeneration++;candidatePoiLayer.clearLayers();poiCatalog=null;}
 function pick(lat,lon){invalidatePois();el('lat').value=lat.toFixed(6);el('lon').value=lon.toFixed(6);selected.setLatLng([lat,lon]);syncMapSelection();}
-const locationStatus=s=>{el('location-status').textContent=s};
+const locationStatus=(s,status)=>{el('location-status').textContent=s;if(status)el('location-status').dataset.state=status};
 let locationPending=false;
 function locateCurrentPosition(){
  if(locationPending)return;
@@ -86,7 +86,7 @@ function locateCurrentPosition(){
   locationPending=state.status==='pending';
   for(const control of [button,mapButton]){control.disabled=locationPending;control.setAttribute('aria-busy',String(locationPending));}
   button.textContent=locationPending?'⌖ Locating…':state.status==='success'?'✓ Located':'⌖ Near me';
-  mapButton.textContent=locationPending?'…':'⌖';locationStatus(state.message);
+  mapButton.textContent=locationPending?'…':'⌖';locationStatus(state.message,state.status);
   el('map-notice').textContent=state.message;
  },onPosition:position=>{
   const {latitude:lat,longitude:lon,accuracy}=position.coords;

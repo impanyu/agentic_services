@@ -112,3 +112,33 @@ html:has(body.photo-app),body.photo-app{height:100%;overflow:hidden}.photo-app m
 .studio-save{display:block;width:100%;min-height:44px;padding:14px;border:0;border-radius:14px;background:#72508b;color:#fff;font-size:14px;font-weight:650;cursor:pointer}.studio-save:disabled{opacity:.6;cursor:wait}.studio-download{margin-top:9px;background:#eee6f5;color:#65477c;border:1px solid #d9c9e5}.studio-save-hint{margin:10px 0 0}.studio-result{-webkit-touch-callout:default;user-select:auto}
 
 #task-section{border-bottom:1px solid #e5ddec;padding-bottom:10px;margin-bottom:10px}#task-section h3{margin:10px 0 6px;font-size:12px}.task-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0}.task-item>span{min-width:0}.task-item strong,.task-item small{display:block;overflow-wrap:anywhere}.task-item strong{font-size:11px}.task-item small{font-size:9px;color:#87758f;margin-top:4px}.task-item button{flex-shrink:0;min-height:36px;padding:6px 10px;border:1px solid #d8cbe3;border-radius:9px;background:#eee6f5;color:#694b80;font-size:11px}
+
+/* Keep the composer a slim input bar; progress must not cover the map. */
+.prompt-row textarea{height:46px;min-height:46px;padding:10px 4px;line-height:24px}
+.search-progress{margin:0 0 6px;padding:7px 10px;border-radius:12px}
+.progress-heading{gap:8px}.progress-heading strong{font-size:12px;line-height:18px}
+.progress-heading p,.progress-steps{display:none}
+.progress-spinner{width:16px;height:16px}
+.search-progress[data-state=complete]{display:none}
+.scout-dock:has(.search-progress[data-state=complete]) #message,.scout-dock:has(.search-progress[data-state=error]) #message{display:none}
+.search-progress[data-state=error] .progress-heading p{display:block;font-size:11px;max-height:48px;overflow:auto}
+@media(max-width:760px){
+ .scout-dock{padding:6px 10px;border-radius:20px;bottom:calc(12px + env(safe-area-inset-bottom));max-height:calc(38dvh - env(safe-area-inset-bottom))}
+ .scout-dock:has(#map-controls[open]){max-height:calc(65dvh - env(safe-area-inset-bottom))}
+ .prompt-row textarea{height:44px;min-height:44px;padding:10px 2px;font-size:16px;line-height:24px}
+ .prompt-row button{width:36px;height:36px;flex-basis:36px}
+ .dock-toolbar{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;margin:0;gap:4px}
+ .dock-actions{position:static;max-width:150px;flex-wrap:nowrap;gap:4px}
+ .dock-actions button,.dock-actions #toggle-results{min-height:32px;padding:6px 8px}
+ .map-controls>summary,.dock-toolbar:has(#toggle-results:not(:disabled)) .map-controls>summary{padding:4px 0;min-height:32px;flex-wrap:nowrap}
+ #parameter-summary{display:none}
+ #map-controls[open] #parameter-summary{display:block;flex-basis:auto;white-space:nowrap;margin-left:4px}
+ .dock-links{display:none}.scout-dock:has(#map-controls[open]) .dock-links{display:flex;margin-top:6px}
+ #location-status[data-state=success]{display:none}
+ .dock-status{max-height:36px;margin-top:4px;font-size:10px}
+ .dock-foot{margin-top:4px}
+ .search-progress{padding:5px 8px;margin-bottom:3px}
+ .progress-heading strong{font-size:11px;line-height:17px}
+ .search-progress[data-state=error] .progress-heading p{max-height:32px}
+ .leaflet-bottom.leaflet-right{bottom:calc(var(--scout-dock-height,90px) + 22px + env(safe-area-inset-bottom))}
+}
