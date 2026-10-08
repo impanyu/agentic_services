@@ -9,6 +9,7 @@ from agents import Agent, ModelSettings, OpenAIResponsesModel, RunConfig, Runner
 from openai import AsyncOpenAI
 from pydantic import BaseModel, Field
 
+from .styles import style_briefs
 from .sources import distance, image_data
 
 
@@ -31,6 +32,11 @@ class VisualResult(BaseModel):
 INSTRUCTIONS='''You are Photo Scout, a multimodal photo-location discovery agent.
 Choose which available images to inspect using inspect_image. Select a diverse handful of
 visually compelling nearby POIs and photo/check-in locations tailored to the user's preferences.
+Selected photoStyleBriefs describe the desired visual mood. The POI mapping is only a
+search heuristic: a park need not look serene, and a landmark need not be cinematic.
+Judge style fit from inspected images and explain the specific visible features that
+match the chosen mood in visible_evidence and photo_tip. Reject weak style matches
+even if their POI categories match. Do not infer water, color or night lighting from tags.
 Each image's poiCandidates (or poi) field lists OSM candidates; evaluate those POIs.
 Set poi_id to the supplied ID of the POI actually visible in the inspected image.
 If a nearby memorial is not visible but a listed tower is visible, select the tower's ID.
@@ -41,6 +47,7 @@ Compare different POIs before additional angles of the same POI.
 Before recommending a location you MUST inspect its actual image. Metadata alone is not
 visual evidence. Only cite supplied IDs; never invent locations, coordinates or images.
 Evaluate composition, scenic interest, distinctiveness, and photographic possibilities.
+When a mood is selected, prioritize visible style fit in both ranking and score.
 When multiple sources are available, compare actual images from different sources when useful.
 If Google Street View candidates exist, attempt at least one Google image inspection.
 For panoramas, supplied headings describe the camera direction. Compare distinct directions
@@ -111,7 +118,7 @@ async def explore(settings,payload,rows,statuses):
             tools=[inspect_image],output_type=VisualResult,
             model_settings=ModelSettings(max_tokens=2500,parallel_tool_calls=False,store=False))
         catalog=[{k:v for k,v in r.items() if k not in ('imageUrl','author')} for r in rows]
-        result=await asyncio.wait_for(Runner.run(agent,json.dumps({'request':payload.model_dump(),
+        result=await asyncio.wait_for(Runner.run(agent,json.dumps({'request':payload.model_dump(exclude={'poiCatalogToken'}),'photoStyleBriefs':style_briefs(payload.photoStyles),
             'images':catalog}),max_turns=14,run_config=RunConfig(tracing_disabled=True)),timeout=240)
     return {'spots':validate_result(result.final_output,rows,inspected,payload.limit),
         'summary':result.final_output.summary,'sources':statuses,'inspectedImages':len(inspected),

@@ -443,3 +443,48 @@ def test_category_api_validation_and_catalog_binding(tmp_path,monkeypatch):
     payload={'lat':0,'lon':0,'categories':['museum'],'selectedPoiIds':['park'],'poiCatalogToken':response.json()['poiCatalogToken']}
     assert client.post('/photo-scout/v1/candidates',headers=headers,json=payload).status_code==422
     assert calls==[['park']]
+
+
+def test_photo_mood_maps_to_categories_and_is_bound_to_catalog(tmp_path,monkeypatch):
+    import agentic_services.photo_scout.routes as routes
+    from agentic_services.photo_scout.styles import PHOTO_STYLES, mapped_categories
+    from agentic_services.photo_scout.sources import POI_CATEGORY_FILTERS
+    assert all(set(style['categories'])<=set(POI_CATEGORY_FILTERS) for style in PHOTO_STYLES.values())
+    assert set(mapped_categories(['nature','waterside']))=={'nature','park','viewpoint'}
+    settings=Settings(openai_api_key='test',openai_model='test',base_url='https://api.test',database_path=tmp_path/'db',service_api_key='private')
+    monkeypatch.setenv('PHOTO_SCOUT_ENABLED','1');monkeypatch.setenv('PHOTO_SCOUT_HUMAN_FREE_PREVIEW','1')
+    client=TestClient(create_app(settings=settings));headers={'Authorization':'Bearer private'};calls=[]
+    async def pois(lat,lon,radius,categories):
+        calls.append(categories);return [{'id':'park','name':'Park','category':'park'}],{'status':'ok'}
+    async def images(lat,lon,radius,targets):return [{'id':'img'}],{'panoramax':{'status':'ok'}}
+    async def model(settings,payload,rows,statuses):
+        assert payload.photoStyles==['waterside'] and payload.categories is None
+        return {'spots':[],'summary':'No visible water in the inspected view.'}
+    monkeypatch.setattr(routes,'nearby_pois',pois);monkeypatch.setattr(routes,'candidates',images);monkeypatch.setattr(routes,'explore',model)
+    assert len(client.get('/photo-scout/v1/status').json()['photoStyles'])==8
+    for fields in ({'photoStyles':[]},{'photoStyles':['unknown']},{'photoStyles':['nature'],'categories':['park']}):
+        assert client.post('/photo-scout/v1/pois',headers=headers,json={'lat':0,'lon':0,**fields}).status_code==422
+    response=client.post('/photo-scout/v1/pois',headers=headers,json={'lat':0,'lon':0,'photoStyles':['waterside']})
+    assert response.status_code==200 and calls==[['nature','park','viewpoint']]
+    payload={'lat':0,'lon':0,'photoStyles':['waterside'],'selectedPoiIds':['park'],'poiCatalogToken':response.json()['poiCatalogToken']}
+    # Same source category mapping, different photographic intent: stale selection rejected.
+    assert client.post('/photo-scout/v1/preview',headers=headers,json={**payload,'photoStyles':['nature']}).status_code==422
+    result=client.post('/photo-scout/v1/preview',headers=headers,json=payload)
+    assert result.status_code==200 and result.json()['photoStyles'][0]['label']=='Water & reflections'
+    assert calls==[['nature','park','viewpoint']]
+
+
+def test_agent_receives_style_brief_without_catalog_token(tmp_path,monkeypatch):
+    import json
+    from types import SimpleNamespace
+    import agentic_services.photo_scout.agent as visual
+    settings=Settings(openai_api_key='test',openai_model='test',database_path=tmp_path/'db',base_url='https://api.test')
+    async def runner(agent,prompt,**kw):
+        data=json.loads(prompt)
+        assert data['photoStyleBriefs'][0]['label']=='Clean & minimal'
+        assert data['request']['photoStyles']==['minimal']
+        assert 'poiCatalogToken' not in data['request'] and 'large-private-token' not in prompt
+        assert 'prioritize visible style fit' in agent.instructions
+        return SimpleNamespace(final_output=VisualResult(spots=[],summary='No match'),context_wrapper=SimpleNamespace(usage=SimpleNamespace(requests=1,input_tokens=1,output_tokens=1)))
+    monkeypatch.setattr(visual.Runner,'run',runner)
+    asyncio.run(visual.explore(settings,ExploreRequest(lat=0,lon=0,photoStyles=['minimal'],poiCatalogToken='large-private-token'),[{'id':'image','provider':'test','lat':0,'lon':0}],{}))

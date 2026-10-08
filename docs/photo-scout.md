@@ -267,3 +267,35 @@ Filters constrain the Overpass query and returned records before the 24-place ca
 Pass the same categories when using a signed catalog and selected POI IDs; a
 changed category set requires a new lookup. Category labels group several OSM tags
 (e.g. parks includes gardens and nature reserves); they are metadata, not ratings.
+
+## Photography moods (current website selection)
+
+The main website control now asks for the desired photo mood, rather than POI
+categories. Choose one of eight moods or “Surprise me” (unfiltered). Free-text
+composition preferences remain optional. Individual candidate selection remains
+available after lookup. The server owns the mapping in `photo_scout/styles.py`;
+`GET /photo-scout/v1/status` supplies the English UI labels and descriptions.
+
+| Mood | Candidate categories |
+| --- | --- |
+| Nature & calm | Parks/gardens, nature, viewpoints |
+| Urban & architectural | Historic places, attractions, viewpoints |
+| Vintage & nostalgic | Historic places, museums, attractions |
+| Iconic & cinematic | Attractions, viewpoints, historic places |
+| Artsy & colorful | Public art, museums, historic places |
+| Water & reflections | Nature, viewpoints, parks/gardens |
+| Clean & minimal | Public art, museums, historic places, parks/gardens |
+| Wild & adventurous | Nature, viewpoints, recreation areas |
+
+This is a broad candidate-search heuristic. Category membership does not establish
+style suitability. The visual agent receives trusted descriptions of the selected
+moods, evaluates actual images, prioritizes visible style fit in scores, and explains
+matching visual features. It can return fewer results or none when evidence is weak.
+
+API callers may send `photoStyles`, e.g. `["waterside"]`, to POI lookup and discovery.
+Multiple moods map to the union of their candidate categories. Do not send both
+`photoStyles` and the legacy `categories` field; the API rejects that ambiguity.
+Catalog tokens bind both mapped categories and original mood IDs: changing from
+nature to waterside invalidates a previous catalog even though their category
+mappings overlap. Legacy category-only requests remain supported. Signed catalog
+tokens are excluded from the model prompt.

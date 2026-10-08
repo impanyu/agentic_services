@@ -17,8 +17,9 @@ from typing import Literal
 
 import httpx
 from fastapi import APIRouter, Header, HTTPException, Request, Response
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
+from .styles import PHOTO_STYLES, mapped_categories, style_briefs
 from .agent import explore
 from .sources import candidates, nearby_pois, google_enabled, google_image_data
 
@@ -28,10 +29,20 @@ class ExploreRequest(BaseModel):
     lon: float = Field(ge=-180,le=180,allow_inf_nan=False)
     radius: int = Field(default=1000,ge=100,le=5000)
     limit: int = Field(default=3,ge=1,le=5)
+    photoStyles: list[Literal['nature','urban','vintage','iconic','artistic','waterside','minimal','adventure']] | None = Field(default=None,min_length=1,max_length=8)
     categories: list[Literal['viewpoint','park','attraction','museum','artwork','historic','nature','recreation']] | None = Field(default=None,min_length=1,max_length=8)
     selectedPoiIds: list[str] | None = Field(default=None,max_length=24)
     poiCatalogToken: str | None = Field(default=None,max_length=40000)
     preferences: str = Field(default='Scenic, distinctive public places for photography',max_length=500)
+
+    @model_validator(mode='after')
+    def validate_style_filters(self):
+        if self.photoStyles is not None and self.categories is not None:
+            raise ValueError('Use photoStyles or categories, not both')
+        return self
+
+    def poi_categories(self):
+        return mapped_categories(self.photoStyles) if self.photoStyles is not None else self.categories
 
 
 class PhotoStore:
@@ -101,7 +112,8 @@ def create_photo_router(settings,require_api,verification_store):
                 r.raise_for_status(); return r.json()
             except httpx.HTTPError as e: raise HTTPException(503,'Stripe is temporarily unavailable') from e
     async def lookup_pois(payload):
-        pois,status=await nearby_pois(payload.lat,payload.lon,payload.radius, payload.categories) if payload.categories is not None else await nearby_pois(payload.lat,payload.lon,payload.radius)
+        categories=payload.poi_categories()
+        pois,status=await nearby_pois(payload.lat,payload.lon,payload.radius,categories) if categories is not None else await nearby_pois(payload.lat,payload.lon,payload.radius)
         if status['status']!='ok':
             logging.getLogger(__name__).warning('Photo Scout POI search failed: %s',status.get('attempts',[]))
             raise HTTPException(503,'Nearby place search is temporarily unavailable; please try again later')
@@ -109,7 +121,7 @@ def create_photo_router(settings,require_api,verification_store):
 
     def sign_catalog(payload,pois,status):
         if not settings.service_api_key: raise HTTPException(503,'Private gateway credential is required')
-        data={'lat':payload.lat,'lon':payload.lon,'radius':payload.radius,'categories':sorted(set(payload.categories)) if payload.categories is not None else None,'expires':int(time.time())+3600,'pois':pois,'status':status}
+        data={'lat':payload.lat,'lon':payload.lon,'radius':payload.radius,'categories':sorted(set(payload.poi_categories())) if payload.poi_categories() is not None else None,'photoStyles':sorted(set(payload.photoStyles)) if payload.photoStyles is not None else None,'expires':int(time.time())+3600,'pois':pois,'status':status}
         encoded=base64.urlsafe_b64encode(json.dumps(data,separators=(',',':')).encode()).decode().rstrip('=')
         signature=hmac.new(settings.service_api_key.encode(),('poi-catalog:'+encoded).encode(),hashlib.sha256).hexdigest()
         return encoded+'.'+signature
@@ -127,7 +139,8 @@ def create_photo_router(settings,require_api,verification_store):
             data=json.loads(base64.urlsafe_b64decode(encoded+'='*(-len(encoded)%4)))
             if not allow_expired and data['expires']<time.time(): raise ValueError()
             if any(data[k]!=getattr(payload,k) for k in ('lat','lon','radius')): raise ValueError()
-            if data.get('categories')!=(sorted(set(payload.categories)) if payload.categories is not None else None): raise ValueError()
+            if data.get('categories')!=(sorted(set(payload.poi_categories())) if payload.poi_categories() is not None else None): raise ValueError()
+            if data.get('photoStyles')!=(sorted(set(payload.photoStyles)) if payload.photoStyles is not None else None): raise ValueError()
             wanted=set(payload.selectedPoiIds)
             pois=[p for p in data['pois'] if p['id'] in wanted]
             if len(pois)!=len(wanted): raise ValueError()
@@ -146,7 +159,7 @@ def create_photo_router(settings,require_api,verification_store):
         require_api(authorization); source_limit()
         pois,status=await lookup_pois(payload)
         return Response(json.dumps({'nearbyPois':pois,'source':status,'poiCatalogToken':sign_catalog(payload,pois,status),
-            'selectionExpiresInSeconds':3600,'visuallyAnalyzed':False}),media_type='application/json',headers={'Cache-Control':'private, no-store'})
+            'selectionExpiresInSeconds':3600,'photoStyles':style_briefs(payload.photoStyles),'visuallyAnalyzed':False}),media_type='application/json',headers={'Cache-Control':'private, no-store'})
 
     def image_links(result):
         if not result or not settings.service_api_key: return result
@@ -185,12 +198,14 @@ def create_photo_router(settings,require_api,verification_store):
             result['nearbyPois']=pois
             result['discoveryMethod']='poi-first'
             result['candidatePoiCount']=len(pois)
+            result['photoStyles']=style_briefs(payload.photoStyles)
             return image_links(result)
 
     @router.get('/photo-scout/v1/status')
     def status():
         return {'serviceId':'photo-scout','enabled':os.getenv('PHOTO_SCOUT_ENABLED')=='1' and bool(settings.openai_api_key),
             'humanFreePreview':free_preview(),
+            'photoStyles':[{'id':key,**value} for key,value in PHOTO_STYLES.items()],
             'humanPriceUsd':'0.00' if free_preview() else (f'{price()/100:.2f}' if price()>0 else None),
             'sources':{'wikimedia-commons':'enabled',
                 'panoramax':'enabled' if os.getenv('PHOTO_SCOUT_PANORAMAX_ENABLED','1')=='1' else 'disabled',
