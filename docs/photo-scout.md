@@ -333,3 +333,9 @@ Images remain transient, credentials and signed catalog tokens never enter promp
 ## Single-page website layout
 
 The map, search form, task status and shortlist remain on one page. Rendering a result replaces only the shortlist section; it does not hide the workspace or sample buttons. Completed reports restore below the form without scrolling on entry. User-triggered views and newly completed searches scroll to the shortlist; an adjustment link scrolls back to the map without removing results. Viewing examples preserves the selected location.
+
+### Additional map layers and geolocation feedback
+
+OpenFreeMap Liberty, Positron, Dark and Bright are global OSM-based styles. USGSImageryOnly and USGSTopo are optional U.S. aerial/topographic basemaps with explicit coverage labels and visible attribution. Leaflet overlays toggle search radius, OpenStreetMap candidate POIs and non-Google photo locations. Basemap layers support location selection, not the model's image-scoring input.
+
+Geolocation requests use a recent device position (up to 60 seconds old) without requiring a high-accuracy GPS fix. The button shows a busy state and actionable permission/error messages. A 20-second watchdog handles unresolved permission prompts; success updates coordinates and radius, clears analysis consent and scrolls to the map.
