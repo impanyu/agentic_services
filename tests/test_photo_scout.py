@@ -756,3 +756,15 @@ def test_history_thumbnail_links_require_auth_and_valid_google_panorama(tmp_path
     assert len(q['signature'][0])==64
     for bad in [url.replace('www.google.com','evil.test'),url.replace('225','360'),url.replace('https:','http:')]:
         assert client.post('/photo-scout/v1/thumbnails',json={'sourceUrls':[bad]},headers=headers).status_code==422
+
+
+def test_thumbnail_loads_do_not_consume_source_search_limit(tmp_path,monkeypatch):
+    import base64
+    import agentic_services.photo_scout.routes as routes
+    async def image(reference):return 'data:image/jpeg;base64,'+base64.b64encode(b'\xff\xd8\xfffixture').decode()
+    monkeypatch.setattr(routes,'google_image_data',image)
+    settings=Settings(openai_api_key=None,openai_model='test',database_path=tmp_path/'db',base_url='https://api.test',service_api_key='private')
+    client=TestClient(create_app(settings=settings));headers={'Authorization':'Bearer private'}
+    url='https://www.google.com/maps/@?map_action=pano&pano=fixture&heading=315'
+    signed=client.post('/photo-scout/v1/thumbnails',json={'sourceUrls':[url]},headers=headers).json()['imageUrls'][0]
+    for _ in range(24):assert client.get(signed,headers=headers).status_code==200

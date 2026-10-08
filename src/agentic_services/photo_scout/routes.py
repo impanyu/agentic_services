@@ -134,11 +134,18 @@ def create_photo_router(settings,require_api,verification_store):
     router=APIRouter(tags=['Photo Scout']); store=PhotoStore(settings.database_path)
     lock=asyncio.Lock()
     source_requests=[]
+    image_requests=[]
     def source_limit():
         now=time.monotonic()
         source_requests[:]=[t for t in source_requests if t>now-60]
         if len(source_requests)>=10: raise HTTPException(429,"Source lookup limit reached; try again in a minute")
         source_requests.append(now)
+
+    def image_limit():
+        now=time.monotonic()
+        image_requests[:]=[t for t in image_requests if t>now-60]
+        if len(image_requests)>=240: raise HTTPException(429,'Image preview limit reached; try again in a minute',headers={'Retry-After':'60'})
+        image_requests.append(now)
 
     def free_preview():
         return os.getenv("PHOTO_SCOUT_HUMAN_FREE_PREVIEW", "0") == "1"
@@ -252,7 +259,7 @@ def create_photo_router(settings,require_api,verification_store):
         expected=hmac.new(settings.service_api_key.encode(),f'{reference}|{expires}'.encode(),hashlib.sha256).hexdigest()
         if expires<now or expires>now+1200 or not hmac.compare_digest(signature,expected):
             raise HTTPException(403,'Image link expired or invalid; reload the report')
-        source_limit()
+        image_limit()
         try:
             data=await google_image_data(reference)
             return Response(base64.b64decode(data.split(',',1)[1]),media_type='image/jpeg',
