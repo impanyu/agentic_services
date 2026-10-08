@@ -1,0 +1,10 @@
+# Photo Scout fixed workflow
+
+Photo Scout is a deterministic application pipeline. Models do not choose tools or execute code.
+
+- Text input: a structured-output model extracts a place, photo mood, radius, and preferences. Photon resolves the place to coordinates; the first provider-ranked match is used and its resolved name is displayed. The model never generates coordinates. Unresolvable inputs produce an explanation.
+- Device location: browser geolocation supplies coordinates directly; the text model and geocoder are skipped. Permission failure never substitutes the default Chicago center.
+- Both entries then search nearby OpenStreetMap POIs, retrieve imagery around those POIs, batch-score images with the multimodal model, and rank suitable results. The user can optionally adjust map controls or choose POIs manually.
+- The map marks independently sourced POI coordinates; visual evidence, scores, attribution and camera links are shown in result cards. A POI listing alone is not a visually verified recommendation.
+- Active work runs in a durable server queue. Switching tabs does not interrupt it. Browser state is held only in page memory; refresh/close starts fresh, with no last-report banner, history or automatic resume. Legacy Photo Scout localStorage/sessionStorage entries are removed on load. Delivery jobs expire after 24 hours. Text-model response storage is disabled and original text is not saved as query history.
+- Website testing remains free. Agent discovery keeps its existing per-call payment gateway. Natural-language resolution is available while free website testing is enabled, with a persistent daily capacity limit (PHOTO_SCOUT_DAILY_INTENT_LIMIT, default 100).

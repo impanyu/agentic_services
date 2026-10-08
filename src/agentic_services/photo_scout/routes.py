@@ -21,6 +21,7 @@ from pydantic import BaseModel, Field, model_validator
 
 from .styles import PHOTO_STYLES, mapped_categories, style_briefs
 from .scoring import explore
+from .intent import IntentRequest, resolve_intent
 from .sources import candidates, nearby_pois, google_enabled, google_image_data
 
 
@@ -49,6 +50,7 @@ class PhotoStore:
     def __init__(self,path):
         self.path=path
         with self.connect() as db:
+            db.execute('CREATE TABLE IF NOT EXISTS photo_scout_intent_budget (day TEXT PRIMARY KEY, runs INTEGER NOT NULL)')
             db.execute('CREATE TABLE IF NOT EXISTS photo_scout_budget (day TEXT PRIMARY KEY, runs INTEGER NOT NULL)')
             db.execute('''CREATE TABLE IF NOT EXISTS photo_scout_jobs (
                 id TEXT PRIMARY KEY, token_hash TEXT NOT NULL, payload TEXT NOT NULL,
@@ -95,6 +97,15 @@ class PhotoStore:
             db.execute('INSERT INTO photo_scout_jobs(id,token_hash,payload,created,price) VALUES(?,?,?,?,?)',
                 (job,hashlib.sha256(token.encode()).hexdigest(),payload.model_dump_json(),time.time(),price))
         return job,token
+    def reserve_intent(self):
+        from datetime import datetime,timezone
+        day=datetime.now(timezone.utc).date().isoformat()
+        with self.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            db.execute('INSERT OR IGNORE INTO photo_scout_intent_budget VALUES(?,0)',(day,))
+            if db.execute('SELECT runs FROM photo_scout_intent_budget WHERE day=?',(day,)).fetchone()[0]>=int(os.getenv('PHOTO_SCOUT_DAILY_INTENT_LIMIT','100')):
+                raise HTTPException(429,'Daily text search capacity reached. Use the map controls instead.')
+            db.execute('UPDATE photo_scout_intent_budget SET runs=runs+1 WHERE day=?',(day,))
     def reserve_run(self):
         from datetime import datetime, timezone
         day=datetime.now(timezone.utc).date().isoformat()
@@ -185,6 +196,18 @@ def create_photo_router(settings,require_api,verification_store):
         rows,statuses=await candidates(payload.lat,payload.lon,payload.radius,pois)
         statuses['openstreetmap']=poi_status
         return rows,statuses,pois
+
+    @router.post('/photo-scout/v1/resolve')
+    async def resolve(payload: IntentRequest,response: Response,authorization: str | None=Header(None)):
+        require_api(authorization); enabled(); source_limit()
+        if not free_preview(): raise HTTPException(403,'Natural-language search is currently available during free website testing')
+        store.reserve_intent()
+        response.headers['Cache-Control']='private, no-store'
+        try:
+            async with asyncio.timeout(45): return await resolve_intent(settings,payload)
+        except Exception as error:
+            logging.getLogger(__name__).warning('Photo Scout text resolution failed: %s',type(error).__name__)
+            raise HTTPException(503,'Text search is temporarily unavailable. You can still choose a location on the map.') from error
 
     @router.post('/photo-scout/v1/pois')
     async def list_pois(payload: ExploreRequest,authorization: str | None=Header(None)):
