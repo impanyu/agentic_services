@@ -560,7 +560,7 @@ app.all('*', async (c) => {
     return new Response(null, { status: 204, headers: {
       'Access-Control-Allow-Origin': origin,
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, X-Report-Token, X-Usage-Session, X-Usage-Source, X-Usage-Campaign, X-Usage-Test',
+      'Access-Control-Allow-Headers': 'Content-Type, X-Report-Token, X-Request-Token, X-Usage-Session, X-Usage-Source, X-Usage-Campaign, X-Usage-Test',
       Vary: 'Origin',
     } })
   }

@@ -206,6 +206,15 @@ def create_app(
                     await asyncio.sleep(5)
 
         task = asyncio.create_task(worker())
+        async def photo_worker() -> None:
+            while True:
+                try:
+                    worked=await app.state.process_photo_preview()
+                except Exception:
+                    logging.getLogger(__name__).exception('Photo Scout queue worker failed')
+                    worked=False
+                if not worked: await asyncio.sleep(5)
+        photo_task=asyncio.create_task(photo_worker())
         async def niche_collector() -> None:
             store = ManagerStore(resolved_settings.database_path)
             while True:
@@ -245,6 +254,11 @@ def create_app(
         finally:
             task.cancel()
             niche_task.cancel()
+            photo_task.cancel()
+            try:
+                await photo_task
+            except asyncio.CancelledError:
+                pass
             try:
                 await task
             except asyncio.CancelledError:
@@ -367,6 +381,7 @@ def create_app(
         store, require_service_api_key, sign_receipt, resolved_settings.base_url, checkout_lock, growth=growth,
     )
     photo_router, retrieve_photo_checkout, fulfill_photo_checkout = create_photo_router(resolved_settings, require_service_api_key, store)
+    app.state.process_photo_preview = photo_router.process_preview
     app.include_router(photo_router)
     app.include_router(contractor_router)
     app.include_router(create_niche_router(resolved_settings))

@@ -536,3 +536,59 @@ def test_fixed_pipeline_all_failed_is_an_error(tmp_path,monkeypatch):
     _scoring_client(monkeypatch,parse);monkeypatch.setattr(visual,'image_data',image)
     with pytest.raises(ValueError,match='No images could be scored'):
         asyncio.run(visual.explore(settings,ExploreRequest(lat=0,lon=0),_scoring_rows(),{}))
+
+
+def test_background_preview_is_durable_private_and_idempotent(tmp_path,monkeypatch):
+    import agentic_services.photo_scout.routes as routes
+    monkeypatch.setenv('PHOTO_SCOUT_ENABLED','1')
+    monkeypatch.setenv('PHOTO_SCOUT_HUMAN_FREE_PREVIEW','1')
+    settings=Settings(openai_api_key='fixture',openai_model='test',database_path=tmp_path/'db',base_url='https://api.test',service_api_key='private')
+    calls=[]
+    async def nearby(*args): return [],{'status':'ok','provider':'openstreetmap'}
+    async def candidates(*args,**kwargs): return [],{}
+    async def explore(*args,**kwargs):
+        calls.append(1)
+        return {'spots':[],'summary':'No suitable images'}
+    monkeypatch.setattr(routes,'nearby_pois',nearby)
+    monkeypatch.setattr(routes,'candidates',candidates)
+    monkeypatch.setattr(routes,'explore',explore)
+    app=create_app(settings=settings);client=TestClient(app)
+    token='a'*32;headers={'Authorization':'Bearer private','X-Request-Token':token}
+    submitted=client.post('/photo-scout/v1/jobs',json={'lat':0,'lon':0},headers=headers)
+    assert submitted.status_code==202 and not calls
+    job=submitted.json()['jobId']
+    assert client.post('/photo-scout/v1/jobs',json={'lat':0,'lon':0},headers=headers).json()['jobId']==job
+    assert client.post('/photo-scout/v1/jobs',json={'lat':1,'lon':0},headers=headers).status_code==409
+    assert client.get('/photo-scout/v1/report/'+job).status_code==404
+    auth={'X-Report-Token':token}
+    assert client.get('/photo-scout/v1/report/'+job,headers=auth).json()['state']=='queued'
+    # Recreate the app: no browser request or in-memory task from submission survives.
+    restarted=create_app(settings=settings)
+    assert asyncio.run(restarted.state.process_photo_preview())
+    assert calls==[1]
+    report=TestClient(restarted).get('/photo-scout/v1/report/'+job,headers=auth)
+    assert report.json()['state']=='complete' and report.headers['cache-control']=='private, no-store'
+    assert not asyncio.run(restarted.state.process_photo_preview())
+    assert TestClient(restarted).get('/photo-scout/v1/report/'+job,headers=auth).json()['result']['spots']==[]
+    assert calls==[1]
+
+
+def test_preview_leases_recover_and_failed_reads_do_not_charge(tmp_path,monkeypatch):
+    import time
+    monkeypatch.setenv('PHOTO_SCOUT_HUMAN_FREE_PREVIEW','1')
+    settings=Settings(openai_api_key='fixture',openai_model='test',database_path=tmp_path/'db',base_url='https://api.test',service_api_key='private')
+    store=PhotoStore(settings.database_path)
+    job=store.enqueue_preview(ExploreRequest(lat=0,lon=0),'b'*32)
+    assert store.claim_preview()['id']==job
+    assert PhotoStore(settings.database_path).claim_preview() is None
+    store.update(job,lease_until=time.time()-1)
+    assert PhotoStore(settings.database_path).claim_preview()['id']==job
+    store.update(job,lease_until=time.time()-1)
+    assert store.claim_preview() is None
+    assert store.get(job)['state']=='failed'
+    response=TestClient(create_app(settings=settings)).get('/photo-scout/v1/report/'+job,headers={'X-Report-Token':'b'*32})
+    assert response.status_code==200 and response.json()['state']=='failed'
+    store.update(job,created=time.time()-86401)
+    assert store.get(job) is None
+    store.prune()
+    with store.connect() as db: assert db.execute('SELECT count(*) FROM photo_scout_jobs').fetchone()[0]==0

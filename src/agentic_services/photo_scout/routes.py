@@ -54,6 +54,37 @@ class PhotoStore:
                 id TEXT PRIMARY KEY, token_hash TEXT NOT NULL, payload TEXT NOT NULL,
                 created REAL NOT NULL, session TEXT UNIQUE, price INTEGER NOT NULL,
                 state TEXT NOT NULL DEFAULT 'unpaid', result TEXT, error TEXT)''')
+            columns={row[1] for row in db.execute('PRAGMA table_info(photo_scout_jobs)')}
+            for name,definition in [('kind',"TEXT NOT NULL DEFAULT 'paid'"),('lease_until','REAL NOT NULL DEFAULT 0'),('attempts','INTEGER NOT NULL DEFAULT 0')]:
+                if name not in columns: db.execute(f'ALTER TABLE photo_scout_jobs ADD COLUMN {name} {definition}')
+    def prune(self):
+        with self.connect() as db:
+            db.execute("DELETE FROM photo_scout_jobs WHERE created<? OR (kind='preview' AND created<?)",(time.time()-30*86400,time.time()-86400))
+    def enqueue_preview(self,payload,token):
+        self.prune()
+        job='ps_'+hashlib.sha256(token.encode()).hexdigest()[:32]
+        encoded=payload.model_dump_json()
+        with self.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            existing=db.execute('SELECT payload,kind FROM photo_scout_jobs WHERE id=?',(job,)).fetchone()
+            if existing:
+                if existing['kind']!='preview' or existing['payload']!=encoded:
+                    raise HTTPException(409,'This request token was already used for another search')
+                return job
+            count=db.execute("SELECT COUNT(*) FROM photo_scout_jobs WHERE kind='preview' AND state IN ('queued','running')").fetchone()[0]
+            if count>=10: raise HTTPException(429,'The search queue is full; try again later')
+            db.execute("INSERT INTO photo_scout_jobs(id,token_hash,payload,created,price,state,kind) VALUES(?,?,?,?,0,'queued','preview')",(job,hashlib.sha256(token.encode()).hexdigest(),encoded,time.time()))
+        return job
+    def claim_preview(self):
+        self.prune()
+        now=time.time()
+        with self.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            db.execute("UPDATE photo_scout_jobs SET state='failed',error='Search interrupted repeatedly. Please submit a new search.' WHERE kind='preview' AND state='running' AND lease_until<? AND attempts>=2",(now,))
+            row=db.execute("SELECT * FROM photo_scout_jobs WHERE kind='preview' AND (state='queued' OR (state='running' AND lease_until<?)) ORDER BY created LIMIT 1",(now,)).fetchone()
+            if row:
+                db.execute("UPDATE photo_scout_jobs SET state='running',lease_until=?,attempts=attempts+1 WHERE id=?",(now+360,row['id']))
+        return dict(row) if row else None
     def connect(self):
         db=sqlite3.connect(self.path,timeout=15); db.row_factory=sqlite3.Row; return db
     def create(self,payload,price):
@@ -77,6 +108,7 @@ class PhotoStore:
     def get(self,job):
         with self.connect() as db:
             row=db.execute('SELECT * FROM photo_scout_jobs WHERE id=? AND created>?',(job,time.time()-30*86400)).fetchone()
+        if row and row['kind']=='preview' and row['created']<time.time()-86400: return None
         return dict(row) if row else None
     def update(self,job,**values):
         with self.connect() as db:
@@ -247,6 +279,34 @@ def create_photo_router(settings,require_api,verification_store):
             logging.getLogger(__name__).warning('Photo Scout exploration failed: %s frames=%s',type(e).__name__,[(f.name,f.lineno) for f in traceback.extract_tb(e.__traceback__)[-6:]])
             raise HTTPException(503,'Visual exploration failed; please try again later') from e
 
+    @router.post('/photo-scout/v1/jobs',status_code=202)
+    async def submit_preview(payload: ExploreRequest,response: Response,authorization: str | None=Header(None),x_request_token: str | None=Header(None)):
+        require_api(authorization); enabled()
+        if not settings.service_api_key: raise HTTPException(503,'Private gateway credential is required')
+        if not free_preview(): raise HTTPException(403,'Free website testing is not enabled')
+        if not x_request_token or not re.fullmatch(r'[A-Za-z0-9_-]{32,128}',x_request_token):
+            raise HTTPException(422,'A private request token of at least 32 characters is required')
+        source_limit()
+        # Validate signed place selection before durable admission, without fetching images.
+        if payload.selectedPoiIds is not None: await chosen_pois(payload)
+        job=store.enqueue_preview(payload,x_request_token)
+        response.headers['Cache-Control']='private, no-store'
+        return {'jobId':job,'reportToken':x_request_token,'state':store.get(job)['state'],'expiresAt':store.get(job)['created']+86400}
+
+    async def process_preview():
+        if lock.locked(): return False
+        job=store.claim_preview()
+        if not job: return False
+        try:
+            result=await run(ExploreRequest.model_validate_json(job['payload']),allow_expired=True)
+            store.update(job['id'],state='complete',result=json.dumps(result),error=None,lease_until=0)
+        except Exception as error:
+            logging.getLogger(__name__).warning('Photo Scout background search failed: %s',type(error).__name__)
+            store.update(job['id'],state='failed',lease_until=0,error='Search could not be completed. Please try again later.')
+        return True
+
+    router.process_preview=process_preview
+
     @router.post('/photo-scout/v1/checkout')
     async def checkout(payload: ExploreRequest,authorization: str | None=Header(None)):
         require_api(authorization)
@@ -304,7 +364,7 @@ def create_photo_router(settings,require_api,verification_store):
         if not job or not hmac.compare_digest(job['token_hash'],hashlib.sha256((x_report_token or '').encode()).hexdigest()):
             raise HTTPException(404,'Report not found')
         response.headers['Cache-Control']='private, no-store'
-        if job['state'] in ('unpaid','failed'):
+        if job['kind']=='paid' and job['state'] in ('unpaid','failed'):
             session=await retrieve_paid(job['session'])
             if job['state']=='unpaid':
                 with store.connect() as db:
