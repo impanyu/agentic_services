@@ -32,3 +32,5 @@ html:has(body.photo-app),body.photo-app{height:100%;overflow:hidden}.photo-app m
 .map-overlay-controls .leaflet-control{margin:0;float:none;clear:none}.map-overlay-controls .leaflet-control-layers{max-width:calc(100vw - 32px)}
 
 .map-overlay-controls .map-toolbar[open]{z-index:800}
+
+.direction-dot>span{inset:0 auto auto 5px;width:26px;height:32px}.direction-dot i{background:#727887}.direction-dot b{border-bottom-color:#727887}.dot-bearing{position:absolute;top:28px;left:50%;transform:translateX(-50%);padding:2px 4px;border-radius:7px;background:#fffefbf2;color:#535868;font-size:9px;line-height:12px;font-weight:600;white-space:nowrap;box-shadow:0 1px 5px #33283e26}

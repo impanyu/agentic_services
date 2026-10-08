@@ -40,7 +40,7 @@ function pageFixture(){
  const context={window,navigator,L,document:{createElement:()=>element('created'),body:{dataset:{}},getElementById:element,querySelector:element,querySelectorAll(){return [];},addEventListener(){}},location:{hostname:'test.invalid',search:''},localStorage:{removeItem(){}},sessionStorage:{},fetch:()=>new Promise(()=>{}),setTimeout:()=>1,clearTimeout(){},setInterval:()=>1,clearInterval(){},Number,URL,matchMedia:()=>({matches:true})};
  vm.runInNewContext(readFileSync('photo-scout-site/location.js','utf8'),context);
  vm.runInNewContext(readFileSync('photo-scout-site/app.js','utf8'),context);
- return {interceptSubmission:fn=>{context.submitSearch=fn;},bearing:context.photoBearing,element,requests,moves,circles,click:id=>element(id).listeners.click()};
+ return {interceptSubmission:fn=>{context.submitSearch=fn;},bearing:context.photoBearing,views:context.allPoiViews,element,requests,moves,circles,click:id=>element(id).listeners.click()};
 }
 test('top-right location button waits for device coordinates and moves away from Chicago',()=>{
  const f=pageFixture();f.click('center-pin');assert.equal(f.requests.length,1);assert.equal(f.moves.length,0);assert.equal(f.element('center-pin').disabled,true);
@@ -62,4 +62,12 @@ test('location buttons select coordinates without submitting a search or alterin
   const f=pageFixture();f.element('prompt-query').value='Urban shots within 20 km';let submissions=0;f.interceptSubmission(()=>{submissions++;});f.click(id);f.requests[0].success({coords:{latitude:40.8,longitude:-96.7,accuracy:8}});
   assert.equal(submissions,0);assert.equal(f.element('prompt-query').value,'Urban shots within 20 km');assert.equal(f.element('lat').value,'40.800000');assert.equal(f.element('lon').value,'-96.700000');assert.equal(f.moves.length,1);assert.match(f.element('location-status').textContent,/press Enter to search/);
  }
+});
+
+test('map and shortlist retain scored images and their best heading, excluding unverified POIs',()=>{
+ const f=pageFixture(),best={id:'image1',poi:{id:'poi1'},score:92,provider:'google-street-view',sourceUrl:'https://www.google.com/maps/@?pano=example',viewHeadingDegrees:225};
+ const other={...best,id:'image2',poi:{id:'poi2'},score:61,viewHeadingDegrees:90};
+ const missing={poi:{id:'poi3'},score:null,assessmentStatus:'no_verified_view'};
+ const result=f.views({spots:[best],poiResults:[best,other,missing]});assert.equal(result.length,2);assert.equal(result[1].viewHeadingDegrees,90);
+ assert.equal(f.views({spots:[],nearbyPois:[{id:'poi3'}]}).length,0);
 });
