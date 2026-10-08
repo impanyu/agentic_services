@@ -92,12 +92,13 @@ async def explore(settings,payload,rows,statuses):
             'sources':statuses,'inspectedImages':0,'coverage':'Bounded sample; not complete nearby coverage.'}
     inspected=set(); attempts=0
     by_id={r['id']:r for r in rows}
-    @function_tool
+    @function_tool(is_enabled=lambda context,agent:attempts<12)
     async def inspect_image(image_id: str):
         """See the actual photograph for a supplied image ID. Max 12 inspection attempts."""
         nonlocal attempts
-        if image_id not in by_id or attempts>=12: return 'Image unavailable or inspection budget exhausted.'
+        if attempts>=12: return 'Inspection budget exhausted; produce the final structured result now.'
         attempts+=1
+        if image_id not in by_id: return 'Image unavailable. Use only supplied image IDs.'
         try:
             data=await image_data(by_id[image_id]['imageUrl'])
         except Exception:

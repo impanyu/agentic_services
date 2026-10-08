@@ -232,3 +232,6 @@ about permission for commercial model analysis is unchanged by this UI revision.
 When one panorama is near multiple queried POIs, the image catalog retains those
 possible matches. The agent chooses a supplied `poi_id` supported by the visible
 scene; the server rejects unlisted POIs and displays the chosen source name.
+
+Image inspection is disabled dynamically after 12 attempts, leaving the final
+agent turn without tools so it must produce its structured recommendation.
