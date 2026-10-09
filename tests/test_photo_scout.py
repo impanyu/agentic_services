@@ -905,9 +905,10 @@ def test_visual_exploration_retains_best_angle_for_unnamed_location(tmp_path,mon
     async def image(url):return 'data:image/jpeg;base64,/9j/dGVzdA=='
     async def parse(**kw):
         batch=[json.loads(c['text'])['image'] for c in kw['input'][0]['content'][1:] if c['type']=='input_text']
+        request=json.loads(kw['input'][0]['content'][0]['text'])['request']
         return SimpleNamespace(output_parsed=visual.VisualBatch(assessments=[visual.ImageAssessment(
             image_id=r['id'],poi_id=None,name='Tree-lined corner',score=int(r['id']),recommend=True,
-            matches_request=True,match_reason='Scenic street scene',visible_evidence='Trees frame the street.',photo_tip='Frame the trees.',uncertainty='Access unknown',confidence='medium') for r in batch]),usage=None)
+            matches_request=not request['poiQueries'],match_reason='No cafe visible' if request['poiQueries'] else 'Scenic street scene',visible_evidence='Trees frame the street.',photo_tip='Frame the trees.',uncertainty='Access unknown',confidence='medium') for r in batch]),usage=None)
     _scoring_client(monkeypatch,parse);monkeypatch.setattr(visual,'image_data',image)
     result=asyncio.run(visual.explore(settings,ExploreRequest(lat=0,lon=0),rows,{}))
     assert len(result['poiResults'])==1
@@ -917,6 +918,30 @@ def test_visual_exploration_retains_best_angle_for_unnamed_location(tmp_path,mon
     assert spot['namedPoi'] is False and len(result['imageAssessments'])==8
     strict=[{**r,'allowUnlistedPlace':False} for r in rows]
     assert asyncio.run(visual.explore(settings,ExploreRequest(lat=0,lon=0,poiQueries=['cafes']),strict,{}))['poiResults']==[]
+
+@pytest.mark.parametrize('queries,kinds', [([],['lake']),(['coffee shops'],[]),(['architecture'],[])])
+def test_all_searches_keep_matching_unnamed_views_and_deduplicate_panorama(tmp_path,monkeypatch,queries,kinds):
+    import json
+    from types import SimpleNamespace
+    import agentic_services.photo_scout.scoring as visual
+    settings=Settings(openai_api_key='test',openai_model='test',database_path=tmp_path/'db',base_url='https://api.test')
+    poi={'id':'park','name':'Named Park','lat':0,'lon':0}
+    rows=[{'id':str(i),'provider':'google-street-view','lat':0,'lon':i*.001,
+           'imageUrl':f'google-streetview://{pano}/{heading}/0/120','poi':poi}
+          for i,(pano,heading) in enumerate([('shoreA',0),('shoreA',45),('shoreB',90)])]
+    async def image(url):return 'data:image/jpeg;base64,/9j/dGVzdA=='
+    async def parse(**kw):
+        batch=[json.loads(c['text'])['image'] for c in kw['input'][0]['content'][1:] if c['type']=='input_text']
+        assert all(r.get('allowUnlistedPlace') is True for r in batch)
+        return SimpleNamespace(output_parsed=visual.VisualBatch(assessments=[visual.ImageAssessment(
+            image_id=r['id'],poi_id='park' if r['id']=='0' else None,
+            name='Named Park' if r['id']=='0' else 'Lake shore',score={'0':70,'1':80,'2':60}[r['id']],recommend=True,
+            matches_request=True,match_reason='Visible lake',visible_evidence='Lake and shore are visible.',
+            photo_tip='Frame the lake.',uncertainty='Access unknown',confidence='medium') for r in batch]),usage=None)
+    _scoring_client(monkeypatch,parse);monkeypatch.setattr(visual,'image_data',image)
+    result=asyncio.run(visual.explore(settings,ExploreRequest(lat=0,lon=0,geographicKinds=kinds,poiQueries=queries),rows,{}))
+    assert [p['image_id'] for p in result['spots']]==['1','2']
+    assert all(p['namedPoi'] is False for p in result['spots'])
 
 
 def test_visual_exploration_survives_place_provider_failure(tmp_path,monkeypatch):

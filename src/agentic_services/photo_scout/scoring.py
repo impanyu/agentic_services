@@ -56,6 +56,9 @@ FIRST judge whether the actual pixels match request.scoringIntent, poiQueries,
 preferences, geographicKinds and photoStyleBriefs. Spatial proximity is not proof of visual fit: lakeside/sea/river/waterside requests require visible relevant water or shore; forest requests require visible woodland; peak requests require a plausible summit/mountain-view setting. Reject directions facing away from the requested subject. Set matches_request and explain match_reason.
 Reject clear subject/category mismatches or clear conflicts with explicit visual
 requirements or requested mood. A beautiful landscape is not a coffee shop or motel.
+For an explicitly requested brand, named business or landmark, require visual
+evidence supporting that specific request; a generic category match alone is not
+enough. Reject an unsupported specific identity as matches_request=false.
 Do not infer a match merely from title, provider or proximity. Accept plausible
 matches with uncertainty for details that cannot be verified visually.
 For broad scenic requests, accept ordinary matching views. Do not reject because of
@@ -141,6 +144,10 @@ def validate_result(result,rows,inspected,limit):
 async def explore(settings,payload,rows,statuses):
     """Fixed download -> batched model scoring -> deterministic ranking; no tools."""
     rows=rows[:MAX_SCORED_IMAGES]
+    # Visual request matching determines eligibility for every search. Named POI
+    # identity only determines the label; a matching image with a real camera
+    # location can stand on its own without claiming the nearby POI's identity.
+    rows=[{**r,'allowUnlistedPlace':True} for r in rows]
     model=os.getenv('PHOTO_SCOUT_MODEL','gpt-6-luna')
     if not rows:
         return {'spots':[],'summary':'No eligible geolocated images were found in this sampled area.',
@@ -211,12 +218,15 @@ async def explore(settings,payload,rows,statuses):
         VisualResult(spots=[a],summary=''),rows,{a.image_id},1)]
     # Keep the best identity-supported view for every POI, including low scores.
     # Relevance filtering is mandatory; quality flags remain advisory with no score cutoff.
-    poi_results=[];seen_pois=set()
+    poi_results=[];seen_pois=set();seen_panoramas=set()
     for assessment in sorted((a for a in assessments if a.matches_request),key=lambda a:a.score,reverse=True):
         view=validate_result(VisualResult(spots=[assessment],summary=''),rows,{assessment.image_id},1)
         if not view or not view[0].get('poi'):continue
         item=view[0];poi_id=item['poi']['id']
-        if poi_id in seen_pois:continue
+        reference=item.get('streetViewReference','')
+        panorama=reference.split('/')[2] if reference.startswith('google-streetview://') else None
+        if poi_id in seen_pois or panorama is not None and panorama in seen_panoramas:continue
+        if panorama is not None:seen_panoramas.add(panorama)
         seen_pois.add(poi_id);item['recommend']=assessment.recommend
         item['assessmentStatus']='rated';poi_results.append(item)
     spots=list(poi_results) if poi_results else validate_result(VisualResult(spots=eligible,summary=''),rows,scored,len(rows))
