@@ -1,5 +1,6 @@
 'use strict';
 let lastRemovedPoi=null,selectedPoiView=null,poiViewOverrides=new Map(),poiPreviewTimer=null;
+let removedHistoryItems=new Set(),lastRemovedHistory=null;
 let tasksReady=false,taskRecords=[],taskRefreshBusy=false,taskRecoveryGeneration=0,taskRefreshTimer=null;
 const api=location.hostname==='localhost'||location.hostname==='127.0.0.1'?'': 'https://api.aisoup.net';
 const el=id=>document.getElementById(id), message=s=>{el('message').textContent=s;if(searchBusy||pipelineBusy||resolving)el('progress-detail').textContent=s};
@@ -358,19 +359,52 @@ function addSubmittedTask(kind,job,context){const id=job.id||job.jobId;taskRecor
 function historyEntries(){
  const merged=new Map(searchHistory.map(h=>['search:'+h.id,{id:h.id,kind:'search',created:h.created,label:h.label,history:h,state:'complete'}]));
  for(const task of taskRecords){const key=task.kind+':'+task.id,existing=merged.get(key),c=task.context||{};merged.set(key,{...existing,id:task.id,kind:task.kind,created:task.created*1000,label:existing?.label||c.query||c.name||c.locationLabel||(Number.isFinite(c.lat)&&Number.isFinite(c.lon)?`Around ${c.lat.toFixed(4)}, ${c.lon.toFixed(4)}`:'Photo search'),task,state:existing?.history?'complete':task.state});}
- const entries=[...merged.values()].sort((a,b)=>b.created-a.created);
+ const entries=[...merged.values()].filter(e=>!removedHistoryItems.has(e.kind+':'+e.id)).sort((a,b)=>b.created-a.created);
  const searches=entries.filter(e=>e.kind==='search'),photos=entries.filter(e=>e.kind==='portrait');
  return [...searches,...photos].sort((a,b)=>b.created-a.created);
+}
+function removeHistoryButton(entry){
+ const button=node('button','Remove','history-remove');button.type='button';
+ button.setAttribute('aria-label','Remove '+(entry.kind==='portrait'?'photo: ':'search: ')+entry.label);
+ button.addEventListener('click',async()=>{
+  button.disabled=true;
+  try{
+   await json('/photo-scout/v1/removed-items',{method:'POST',headers:{'Content-Type':'application/json',...(csrfToken?{'X-CSRF-Token':csrfToken}:{})},body:JSON.stringify({kind:entry.kind,id:entry.id,removed:true})});
+   removedHistoryItems.add(entry.kind+':'+entry.id);lastRemovedHistory=entry;pendingHistory.delete(entry.id);
+   taskRecords=taskRecords.filter(t=>t.kind!==entry.kind||t.id!==entry.id);
+   if(entry.kind==='search'){
+    searchHistory=searchHistory.filter(h=>h.id!==entry.id);
+    if(focusedSearchId===entry.id)focusedSearchId=null;
+    if(displayedSearchId===entry.id){el('results').hidden=true;displayedResult=null;displayedSearchId=null;}
+    persistHistory();drawHistoryMap();
+   }
+   renderHistory();refreshVisiblePlaceSelfies();
+  }catch(error){button.disabled=false;message(error.message);}
+ });
+ return button;
 }
 function renderHistory(){
  el('photo-retention-note').textContent=authUser?'Photos are saved permanently to your account.':'Guest photos are deleted after 7 days without a visit. Sign in to keep them permanently.';
  const root=el('history-items'),photosRoot=el('photo-items'),entries=historyEntries(),searches=entries.filter(e=>e.kind==='search'),photos=entries.filter(e=>e.kind==='portrait');root.replaceChildren();photosRoot.replaceChildren();const active=taskRecords.filter(t=>['queued','checking','running'].includes(t.state)).length;root.append(node('p',active+' / 5 active tasks','small'));el('history-count').textContent=String(searches.length);el('photo-count').textContent=String(photos.length);
+ if(lastRemovedHistory){
+  const removed=lastRemovedHistory,notice=node('p','Removed '+removed.label+'. ','remove-notice'),undo=node('button','Undo','remove-undo');undo.type='button';
+  undo.addEventListener('click',async()=>{
+   undo.disabled=true;
+   try{
+    await json('/photo-scout/v1/removed-items',{method:'POST',headers:{'Content-Type':'application/json',...(csrfToken?{'X-CSRF-Token':csrfToken}:{})},body:JSON.stringify({kind:removed.kind,id:removed.id,removed:false})});
+    removedHistoryItems.delete(removed.kind+':'+removed.id);lastRemovedHistory=null;
+    if(removed.history&&!searchHistory.some(h=>h.id===removed.id)){searchHistory.push(removed.history);searchHistory.sort((a,b)=>b.created-a.created);persistHistory();}
+    if(removed.task&&!taskRecords.some(t=>t.id===removed.id&&t.kind===removed.kind))taskRecords.push(removed.task);
+    renderHistory();drawHistoryMap();refreshVisiblePlaceSelfies();restoreTasks();
+   }catch(error){undo.disabled=false;message(error.message);}
+  });notice.append(undo);(removed.kind==='portrait'?photosRoot:root).append(notice);
+ }
  const completed=entries.filter(e=>e.kind==='search'&&e.history).map(e=>e.history);
  el('history-all').disabled=!completed.length;el('history-all').checked=completed.length>0&&completed.every(h=>h.checked);el('history-all').indeterminate=completed.some(h=>h.checked)&&!completed.every(h=>h.checked);
  if(!searches.length)root.append(node('p','Your searches will appear here.','small'));if(!photos.length)photosRoot.append(node('p','Your selfies will appear here.','small'));
  for(const entry of entries){
   if(entry.kind==='portrait'){
-   const item=node('button',null,'photo-history-entry');item.append(node('strong',entry.label),node('small',`${new Date(entry.created).toLocaleString()} · Selfie · ${entry.state}`));item.type='button';item.dataset.state=entry.state;item.title=['queued','checking','running'].includes(entry.state)?'Selfie in progress':'View saved photo';item.addEventListener('click',()=>viewSavedTask(entry.task));photosRoot.append(item);continue;
+   const item=node('button',null,'photo-history-entry');item.append(node('strong',entry.label),node('small',`${new Date(entry.created).toLocaleString()} · Selfie · ${entry.state}`));item.type='button';item.dataset.state=entry.state;item.title=['queued','checking','running'].includes(entry.state)?'Selfie in progress':'View saved photo';item.addEventListener('click',()=>viewSavedTask(entry.task));const row=node('div',null,'photo-history-row');row.append(item,removeHistoryButton(entry));photosRoot.append(row);continue;
   }
   const h=entry.history,row=node('div',null,'history-item'),label=node(h?'label':'span',null,'history-copy');
   if(h){const check=node('input');check.type='checkbox';check.checked=h.checked;check.setAttribute('aria-label','Show search: '+entry.label);check.addEventListener('change',()=>{h.checked=check.checked;persistHistory();renderHistory();drawHistoryMap({fit:true});});label.append(check);}
@@ -378,7 +412,7 @@ function renderHistory(){
   text.append(node('strong',entry.label),node('small',`${new Date(entry.created).toLocaleString()} · ${detail}`));label.append(text);
   const pending=['queued','running','checking'].includes(entry.state),view=node('button',pending?'Progress':entry.state==='failed'?'Details':entry.kind==='portrait'?'View photo':'View');view.type='button';
   view.addEventListener('click',()=>{if(entry.task)viewSavedTask(entry.task);else{showHistorySearch(h.result,h.result.searchContext,h);}});
-  row.append(label,view);(entry.kind==='portrait'?photosRoot:root).append(row);
+  const actions=node('div',null,'history-entry-actions');actions.append(view,removeHistoryButton(entry));row.append(label,actions);(entry.kind==='portrait'?photosRoot:root).append(row);
  }
 }
 function drawHistoryMap({fit=false}={}){photoLocationLayer.clearLayers();otherPhotoLocationLayer.clearLayers();candidatePoiLayer.clearLayers();resultPins=[];for(const h of searchHistory.filter(h=>h.checked).sort((a,b)=>Number(a.id===focusedSearchId)-Number(b.id===focusedSearchId))){const focused=h.id===focusedSearchId;for(const [i,originalSpot] of allPoiViews(h.result,h.id).entries()){const s={...originalSpot,...poiViewOverrides.get(h.id+':'+poiHistoryKey(originalSpot))};const pos=s.poi;if(!pos||!Number.isFinite(pos.lat)||!Number.isFinite(pos.lon))continue;const b=photoBearing(s),popup=node('div',null,'photo-popup');popup.append(node('strong',s.name),node('p',s.score==null?'No verified image':`${s.score}/100 · ${b.label}`),node('p',h.label));const show=node('button','View place','popup-shortlist');show.type='button';const reveal=()=>{render(h.result,{save:false,mapUpdate:false,historyId:h.id});el('photo-spot-'+String(i+1))?.scrollIntoView({block:'nearest',behavior:'smooth'});};show.addEventListener('click',reveal);const selfie=node('button','📷 Take a selfie here','compose-photo popup-selfie');selfie.type='button';selfie.addEventListener('click',()=>openPhotoStudio(s));const actions=node('div',null,'popup-actions');actions.append(show,removePoiButton(s,h.id));popup.append(popupPhotoPreview(s),popupViewControls(s),actions,selfie,placeSelfies(s));if(s.sourceUrl)popup.append(link(s.provider==='google-street-view'?'Open Street View ↗':'Open original photo ↗',s.sourceUrl));const marker=L.marker([pos.lat,pos.lon],{title:`${s.name} · ${b.label} · ${h.label}`,icon:focused?photographerIcon(s,i):directionDot(s)}).addTo(focused?photoLocationLayer:otherPhotoLocationLayer).bindPopup(popup).on('popupopen',()=>{selectedPoiView={marker,popup,spot:s,searchId:h.id,index:i};loadPopupPhoto(popup);refreshVisiblePlaceSelfies();for(const box of popup.querySelectorAll('.place-selfies'))refreshPlaceSelfies(box);}).on('popupclose',()=>{if(selectedPoiView?.marker===marker)selectedPoiView=null;});marker.photoSpot=s;marker.searchId=h.id;resultPins.push(marker);}}if(fit&&resultPins.length)map.fitBounds(L.featureGroup(resultPins).getBounds().pad(.2),{paddingTopLeft:[40,80],paddingBottomRight:[40,250],maxZoom:16});}
@@ -606,19 +640,19 @@ function syncPortraitActivities(){
 }
 function resetTaskRecovery(){
  if(savedPhoto.open)savedPhoto.close();if(portraitProgress.open)portraitProgress.close();
- focusedSearchId=null;selectedPoiView=null;lastRemovedPoi=null;poiViewOverrides.clear();taskRecoveryGeneration++;clearTimeout(taskRefreshTimer);taskRecords=[];hiddenPoisBySearch.clear();displayedResult=null;displayedSearchId=null;tasksReady=false;activeSearch=null;pollGeneration++;searchBusy=false;studioBusy=false;studioJob=null;clearTimeout(studioTimer);clearStudioOutput();studioPrepared=null;studioFile=null;studioUpload.value='';studioUpload.disabled=false;studioPose.disabled=false;studioStyles.disabled=false;studioOptions.disabled=false;studioGenerate.disabled=true;personPreview.hidden=true;personPreview.removeAttribute('src');studioTask.hidden=true;selfieActivityLayer.clearLayers();renderHistory();updateSubmitState();
+ focusedSearchId=null;selectedPoiView=null;lastRemovedPoi=null;lastRemovedHistory=null;removedHistoryItems.clear();poiViewOverrides.clear();taskRecoveryGeneration++;clearTimeout(taskRefreshTimer);taskRecords=[];hiddenPoisBySearch.clear();displayedResult=null;displayedSearchId=null;tasksReady=false;activeSearch=null;pollGeneration++;searchBusy=false;studioBusy=false;studioJob=null;clearTimeout(studioTimer);clearStudioOutput();studioPrepared=null;studioFile=null;studioUpload.value='';studioUpload.disabled=false;studioPose.disabled=false;studioStyles.disabled=false;studioOptions.disabled=false;studioGenerate.disabled=true;personPreview.hidden=true;personPreview.removeAttribute('src');studioTask.hidden=true;selfieActivityLayer.clearLayers();renderHistory();updateSubmitState();
 }
 async function restoreTasks(){
  if(taskRefreshBusy)return;taskRefreshBusy=true;const generation=taskRecoveryGeneration,initial=!tasksReady;let changed=false;
  try{
-  const visiting=!document.hidden;const data=await json('/photo-scout/v1/tasks'+(visiting?'?visit=true':''));if(visiting){try{sessionStorage.setItem(HISTORY_KEY+'-last-visit',String(Date.now()));}catch{}}if(generation!==taskRecoveryGeneration)return;tasksReady=true;
+  const visiting=!document.hidden;const data=await json('/photo-scout/v1/tasks'+(visiting?'?visit=true':''));if(visiting){try{sessionStorage.setItem(HISTORY_KEY+'-last-visit',String(Date.now()));}catch{}}if(generation!==taskRecoveryGeneration)return;tasksReady=true;data.items=data.items.filter(t=>!removedHistoryItems.has(t.kind+':'+t.id));
   const incomingHidden=new Map(Object.entries(data.hiddenPois||{}).map(([id,keys])=>[id,new Set(keys)]));
   if(JSON.stringify([...incomingHidden].map(([id,keys])=>[id,[...keys]]))!==JSON.stringify([...hiddenPoisBySearch].map(([id,keys])=>[id,[...keys]]))){hiddenPoisBySearch=incomingHidden;changed=true;refreshDisplayedShortlist();}
   const returned=new Set(data.items.map(t=>t.kind+':'+t.id));taskRecords=[...data.items,...taskRecords.filter(t=>t.localPending&&!returned.has(t.kind+':'+t.id))].sort((a,b)=>b.created-a.created);renderHistory();refreshVisiblePlaceSelfies();
   for(const task of taskRecords.filter(t=>t.kind==='search'&&t.state==='complete')){
    if(searchHistory.some(h=>h.id===task.id))continue;
    const report=await json('/photo-scout/v1/report/'+encodeURIComponent(task.id));if(generation!==taskRecoveryGeneration)return;
-   if(report.result){changed=true;searchHistory.push({id:task.id,created:task.created*1000,label:task.context.query||task.context.locationLabel||`Around ${task.context.lat}, ${task.context.lon}`,radius:task.context.radius||1000,checked:true,result:{...report.result,searchContext:task.context}});}
+   if(report.result&&!removedHistoryItems.has('search:'+task.id)){changed=true;searchHistory.push({id:task.id,created:task.created*1000,label:task.context.query||task.context.locationLabel||`Around ${task.context.lat}, ${task.context.lon}`,radius:task.context.radius||1000,checked:true,result:{...report.result,searchContext:task.context}});}
   }
   searchHistory.sort((a,b)=>b.created-a.created);if(changed){persistHistory();drawHistoryMap();}renderHistory();syncPortraitActivities();refreshVisiblePlaceSelfies();
   if(initial&&!activeSearch){const task=taskRecords.find(t=>t.kind==='search'&&['queued','running'].includes(t.state));if(task){activeSearch={jobId:task.id,context:task.context};applyTaskContext(task.context);activeSearch.draft=searchDraft();}}

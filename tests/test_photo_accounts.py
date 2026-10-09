@@ -102,3 +102,15 @@ def test_google_callback_verifies_signature_audience_nonce_and_creates_session(t
     assert client.get('/photo-scout/v1/auth/callback',params={'state':state,'code':'fixture'},follow_redirects=False).status_code==302
     me=client.get('/photo-scout/v1/auth/me').json()
     assert me['user']['id']=='google:verified-user' and me['csrfToken']
+
+def test_removed_history_does_not_return_after_stale_browser_sync(tmp_path,monkeypatch):
+    client,path=fixture(tmp_path,monkeypatch);headers=seed(client,path,'alice')
+    client.post('/photo-scout/v1/history',headers=headers,json=item())
+    with sqlite3.connect(path) as db:
+        db.execute("INSERT INTO photo_removed_items VALUES('user:alice','search','history-1')")
+    client.post('/photo-scout/v1/history',headers=headers,json=item())
+    assert client.get('/photo-scout/v1/history').json()['items']==[]
+    with sqlite3.connect(path) as db:
+        assert db.execute('SELECT count(*) FROM photo_account_history').fetchone()[0]==1
+        db.execute("DELETE FROM photo_removed_items WHERE owner='user:alice'")
+    assert len(client.get('/photo-scout/v1/history').json()['items'])==1

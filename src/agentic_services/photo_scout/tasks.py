@@ -8,6 +8,7 @@ import sqlite3
 import time
 from fastapi import APIRouter, HTTPException, Request, Response
 from pydantic import BaseModel, Field
+from typing import Literal
 
 GUEST_COOKIE='photo_scout_guest'
 ACCOUNT_COOKIE='photo_scout_session'
@@ -39,6 +40,8 @@ def prune_records(db):
         db.execute('DELETE FROM photo_task_owners WHERE user_id IS NULL AND NOT EXISTS (SELECT 1 FROM photo_guests g WHERE g.hash=guest AND g.expires>?)',(now,))
         if 'photo_hidden_pois' in tables:
             db.execute("DELETE FROM photo_hidden_pois WHERE owner LIKE 'guest:%' AND NOT EXISTS (SELECT 1 FROM photo_guests g WHERE 'guest:'||g.hash=owner AND g.expires>?)",(now,))
+        if 'photo_removed_items' in tables:
+            db.execute("DELETE FROM photo_removed_items WHERE owner LIKE 'guest:%' AND NOT EXISTS (SELECT 1 FROM photo_guests g WHERE 'guest:'||g.hash=owner AND g.expires>?)",(now,))
         db.execute('DELETE FROM photo_guests WHERE expires<=?',(now,))
 
 class HiddenPoiRequest(BaseModel):
@@ -46,10 +49,16 @@ class HiddenPoiRequest(BaseModel):
     poiId: str = Field(min_length=1,max_length=500)
     hidden: bool = True
 
+class RemovedItemRequest(BaseModel):
+    kind: Literal['search','portrait']
+    id: str = Field(min_length=1,max_length=80)
+    removed: bool = True
+
 class TaskStore:
     def __init__(self,path):
         self.path=path
         with self.db() as db:
+            db.execute('CREATE TABLE IF NOT EXISTS photo_removed_items (owner TEXT NOT NULL, kind TEXT NOT NULL, job TEXT NOT NULL, PRIMARY KEY(owner,kind,job))')
             db.execute('CREATE TABLE IF NOT EXISTS photo_hidden_pois (owner TEXT NOT NULL, search TEXT NOT NULL, poi TEXT NOT NULL, PRIMARY KEY(owner,search,poi))')
             db.execute('CREATE TABLE IF NOT EXISTS photo_guests (hash TEXT PRIMARY KEY, expires REAL NOT NULL)')
             db.execute('CREATE TABLE IF NOT EXISTS photo_task_owners (kind TEXT NOT NULL, job TEXT NOT NULL, guest TEXT, user_id TEXT, created REAL NOT NULL, context TEXT NOT NULL, PRIMARY KEY(kind,job))')
@@ -121,6 +130,8 @@ class TaskStore:
                 db.execute('UPDATE photo_task_owners SET user_id=? WHERE guest=? AND user_id IS NULL',(user,guest))
                 db.execute('INSERT OR IGNORE INTO photo_hidden_pois SELECT ?,search,poi FROM photo_hidden_pois WHERE owner=?',('user:'+user,'guest:'+guest))
                 db.execute('DELETE FROM photo_hidden_pois WHERE owner=?',('guest:'+guest,))
+                db.execute('INSERT OR IGNORE INTO photo_removed_items SELECT ?,kind,job FROM photo_removed_items WHERE owner=?',('user:'+user,'guest:'+guest))
+                db.execute('DELETE FROM photo_removed_items WHERE owner=?',('guest:'+guest,))
                 db.execute("UPDATE photo_portraits SET expires=? WHERE EXISTS (SELECT 1 FROM photo_task_owners o WHERE o.kind='portrait' AND o.job=photo_portraits.id AND o.user_id=?)",(ACCOUNT_EXPIRY,user))
     def hidden_pois(self,request):
         guest,user=self.identity(request)
@@ -137,6 +148,8 @@ class TaskStore:
             db.execute('DELETE FROM photo_guests WHERE expires<?',(now,))
             rows=db.execute('SELECT * FROM photo_task_owners WHERE user_id=? OR (user_id IS NULL AND guest=?) ORDER BY created DESC',(user,guest)).fetchall()
             for row in rows:
+                owner='user:'+row['user_id'] if row['user_id'] else 'guest:'+row['guest']
+                if db.execute('SELECT 1 FROM photo_removed_items WHERE owner=? AND kind=? AND job=?',(owner,row['kind'],row['job'])).fetchone():continue
                 table='photo_scout_jobs' if row['kind']=='search' else 'photo_portraits'
                 columns='id,created,state,error'+(',expires' if row['kind']=='portrait' else '')
                 task=db.execute('SELECT '+columns+' FROM '+table+' WHERE id=?',(row['job'],)).fetchone()
@@ -173,4 +186,24 @@ def create_tasks_router(settings,require_api):
             if payload.hidden:db.execute('INSERT OR IGNORE INTO photo_hidden_pois VALUES(?,?,?)',(owner,payload.searchId,payload.poiId))
             else:db.execute('DELETE FROM photo_hidden_pois WHERE owner=? AND search=? AND poi=?',(owner,payload.searchId,payload.poiId))
         return {'hiddenPois':store.hidden_pois(request)}
+    @router.post('/photo-scout/v1/removed-items')
+    def remove_item(payload:RemovedItemRequest,request:Request,response:Response):
+        require_api(request.headers.get('authorization'))
+        response.headers['Cache-Control']='private, no-store'
+        if request.headers.get('origin')!=os.getenv('PHOTO_SCOUT_WEB_ORIGIN','https://aisoup.net').rstrip('/'):
+            raise HTTPException(403,'Invalid history request')
+        guest,user=store.identity(request)
+        if not guest and not user:raise HTTPException(401,'Open Photo Scout before editing history')
+        with store.db() as db:
+            if user:
+                session=db.execute('SELECT csrf FROM photo_sessions WHERE hash=? AND expires>?',(digest(request.cookies.get(ACCOUNT_COOKIE,'')),time.time())).fetchone()
+                if not session or not hmac.compare_digest(request.headers.get('x-csrf-token',''),session['csrf']):raise HTTPException(403,'Invalid account request')
+            allowed=store.allowed(payload.kind,payload.id,request)
+            if not allowed and user and payload.kind=='search':
+                allowed=bool(db.execute('SELECT 1 FROM photo_account_history WHERE user_id=? AND id=?',(user,payload.id)).fetchone())
+            if not allowed:raise HTTPException(404,'History item unavailable')
+            owner='user:'+user if user else 'guest:'+guest
+            if payload.removed:db.execute('INSERT OR IGNORE INTO photo_removed_items VALUES(?,?,?)',(owner,payload.kind,payload.id))
+            else:db.execute('DELETE FROM photo_removed_items WHERE owner=? AND kind=? AND job=?',(owner,payload.kind,payload.id))
+        return {'ok':True}
     return router

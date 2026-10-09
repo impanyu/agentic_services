@@ -184,3 +184,8 @@ html:has(body.photo-app),body.photo-app{height:100%;overflow:hidden}.photo-app m
 .poi-view-label{margin:6px 0 3px}.poi-view-hint{font-size:10px!important;margin:3px 0 9px!important;color:#8c8095}
 
 .popup-actions{display:flex;gap:8px;margin-top:10px}.photo-popup .popup-actions>button{flex:1;width:auto;min-width:0;min-height:36px;margin:0;padding:8px;font-size:11px;cursor:pointer}@media(max-width:760px){.popup-actions{flex-direction:column}.photo-popup .popup-actions>button{width:100%;min-height:40px}}
+
+.history-entry-actions{display:flex;flex-direction:column;gap:5px;flex-shrink:0}
+.photo-history-row{display:flex;gap:8px;align-items:center;border-bottom:1px solid #eee7ef}
+.photo-history-row .photo-history-entry{flex:1;min-width:0;border-bottom:0}
+.history-remove,.photo-history-row .history-remove{padding:7px 9px;border:1px solid #ddd0e8;border-radius:8px;background:#f4edf9;color:#71508a;font-size:11px;cursor:pointer;flex-shrink:0}

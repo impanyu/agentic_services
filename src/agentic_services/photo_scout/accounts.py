@@ -43,6 +43,7 @@ def create_accounts_router(settings,require_api):
     with db() as d:
         d.execute('CREATE TABLE IF NOT EXISTS photo_oauth_states (hash TEXT PRIMARY KEY, verifier TEXT NOT NULL, nonce TEXT NOT NULL, expires REAL NOT NULL)')
         d.execute('CREATE TABLE IF NOT EXISTS photo_sessions (hash TEXT PRIMARY KEY, user_id TEXT NOT NULL, user_json TEXT NOT NULL, csrf TEXT NOT NULL, expires REAL NOT NULL)')
+        d.execute('CREATE TABLE IF NOT EXISTS photo_removed_items (owner TEXT NOT NULL, kind TEXT NOT NULL, job TEXT NOT NULL, PRIMARY KEY(owner,kind,job))')
         d.execute('CREATE TABLE IF NOT EXISTS photo_account_history (user_id TEXT NOT NULL, id TEXT NOT NULL, created INTEGER NOT NULL, record TEXT NOT NULL, PRIMARY KEY(user_id,id))')
     def session(request):
         require_api(request.headers.get('authorization'))
@@ -113,7 +114,7 @@ def create_accounts_router(settings,require_api):
     @router.get('/photo-scout/v1/history')
     def history(request:Request):
         row=user_session(request)
-        with db() as d:items=[json.loads(r['record']) for r in d.execute('SELECT record FROM photo_account_history WHERE user_id=? ORDER BY created DESC',(row['user_id'],))]
+        with db() as d:items=[json.loads(r['record']) for r in d.execute("SELECT record FROM photo_account_history h WHERE user_id=? AND NOT EXISTS (SELECT 1 FROM photo_removed_items r WHERE r.owner=? AND r.kind='search' AND r.job=h.id) ORDER BY created DESC",(row['user_id'],'user:'+row['user_id']))]
         return JSONResponse({'items':items},headers={'Cache-Control':'private, no-store'})
     @router.post('/photo-scout/v1/history')
     def save_history(item:HistoryItem,request:Request):

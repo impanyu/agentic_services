@@ -313,3 +313,35 @@ def test_search_category_reaches_poi_lookup_and_excludes_unrelated_places(tmp_pa
     assert seen==[['cafe']]
     context=client.get('/photo-scout/v1/tasks').json()['items'][0]['context']
     assert context['categories']==['cafe']
+
+def test_remove_history_is_owned_persistent_and_undoable_without_deleting_reports(tmp_path,monkeypatch):
+    settings,app,client=setup(tmp_path,monkeypatch)
+    client.get('/photo-scout/v1/tasks')
+    job=client.post('/photo-scout/v1/jobs',headers={'X-Request-Token':'r'*32},json={'lat':0,'lon':0}).json()['jobId']
+    path='/photo-scout/v1/removed-items';payload={'kind':'search','id':job}
+    assert client.post(path,json=payload).status_code==403
+    other=TestClient(app,base_url='https://api.test',headers={'Authorization':'Bearer private','Origin':'https://aisoup.net'})
+    other.get('/photo-scout/v1/tasks')
+    assert other.post(path,json=payload).status_code==404
+    assert client.post(path,headers={'Origin':'https://aisoup.net'},json=payload).status_code==200
+    assert client.get('/photo-scout/v1/tasks').json()['items']==[]
+    with sqlite3.connect(settings.database_path) as db:
+        assert db.execute('SELECT id FROM photo_scout_jobs WHERE id=?',(job,)).fetchone()
+    assert client.post(path,headers={'Origin':'https://aisoup.net'},json=payload|{'removed':False}).status_code==200
+    assert client.get('/photo-scout/v1/tasks').json()['items'][0]['id']==job
+    from starlette.requests import Request
+    request=Request({'type':'http','headers':[(b'cookie',(GUEST_COOKIE+'='+client.cookies.get(GUEST_COOKIE)).encode())]})
+    client.post(path,headers={'Origin':'https://aisoup.net'},json=payload)
+    TaskStore(settings.database_path).attach_user(request,'alice')
+    with sqlite3.connect(settings.database_path) as db:
+        assert db.execute("SELECT 1 FROM photo_removed_items WHERE owner='user:alice' AND job=?",(job,)).fetchone()
+
+def test_removed_account_photo_requires_csrf_and_stays_out_of_tasks(tmp_path,monkeypatch):
+    settings,app,client=setup(tmp_path,monkeypatch)
+    with sqlite3.connect(settings.database_path) as db:
+        db.execute('INSERT INTO photo_sessions VALUES(?,?,?,?,?)',(hashlib.sha256(b'alice').hexdigest(),'alice','{}','csrf',time.time()+3600))
+        db.execute("INSERT INTO photo_task_owners VALUES('portrait','photo',NULL,'alice',?,'{}')",(time.time(),))
+    client.cookies.set(COOKIE,'alice')
+    payload={'kind':'portrait','id':'photo'}
+    assert client.post('/photo-scout/v1/removed-items',headers={'Origin':'https://aisoup.net'},json=payload).status_code==403
+    assert client.post('/photo-scout/v1/removed-items',headers={'Origin':'https://aisoup.net','X-CSRF-Token':'csrf'},json=payload).status_code==200
