@@ -302,7 +302,7 @@ function render(result,{scroll=true,save=true,mapUpdate=true,historyId=null}={})
  if(result.imageAssessments?.length){const detail=node('details',null,'score-details');detail.append(node('summary',`All ${result.imageAssessments.length} image checks`));const list=node('ul');for(const a of result.imageAssessments){const li=node('li');li.append(node('strong',`${a.matches_request===false?'Excluded':a.score+'/100'} · ${a.name}`),node('p',`${a.provider} · ${a.eligibleForRecommendation?'Suitable candidate':'Not recommended'}`,'small'),node('p',a.visible_evidence),...(a.exclusionReason?[node('p',`Why not shortlisted: ${a.exclusionReason}`)]:[]),node('p',`Uncertainty: ${a.uncertainty}`));list.append(li);}detail.append(list);root.append(detail);}
 
  if(result.sources){const coverage=node('p',Object.entries(result.sources).map(([name,s])=>`${name}: ${s.status==='ok'?(s.eligibleImages!==undefined?`${s.eligibleImages} eligible images${s.sampledImages!==undefined?`; ${s.sampledImages} selected for scoring`:""}`:'available'):'temporarily unavailable'}`).join(' · '),'small');root.append(coverage);}
- root.append(node('p',`${result.analysisMethod==='fixed-batch-scoring'?'Rated':'Inspected'} ${result.inspectedImages} images${result.inspectedImageSources?.length?" from "+result.inspectedImageSources.join(", "):""}. ${result.coverage}`,'small'));if(mapUpdate)drawHistoryMap({fit:true});}
+ root.append(node('p',`${result.analysisMethod==='fixed-batch-scoring'?'Checked':'Inspected'} ${result.inspectedImages} images${result.inspectedImageSources?.length?" from "+result.inspectedImageSources.join(", "):""}. ${result.coverage}`,'small'));if(mapUpdate)drawHistoryMap({fit:true});}
 async function refreshThumbnail(img,spot,onFailure){img.dataset.refreshed='true';const generation=Number(img.dataset.viewGeneration||0)+1;img.dataset.viewGeneration=String(generation);try{const data=await json('/photo-scout/v1/thumbnails',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sourceUrls:[spot.sourceUrl]})});if(img.dataset.viewGeneration!==String(generation))return;if(data.imageUrls[0])img.src=data.imageUrls[0];else throw Error('Unavailable');}catch{if(img.dataset.viewGeneration!==String(generation))return;if(onFailure)onFailure();else img.replaceWith(node('span','Image unavailable — open the original view ↗','image-unavailable'));}}
 async function json(url,options){const r=await fetch(api+url,{credentials:'include',...options}),data=await r.json();if(!r.ok)throw Error(typeof data.detail==='string'?data.detail:'Request failed');return data;}
 // Remove legacy active-job tokens; completed history is stored separately.
@@ -515,7 +515,8 @@ async function submitDurableSearch(query){
 }
 function fitSearchRange(context){
  if(!context)syncMapSelection();
- const bounds=context?L.circle([context.lat,context.lon],{radius:context.radius||1000}).getBounds():searchArea.getBounds();
+ const radius=context?.radius||1000,latDelta=radius/111320,lonDelta=latDelta/Math.cos((context?.lat||0)*Math.PI/180);
+ const bounds=context?[[context.lat-latDelta,context.lon-lonDelta],[context.lat+latDelta,context.lon+lonDelta]]:searchArea.getBounds();
  const dockHeight=document.querySelector('.scout-dock').getBoundingClientRect?.().height||120;
  map.fitBounds(bounds,{paddingTopLeft:[24,80],paddingBottomRight:[24,Math.ceil(dockHeight)+24],maxZoom:18});
 }
