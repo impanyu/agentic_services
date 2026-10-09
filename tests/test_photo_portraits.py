@@ -20,6 +20,7 @@ def test_portrait_validation_and_background_allowlist():
         with pytest.raises(HTTPException):portraits.clean_photo(bad)
     with pytest.raises(HTTPException):portraits.background_reference('other','http://127.0.0.1/private')
     assert portraits.background_reference('google-street-view','https://www.google.com/maps/@?map_action=pano&pano=abc&heading=90')=='google-streetview://abc/90'
+    assert portraits.background_reference('google-street-view','https://www.google.com/maps/@?map_action=pano&pano=abc&heading=90&pitch=-20')=='google-streetview://abc/90/-20'
 
 
 @pytest.mark.parametrize('image_model',['gpt-image-2.5-sunburst','gpt-image-1.5'])
@@ -38,7 +39,7 @@ def test_private_job_edits_both_images_and_removes_upload(tmp_path,monkeypatch,i
     monkeypatch.setattr(portraits,'AsyncOpenAI',Client);monkeypatch.setattr(portraits,'image_data',background)
     settings=Settings(openai_api_key='fixture',openai_model='test',database_path=tmp_path/'db',base_url='https://api.test',service_api_key='private')
     app=create_app(settings=settings);client=TestClient(app,base_url='https://api.test');auth={'Authorization':'Bearer private'}
-    body={'portrait':'data:image/png;base64,'+base64.b64encode(raw).decode(),'background':'https://www.google.com/maps/@?map_action=pano&pano=abc&heading=90','provider':'google-street-view','place':'Test park'}
+    body={'portrait':'data:image/png;base64,'+base64.b64encode(raw).decode(),'background':'https://www.google.com/maps/@?map_action=pano&pano=abc&heading=90&pitch=-20','provider':'google-street-view','place':'Test park'}
     assert client.post('/photo-scout/v1/portraits',json=body).status_code==401
     assert client.post('/photo-scout/v1/portraits',json=body|{'style':'unsupported'},headers=auth).status_code==422
     for field in ['posture','weather','expression']:
@@ -60,6 +61,7 @@ def test_private_job_edits_both_images_and_removes_upload(tmp_path,monkeypatch,i
     assert 'cheerful broad smile' in calls[0]['prompt']
     assert 'relight the entire scene and subjects together' in calls[0]['prompt']
     completed=client.get(path,headers=owned).json();assert completed['state']=='complete'
+    assert completed['context']['viewHeadingDegrees']==90 and completed['context']['viewPitchDegrees']==-20
     assert completed['context']['generation']=={'style':'natural','posture':'walking','weather':'golden_hour','expression':'big_smile','directions':''}
     history=client.get('/photo-scout/v1/tasks',headers=auth).json()
     assert history['items'][0]['context']['generation']==completed['context']['generation']

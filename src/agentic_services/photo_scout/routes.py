@@ -251,10 +251,10 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
         for url in payload.sourceUrls:
             if len(url)>4000:raise HTTPException(422,'Invalid Street View URL')
             u=urlsplit(url);q=parse_qs(u.query)
-            pano=q.get('pano',[''])[0];heading=q.get('heading',[''])[0]
-            if u.scheme!='https' or u.netloc!='www.google.com' or u.path!='/maps/@' or q.get('map_action')!=['pano'] or not re.fullmatch(r'[A-Za-z0-9_-]{1,200}',pano) or not heading.isdigit() or not 0<=int(heading)<360:
+            pano=q.get('pano',[''])[0];heading=q.get('heading',[''])[0];pitch=q.get('pitch',['0'])[0]
+            if u.scheme!='https' or u.netloc!='www.google.com' or u.path!='/maps/@' or q.get('map_action')!=['pano'] or not re.fullmatch(r'[A-Za-z0-9_-]{1,200}',pano) or not heading.isdigit() or not 0<=int(heading)<360 or not re.fullmatch(r'-?\d{1,2}',pitch) or not -90<=int(pitch)<=90:
                 raise HTTPException(422,'Invalid Street View URL')
-            result=image_links({'spots':[{'streetViewReference':f'google-streetview://{pano}/{int(heading)}'}]})
+            result=image_links({'spots':[{'streetViewReference':f'google-streetview://{pano}/{int(heading)}'+(f'/{int(pitch)}' if int(pitch) else '')}]})
             results.append(result['spots'][0].get('imageUrl'))
         return Response(json.dumps({'imageUrls':results}),media_type='application/json',headers={'Cache-Control':'private, no-store'})
 

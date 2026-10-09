@@ -268,3 +268,28 @@ def test_guest_retention_uses_last_visit_not_record_age_and_polling_does_not_ren
         assert not db.execute('SELECT 1 FROM photo_task_owners WHERE guest=?',(guest_hash,)).fetchone()
         assert not db.execute("SELECT 1 FROM photo_scout_jobs WHERE id='old-search'").fetchone()
         assert not db.execute("SELECT 1 FROM photo_portraits WHERE id='old-photo'").fetchone()
+
+
+def test_hidden_poi_is_private_to_one_history_keeps_report_and_moves_to_account(tmp_path,monkeypatch):
+    from starlette.requests import Request
+    settings,app,client=setup(tmp_path,monkeypatch);client.get('/photo-scout/v1/tasks')
+    job=client.post('/photo-scout/v1/jobs',headers={'X-Request-Token':'h'*32},json={'lat':40,'lon':-96}).json()['jobId']
+    report={'spots':[{'id':'poi-1','score':80}], 'poiResults':[{'id':'poi-1','score':80}]}
+    with sqlite3.connect(settings.database_path) as db:db.execute("UPDATE photo_scout_jobs SET state='complete',result=? WHERE id=?",(json.dumps(report),job))
+    body={'searchId':job,'poiId':'poi-1'};path='/photo-scout/v1/hidden-pois';headers={'Origin':'https://aisoup.net'}
+    assert client.post(path,json=body).status_code==403
+    stranger=TestClient(app,base_url='https://api.test',headers={'Authorization':'Bearer private'});stranger.get('/photo-scout/v1/tasks')
+    assert stranger.post(path,json=body,headers=headers).status_code==404
+    assert client.post(path,json=body,headers=headers).json()['hiddenPois']=={job:['poi-1']}
+    assert client.get('/photo-scout/v1/tasks').json()['hiddenPois']=={job:['poi-1']}
+    assert client.get('/photo-scout/v1/report/'+job).json()['result']['spots']==report['spots']
+    with sqlite3.connect(settings.database_path) as db:assert json.loads(db.execute('SELECT result FROM photo_scout_jobs WHERE id=?',(job,)).fetchone()[0])==report
+    token=client.cookies.get(GUEST_COOKIE)
+    TaskStore(settings.database_path).attach_user(Request({'type':'http','headers':[(b'cookie',(GUEST_COOKIE+'='+token).encode())]}),'alice')
+    with sqlite3.connect(settings.database_path) as db:db.execute('INSERT INTO photo_sessions VALUES(?,?,?,?,?)',(hashlib.sha256(b'alice').hexdigest(),'alice','{}','csrf',time.time()+3600))
+    account=TestClient(create_app(settings=settings),base_url='https://api.test',headers={'Authorization':'Bearer private'});account.cookies.set(COOKIE,'alice')
+    assert account.get('/photo-scout/v1/tasks').json()['hiddenPois']=={job:['poi-1']}
+    assert client.get('/photo-scout/v1/tasks').json()['hiddenPois']=={}
+    assert account.post(path,json=body,headers=headers).status_code==403
+    assert account.post(path,json=body|{'hidden':False},headers=headers|{'X-CSRF-Token':'csrf'}).json()['hiddenPois']=={}
+    assert account.get('/photo-scout/v1/report/'+job).json()['result']['spots']==report['spots']

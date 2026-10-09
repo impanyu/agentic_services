@@ -47,9 +47,9 @@ def background_reference(provider,url):
         if not image_host(url):raise HTTPException(422,'Unsupported background image provider')
         return url
     try:
-        u=urlsplit(url);q=parse_qs(u.query);pano=q.get('pano',[''])[0];heading=q.get('heading',[''])[0]
-        if u.scheme!='https' or u.netloc!='www.google.com' or u.path!='/maps/@' or q.get('map_action')!=['pano'] or not re.fullmatch(r'[A-Za-z0-9_-]{1,200}',pano) or not heading.isdigit() or not 0<=int(heading)<360:raise ValueError()
-        return f'google-streetview://{pano}/{int(heading)}'
+        u=urlsplit(url);q=parse_qs(u.query);pano=q.get('pano',[''])[0];heading=q.get('heading',[''])[0];pitch=q.get('pitch',['0'])[0]
+        if u.scheme!='https' or u.netloc!='www.google.com' or u.path!='/maps/@' or q.get('map_action')!=['pano'] or not re.fullmatch(r'[A-Za-z0-9_-]{1,200}',pano) or not heading.isdigit() or not 0<=int(heading)<360 or not re.fullmatch(r'-?\d{1,2}',pitch) or not -90<=int(pitch)<=90:raise ValueError()
+        return f'google-streetview://{pano}/{int(heading)}'+(f'/{int(pitch)}' if int(pitch) else '')
     except Exception as e:raise HTTPException(422,'Invalid background Street View') from e
 
 
@@ -152,7 +152,7 @@ def create_portrait_router(settings,require_api):
             if limit>0 and c.execute('SELECT runs FROM photo_portrait_budget WHERE day=?',(day,)).fetchone()[0]>=limit:raise HTTPException(429,'Free photo studio capacity reached for today')
             c.execute('UPDATE photo_portrait_budget SET runs=runs+1 WHERE day=?',(day,))
             c.execute('INSERT INTO photo_portraits VALUES(?,?,?,?,?,?,?,?,?)',(job,hashlib.sha256(token.encode()).hexdigest(),now,expiry,'queued',json.dumps({'reference':ref,'place':payload.place,'pose':payload.pose,'style':payload.style,'posture':payload.posture,'weather':payload.weather,'expression':payload.expression}),photo,None,None))
-            tasks.bind_in(c,'portrait',job,identity,{'name':payload.place,'provider':payload.provider,'sourceUrl':payload.background,'poi':{'lat':payload.lat,'lon':payload.lon},'viewHeadingDegrees':int(ref.rsplit('/',1)[-1]) if payload.provider=='google-street-view' else None,'generation':{'style':payload.style,'posture':payload.posture,'weather':payload.weather,'expression':payload.expression,'directions':payload.pose}})
+            tasks.bind_in(c,'portrait',job,identity,{'name':payload.place,'provider':payload.provider,'sourceUrl':payload.background,'poi':{'lat':payload.lat,'lon':payload.lon},'viewHeadingDegrees':int(parse_qs(urlsplit(payload.background).query)['heading'][0]) if payload.provider=='google-street-view' else None,'viewPitchDegrees':int(parse_qs(urlsplit(payload.background).query).get('pitch',['0'])[0]) if payload.provider=='google-street-view' else None,'generation':{'style':payload.style,'posture':payload.posture,'weather':payload.weather,'expression':payload.expression,'directions':payload.pose}})
         response.headers['Cache-Control']='private, no-store'
         return {'id':job,'token':token,'state':'queued','expiresInSeconds':None if identity[1] else retention,'aiGenerated':True}
     @router.get('/photo-scout/v1/portraits/{job}')

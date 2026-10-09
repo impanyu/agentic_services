@@ -1,4 +1,5 @@
 'use strict';
+let lastRemovedPoi=null,selectedPoiView=null,poiViewOverrides=new Map(),poiPreviewTimer=null;
 let tasksReady=false,taskRecords=[],taskRefreshBusy=false,taskRecoveryGeneration=0,taskRefreshTimer=null;
 const api=location.hostname==='localhost'||location.hostname==='127.0.0.1'?'': 'https://api.aisoup.net';
 const el=id=>document.getElementById(id), message=s=>{el('message').textContent=s;if(searchBusy||pipelineBusy||resolving)el('progress-detail').textContent=s};
@@ -179,6 +180,63 @@ function selfiesAtPlace(spot){
  return taskRecords.filter(task=>task.kind==='portrait'&&task.state==='complete'&&
   !(task.expiresAt!=null&&task.expiresAt<=Date.now()/1000)&&samePhotoPlace(spot,task.context||{})).sort((a,b)=>b.created-a.created);
 }
+function removePoiButton(spot,searchId){
+ const button=node('button','Remove','remove-poi');button.type='button';button.hidden=!searchId;button.title='Remove this place from this search history';
+ button.addEventListener('click',async()=>{
+  if(button.disabled)return;button.disabled=true;button.textContent='Removing…';
+  try{
+   const data=await json('/photo-scout/v1/hidden-pois',{method:'POST',headers:{'Content-Type':'application/json',...(csrfToken?{'X-CSRF-Token':csrfToken}:{})},body:JSON.stringify({searchId,poiId:poiHistoryKey(spot),hidden:true})});
+   hiddenPoisBySearch=new Map(Object.entries(data.hiddenPois).map(([id,keys])=>[id,new Set(keys)]));lastRemovedPoi={searchId,poiId:poiHistoryKey(spot),name:spot.name};
+   const showShortlist=displayedResult&&!el('results').hidden;drawHistoryMap();renderHistory();
+   if(showShortlist)render(displayedResult,{save:false,mapUpdate:false,historyId:displayedSearchId});
+   message('Place removed from this search history.');
+  }catch(error){button.disabled=false;button.textContent='Remove';message(error.message);}
+ });return button;
+}
+function popupViewControls(spot){
+ const box=node('div',null,'poi-view-controls');if(spot.provider!=='google-street-view'){box.hidden=true;return box;}
+ const caption=node('p',null,'poi-view-label');caption.textContent=`View: ${photoBearing(spot).label} · tilt ${spot.viewPitchDegrees||0}°`;
+ const buttons=node('div',null,'poi-view-buttons');for(const [key,text,label] of [['ArrowLeft','←','Turn view left'],['ArrowUp','↑','Look up'],['ArrowDown','↓','Look down'],['ArrowRight','→','Turn view right']]){
+  const button=node('button',text);button.type='button';button.setAttribute('aria-label',label);button.addEventListener('click',()=>rotateSelectedPoiView(key));buttons.append(button);
+ }
+ box.append(caption,buttons,node('p','Use arrow keys to choose your view. Score refers to the original reviewed view.','small'));return box;
+}
+function rotateSelectedPoiView(key){
+ const selected=selectedPoiView;if(!selected||selected.spot.provider!=='google-street-view'||!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(key))return false;
+ const spot=selected.spot;let heading=photoBearing(spot).heading??0,pitch=spot.viewPitchDegrees||0;
+ if(key==='ArrowLeft')heading=(heading+345)%360;if(key==='ArrowRight')heading=(heading+15)%360;
+ if(key==='ArrowUp')pitch=Math.min(90,pitch+10);if(key==='ArrowDown')pitch=Math.max(-90,pitch-10);
+ const url=new URL(spot.sourceUrl);url.searchParams.set('heading',heading);url.searchParams.set('pitch',pitch);
+ const override={sourceUrl:url.toString(),viewHeadingDegrees:heading,viewPitchDegrees:pitch,imageUrl:null,streetViewReference:null};Object.assign(spot,override);poiViewOverrides.set(selected.searchId+':'+poiHistoryKey(spot),override);
+ selected.marker.setIcon(selected.searchId===focusedSearchId?photographerIcon(spot,selected.index):directionDot(spot));
+ selected.popup.querySelector('.poi-view-label').textContent=`View: ${photoBearing(spot).label} · tilt ${pitch}°`;
+ for(const link of selected.popup.querySelectorAll('a')){if(link.href.startsWith('https://www.google.com/maps/@'))link.href=spot.sourceUrl;}
+ const preview=selected.popup.querySelector('.popup-photo-preview');if(preview){preview.photoSpot=spot;const link=preview.querySelector('a');if(link)link.href=spot.sourceUrl;}
+ clearTimeout(poiPreviewTimer);poiPreviewTimer=setTimeout(()=>{
+  const image=preview?.querySelector('img');if(image)refreshThumbnail(image,spot);
+  if(displayedSearchId===selected.searchId&&!el('results').hidden){const card=el('photo-spot-'+(selected.index+1)),image=card?.querySelector('img'),link=card?.querySelector('.spot-image-link');if(link)link.href=spot.sourceUrl;if(image)refreshThumbnail(image,spot);}
+ },200);return true;
+}
+document.addEventListener('keydown',event=>{
+ if(event.defaultPrevented||event.target?.closest?.('input,textarea,select,[contenteditable="true"],dialog[open]'))return;
+ if(rotateSelectedPoiView(event.key)){event.preventDefault();event.stopImmediatePropagation();}
+},true);
+function popupPhotoPreview(spot){
+ const box=node('div',null,'popup-photo-preview');box.photoSpot=spot;
+ if(spot.sourceUrl&&(spot.provider==='google-street-view'||spot.imageUrl)){
+  const image=node('img');image.alt=spot.name||'Photo spot';image.referrerPolicy='no-referrer';
+  const view=link('',spot.sourceUrl);view.setAttribute('aria-label',spot.provider==='google-street-view'?'Open Google Street View':'Open original photo');view.append(image);box.append(view);
+  if(spot.provider==='google-street-view')box.append(node('p','Google Maps','GMP-attribution'));
+ }else box.append(node('p','Photo preview unavailable. Open the original view below.','small'));
+ return box;
+}
+function loadPopupPhoto(popup){
+ for(const box of popup.querySelectorAll('.popup-photo-preview')){
+  if(box.dataset.loaded)continue;box.dataset.loaded='true';const image=box.querySelector('img'),spot=box.photoSpot;if(!image)continue;
+  image.addEventListener('error',()=>image.replaceWith(node('span','Preview unavailable — open the original view.','image-unavailable')));
+  if(spot.imageUrl)image.src=spot.imageUrl;else if(spot.provider==='google-street-view')refreshThumbnail(image,spot);
+ }
+}
 function photoBackgroundInfo(context){
  const provider={'google-street-view':'Google Street View',panoramax:'Panoramax','wikimedia-commons':'Wikimedia Commons'}[context.provider]||context.provider||'Source unavailable';
  return [context.poi?.category,provider,photoBearing(context).label].filter(Boolean).join(' · ');
@@ -191,11 +249,11 @@ function focusPhotoPlace(task){
  if(history){history.checked=true;persistHistory();renderHistory();drawHistoryMap();}
  let marker=resultPins.find(m=>samePhotoPlace(m.photoSpot,context));
  if(!marker){
-  const popup=node('div',null,'photo-popup');popup.append(node('strong',context.name||'Photo background'),node('p',photoBackgroundInfo(context)),placeSelfies(context));
+  const popup=node('div',null,'photo-popup');popup.append(node('strong',context.name||'Photo background'),node('p',photoBackgroundInfo(context)),popupPhotoPreview(context),placeSelfies(context));
   if(context.sourceUrl)popup.append(link(context.provider==='google-street-view'?'Open Street View ↗':'Open original photo ↗',context.sourceUrl));
-  marker=L.marker([pos.lat,pos.lon],{title:(context.name||'Photo background')+' · '+photoBearing(context).label,icon:directionDot(context)}).addTo(otherPhotoLocationLayer).bindPopup(popup);marker.photoSpot=context;resultPins.push(marker);
+  marker=L.marker([pos.lat,pos.lon],{title:(context.name||'Photo background')+' · '+photoBearing(context).label,icon:directionDot(context)}).addTo(otherPhotoLocationLayer).bindPopup(popup);marker.on('popupopen',()=>loadPopupPhoto(popup));marker.photoSpot=context;resultPins.push(marker);
  }
- if(!map.hasLayer(photoLocationLayer))photoLocationLayer.addTo(map);
+ const layer=marker.searchId===focusedSearchId?photoLocationLayer:otherPhotoLocationLayer;if(!map.hasLayer(layer))layer.addTo(map);
  map.setView([pos.lat,pos.lon],17);marker.openPopup();
 }
 function refreshPlaceSelfies(box){
@@ -215,18 +273,19 @@ function refreshPlaceSelfies(box){
 }
 function placeSelfies(spot){const box=node('section',null,'place-selfies');box.photoSpot=spot;refreshPlaceSelfies(box);return box;}
 function refreshVisiblePlaceSelfies(){for(const box of document.querySelectorAll('.place-selfies'))refreshPlaceSelfies(box);}
-function render(result,{scroll=true,save=true,mapUpdate=true}={}){const root=el('results');controls.open=false;for(const menu of mapMenus)menu.open=false;root.hidden=false;el('toggle-results').disabled=false;
+function render(result,{scroll=true,save=true,mapUpdate=true,historyId=null}={}){displayedSearchId=save?saveSearch(result):(historyId||searchHistory.find(h=>h.result===result)?.id||focusedSearchId);displayedResult=result;const visiblePois=allPoiViews(result,displayedSearchId);const root=el('results');controls.open=false;for(const menu of mapMenus)menu.open=false;root.hidden=false;el('toggle-results').disabled=false;
  const edit=node('button','Close ×','back-button');edit.type='button';edit.addEventListener('click',()=>{root.hidden=true;});
  const heading=node('div',null,'results-heading');heading.append(node('div','YOUR SHORTLIST','eyebrow'),edit);
  root.replaceChildren(heading,node('h2','Your nearby photo shortlist'),node('p',result.summary));
+ if(lastRemovedPoi?.searchId===displayedSearchId){const notice=node('p',lastRemovedPoi.name+' removed from this search. ','remove-notice'),undo=node('button','Undo','remove-undo');undo.type='button';const removed={...lastRemovedPoi};undo.addEventListener('click',async()=>{undo.disabled=true;try{const data=await json('/photo-scout/v1/hidden-pois',{method:'POST',headers:{'Content-Type':'application/json',...(csrfToken?{'X-CSRF-Token':csrfToken}:{})},body:JSON.stringify({...removed,hidden:false})});hiddenPoisBySearch=new Map(Object.entries(data.hiddenPois).map(([id,keys])=>[id,new Set(keys)]));lastRemovedPoi=null;drawHistoryMap();renderHistory();render(displayedResult,{save:false,mapUpdate:false,historyId:displayedSearchId});}catch(error){undo.disabled=false;message(error.message);}});notice.append(undo);root.append(notice);}
  if(result.photoStyles?.length)root.append(node('p',`Photo mood: ${result.photoStyles.map(s=>s.label).join(', ')}`,'tag'));
- if(result.candidatePoiCount!==undefined)root.append(node('p',`Found ${result.candidatePoiCount} candidate places; showing ${allPoiViews(result).length} with scored images.`,'small'),node('p','POI data © OpenStreetMap contributors · ODbL 1.0','small'));const cards=node('div',null,'cards');root.append(cards);
- for(const [i,s] of allPoiViews(result).entries()){const card=node('article',null,'card');card.id='photo-spot-'+String(i+1);if(s.imageUrl||s.provider==='google-street-view'){const img=node('img');if(s.imageUrl)img.src=s.imageUrl;else refreshThumbnail(img,s);img.alt=s.name;img.loading='eager';img.referrerPolicy='no-referrer';img.addEventListener('error',()=>{const attempts=Number(img.dataset.retryCount||0);if(s.provider==='google-street-view'&&attempts<2){img.dataset.retryCount=String(attempts+1);setTimeout(()=>{if(img.isConnected)refreshThumbnail(img,s);},attempts?65000:2000);}else img.replaceWith(node('span','Image unavailable — open the original view ↗','image-unavailable'));});const imageLink=link('',s.sourceUrl);imageLink.className='spot-image-link';imageLink.setAttribute('aria-label',(s.provider==='google-street-view'?'Open Google Street View for ':'Open original photo for ')+s.name);imageLink.append(img,node('span',s.provider==='google-street-view'?'Open Street View ↗':'Open original photo ↗','image-open-label'));card.append(imageLink);}else if(s.provider==='google-street-view'){const view=link('Explore this view in Google Street View ↗',s.sourceUrl);view.className='street-view-link';card.append(view);}const body=node('div',null,'body');body.append(...(s.provider==='google-street-view'?[node('p','Google Maps','GMP-attribution')]:[]),node('h3',`${i+1}. ${s.name}`),node('span',s.score==null?'No verified image':`${s.score}/100 subjective photo score · ${s.confidence} confidence`,'tag'),...(s.recommend===false?[node('p','Model flagged suitability concerns — review the notes','small')]:[]),...(s.provider?[node('p',`Image source: ${s.provider}`,'small')]:[]),...(s.poi?[node('p',`Candidate place: ${s.poi.name}${s.poi.category?' · '+s.poi.category:''}`,'small')]:[]),node('p',s.visible_evidence),...(s.photo_tip?[node('p',`Photo idea: ${s.photo_tip}`)]:[]),...(s.viewHeadingDegrees!=null?[node('p',`Inspected camera direction: ${s.viewHeadingDegrees}°`,'small')]:[]),...(s.distanceMeters!=null?[node('p',`${s.distanceMeters} m straight-line distance · ${s.locationType}`)]:[]),...(s.uncertainty?[node('p',`Uncertainty: ${s.uncertainty}`)]:[]),node('p',s.coordinateWarning),...(s.sourceUrl?[link(s.provider==='google-street-view'?'View Google Street View ↗':'Original image ↗',s.sourceUrl)]:[]),...(s.author?[node('p',`${s.author} · ${s.license} · source date: ${s.sourceDate||s.capturedAt||'unknown'}`)]:[]),...(s.licenseUrl?[link('Image license ↗',s.licenseUrl)]:[]));const compose=node('button','📷 Take a selfie here','compose-photo');compose.type='button';compose.addEventListener('click',()=>openPhotoStudio(s));body.append(compose,placeSelfies(s));card.append(body);cards.append(card);}
+ if(result.candidatePoiCount!==undefined)root.append(node('p',`Found ${result.candidatePoiCount} candidate places; showing ${visiblePois.length} with scored images.`,'small'),node('p','POI data © OpenStreetMap contributors · ODbL 1.0','small'));const cards=node('div',null,'cards');root.append(cards);
+ for(const [i,originalSpot] of visiblePois.entries()){const s={...originalSpot,...poiViewOverrides.get(displayedSearchId+':'+poiHistoryKey(originalSpot))};const card=node('article',null,'card');card.id='photo-spot-'+String(i+1);if(s.imageUrl||s.provider==='google-street-view'){const img=node('img');if(s.imageUrl)img.src=s.imageUrl;else refreshThumbnail(img,s);img.alt=s.name;img.loading='eager';img.referrerPolicy='no-referrer';img.addEventListener('error',()=>{const attempts=Number(img.dataset.retryCount||0);if(s.provider==='google-street-view'&&attempts<2){img.dataset.retryCount=String(attempts+1);setTimeout(()=>{if(img.isConnected)refreshThumbnail(img,s);},attempts?65000:2000);}else img.replaceWith(node('span','Image unavailable — open the original view ↗','image-unavailable'));});const imageLink=link('',s.sourceUrl);imageLink.className='spot-image-link';imageLink.setAttribute('aria-label',(s.provider==='google-street-view'?'Open Google Street View for ':'Open original photo for ')+s.name);imageLink.append(img,node('span',s.provider==='google-street-view'?'Open Street View ↗':'Open original photo ↗','image-open-label'));card.append(imageLink);}else if(s.provider==='google-street-view'){const view=link('Explore this view in Google Street View ↗',s.sourceUrl);view.className='street-view-link';card.append(view);}const body=node('div',null,'body');body.append(...(s.provider==='google-street-view'?[node('p','Google Maps','GMP-attribution')]:[]),node('h3',`${i+1}. ${s.name}`),node('span',s.score==null?'No verified image':`${s.score}/100 subjective photo score · ${s.confidence} confidence`,'tag'),...(s.recommend===false?[node('p','Model flagged suitability concerns — review the notes','small')]:[]),...(s.provider?[node('p',`Image source: ${s.provider}`,'small')]:[]),...(s.poi?[node('p',`Candidate place: ${s.poi.name}${s.poi.category?' · '+s.poi.category:''}`,'small')]:[]),node('p',s.visible_evidence),...(s.photo_tip?[node('p',`Photo idea: ${s.photo_tip}`)]:[]),...(s.viewHeadingDegrees!=null?[node('p',`Inspected camera direction: ${s.viewHeadingDegrees}°`,'small')]:[]),...(s.distanceMeters!=null?[node('p',`${s.distanceMeters} m straight-line distance · ${s.locationType}`)]:[]),...(s.uncertainty?[node('p',`Uncertainty: ${s.uncertainty}`)]:[]),node('p',s.coordinateWarning),...(s.sourceUrl?[link(s.provider==='google-street-view'?'View Google Street View ↗':'Original image ↗',s.sourceUrl)]:[]),...(s.author?[node('p',`${s.author} · ${s.license} · source date: ${s.sourceDate||s.capturedAt||'unknown'}`)]:[]),...(s.licenseUrl?[link('Image license ↗',s.licenseUrl)]:[]));const compose=node('button','📷 Take a selfie here','compose-photo');compose.type='button';compose.addEventListener('click',()=>openPhotoStudio({...s,...poiViewOverrides.get(displayedSearchId+':'+poiHistoryKey(s))}));body.append(compose,removePoiButton(s,displayedSearchId),placeSelfies(s));card.append(body);cards.append(card);}
  if(result.imageAssessments?.length){const detail=node('details',null,'score-details');detail.append(node('summary',`All ${result.imageAssessments.length} image scores`));const list=node('ul');for(const a of result.imageAssessments){const li=node('li');li.append(node('strong',`${a.score}/100 · ${a.name}`),node('p',`${a.provider} · ${a.eligibleForRecommendation?'Suitable candidate':'Not recommended'}`,'small'),node('p',a.visible_evidence),...(a.exclusionReason?[node('p',`Why not shortlisted: ${a.exclusionReason}`)]:[]),node('p',`Uncertainty: ${a.uncertainty}`));list.append(li);}detail.append(list);root.append(detail);}
 
  if(result.sources){const coverage=node('p',Object.entries(result.sources).map(([name,s])=>`${name}: ${s.status==='ok'?(s.eligibleImages!==undefined?`${s.eligibleImages} eligible images${s.sampledImages!==undefined?`; ${s.sampledImages} selected for scoring`:""}`:'available'):'temporarily unavailable'}`).join(' · '),'small');root.append(coverage);}
- root.append(node('p',`${result.analysisMethod==='fixed-batch-scoring'?'Rated':'Inspected'} ${result.inspectedImages} images${result.inspectedImageSources?.length?" from "+result.inspectedImageSources.join(", "):""}. ${result.coverage}`,'small'));if(save)saveSearch(result);if(mapUpdate)drawHistoryMap({fit:true});}
-async function refreshThumbnail(img,spot){img.dataset.refreshed='true';try{const data=await json('/photo-scout/v1/thumbnails',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sourceUrls:[spot.sourceUrl]})});if(data.imageUrls[0])img.src=data.imageUrls[0];else throw Error('Unavailable');}catch{img.replaceWith(node('span','Image unavailable — open the original view ↗','image-unavailable'));}}
+ root.append(node('p',`${result.analysisMethod==='fixed-batch-scoring'?'Rated':'Inspected'} ${result.inspectedImages} images${result.inspectedImageSources?.length?" from "+result.inspectedImageSources.join(", "):""}. ${result.coverage}`,'small'));if(mapUpdate)drawHistoryMap({fit:true});}
+async function refreshThumbnail(img,spot){img.dataset.refreshed='true';const generation=Number(img.dataset.viewGeneration||0)+1;img.dataset.viewGeneration=String(generation);try{const data=await json('/photo-scout/v1/thumbnails',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sourceUrls:[spot.sourceUrl]})});if(img.dataset.viewGeneration!==String(generation))return;if(data.imageUrls[0])img.src=data.imageUrls[0];else throw Error('Unavailable');}catch{if(img.dataset.viewGeneration!==String(generation))return;img.replaceWith(node('span','Image unavailable — open the original view ↗','image-unavailable'));}}
 async function json(url,options){const r=await fetch(api+url,{credentials:'include',...options}),data=await r.json();if(!r.ok)throw Error(typeof data.detail==='string'?data.detail:'Request failed');return data;}
 // Remove legacy active-job tokens; completed history is stored separately.
 try{localStorage.removeItem('photo-scout-active-search');for(const key of Object.keys(sessionStorage)){if(key.startsWith('photo-scout:'))sessionStorage.removeItem(key);}}catch{}
@@ -264,9 +323,10 @@ el('sample-paris').addEventListener('click',async()=>{try{const r=await fetch('.
 
 el("sample-google").addEventListener("click",async()=>{try{const r=await fetch("./sample-google.json");if(!r.ok)throw Error("Sample unavailable");const data=await r.json();render(data);message(data.sampleNotice);}catch(e){message(e.message)}});
 
-const HISTORY_KEY='photo-scout-search-history-v1';let searchHistory=[],focusedSearchId=null,authUser=null,csrfToken=null;const pendingHistory=new Map();let syncingHistory=false;
+const HISTORY_KEY='photo-scout-search-history-v1';let searchHistory=[],focusedSearchId=null,displayedResult=null,displayedSearchId=null,hiddenPoisBySearch=new Map(),authUser=null,csrfToken=null;const pendingHistory=new Map();let syncingHistory=false;
 function hasScoredImage(spot){return Number.isFinite(spot.score)&&spot.assessmentStatus!=='no_verified_view'&&Boolean(spot.imageUrl||spot.streetViewReference||(spot.provider==='google-street-view'&&spot.sourceUrl));}
-function allPoiViews(result){const seen=new Set();return [...(result.poiResults||[]),...(result.spots||[])].filter(hasScoredImage).sort((a,b)=>b.score-a.score).filter(s=>{const id=s.poi?.id||s.id;if(seen.has(id))return false;seen.add(id);return true;});}
+function poiHistoryKey(spot){return String(spot.poi?.id||spot.id||`geo:${spot.poi?.lat},${spot.poi?.lon}:${spot.name}`);}
+function allPoiViews(result,searchId=searchHistory.find(h=>h.result===result)?.id){const hidden=hiddenPoisBySearch.get(searchId)||new Set();const seen=new Set();return [...(result.poiResults||[]),...(result.spots||[])].filter(s=>hasScoredImage(s)&&!hidden.has(poiHistoryKey(s))).sort((a,b)=>b.score-a.score).filter(s=>{const id=s.poi?.id||s.id;if(seen.has(id))return false;seen.add(id);return true;});}
 function photoTopCount(result){return Math.min(allPoiViews(result).length,Number(result.topLimit||result.searchContext?.limit)||((result.spots||[]).length===5?5:3));}
 function directionDot(spot){const b=photoBearing(spot);return L.divIcon({className:'direction-dot'+(b.heading===null?' no-bearing':''),html:`<span style="transform:rotate(${b.heading??0}deg)"><i></i><b></b></span><small class="dot-bearing">${b.heading===null?'?':b.heading+'°'}</small>`,iconSize:[36,48],iconAnchor:[18,16],popupAnchor:[0,-16]});}
 function storedHistory(){return searchHistory.map(h=>({...h,result:{...h.result,imageAssessments:[],spots:(h.result.spots||[]).map(stripHistoryImage),poiResults:(h.result.poiResults||[]).map(stripHistoryImage)}}));}
@@ -276,7 +336,7 @@ async function loadAccount(){try{const state=await json('/photo-scout/v1/auth/me
 el('account-login').addEventListener('click',()=>{persistHistory();location.href=api+'/photo-scout/v1/auth/login';});
 el('account-logout').addEventListener('click',async()=>{try{await json('/photo-scout/v1/auth/logout',{method:'POST',headers:{'X-CSRF-Token':csrfToken}});authUser=null;csrfToken=null;pendingHistory.clear();searchHistory=[];sessionStorage.removeItem(HISTORY_KEY);el('results').hidden=true;el('toggle-results').disabled=true;renderHistory();drawHistoryMap();resetTaskRecovery();await loadAccount();await restoreTasks();}catch{el('history-note').textContent='Sign-out failed. Please try again.';}});
 function stripHistoryImage(s){const copy={...s};delete copy.imageUrl;delete copy.streetViewReference;return copy;}
-function saveSearch(result){const id=activeSearch?.jobId||crypto.randomUUID();focusedSearchId=id;if(searchHistory.some(h=>h.id===id))return;const context=activeSearch?.context;searchHistory.unshift({id,created:Date.now(),label:context?.query||context?.locationLabel||el('prompt-query').value.trim()||`Around ${Number(el('lat').value).toFixed(4)}, ${Number(el('lon').value).toFixed(4)}`,radius:context?.radius||Number(el('radius').value),checked:true,result:{...result,searchContext:{...(context||coordinates())}}});persistHistory();renderHistory();}
+function saveSearch(result){const id=activeSearch?.jobId||crypto.randomUUID();focusedSearchId=id;if(searchHistory.some(h=>h.id===id))return id;const context=activeSearch?.context;searchHistory.unshift({id,created:Date.now(),label:context?.query||context?.locationLabel||el('prompt-query').value.trim()||`Around ${Number(el('lat').value).toFixed(4)}, ${Number(el('lon').value).toFixed(4)}`,radius:context?.radius||Number(el('radius').value),checked:true,result:{...result,searchContext:{...(context||coordinates())}}});persistHistory();renderHistory();return id;}
 function searchDraft(){return JSON.stringify({...coordinates(),query:el('prompt-query').value.trim(),preferences:el('preferences').value});}
 function addSubmittedTask(kind,job,context){const id=job.id||job.jobId;taskRecords=[{id,kind,created:Date.now()/1000,state:'queued',context,localPending:true},...taskRecords.filter(t=>t.id!==id||t.kind!==kind)];renderHistory();}
 function historyEntries(){
@@ -305,7 +365,7 @@ function renderHistory(){
   row.append(label,view);(entry.kind==='portrait'?photosRoot:root).append(row);
  }
 }
-function drawHistoryMap({fit=false}={}){photoLocationLayer.clearLayers();otherPhotoLocationLayer.clearLayers();candidatePoiLayer.clearLayers();resultPins=[];for(const h of searchHistory.filter(h=>h.checked).sort((a,b)=>Number(a.id===focusedSearchId)-Number(b.id===focusedSearchId))){const focused=h.id===focusedSearchId;for(const [i,s] of allPoiViews(h.result).entries()){const pos=s.poi;if(!pos||!Number.isFinite(pos.lat)||!Number.isFinite(pos.lon))continue;const b=photoBearing(s),popup=node('div',null,'photo-popup');popup.append(node('strong',s.name),node('p',s.score==null?'No verified image':`${s.score}/100 · ${b.label}`),node('p',h.label));const show=node('button','View place','popup-shortlist');show.type='button';const reveal=()=>{render(h.result,{save:false,mapUpdate:false});el('photo-spot-'+String(i+1))?.scrollIntoView({block:'nearest',behavior:'smooth'});};show.addEventListener('click',reveal);const selfie=node('button','📷 Take a selfie here','compose-photo popup-selfie');selfie.type='button';selfie.addEventListener('click',()=>openPhotoStudio(s));popup.append(show,selfie,placeSelfies(s));if(s.sourceUrl)popup.append(link(s.provider==='google-street-view'?'Open Street View ↗':'Open original photo ↗',s.sourceUrl));const marker=L.marker([pos.lat,pos.lon],{title:`${s.name} · ${b.label} · ${h.label}`,icon:focused?photographerIcon(s,i):directionDot(s)}).addTo(focused?photoLocationLayer:otherPhotoLocationLayer).bindPopup(popup).on('popupopen',()=>{for(const box of popup.querySelectorAll('.place-selfies'))refreshPlaceSelfies(box);});marker.photoSpot=s;marker.searchId=h.id;resultPins.push(marker);}}if(fit&&resultPins.length)map.fitBounds(L.featureGroup(resultPins).getBounds().pad(.2),{paddingTopLeft:[40,80],paddingBottomRight:[40,250],maxZoom:16});}
+function drawHistoryMap({fit=false}={}){photoLocationLayer.clearLayers();otherPhotoLocationLayer.clearLayers();candidatePoiLayer.clearLayers();resultPins=[];for(const h of searchHistory.filter(h=>h.checked).sort((a,b)=>Number(a.id===focusedSearchId)-Number(b.id===focusedSearchId))){const focused=h.id===focusedSearchId;for(const [i,originalSpot] of allPoiViews(h.result,h.id).entries()){const s={...originalSpot,...poiViewOverrides.get(h.id+':'+poiHistoryKey(originalSpot))};const pos=s.poi;if(!pos||!Number.isFinite(pos.lat)||!Number.isFinite(pos.lon))continue;const b=photoBearing(s),popup=node('div',null,'photo-popup');popup.append(node('strong',s.name),node('p',s.score==null?'No verified image':`${s.score}/100 · ${b.label}`),node('p',h.label));const show=node('button','View place','popup-shortlist');show.type='button';const reveal=()=>{render(h.result,{save:false,mapUpdate:false,historyId:h.id});el('photo-spot-'+String(i+1))?.scrollIntoView({block:'nearest',behavior:'smooth'});};show.addEventListener('click',reveal);const selfie=node('button','📷 Take a selfie here','compose-photo popup-selfie');selfie.type='button';selfie.addEventListener('click',()=>openPhotoStudio(s));popup.append(popupPhotoPreview(s),popupViewControls(s),show,selfie,removePoiButton(s,h.id),placeSelfies(s));if(s.sourceUrl)popup.append(link(s.provider==='google-street-view'?'Open Street View ↗':'Open original photo ↗',s.sourceUrl));const marker=L.marker([pos.lat,pos.lon],{title:`${s.name} · ${b.label} · ${h.label}`,icon:focused?photographerIcon(s,i):directionDot(s)}).addTo(focused?photoLocationLayer:otherPhotoLocationLayer).bindPopup(popup).on('popupopen',()=>{selectedPoiView={marker,popup,spot:s,searchId:h.id,index:i};loadPopupPhoto(popup);for(const box of popup.querySelectorAll('.place-selfies'))refreshPlaceSelfies(box);}).on('popupclose',()=>{if(selectedPoiView?.marker===marker)selectedPoiView=null;});marker.photoSpot=s;marker.searchId=h.id;resultPins.push(marker);}}if(fit&&resultPins.length)map.fitBounds(L.featureGroup(resultPins).getBounds().pad(.2),{paddingTopLeft:[40,80],paddingBottomRight:[40,250],maxZoom:16});}
 el('history-all').addEventListener('change',()=>{for(const h of searchHistory)h.checked=el('history-all').checked;persistHistory();renderHistory();drawHistoryMap({fit:true});});
 try{const legacy=localStorage.getItem(HISTORY_KEY);if(legacy&&!sessionStorage.getItem(HISTORY_KEY))sessionStorage.setItem(HISTORY_KEY,legacy);localStorage.removeItem(HISTORY_KEY);const lastVisit=Number(sessionStorage.getItem(HISTORY_KEY+'-last-visit'));if(lastVisit&&lastVisit<Date.now()-7*86400000)sessionStorage.removeItem(HISTORY_KEY);const saved=JSON.parse(sessionStorage.getItem(HISTORY_KEY)||'[]');if(Array.isArray(saved))searchHistory=saved.filter(h=>h&&typeof h.id==='string'&&typeof h.label==='string'&&h.result&&Array.isArray(h.result.spots));}catch{}renderHistory();drawHistoryMap({fit:true});loadAccount().finally(()=>restoreTasks());
 
@@ -433,7 +493,7 @@ function showHistorySearch(result,context,history){
  activeSearch=null;stopPoiScan();focusedSearchId=history?.id||searchHistory.find(h=>h.result===result)?.id||null;
  el('search-history').open=false;
  if(history&&!history.checked){history.checked=true;persistHistory();renderHistory();}
- render(result,{save:false,mapUpdate:false});drawHistoryMap();
+ render(result,{save:false,mapUpdate:false,historyId:history?.id});drawHistoryMap();
  // History View focuses the map on every screen; open Shortlist only on request.
  el('results').hidden=true;
  focusHistorySearch(context,result,history);
@@ -530,12 +590,14 @@ function syncPortraitActivities(){
 }
 function resetTaskRecovery(){
  if(savedPhoto.open)savedPhoto.close();if(portraitProgress.open)portraitProgress.close();
- focusedSearchId=null;taskRecoveryGeneration++;clearTimeout(taskRefreshTimer);taskRecords=[];tasksReady=false;activeSearch=null;pollGeneration++;searchBusy=false;studioBusy=false;studioJob=null;clearTimeout(studioTimer);clearStudioOutput();studioPrepared=null;studioFile=null;studioUpload.value='';studioUpload.disabled=false;studioPose.disabled=false;studioStyles.disabled=false;studioOptions.disabled=false;studioGenerate.disabled=true;personPreview.hidden=true;personPreview.removeAttribute('src');studioTask.hidden=true;selfieActivityLayer.clearLayers();renderHistory();updateSubmitState();
+ focusedSearchId=null;selectedPoiView=null;lastRemovedPoi=null;poiViewOverrides.clear();taskRecoveryGeneration++;clearTimeout(taskRefreshTimer);taskRecords=[];hiddenPoisBySearch.clear();displayedResult=null;displayedSearchId=null;tasksReady=false;activeSearch=null;pollGeneration++;searchBusy=false;studioBusy=false;studioJob=null;clearTimeout(studioTimer);clearStudioOutput();studioPrepared=null;studioFile=null;studioUpload.value='';studioUpload.disabled=false;studioPose.disabled=false;studioStyles.disabled=false;studioOptions.disabled=false;studioGenerate.disabled=true;personPreview.hidden=true;personPreview.removeAttribute('src');studioTask.hidden=true;selfieActivityLayer.clearLayers();renderHistory();updateSubmitState();
 }
 async function restoreTasks(){
  if(taskRefreshBusy)return;taskRefreshBusy=true;const generation=taskRecoveryGeneration,initial=!tasksReady;let changed=false;
  try{
   const visiting=!document.hidden;const data=await json('/photo-scout/v1/tasks'+(visiting?'?visit=true':''));if(visiting){try{sessionStorage.setItem(HISTORY_KEY+'-last-visit',String(Date.now()));}catch{}}if(generation!==taskRecoveryGeneration)return;tasksReady=true;
+  const incomingHidden=new Map(Object.entries(data.hiddenPois||{}).map(([id,keys])=>[id,new Set(keys)]));
+  if(JSON.stringify([...incomingHidden].map(([id,keys])=>[id,[...keys]]))!==JSON.stringify([...hiddenPoisBySearch].map(([id,keys])=>[id,[...keys]]))){hiddenPoisBySearch=incomingHidden;changed=true;if(displayedResult&&!el('results').hidden)render(displayedResult,{save:false,mapUpdate:false,historyId:displayedSearchId});}
   const returned=new Set(data.items.map(t=>t.kind+':'+t.id));taskRecords=[...data.items,...taskRecords.filter(t=>t.localPending&&!returned.has(t.kind+':'+t.id))].sort((a,b)=>b.created-a.created);renderHistory();refreshVisiblePlaceSelfies();
   for(const task of taskRecords.filter(t=>t.kind==='search'&&t.state==='complete')){
    if(searchHistory.some(h=>h.id===task.id))continue;

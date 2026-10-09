@@ -690,13 +690,14 @@ def test_google_horizontal_reference_reaches_provider(tmp_path,monkeypatch):
     monkeypatch.setenv('WEB_EVIDENCE_DB',str(tmp_path/'db'));monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_DAILY_IMAGE_LIMIT','0')
     requests=[]
     def handler(r):
-        requests.append(r); assert r.url.params['pitch']=='0' and r.url.params['heading']=='90'
+        requests.append(r); assert r.url.params['heading']=='90'
         return httpx.Response(200,content=b'\xff\xd8\xfftest')
     real=httpx.AsyncClient
     monkeypatch.setattr(sources.httpx,'AsyncClient',lambda **kw:real(transport=httpx.MockTransport(handler)))
     asyncio.run(sources.google_image_data('google-streetview://fixture/90'))
-    with pytest.raises(ValueError):asyncio.run(sources.google_image_data('google-streetview://fixture/90/80'))
-    assert len(requests)==1
+    asyncio.run(sources.google_image_data('google-streetview://fixture/90/80'))
+    assert [r.url.params['pitch'] for r in requests]==['0','80']
+    with pytest.raises(ValueError):asyncio.run(sources.google_image_data('google-streetview://fixture/90/91'))
 
 
 def test_score_cache_reuses_successful_views_without_download_or_model(tmp_path,monkeypatch):
@@ -755,7 +756,9 @@ def test_history_thumbnail_links_require_auth_and_valid_google_panorama(tmp_path
     q=parse_qs(urlsplit(response.json()['imageUrls'][0]).query)
     assert q['reference']==['google-streetview://fixture_pano/225']
     assert len(q['signature'][0])==64
-    for bad in [url.replace('www.google.com','evil.test'),url.replace('225','360'),url.replace('https:','http:')]:
+    tilted=client.post('/photo-scout/v1/thumbnails',json={'sourceUrls':[url+'&pitch=-20']},headers=headers)
+    assert parse_qs(urlsplit(tilted.json()['imageUrls'][0]).query)['reference']==['google-streetview://fixture_pano/225/-20']
+    for bad in [url+'&pitch=91',url+'&pitch=abc',url.replace('www.google.com','evil.test'),url.replace('225','360'),url.replace('https:','http:')]:
         assert client.post('/photo-scout/v1/thumbnails',json={'sourceUrls':[bad]},headers=headers).status_code==422
 
 
