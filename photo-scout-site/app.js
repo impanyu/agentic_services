@@ -7,7 +7,7 @@ L.control.zoom({position:'bottomright'}).addTo(map);
 const controls=el('map-controls');controls.open=false;L.DomEvent.disableClickPropagation(controls);L.DomEvent.disableScrollPropagation(controls);L.DomEvent.disableClickPropagation(document.querySelector('.map-toolbar'));L.DomEvent.disableClickPropagation(el('prompt-form'));L.DomEvent.disableScrollPropagation(document.querySelector('.prompt-panel'));L.DomEvent.disableClickPropagation(document.querySelector('.scout-dock'));L.DomEvent.disableScrollPropagation(document.querySelector('.scout-dock'));L.DomEvent.disableClickPropagation(el('center-pin'));
 const streetTiles=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'});
 let rasterLayer=null,previewLayer=null,previewTimer=null;
-let vectorLayer=null,activeMapStyle='streets',mapStyleGeneration=0,vectorReady=false,mapLoadTimer=null;
+let vectorLayer=null,activeMapStyle='streets',mapStyleGeneration=0,vectorReady=false,mapLoadTimer=null,vectorMoveHandler=null;
 const mapDetails={names:true,roads:true,roadNames:false,buildings:false,greenery:false,boundaries:false};
 let originalLayerVisibility=new Map();
 function mapDetailGroup(layer){const source=layer['source-layer']||'';if(source==='transportation_name')return 'roadNames';if(layer.type==='symbol')return 'names';if(['transportation','aeroway'].includes(source))return 'roads';if(source==='building')return 'buildings';if(['park','landcover','landuse'].includes(source))return 'greenery';if(source==='boundary')return 'boundaries';return null;}
@@ -25,7 +25,7 @@ function loadVectorRuntime(){
 }
 const mapStyles={streets:'liberty',minimal:'positron',night:'dark',bright:'bright'};
 async function switchMapStyle(style){
- clearTimeout(mapLoadTimer);clearTimeout(previewTimer);vectorReady=false;activeMapStyle=style;document.body.dataset.mapStyle=style;const generation=++mapStyleGeneration;
+ clearTimeout(mapLoadTimer);clearTimeout(previewTimer);if(vectorMoveHandler){map.off?.('movestart',vectorMoveHandler);vectorMoveHandler=null;}vectorReady=false;activeMapStyle=style;document.body.dataset.mapStyle=style;const generation=++mapStyleGeneration;
  document.querySelectorAll('[data-map-style]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mapStyle===style)));
  el('map-notice').textContent='Loading map…';
  if(vectorLayer){map.removeLayer(vectorLayer);vectorLayer=null;}
@@ -82,7 +82,12 @@ async function switchMapStyle(style){
   gl.getContainer().style.zIndex='2';gl.getCanvas().style.opacity='0';
   gl.once('load',()=>{if(generation!==mapStyleGeneration||abandoned)return;vectorReady=true;applyMapDetails();});
   // 'load' alone does not establish a fully painted, current viewport.
-  gl.once('idle',()=>{if(generation!==mapStyleGeneration||abandoned)return;gl.getCanvas().style.opacity='1';ready();clearTimeout(previewTimer);if(previewLayer===preview){map.removeLayer(preview);previewLayer=null;}if(map.hasLayer(streetTiles))map.removeLayer(streetTiles);});
+  // Keep raster tiles underneath throughout the session. A first idle event
+  // does not guarantee WebGL can paint the next mobile viewport.
+  const painted=()=>{if(generation!==mapStyleGeneration||abandoned)return;if(gl.areTilesLoaded&&!gl.areTilesLoaded())return;gl.getCanvas().style.opacity='1';ready();};
+  gl.on('idle',painted);
+  vectorMoveHandler=()=>{if(generation!==mapStyleGeneration||abandoned)return;gl.getCanvas().style.opacity='0';clearTimeout(mapLoadTimer);mapLoadTimer=setTimeout(()=>fallback('Map graphics did not recover.'),6000);};
+  map.on?.('movestart',vectorMoveHandler);
   gl.on('error',()=>fallback('The selected basemap is unavailable.'));
   gl.on('webglcontextlost',()=>fallback('Map graphics were interrupted.'));
  }catch{fallback('The selected basemap is unavailable.');}
@@ -513,3 +518,8 @@ async function restoreTasks(){
  finally{taskRefreshBusy=false;updateSubmitState();clearTimeout(taskRefreshTimer);const pending=taskRecords.some(t=>['queued','running','checking'].includes(t.state));taskRefreshTimer=setTimeout(restoreTasks,document.hidden?(pending?15000:60000):(pending?5000:15000));}
 }
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){restoreTasks();}});
+
+function refreshMapViewport(){if(document.hidden)return;map.invalidateSize?.({pan:false});if(vectorLayer){vectorMoveHandler?.();const gl=vectorLayer.getMaplibreMap();gl.resize?.();gl.triggerRepaint?.();}}
+window.addEventListener('resize',refreshMapViewport);window.addEventListener('pageshow',refreshMapViewport);
+document.addEventListener('visibilitychange',refreshMapViewport);
+if(window.ResizeObserver)new window.ResizeObserver(refreshMapViewport).observe(el('map'));

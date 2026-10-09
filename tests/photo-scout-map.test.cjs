@@ -37,12 +37,12 @@ test('first vector frame uses selected details without a full street-map placeho
 function loadingFixture(cold=false){
  const layers=[],timers=[],requests=[],vectors=[],rasters=[],scripts=[];
  const elements=new Map();const el=id=>{if(!elements.has(id))elements.set(id,{open:false,textContent:'',addEventListener(){},setAttribute(){}});return elements.get(id);};
- const map={setView(){return this;},hasLayer:l=>layers.includes(l),removeLayer(l){layers.splice(layers.indexOf(l),1);}};
+ const mapEvents={};const map={setView(){return this;},on(name,fn){mapEvents[name]=fn;},off(name,fn){if(mapEvents[name]===fn)delete mapEvents[name];},hasLayer:l=>layers.includes(l),removeLayer(l){layers.splice(layers.indexOf(l),1);}};
  const layer=()=>{const events={};return {events,addTo(){layers.push(this);return this;},once(name,fn){events[name]=fn;},on(name,fn){events[name]=fn;}};};
  const L={map:()=>map,control:{zoom:layer},DomEvent:{disableClickPropagation(){},disableScrollPropagation(){}},tileLayer(url){const l=layer();l.url=url;rasters.push(l);return l;},maplibreGL(options){const l=layer(),events={};l.gl={events,container:{style:{}},canvas:{style:{}},getContainer(){return this.container;},getCanvas(){return this.canvas;},once(name,fn){events[name]=fn;},on(name,fn){events[name]=fn;},getStyle(){return options.style;},setLayoutProperty(){}};l.getMaplibreMap=()=>l.gl;vectors.push(l);return l;}};
  const context={L,window:cold?{}:{maplibregl:{}},document:{head:{append:tag=>scripts.push(tag)},createElement:()=>({}),body:{dataset:{}},getElementById:el,querySelector:el,querySelectorAll:()=>[]},location:{hostname:'test'},fetch:()=>new Promise(resolve=>requests.push(resolve)),setTimeout(fn,delay){timers.push({fn,delay,cleared:false});return timers.length;},clearTimeout(id){if(timers[id-1])timers[id-1].cleared=true;}};
  vm.runInNewContext(readFileSync('photo-scout-site/app.js','utf8').split('let selected=')[0],context);
- return {context,layers,timers,requests,vectors,rasters,scripts,el,async resolve(index=0){await new Promise(resolve=>setImmediate(resolve));requests[index]({ok:true,json:async()=>({version:8,sources:{},layers:[]})});await new Promise(resolve=>setImmediate(resolve));}};
+ return {context,layers,timers,requests,vectors,rasters,scripts,el,mapEvents,async resolve(index=0){await new Promise(resolve=>setImmediate(resolve));requests[index]({ok:true,json:async()=>({version:8,sources:{},layers:[]})});await new Promise(resolve=>setImmediate(resolve));}};
 }
 
 test('a quiet base loads immediately and survives a hanging vector style',async()=>{
@@ -59,7 +59,7 @@ test('vector canvas cannot cover the preview before the current viewport is pain
  const f=loadingFixture();await f.resolve();const vector=f.vectors[0],preview=f.rasters[1];
  assert.equal(vector.gl.canvas.style.opacity,'0');vector.gl.events.load();
  assert.ok(f.layers.includes(preview));assert.equal(vector.gl.canvas.style.opacity,'0');
- vector.gl.events.idle();assert.equal(vector.gl.canvas.style.opacity,'1');assert.ok(!f.layers.includes(preview));assert.equal(f.el('map-notice').textContent,'');
+ vector.gl.events.idle();assert.equal(vector.gl.canvas.style.opacity,'1');assert.ok(f.layers.includes(preview));assert.equal(f.el('map-notice').textContent,'');
 });
 test('a vector renderer that never paints is removed, retaining its working preview',async()=>{
  const f=loadingFixture();await f.resolve();const preview=f.rasters[1];preview.events.tileload();
@@ -94,4 +94,13 @@ test('a cold renderer downloads in the background after the simple map starts',a
  const f=loadingFixture(true);assert.ok(f.layers.includes(f.rasters[1]));assert.equal(f.requests.length,0);assert.match(f.scripts[0].src,/maplibre-gl.js$/);
  f.context.window.maplibregl={};f.scripts[0].onload();await new Promise(resolve=>setImmediate(resolve));
  assert.match(f.scripts[1].src,/leaflet-maplibre-gl.js$/);f.scripts[1].onload();await f.resolve();assert.equal(f.vectors.length,1);
+});
+
+test('mobile viewport changes reveal retained raster until vector tiles are ready again',async()=>{
+ const f=loadingFixture();await f.resolve();const vector=f.vectors[0],preview=f.rasters[1];preview.events.tileload();vector.gl.events.load();vector.gl.events.idle();
+ assert.ok(f.layers.includes(preview),'the raster safety net must remain after the first frame');
+ f.mapEvents.movestart();assert.equal(vector.gl.canvas.style.opacity,'0');
+ vector.gl.areTilesLoaded=()=>false;vector.gl.events.idle();assert.equal(vector.gl.canvas.style.opacity,'0');
+ vector.gl.areTilesLoaded=()=>true;vector.gl.events.idle();assert.equal(vector.gl.canvas.style.opacity,'1');
+ f.mapEvents.movestart();f.timers.filter(t=>t.delay===6000).at(-1).fn();assert.ok(f.layers.includes(preview));assert.ok(!f.layers.includes(vector));
 });
