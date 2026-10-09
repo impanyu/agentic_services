@@ -443,7 +443,7 @@ const savedPhotoTop=node('div',null,'studio-heading'),savedPhotoTitle=node('h2',
 const savedPhotoPlace=node('p',null,'small'),savedPhotoImage=node('img',null,'studio-result'),savedPhotoStatus=node('p',null,'studio-status'),savedPhotoParams=node('div',null,'saved-photo-params'),savedPhotoSave=node('button','Save to Photos','studio-save'),savedPhotoDownload=node('a','Download PNG','studio-save studio-download'),savedPhotoHint=node('p',null,'small');savedPhotoImage.alt='Saved AI-generated travel photo';savedPhotoStatus.setAttribute('role','status');savedPhotoDownload.download='photo-scout-ai-photo.png';
 const savedPhotoBackground=node('section',null,'saved-photo-background');
 const savedPhotoNav=node('nav',null,'saved-photo-nav');savedPhotoNav.setAttribute('aria-label','Navigate to this photo location');
-savedPhoto.append(savedPhotoTop,savedPhotoPlace,savedPhotoBackground,savedPhotoNav,savedPhotoImage,savedPhotoStatus,savedPhotoParams,savedPhotoSave,savedPhotoDownload,savedPhotoHint);document.body.append(savedPhoto);
+savedPhoto.append(savedPhotoTop,savedPhotoPlace,savedPhotoImage,savedPhotoStatus,savedPhotoBackground,savedPhotoSave,savedPhotoDownload,savedPhotoHint);document.body.append(savedPhoto);
 let savedPhotoGeneration=0,savedPhotoTimer=null,savedPhotoFile=null,savedPhotoUrl=null;
 function savedPhotoNavigation(context){
  const {lat,lon}=context?.poi||{};
@@ -453,7 +453,7 @@ function savedPhotoNavigation(context){
 }
 function renderSavedPhotoParams(context,created){
  const pos=context?.poi,place=node('button','⌖ '+(context?.name||'Show background on map'),'photo-place-link');place.type='button';place.title='Show background location on map';place.disabled=!pos||![pos.lat,pos.lon].every(Number.isFinite);place.addEventListener('click',()=>{savedPhoto.close();focusPhotoPlace({context});});
- savedPhotoBackground.replaceChildren(node('h3','Background location'),place,node('p',photoBackgroundInfo(context||{}),'small'));
+ savedPhotoBackground.replaceChildren(node('h3','Background info'),place,node('p',photoBackgroundInfo(context||{}),'small'));
  if(pos&&[pos.lat,pos.lon].every(Number.isFinite))savedPhotoBackground.append(node('p',`${pos.lat.toFixed(5)}, ${pos.lon.toFixed(5)}`,'small'));
  if(context?.sourceUrl)savedPhotoBackground.append(link(context.provider==='google-street-view'?'Open original Street View ↗':'Open original photo ↗',context.sourceUrl));
  const routes=savedPhotoNavigation(context);savedPhotoNav.replaceChildren(...routes.map(([label,url])=>link(label,url)));savedPhotoNav.hidden=!routes.length;
@@ -463,7 +463,8 @@ function renderSavedPhotoParams(context,created){
   fields.push(['Style',portraitStyles.find(s=>s[0]===g.style)?.[1]||g.style],['Posture',label(studioPosture,g.posture)],['Weather & light',label(studioWeather,g.weather)],['Expression',label(studioExpression,g.expression)],['Your directions',g.directions||'None']);
  }
  const list=node('dl');for(const [label,value] of fields)list.append(node('dt',label),node('dd',value));
- savedPhotoParams.replaceChildren(node('h3','Generation details'),list,...(context?.generation?[]:[node('p','The generation settings were not saved for this older photo.','small')]));
+ savedPhotoParams.replaceChildren(list,...(context?.generation?[]:[node('p','The generation settings were not saved for this older photo.','small')]));
+ savedPhotoBackground.append(savedPhotoNav,savedPhotoParams);
 }
 // Progress and completed-photo viewing have independent dialogs and requests.
 const portraitProgress=node('dialog',null,'photo-studio portrait-progress');portraitProgress.setAttribute('aria-label','Selfie progress');
