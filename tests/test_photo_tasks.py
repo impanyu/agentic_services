@@ -300,12 +300,13 @@ def test_search_category_reaches_poi_lookup_and_excludes_unrelated_places(tmp_pa
     async def resolve(settings,payload):
         return {'locations':[{'lat':37.84,'lon':-122.51,'label':'Selected map location'}],
                 'radiusMeters':5000,'limit':3,'photoStyles':['vintage'],'poiQueries':['coffee shops'],
-                'preferences':'Vintage cafe photography','explanation':'Nearby cafes'}
+                'preferences':'Vintage cafe photography','scoringIntent':'Vintage coffee shops with outdoor seating','explanation':'Nearby cafes'}
     async def nearby(lat,lon,radius,queries):
         seen.append(queries);return [],{'status':'ok'}
     async def candidates(*args,**kwargs):return [],{}
     async def explore(settings,payload,*args):
         assert payload.poiQueries==['coffee shops'] and 'Vintage' in payload.preferences
+        assert payload.scoringIntent=='Vintage coffee shops with outdoor seating'
         return {'spots':[],'summary':'No cafes with verified imagery'}
     monkeypatch.setattr(routes,'resolve_intent',resolve);monkeypatch.setattr(routes,'nearby_places',nearby)
     monkeypatch.setattr(routes,'candidates',candidates);monkeypatch.setattr(routes,'explore',explore)

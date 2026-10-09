@@ -518,6 +518,8 @@ def test_fixed_pipeline_scores_every_image_and_globally_ranks(tmp_path,monkeypat
         assert 'EVERY supplied image' in kw['instructions']
         content=kw['input'][0]['content'];request=json.loads(content[0]['text'])
         assert request['photoStyleBriefs'][0]['label']=='Water & reflections'
+        assert request['request']['poiQueries']==['coffee shops']
+        assert request['request']['scoringIntent']=='waterside coffee shops with outdoor seating'
         assert 'poiCatalogToken' not in request['request']
         rows=[json.loads(c['text'])['image'] for c in content[1:] if c['type']=='input_text']
         assert 1<=len(rows)<=6 and sum(c['type']=='input_image' for c in content)==len(rows)
@@ -525,7 +527,7 @@ def test_fixed_pipeline_scores_every_image_and_globally_ranks(tmp_path,monkeypat
         await asyncio.sleep(0);active-=1
         return SimpleNamespace(output_parsed=visual.VisualBatch(assessments=[_scoring_assessment(visual,r) for r in rows]),usage=SimpleNamespace(input_tokens=10,output_tokens=20))
     _scoring_client(monkeypatch,parse);monkeypatch.setattr(visual,'image_data',image)
-    result=asyncio.run(visual.explore(settings,ExploreRequest(lat=0,lon=0,photoStyles=['waterside'],poiCatalogToken='secret-token'),_scoring_rows(),{}))
+    result=asyncio.run(visual.explore(settings,ExploreRequest(lat=0,lon=0,photoStyles=['waterside'],poiQueries=['coffee shops'],scoringIntent='waterside coffee shops with outdoor seating',poiCatalogToken='secret-token'),_scoring_rows(),{}))
     assert set(downloaded)==set(seen)=={str(i) for i in range(13)}
     assert result['inspectedImages']==13 and len(result['imageAssessments'])==13
     assert [spot['image_id'] for spot in result['spots']]==['12','11','10']
@@ -737,6 +739,8 @@ def test_score_cache_context_and_expiry(tmp_path,monkeypatch):
         ({**row,'poi':{**row['poi'],'id':'other'}},payload,'model','prompt'),
         (row,ExploreRequest(lat=0,lon=0,photoStyles=['urban']),'model','prompt'),
         (row,ExploreRequest(lat=0,lon=0,preferences='golden hour'),'model','prompt'),
+        (row,ExploreRequest(lat=0,lon=0,poiQueries=['coffee shops']),'model','prompt'),
+        (row,ExploreRequest(lat=0,lon=0,scoringIntent='outdoor coffee shops'),'model','prompt'),
         (row,payload,'new-model','prompt'),(row,payload,'model','new-prompt')]:
         assert key!=cache.key(image,request,model,prompt)
     cache.put([(key,{'score':70})]);assert cache.get(key)=={'score':70}

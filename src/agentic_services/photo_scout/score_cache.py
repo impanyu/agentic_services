@@ -34,7 +34,8 @@ class ScoreCache:
         if image.get('poiCandidates'):
             image['poiCandidates'] = sorted(image['poiCandidates'], key=lambda p: p['id'])
         data = {'version': 1, 'image': image, 'model': model, 'instructions': instructions,
-                'photoStyles': sorted(payload.photoStyles or []), 'preferences': payload.preferences.strip()}
+                'photoStyles': sorted(payload.photoStyles or []), 'preferences': payload.preferences.strip(),
+                'poiQueries': sorted(payload.poiQueries), 'scoringIntent': payload.scoringIntent.strip()}
         return hashlib.sha256(json.dumps(data, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
 
     def get(self, key):
