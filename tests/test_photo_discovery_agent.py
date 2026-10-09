@@ -241,3 +241,78 @@ def test_batch_budget_is_checked_before_any_download(tmp_path,monkeypatch):
     monkeypatch.setattr(discovery_agent.sources,'image_data',load)
     result=invoke(d,'inspect_views',{'view_id':'pano','headings':[0,45],'fov':120})
     assert 'image budget' in result and not loaded and d.images==d.max_images-1
+
+
+def test_batch_place_queries_parallel_partial_errors_and_region_bounds(tmp_path,monkeypatch):
+    d=state(tmp_path);active=0;peak=0;queried=[]
+    async def nearby(lat,lon,radius,queries):
+        nonlocal active,peak
+        query=queries[0];queried.append(query);active+=1;peak=max(peak,active)
+        await asyncio.sleep(.01);active-=1
+        if query=='broken':raise RuntimeError('private-credential')
+        return [{'id':query,'name':query,'lat':lat,'lon':lon}],{'status':'ok'}
+    monkeypatch.setattr(discovery_agent,'nearby_places',nearby)
+    searches=[{'query':q,'lat':40,'lon':-96,'radius':500} for q in ('a','b','broken','c','d')]
+    searches.extend([searches[0],{'query':'outside','lat':41,'lon':-96,'radius':500}])
+    result=invoke(d,'search_places_batch',{'searches':searches})
+    assert peak==4 and len(queried)==5 and 'outside' not in queried
+    assert len(result['results'])==6 and sum(v['status']=='ok' for v in result['results'])==4
+    assert set(d.pois)=={'a','b','c','d'} and d.calls==7
+    assert 'private-credential' not in str(result) and 'private-credential' not in str(d.audit)
+    assert set(state(tmp_path).pois)==set(d.pois)
+
+
+def test_batch_operations_cannot_bypass_tool_budget(tmp_path,monkeypatch):
+    d=state(tmp_path);d.calls=d.max_calls-2;queried=[]
+    async def nearby(*args):queried.append(args);return [],{}
+    monkeypatch.setattr(discovery_agent,'nearby_places',nearby)
+    result=invoke(d,'search_places_batch',{'searches':[{'query':q,'lat':40,'lon':-96,'radius':500} for q in ('a','b')]})
+    assert 'tool budget' in result and not queried and d.calls==d.max_calls-1
+
+
+def test_bulk_candidate_changes_are_ordered_and_reject_uninspected(tmp_path):
+    d=state(tmp_path);d.views['seen']={'id':'seen','lat':40,'lon':-96};d.inspected={'seen'}
+    updates=[{'view_id':'seen','action':'add','reason':'Good view'},
+             {'view_id':'missing','action':'add','reason':'Cannot invent evidence'},
+             {'view_id':'seen','action':'remove','reason':'Weaker than another view'},
+             {'view_id':'seen','action':'add','reason':'Retain as a modest option'}]
+    result=invoke(d,'manage_candidates',{'updates':updates})
+    assert [r['status'] for r in result['results']]==['ok','failed','ok','ok']
+    assert d.selected=={'seen':'Retain as a modest option'} and d.calls==5
+
+
+def test_batch_maps_and_positions_preserve_per_item_identity(tmp_path):
+    d=state(tmp_path)
+    maps=[{'lat':40,'lon':-96,'span_meters':1000},{'lat':40.001,'lon':-96,'span_meters':500}]
+    result=invoke(d,'view_maps',{'maps':maps})
+    assert sum(isinstance(v,discovery_agent.ToolOutputImage) for v in result)==2
+    labels=[json.loads(v.text) for v in result if isinstance(v,discovery_agent.ToolOutputText)]
+    assert [r['request']['span_meters'] for r in labels if 'request' in r]==[1000,500]
+    analyzed=invoke(d,'analyze_positions',{'points':[{'lat':40,'lon':-96},{'lat':41,'lon':-96}]})
+    assert [r['status'] for r in analyzed['results']]==['ok','failed']
+
+
+def test_batch_streetview_and_source_photos_keep_both_locations(tmp_path,monkeypatch):
+    d=state(tmp_path);monkeypatch.setattr(discovery_agent.sources,'google_enabled',lambda:True)
+    async def street(client,lat,lon,radius,targets):
+        target=targets[0];return [{'id':str(target['lat']),'provider':'google-street-view','imageUrl':'google-streetview://pano/0','lat':target['lat'],'lon':target['lon']}]
+    async def photos(client,lat,lon,radius):
+        return [{'id':'photo:'+str(lat),'provider':'wikimedia-commons','imageUrl':'https://upload.wikimedia.org/photo.jpg','lat':lat,'lon':lon}]
+    monkeypatch.setattr(discovery_agent.sources,'google_streetview',street)
+    monkeypatch.setattr(discovery_agent.sources,'commons',photos)
+    points=[{'lat':40,'lon':-96},{'lat':40.001,'lon':-96}]
+    found=invoke(d,'find_streetview_batch',{'points':points})
+    images=invoke(d,'search_photos_batch',{'searches':[dict(p,provider='wikimedia-commons',radius=500) for p in points]})
+    assert all(r['status']=='ok' and len(r['result']['views'])==1 for r in found['results']+images['results'])
+    assert len(d.views)==4
+
+
+def test_geography_batch_has_two_way_concurrency(tmp_path,monkeypatch):
+    d=state(tmp_path);active=0;peak=0
+    async def features(lat,lon,radius,kind):
+        nonlocal active,peak
+        active+=1;peak=max(peak,active);await asyncio.sleep(.01);active-=1
+        return {'kind':kind,'features':[]}
+    monkeypatch.setattr(d,'geographic_features',features)
+    result=invoke(d,'query_geography_batch',{'queries':[{'lat':40,'lon':-96,'radius':500,'kind':k} for k in ('water','paths','parks')]})
+    assert peak==2 and [v['result']['kind'] for v in result['results']]==['water','paths','parks']
