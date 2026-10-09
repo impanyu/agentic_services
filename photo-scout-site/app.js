@@ -412,7 +412,7 @@ function renderHistory(){
   }
   const h=entry.history,row=node('div',null,'history-item'),label=node('span',null,'history-copy');
   if(h){const check=node('input');check.type='checkbox';check.checked=h.checked;check.setAttribute('aria-label','Show search: '+entry.label);check.addEventListener('change',()=>{h.checked=check.checked;persistHistory();renderHistory();drawHistoryMap({fit:true});});label.append(check);}
-  const text=node('span'),detail=h?`${h.radius/1000} km · ${allPoiViews(h.result).length} places`:(entry.kind==='portrait'?'Selfie · ':'')+(entry.state==='running'&&entry.kind==='search'?({sources:'Finding photos',scoring:'Checking photos'}[entry.task?.context?.stage]||'Resolving location'):entry.state);
+  const text=node('span'),detail=h?`${h.radius/1000} km · ${allPoiViews(h.result).length} places`:(entry.kind==='portrait'?'Selfie · ':'')+(entry.state==='running'&&entry.kind==='search'?({sources:'Finding photos',exploring:'Exploring viewpoints',scoring:'Checking photos'}[entry.task?.context?.stage]||'Resolving location'):entry.state);
   const openEntry=()=>h?showHistorySearch(h.result,h.result.searchContext,h):viewSavedTask(entry.task);
   text.setAttribute('role','button');text.tabIndex=0;text.className='history-open';text.addEventListener('click',openEntry);text.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();openEntry();}});
   text.append(node('strong',entry.label),node('small',`${new Date(entry.created).toLocaleString()} · ${detail}`));label.append(text);
@@ -672,7 +672,7 @@ async function restoreTasks(){
    if(focus.state==='complete'){
     const h=searchHistory.find(h=>h.id===focus.id);if(h){focusedSearchId=h.id;drawHistoryMap();render(h.result,{save:false,mapUpdate:false});el('results').hidden=false;fitSearchRange(focus.context);setProgress(2,'Your shortlist is ready','Results are shown in Shortlist and saved in Search history.','complete');}activeSearch=null;stopPoiScan();
    }else if(focus.state==='failed'){if(follow)setProgress(2,'Search could not be completed',focus.error||'View details in History.','error');activeSearch=null;stopPoiScan();}
-   else if(follow){const stage=focus.context?.stage;setProgress(stage==='scoring'?2:stage==='sources'?1:0,focus.state==='queued'?'Your search is queued…':stage==='scoring'?'Reviewing & ranking photos…':stage==='sources'?'Finding nearby places & photos…':'Understanding your request…','Progress is saved in History. You can start another search.','running',true);if(stage==='scoring')startPoiScan();}
+   else if(follow){const stage=focus.context?.stage;setProgress(stage==='scoring'?2:(stage==='sources'||stage==='exploring')?1:0,focus.state==='queued'?'Your search is queued…':stage==='scoring'?'Reviewing & ranking photos…':stage==='exploring'?'Exploring viewpoints…':stage==='sources'?'Finding nearby places & photos…':'Understanding your request…','Progress is saved in History. You can start another search.','running',true);if(stage==='scoring')startPoiScan();}
   }
  }catch{if(!tasksReady)el('history-note').textContent='Could not reconnect to saved tasks. Retrying shortly.';}
  finally{taskRefreshBusy=false;updateSubmitState();clearTimeout(taskRefreshTimer);const pending=taskRecords.some(t=>['queued','running','checking'].includes(t.state));taskRefreshTimer=setTimeout(restoreTasks,document.hidden?(pending?15000:60000):(pending?5000:15000));}

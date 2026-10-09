@@ -22,6 +22,7 @@ from pydantic import BaseModel, Field, model_validator
 from .tasks import TaskStore, SEARCH_RETENTION, prune_records
 from .styles import PHOTO_STYLES, mapped_categories, style_briefs, discovery_queries
 from .scoring import explore
+from .discovery_agent import discover as discover_viewpoints
 from .intent import IntentRequest, PoiQuery, resolve_intent
 from .places import nearby_places
 from .sources import candidates, nearby_pois, google_enabled, google_image_data, MAX_SCORED_IMAGES
@@ -269,7 +270,10 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
             pano=q.get('pano',[''])[0];heading=q.get('heading',[''])[0];pitch=q.get('pitch',['0'])[0]
             if u.scheme!='https' or u.netloc!='www.google.com' or u.path!='/maps/@' or q.get('map_action')!=['pano'] or not re.fullmatch(r'[A-Za-z0-9_-]{1,200}',pano) or not heading.isdigit() or not 0<=int(heading)<360 or not re.fullmatch(r'-?\d{1,2}',pitch) or not -90<=int(pitch)<=90:
                 raise HTTPException(422,'Invalid Street View URL')
-            result=image_links({'spots':[{'streetViewReference':f'google-streetview://{pano}/{int(heading)}'+(f'/{int(pitch)}' if int(pitch) else '')}]})
+            try:fov=int(q.get('fov',['120'])[0])
+            except ValueError:raise HTTPException(422,'Invalid field of view')
+            if not 30<=fov<=120:raise HTTPException(422,'Invalid field of view')
+            result=image_links({'spots':[{'streetViewReference':f'google-streetview://{pano}/{int(heading)}'+(f'/{int(pitch)}/{fov}' if fov!=120 else f'/{int(pitch)}' if int(pitch) else '')}]})
             results.append(result['spots'][0].get('imageUrl'))
         return Response(json.dumps({'imageUrls':results}),media_type='application/json',headers={'Cache-Control':'private, no-store'})
 
@@ -291,7 +295,18 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
     async def run(payload,allow_expired=False,task_id=None):
         enabled()
         async with lock, asyncio.timeout(660):
-            rows,statuses,pois=await catalog(payload,allow_expired)
+            agent_mode=os.getenv('PHOTO_SCOUT_EXPLORER_ENABLED','0')=='1'
+            exploration=None
+            if agent_mode:
+                context=tasks.context('search',task_id) if task_id else {}
+                context=context or payload.model_dump()
+                def progress(update):
+                    context.update(update)
+                    if task_id:tasks.update_context('search',task_id,context)
+                initial=None
+                if payload.selectedPoiIds is not None:initial,_=await chosen_pois(payload,allow_expired)
+                rows,statuses,pois,exploration=await discover_viewpoints(settings,payload,task_id,progress,initial,context.get('query',''))
+            else:rows,statuses,pois=await catalog(payload,allow_expired)
             if task_id:
                 context=tasks.context('search',task_id) or payload.model_dump()
                 context['nearbyPois']=pois
@@ -313,7 +328,8 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
                 'uncertainty':'No verified camera direction is available.','coordinateWarning':'Candidate POI; imagery not verified.'}
                 for p in pois if p['id'] not in assessed)
             result['nearbyPois']=pois
-            result['discoveryMethod']='visual-area-and-poi' if visual_exploration(payload) else 'poi-first'
+            result['discoveryMethod']='agent-exploration' if agent_mode else 'visual-area-and-poi' if visual_exploration(payload) else 'poi-first'
+            if exploration:result['exploration']=exploration
             result['photoLocationCount']=sum(p.get('poi',{}).get('category')=='photo-location' for p in result.get('poiResults',[]))
             result['candidatePoiCount']=len(pois)
             result['poiProvider']='google-places' if os.getenv('PHOTO_SCOUT_POI_PROVIDER')=='google-places' else 'openstreetmap'
@@ -335,7 +351,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
                 'imageAnalysisEnabled':google_enabled(),
                 'dailyImageRequestLimit':max(0,int(os.getenv('PHOTO_SCOUT_GOOGLE_DAILY_IMAGE_LIMIT','0'))) or None},
             'limits':{'radiusMeters':20000,'sampledImages':MAX_SCORED_IMAGES,'inspectedImages':MAX_SCORED_IMAGES,'imagesPerBatch':6,'parallelBatches':4,'viewsPerPanorama':8,'googleQueryLocations':25,'timeoutSeconds':660},
-            'analysisMethod':'fixed-batch-scoring','discoveryMethod':'intent-based','discoveryMethods':['poi-first','visual-area-and-poi'],'poiProviders':{'openstreetmap':'standby' if os.getenv('PHOTO_SCOUT_POI_PROVIDER')=='google-places' else 'enabled','google-places':'enabled' if os.getenv('PHOTO_SCOUT_POI_PROVIDER')=='google-places' else 'not_connected'},
+            'analysisMethod':'fixed-batch-scoring','discoveryMethod':'agent-exploration' if os.getenv('PHOTO_SCOUT_EXPLORER_ENABLED','0')=='1' else 'intent-based','discoveryMethods':['agent-exploration','poi-first','visual-area-and-poi'],'poiProviders':{'openstreetmap':'standby' if os.getenv('PHOTO_SCOUT_POI_PROVIDER')=='google-places' else 'enabled','google-places':'enabled' if os.getenv('PHOTO_SCOUT_POI_PROVIDER')=='google-places' else 'not_connected'},
             'privacy':'Coordinates/preferences are sent to imagery providers/OpenAI; paid reports retained for 30 days.'}
 
     @router.post('/photo-scout/v1/candidates')

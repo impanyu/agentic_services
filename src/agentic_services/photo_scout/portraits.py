@@ -49,7 +49,9 @@ def background_reference(provider,url):
     try:
         u=urlsplit(url);q=parse_qs(u.query);pano=q.get('pano',[''])[0];heading=q.get('heading',[''])[0];pitch=q.get('pitch',['0'])[0]
         if u.scheme!='https' or u.netloc!='www.google.com' or u.path!='/maps/@' or q.get('map_action')!=['pano'] or not re.fullmatch(r'[A-Za-z0-9_-]{1,200}',pano) or not heading.isdigit() or not 0<=int(heading)<360 or not re.fullmatch(r'-?\d{1,2}',pitch) or not -90<=int(pitch)<=90:raise ValueError()
-        return f'google-streetview://{pano}/{int(heading)}'+(f'/{int(pitch)}' if int(pitch) else '')
+        fov=int(q.get('fov',['120'])[0])
+        if not 30<=fov<=120:raise ValueError()
+        return f'google-streetview://{pano}/{int(heading)}'+(f'/{int(pitch)}/{fov}' if fov!=120 else f'/{int(pitch)}' if int(pitch) else '')
     except Exception as e:raise HTTPException(422,'Invalid background Street View') from e
 
 

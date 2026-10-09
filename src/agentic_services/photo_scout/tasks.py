@@ -36,6 +36,8 @@ def prune_records(db):
                 OR (NOT EXISTS (SELECT 1 FROM photo_task_owners o WHERE o.kind=? AND o.job={table}.id) AND {legacy})""",
                 (kind,kind,now,kind,cutoff))
         else:db.execute(f'DELETE FROM {table} WHERE {legacy}',(cutoff,))
+    if 'photo_scout_exploration' in tables:
+        db.execute('DELETE FROM photo_scout_exploration WHERE NOT EXISTS (SELECT 1 FROM photo_scout_jobs j WHERE j.id=job) AND updated<?',(now-86400,))
     if owners:
         db.execute('DELETE FROM photo_task_owners WHERE user_id IS NULL AND NOT EXISTS (SELECT 1 FROM photo_guests g WHERE g.hash=guest AND g.expires>?)',(now,))
         if 'photo_hidden_pois' in tables:

@@ -394,8 +394,8 @@ async def google_image_data(reference):
     import sqlite3
     from datetime import datetime, timezone
     from pathlib import Path
-    match=re.fullmatch(r'google-streetview://([A-Za-z0-9_-]{1,200})/(\d{1,3})(?:/(-?\d{1,2}))?',reference)
-    if not match or int(match[2])>=360 or not -90<=int(match[3] or 0)<=90 or not google_enabled(): raise ValueError('Google imagery unavailable')
+    match=re.fullmatch(r'google-streetview://([A-Za-z0-9_-]{1,200})/(\d{1,3})(?:/(-?\d{1,2}))?(?:/(\d{2,3}))?',reference)
+    if not match or int(match[2])>=360 or not -90<=int(match[3] or 0)<=90 or not 30<=int(match[4] or 120)<=120 or not google_enabled(): raise ValueError('Google imagery unavailable')
     # Keep request accounting; a positive limit is an optional operator setting.
     # Development is uncapped by default. The signed image proxy remains protected.
     path=Path(os.getenv('WEB_EVIDENCE_DB','data/web-evidence.db'))
@@ -412,7 +412,7 @@ async def google_image_data(reference):
         db.execute('UPDATE photo_scout_google_budget SET requests=requests+1 WHERE day=?',(day,))
     async with httpx.AsyncClient(timeout=25,follow_redirects=False) as client:
         async with client.stream('GET','https://maps.googleapis.com/maps/api/streetview',params={
-            'pano':match[1],'heading':match[2],'pitch':int(match[3] or 0),'fov':120,'size':'640x640',
+            'pano':match[1],'heading':match[2],'pitch':int(match[3] or 0),'fov':int(match[4] or 120),'size':'640x640',
             'return_error_code':'true','key':os.environ['PHOTO_SCOUT_GOOGLE_API_KEY']}) as response:
             if response.status_code!=200: raise ValueError('Google image request failed')
             data=bytearray()

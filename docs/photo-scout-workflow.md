@@ -17,3 +17,33 @@ Photo Scout is a deterministic application pipeline. Models do not choose tools 
 - Reports include `poiResults` for every discovered POI: a best identity-supported scored view or an explicit `no_verified_view` entry. The selected Top 3 or Top 5 use photographer icons, ranked by score even if every score is low. Other image-backed scored POIs use clickable directional dots. POIs without scored images are hidden from both map and shortlist. Model suitability flags remain advisory notes; they do not filter rankings. The response preserves the selected count in `topLimit`. Selected history entries overlay independently and clicking any marker opens its corresponding report and card.
 
 - Google sign-in uses an independent OAuth web client configured by `PHOTO_SCOUT_GOOGLE_CLIENT_ID`, `PHOTO_SCOUT_GOOGLE_CLIENT_SECRET`, callback `https://api.aisoup.net/photo-scout/v1/auth/callback`. Scopes: openid/email/profile. Code flow validates state, PKCE, ID token signature, issuer, audience, nonce and expiration. HttpOnly Secure SameSite=Lax sessions use host-only cookies. Account writes require matching frontend Origin and a session CSRF token. Gateway passes redirects without following and permits credentialed CORS only for configured company origins. Guest history migrates into account history after successful sign-in; sign-out clears account views from the browser.
+
+## Agent exploration (2026-10-09)
+
+Enable `PHOTO_SCOUT_EXPLORER_ENABLED=1`; set `PHOTO_SCOUT_EXPLORER_MODEL`
+(default `gpt-6.1-sol`). Scoring keeps `PHOTO_SCOUT_MODEL` (currently Luna).
+The caller-owned Agents SDK runtime uses nine tools: `search_places`,
+`query_geography`, `view_map`, `find_streetview`, `search_photos`, `inspect_view`,
+`manage_candidate`, `list_candidates`, and terminal `submit_candidates`.
+
+The explorer receives the original user query plus resolved location, radius,
+keywords, scoring intent and mood. It can repeat searches, pan/zoom a schematic
+map of queried OSM geometry, inspect real source images, and adjust horizontal
+Street View heading (0–359) and fov (30–120). Map images show queried geometry,
+not satellite imagery; missing geometry is not evidence of empty terrain.
+Multipolygon member parts/roles remain separate. Full geometry is retained by
+the tool, simplified coordinate parts are returned to the model.
+
+Only server-discovered, in-radius, actually inspected images can enter the list.
+Submission freezes it and stops the SDK immediately; the existing batch scorer
+then filters/matches/scores against the complete user preferences and returns
+ranked locations. No agent turn occurs after scoring. Candidate state, geography
+and action audit persist by private task ID for worker restart recovery; expired
+jobs' exploration records are pruned. Browser disconnection does not cancel work.
+
+Initial limits: 60 tool calls, 64 exploratory image inspections, 48 candidates,
+36 model turns and 300 seconds exploration, within the existing 660-second task
+limit. Deadline/turn exhaustion submits already selected evidence with an explicit
+partial-coverage note; it never fabricates candidates. Provider failure is exposed
+to the agent so it can select another search/source. Setting the flag to 0 keeps
+the previous workflow available for rollback.
