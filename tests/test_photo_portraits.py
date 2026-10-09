@@ -66,10 +66,18 @@ def test_private_job_edits_both_images_and_removes_upload(tmp_path,monkeypatch,i
     history=client.get('/photo-scout/v1/tasks',headers=auth).json()
     assert history['items'][0]['context']['generation']==completed['context']['generation']
     image=client.get(path+'/image',headers=owned);assert image.content==raw;assert image.headers['cache-control']=='private, no-store'
+    thumbnail=client.get(path+'/thumbnail',headers=owned)
+    assert thumbnail.status_code==200 and thumbnail.headers['content-type']=='image/jpeg'
+    assert thumbnail.headers['cache-control'].startswith('private')
+    with Image.open(io.BytesIO(thumbnail.content)) as preview:
+        assert max(preview.size)<=160
+    assert TestClient(app,base_url='https://api.test').get(path+'/thumbnail',headers=auth).status_code==404
+
     with sqlite3.connect(settings.database_path) as db:
         assert db.execute('SELECT photo,payload FROM photo_portraits').fetchone()==(None,None)
         db.execute('UPDATE photo_guests SET expires=0')
     assert client.get(path,headers=owned).status_code==404
+    assert client.get(path+'/thumbnail',headers=owned).status_code==404
 
 
 def test_phone_heic_and_48mp_jpeg_are_resized_without_metadata():

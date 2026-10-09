@@ -405,7 +405,10 @@ function renderHistory(){
  if(!searches.length)root.append(node('p','Your searches will appear here.','small'));if(!photos.length)photosRoot.append(node('p','Your selfies will appear here.','small'));
  for(const entry of entries){
   if(entry.kind==='portrait'){
-   const item=node('button',null,'photo-history-entry');item.append(node('strong',entry.label),node('small',`${new Date(entry.created).toLocaleString()} · Selfie · ${entry.state}`));item.type='button';item.dataset.state=entry.state;item.title=['queued','checking','running'].includes(entry.state)?'Selfie in progress':'View saved photo';item.addEventListener('click',()=>viewSavedTask(entry.task));const row=node('div',null,'photo-history-row');row.append(item,removeHistoryButton(entry));photosRoot.append(row);continue;
+   const item=node('button',null,'photo-history-entry'),thumb=node('span',null,'photo-history-thumb'),copy=node('span',null,'photo-history-copy');
+   thumb.setAttribute('aria-hidden','true');
+   if(entry.state==='complete'){const image=node('img');image.alt='';image.loading='lazy';image.decoding='async';image.src=api+'/photo-scout/v1/portraits/'+encodeURIComponent(entry.id)+'/thumbnail';image.addEventListener('error',()=>{image.hidden=true;thumb.textContent='📷';});thumb.append(image);}else{thumb.textContent=['queued','checking','running'].includes(entry.state)?'✦':'📷';thumb.dataset.state=entry.state;}
+   copy.append(node('strong',entry.label),node('small',`${new Date(entry.created).toLocaleString()} · Selfie · ${entry.state}`));item.append(thumb,copy);item.type='button';item.dataset.state=entry.state;item.title=['queued','checking','running'].includes(entry.state)?'Selfie in progress':'View saved photo';item.addEventListener('click',()=>viewSavedTask(entry.task));const row=node('div',null,'photo-history-row');row.append(item,removeHistoryButton(entry));photosRoot.append(row);continue;
   }
   const h=entry.history,row=node('div',null,'history-item'),label=node('span',null,'history-copy');
   if(h){const check=node('input');check.type='checkbox';check.checked=h.checked;check.setAttribute('aria-label','Show search: '+entry.label);check.addEventListener('change',()=>{h.checked=check.checked;persistHistory();renderHistory();drawHistoryMap({fit:true});});label.append(check);}

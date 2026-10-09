@@ -164,6 +164,14 @@ def create_portrait_router(settings,require_api):
         require_api(authorization);row=owned(job,x_report_token,request)
         if row['state']!='complete':raise HTTPException(409,'Photo is not ready')
         return Response(row['output'],media_type='image/png',headers={'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff'})
+    @router.get('/photo-scout/v1/portraits/{job}/thumbnail')
+    def thumbnail(job:str,request:Request,authorization:str|None=Header(None),x_report_token:str|None=Header(None)):
+        require_api(authorization);row=owned(job,x_report_token,request)
+        if row['state']!='complete':raise HTTPException(409,'Photo is not ready')
+        with Image.open(io.BytesIO(row['output'])) as image:
+            image=ImageOps.exif_transpose(image).convert('RGB');image.thumbnail((160,160))
+            buffer=io.BytesIO();image.save(buffer,format='JPEG',quality=78,optimize=True)
+        return Response(buffer.getvalue(),media_type='image/jpeg',headers={'Cache-Control':'private, max-age=300','X-Content-Type-Options':'nosniff'})
     async def process():
         with db() as c:
             c.execute('BEGIN IMMEDIATE');prune(c)

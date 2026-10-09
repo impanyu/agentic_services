@@ -195,3 +195,12 @@ html:has(body.photo-app),body.photo-app{height:100%;overflow:hidden}.photo-app m
 .map-overlay-controls .history-menu{background:#fffdf8}
 
 .history-open{cursor:pointer}.history-open:focus-visible{outline:2px solid #795397;outline-offset:3px;border-radius:4px}
+
+.photo-history-row .photo-history-entry{display:flex;align-items:center;gap:10px;padding:10px 4px}
+.photo-history-thumb{display:flex;align-items:center;justify-content:center;flex:0 0 52px;width:52px;height:52px;border-radius:10px;overflow:hidden;background:#eee7f3;color:#795397;font-size:22px}
+.photo-history-thumb img{width:100%;height:100%;object-fit:cover}
+.photo-history-copy{flex:1;min-width:0}.photo-history-copy strong{overflow-wrap:anywhere}
+.photo-history-thumb[data-state=queued],.photo-history-thumb[data-state=checking],.photo-history-thumb[data-state=running]{animation:selfie-thumb-pulse 1.8s ease-in-out infinite}
+@keyframes selfie-thumb-pulse{50%{opacity:.45}}
+@media(prefers-reduced-motion:reduce){.photo-history-thumb{animation:none!important}}
+@media(max-width:700px){.photo-history-thumb{flex-basis:44px;width:44px;height:44px}.photo-history-row .photo-history-entry{gap:8px}}
