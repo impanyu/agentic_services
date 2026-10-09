@@ -19,7 +19,7 @@ status.aisoup.net {
 
 aisoup.net, www.aisoup.net {
 	handle /photo-scout {
-		redir /photo-scout/ permanent
+		redir * /photo-scout/ permanent
 	}
 
 	handle_path /photo-scout/* {
@@ -43,7 +43,7 @@ aisoup.net, www.aisoup.net {
 	}
 
 	handle /web-evidence {
-		redir /web-evidence/ permanent
+		redir * /web-evidence/ permanent
 	}
 
 	handle_path /web-evidence/* {
@@ -59,11 +59,11 @@ aisoup.net, www.aisoup.net {
 	}
 
 	handle /contractor-check {
-		redir /contractor-check/ permanent
+		redir * /contractor-check/ permanent
 	}
 
 	handle /niche-discovery {
-		redir /niche-discovery/ permanent
+		redir * /niche-discovery/ permanent
 	}
 
 	handle_path /niche-discovery/* {
