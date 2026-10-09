@@ -1,0 +1,14 @@
+{
+  "serviceId": "photo-scout",
+  "version": "0.1.0",
+  "baseUrl": "https://api.aisoup.net/photo-scout",
+  "paidHttpPath": "/photo-scout/v1/discover",
+  "mcpPath": "/photo-scout/mcp",
+  "paidTool": "discover_photo_spots",
+  "freeTool": "list_photo_scout_prices",
+  "agentPriceUsd": "2.00",
+  "humanFreePreview": true,
+  "mcpRegistry": "services/photo-scout/server.json",
+  "paymentVerified": false,
+  "directories": {}
+}

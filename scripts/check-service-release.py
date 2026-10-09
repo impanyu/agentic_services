@@ -28,12 +28,38 @@ def request(url: str, *, method: str = "GET", body: bytes | None = None, content
         return error.code, error.headers, error.read()
 
 
+def check_photo_release(release,live):
+    registry=json.loads((ROOT/release['mcpRegistry']).read_text());base=release['baseUrl'];errors=[]
+    def check(value,label):
+        print(('PASS ' if value else 'FAIL ')+label)
+        if not value:errors.append(label)
+    check(registry['name']=='io.github.impanyu/photo-scout' and registry['version']==release['version'],'Photo Scout registry identity and version')
+    check(registry['remotes'][0]['url']==base+'/mcp','Photo Scout MCP URL')
+    check(release['agentPriceUsd']=='2.00' and release['humanFreePreview'],'Existing agent price and free human test preserved')
+    if live:
+        status,_,data=request(base+'/.well-known/mcp/server.json');check(status==200 and json.loads(data)==registry,'Public MCP metadata matches release')
+        status,_,data=request(base+'/.well-known/agent-service.json');manifest=json.loads(data)
+        check(status==200 and manifest.get('mcpUrl')==base+'/mcp' and manifest['payment']['perCallUsd']==release['agentPriceUsd'],'Public manifest MCP and price')
+        status,_,data=request(base+'/openapi.json');doc=json.loads(data)
+        check(status==200 and doc['paths'][release['paidHttpPath']]['post']['x-payment-info']['amount']==release['agentPriceUsd'],'Public OpenAPI price')
+        accept='application/json, text/event-stream'
+        for method,params,label in [('tools/list',{},'MCP tools'),('tools/call',{'name':release['freeTool'],'arguments':{}},'Free pricing tool'),('tools/call',{'name':release['paidTool'],'arguments':{'lat':41.8827,'lon':-87.6233,'radius':500}},'Unpaid MCP challenge')]:
+            status,_,data=request(base+'/mcp',method='POST',body=json.dumps({'jsonrpc':'2.0','id':1,'method':method,'params':params}).encode(),content_type='application/json',accept=accept)
+            check(status==200,label+' response')
+            check((release['paidTool'].encode() in data and release['freeTool'].encode() in data) if method=='tools/list' else b'Payment required to access this tool' in data if label=='Unpaid MCP challenge' else release['agentPriceUsd'].encode() in data,label+' contents')
+        status,headers,_=request('https://api.aisoup.net'+release['paidHttpPath'],method='POST',body=b'{"lat":41.8827,"lon":-87.6233,"radius":500}',content_type='application/json')
+        check(status==402 and bool(headers.get('WWW-Authenticate') or headers.get('Payment-Required')),'Unpaid HTTP payment challenge')
+    print(f'Result: {len(errors)} failures. Settled payment and directory listings require separate verification.')
+    return int(bool(errors))
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("release", type=Path, help="Path to services/<id>/release.json")
     parser.add_argument("--live", action="store_true", help="Check public endpoints without making a payment")
     args = parser.parse_args()
     release = json.loads(args.release.read_text())
+    if release["serviceId"]=="photo-scout":return check_photo_release(release,args.live)
     manifest = json.loads((ROOT / release["manifest"]).read_text())
     openapi = json.loads((ROOT / release["openapi"]).read_text())
     registry = json.loads((ROOT / release["mcpRegistry"]).read_text())

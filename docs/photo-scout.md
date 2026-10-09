@@ -367,3 +367,23 @@ The displayed output uses a local data URL allowed by the existing image CSP; th
 `GET /photo-scout/v1/tasks` establishes a secure HttpOnly anonymous cookie and lists only owned search/selfie tasks. Job submissions bind to this server identity; authorized Google sign-in attaches existing anonymous tasks to the account. Logged-out visitors cannot read account-owned tasks with the old anonymous cookie. Legacy private-token API access remains supported; no task tokens or uploads are persisted in frontend storage. Search tasks retain data for 30 days. Selfies retain generated outputs for seven days (`PHOTO_SCOUT_PORTRAIT_RETENTION_DAYS`, bounded 1–30); original uploads are still removed after processing.
 
 Human search submissions queue the entire fixed workflow before text interpretation, geocoding, POI lookup, image retrieval or model scoring. Query parameters override UI defaults in the worker. Reloaded pages reconnect to active tasks, import completed search reports into history without rerunning models, and expose pending/completed selfies under History. Background workers do not depend on browser polling. Anonymous recovery requires the same browser's cookie; clearing cookies loses guest access. Tasks expire rather than being retained indefinitely. Previously created tasks without ownership metadata cannot be retroactively assigned safely.
+
+## Agent publication (October 8)
+
+Independent MCP endpoint: `https://api.aisoup.net/photo-scout/mcp` (Streamable HTTP).
+Tools: `list_photo_scout_prices` is free; `discover_photo_spots` costs $2 per call
+in Base USDC using x402 MCP. The existing HTTP discovery endpoint retains MPP.
+The website remains a free preview. Selfie generation is not advertised as an agent tool.
+Paid discovery returns ranked viewpoints, camera headings, source links and commerce
+metadata. The order token returned by MCP or HTTP response headers retrieves its
+signed order receipt and the saved report via `X-Report-Token`; reports last 30 days.
+Model cost accounting is not measured in this workflow and is explicitly marked in
+the receipt. A zero-result report is possible. Set client request timeouts above 660
+seconds; image scoring is synchronous for paid calls. No private upstream key is
+shared with agents or directories.
+
+Release metadata: `services/photo-scout/release.json` and `server.json`. Run
+`scripts/check-service-release.py services/photo-scout/release.json --live` to
+verify public metadata, free pricing, tool discovery and unpaid payment challenges
+without spending money. Directory publication and settled-payment delivery are
+separate gates; record independently verified public URLs in the release file.

@@ -1,0 +1,18 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.impanyu/photo-scout",
+  "title": "Photo Scout",
+  "description": "Find nearby photo spots using real street imagery, visual scores and camera headings.",
+  "websiteUrl": "https://aisoup.net/photo-scout/",
+  "repository": {
+    "url": "https://github.com/impanyu/agentic_services",
+    "source": "github"
+  },
+  "version": "0.1.0",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://api.aisoup.net/photo-scout/mcp"
+    }
+  ]
+}

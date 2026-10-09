@@ -5,6 +5,7 @@ import { generate as generatePaymentOpenApi } from 'mppx/discovery'
 import { Mppx, evm, stripe } from 'mppx/server'
 import { createMcpHandler } from './mcp.js'
 import { createContractorMcpHandler } from './contractor-mcp.js'
+import { createPhotoMcpHandler } from './photo-mcp.js'
 
 const recipient = requireEnv('PAYMENT_RECIPIENT') as `0x${string}`
 const secretKey = requireEnv('MPP_SECRET_KEY')
@@ -167,7 +168,16 @@ const contractorMcpHandler = await createContractorMcpHandler({
   price: contractorOperation.price,
 })
 
+const photoMcpHandler=await createPhotoMcpHandler({facilitator,recipient,upstreamUrl,internalApiKey,publicBaseUrl,price:photoOperation.price})
 const app = new Hono()
+app.all('/photo-scout/mcp',c=>process.env.PHOTO_SCOUT_ENABLED==='1'&&photoPriceCents>=50?photoMcpHandler(withPublicUrl(c.req.raw)):c.text('Photo Scout is unavailable',503))
+app.get('/photo-scout/.well-known/mcp/server.json',c=>c.json({
+ $schema:'https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json',
+ name:'io.github.impanyu/photo-scout',title:'Photo Scout',version:'0.1.0',
+ description:'Find nearby photo spots using real street imagery, visual scores and camera headings.',
+ websiteUrl:'https://aisoup.net/photo-scout/',repository:{url:'https://github.com/impanyu/agentic_services',source:'github'},
+ remotes:[{type:'streamable-http',url:publicBaseUrl+'/photo-scout/mcp'}],
+}))
 
 app.use('/niche-discovery/*', async (c, next) => {
   const origin = c.req.header('Origin')
@@ -603,7 +613,7 @@ function mountPhotoRoute(handler: PaymentHandler): void {
     if (payment.status === 402) return payment.challenge
     await next()
     c.res = payment.withReceipt(c.res)
-  }, async (c) => proxyRequest(c.req.raw, photoOperation.path))
+  }, async (c) => proxyPaidRequest(c.req.raw, photoOperation))
 }
 
 function mountContractorRoute(handler: PaymentHandler): void {

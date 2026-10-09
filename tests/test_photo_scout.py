@@ -787,3 +787,30 @@ def test_low_scoring_unsuitable_pois_still_fill_selected_top_five(tmp_path,monke
     assert result['topLimit']==5 and len(result['spots'])==5
     assert [s['score'] for s in result['spots']]==[12,11,10,9,8]
     assert all(s['recommend'] is False for s in result['spots'])
+
+
+def test_agent_discovery_requires_paid_order_and_retains_token_protected_report(tmp_path,monkeypatch):
+    import hashlib
+    import agentic_services.photo_scout.routes as routes
+    monkeypatch.setenv('PHOTO_SCOUT_ENABLED','1');monkeypatch.setenv('PHOTO_SCOUT_PRICE_CENTS','200')
+    settings=Settings(openai_api_key='fixture',openai_model='test',database_path=tmp_path/'db',base_url='https://api.test',service_api_key='private')
+    app=create_app(settings=settings);client=TestClient(app)
+    calls=[]
+    async def nearby(*args):return [],{'status':'ok','provider':'openstreetmap'}
+    async def candidates(*args,**kwargs):return [],{}
+    async def explore(*args):calls.append(1);return {'spots':[],'summary':'Verified fixture'}
+    monkeypatch.setattr(routes,'nearby_pois',nearby);monkeypatch.setattr(routes,'candidates',candidates);monkeypatch.setattr(routes,'explore',explore)
+    payload={'lat':41.88,'lon':-87.62};order='ord_'+'a'*32;token='private-order-token'
+    headers={'Authorization':'Bearer private','X-Agentic-Order-Id':order,'X-Agentic-Order-Amount-Microusd':'2000000','X-Agentic-Order-Token-Hash':hashlib.sha256(token.encode()).hexdigest(),'X-Agentic-Payment-Protocol':'x402-mcp'}
+    assert client.post('/photo-scout/v1/discover',json=payload,headers={'Authorization':'Bearer private'}).status_code==403
+    assert client.post('/photo-scout/v1/discover',json=payload,headers={**headers,'X-Agentic-Order-Amount-Microusd':'1'}).status_code==403
+    result=client.post('/photo-scout/v1/discover',json=payload,headers=headers);assert result.status_code==200
+    assert result.json()['commerce']['orderId']==order and result.headers['X-Agentic-Receipt-Id']
+    assert client.post('/photo-scout/v1/discover',json=payload,headers=headers).status_code==200 and len(calls)==1
+    path='/photo-scout/v1/report/ps_'+order
+    assert client.get(path).status_code==404
+    assert client.get(path,headers={'X-Report-Token':token}).json()['result']['summary']=='Verified fixture'
+    from agentic_services.storage import VerificationStore
+    store=VerificationStore(settings.database_path)
+    assert store.get_order_with_token(order,token)['receipt']['signature']
+    assert store.get_order_with_token(order,'stranger') is None

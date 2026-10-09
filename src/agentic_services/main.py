@@ -386,7 +386,7 @@ def create_app(
     contractor_router, fulfill_contractor_checkout, retrieve_contractor_checkout = create_contractor_router(
         store, require_service_api_key, sign_receipt, resolved_settings.base_url, checkout_lock, growth=growth,
     )
-    photo_router, retrieve_photo_checkout, fulfill_photo_checkout = create_photo_router(resolved_settings, require_service_api_key, store)
+    photo_router, retrieve_photo_checkout, fulfill_photo_checkout = create_photo_router(resolved_settings, require_service_api_key, store, sign_receipt)
     app.state.process_photo_preview = photo_router.process_preview
     app.include_router(photo_router)
     portrait_router,portrait_process=create_portrait_router(resolved_settings,require_service_api_key)

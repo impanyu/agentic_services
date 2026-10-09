@@ -136,7 +136,7 @@ class PhotoStore:
             db.execute('UPDATE photo_scout_jobs SET '+','.join(k+'=?' for k in values)+' WHERE id=?',(*values.values(),job))
 
 
-def create_photo_router(settings,require_api,verification_store):
+def create_photo_router(settings,require_api,verification_store,sign_receipt=None):
     router=APIRouter(tags=['Photo Scout']); store=PhotoStore(settings.database_path); tasks=TaskStore(settings.database_path)
     lock=asyncio.Semaphore(max(1,min(4,int(os.getenv('PHOTO_SCOUT_SEARCH_CONCURRENCY','2')))))
     source_requests=[]
@@ -321,13 +321,39 @@ def create_photo_router(settings,require_api,verification_store):
         return {'candidates':rows,'sources':statuses,'nearbyPois':pois,'discoveryMethod':'poi-first','visuallyAnalyzed':False}
 
     @router.post('/photo-scout/v1/discover')
-    async def discover(payload: ExploreRequest,authorization: str | None=Header(None)):
-        # Gateway must validate payment before injecting the private service credential.
-        require_api(authorization)
+    async def discover(payload: ExploreRequest,request: Request,response: Response,authorization: str | None=Header(None)):
+        require_api(authorization);enabled()
         if not settings.service_api_key: raise HTTPException(503,'Private gateway credential is required')
-        try: return await run(payload)
-        except HTTPException: raise
-        except Exception as e: raise HTTPException(503,'Visual exploration failed; contact support if charged') from e
+        order=request.headers.get('X-Agentic-Order-Id','');token_hash=request.headers.get('X-Agentic-Order-Token-Hash','')
+        amount=price()*10000
+        if (not re.fullmatch(r'ord_[a-f0-9]{32}',order) or not re.fullmatch(r'[a-f0-9]{64}',token_hash)
+            or request.headers.get('X-Agentic-Order-Amount-Microusd')!=str(amount) or amount<500000 or not sign_receipt):
+            raise HTTPException(403,'Valid paid gateway order required')
+        job='ps_'+order;prior=store.get(job)
+        if prior and prior['state']=='complete':
+            if prior['token_hash']!=token_hash or prior['payload']!=payload.model_dump_json():raise HTTPException(409,'Order already used')
+            response.headers['X-Agentic-Receipt-Id']=verification_store.get_order(order)['receiptId']
+            return json.loads(prior['result'])
+        protocol=request.headers.get('X-Agentic-Payment-Protocol','unknown')
+        verification_store.create_order(order_id=order,service_id='photo-scout',tier='discovery',price_microusd=amount,payment_protocol=protocol,
+            order_token_hash=token_hash,request_hash=hashlib.sha256(payload.model_dump_json().encode()).hexdigest(),customer_key=None,customer_reference=None)
+        try:
+            result=await run(payload)
+            from datetime import datetime,UTC
+            receipt={'receiptId':'rcpt_'+secrets.token_hex(16),'orderId':order,'serviceId':'photo-scout','amountMicrousd':amount,'currency':'USD',
+                'paymentProtocol':protocol,'resultSha256':hashlib.sha256(json.dumps(result,sort_keys=True,separators=(',',':')).encode()).hexdigest(),
+                'issuedAt':datetime.now(UTC).isoformat(),'signatureAlgorithm':'hmac-sha256','costAccounting':'Not measured for this workflow'}
+            result['commerce']={'orderId':order,'receiptId':receipt['receiptId'],'orderUrl':settings.base_url+'/v1/orders/'+order,
+                'reportUrl':settings.base_url+'/photo-scout/v1/report/'+job,'reportRetentionDays':30}
+            with store.connect() as db:
+                db.execute("INSERT INTO photo_scout_jobs(id,token_hash,payload,created,price,state,result,kind) VALUES(?,?,?,?,?,'complete',?,'agent')",(job,token_hash,payload.model_dump_json(),time.time(),price(),json.dumps(result)))
+            verification_store.complete_order(order_id=order,values={'verification_id':None,'provider_response_id':None,'model':settings.openai_model,
+                'input_tokens':0,'cached_input_tokens':0,'output_tokens':0,'web_search_calls':0,'model_cost_microusd':0,'search_cost_microusd':0,'total_cost_microusd':0},receipt=receipt,signature=sign_receipt(receipt))
+            response.headers['X-Agentic-Receipt-Id']=receipt['receiptId'];return result
+        except Exception as e:
+            verification_store.fail_order(order,'photo_discovery_failed')
+            if isinstance(e,HTTPException):raise
+            raise HTTPException(503,'Visual exploration failed; contact support with your order ID if charged') from e
 
     @router.post('/photo-scout/v1/preview')
     async def free_exploration(payload: ExploreRequest,authorization: str | None=Header(None)):
@@ -451,7 +477,16 @@ def create_photo_router(settings,require_api,verification_store):
     def openapi():
         from fastapi import FastAPI
         api=FastAPI(title='Photo Scout',version='0.1.0'); api.include_router(router)
-        return api.openapi()
+        document=api.openapi()
+        document['servers']=[{'url':settings.base_url}]
+        operation=document['paths']['/photo-scout/v1/discover']['post']
+        operation['description']='Paid discovery: $'+f'{price()/100:.2f}'+' per call via MPP; MCP uses x402 Base USDC. No private API key is issued to agents. Results include a token-protected report and signed order receipt.'
+        operation['x-payment-info']={'amount':f'{price()/100:.2f}','currency':'USD','protocols':['mpp','x402-mcp']}
+        operation['responses']['402']={'description':'Payment required; use the public gateway payment challenge.'}
+        # Internal credentials and gateway commerce headers are never client inputs.
+        operation['parameters']=[]
+        document['paths']={k:v for k,v in document['paths'].items() if k in ['/photo-scout/v1/discover','/photo-scout/v1/status','/photo-scout/v1/report/{job_id}']}
+        return document
 
     @router.get('/photo-scout/.well-known/agent-service.json')
     def manifest():
@@ -459,6 +494,7 @@ def create_photo_router(settings,require_api,verification_store):
             'status':'preview','humanUrl':'https://aisoup.net/photo-scout/',
             'apiUrl':settings.base_url+'/photo-scout/v1/discover',
             'openapiUrl':settings.base_url+'/photo-scout/openapi.json',
-            'payment':{'protocol':'mpp','perCallUsd':f'{price()/100:.2f}' if price()>0 else None},
+            'mcpUrl':settings.base_url+'/photo-scout/mcp','tools':['list_photo_scout_prices','discover_photo_spots'],
+            'payment':{'protocol':'mpp','mcpProtocol':'x402','network':'eip155:8453','currency':'USDC','perCallUsd':f'{price()/100:.2f}' if price()>0 else None},
             'description':'Image-grounded nearby photography locations from a bounded provider image sample.'}
     return router,retrieve_paid,fulfill
