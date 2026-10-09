@@ -288,21 +288,18 @@ function historyEntries(){
  return [...searches,...photos].sort((a,b)=>b.created-a.created);
 }
 function renderHistory(){
- const root=el('history-items'),photosRoot=el('photo-items'),entries=historyEntries(),searches=entries.filter(e=>e.kind==='search'),photos=entries.filter(e=>e.kind==='portrait');root.replaceChildren();photosRoot.replaceChildren();const active=taskRecords.filter(t=>['queued','checking','running'].includes(t.state)).length;for(const list of [root,photosRoot])list.append(node('p',active+' / 5 active tasks','small'));el('history-count').textContent=String(searches.length);el('photo-count').textContent=String(photos.length);
+ const root=el('history-items'),photosRoot=el('photo-items'),entries=historyEntries(),searches=entries.filter(e=>e.kind==='search'),photos=entries.filter(e=>e.kind==='portrait');root.replaceChildren();photosRoot.replaceChildren();const active=taskRecords.filter(t=>['queued','checking','running'].includes(t.state)).length;root.append(node('p',active+' / 5 active tasks','small'));el('history-count').textContent=String(searches.length);el('photo-count').textContent=String(photos.length);
  const completed=entries.filter(e=>e.kind==='search'&&e.history).map(e=>e.history);
  el('history-all').disabled=!completed.length;el('history-all').checked=completed.length>0&&completed.every(h=>h.checked);el('history-all').indeterminate=completed.some(h=>h.checked)&&!completed.every(h=>h.checked);
  if(!searches.length)root.append(node('p','Your searches will appear here.','small'));if(!photos.length)photosRoot.append(node('p','Your selfies will appear here.','small'));
  for(const entry of entries){
+  if(entry.kind==='portrait'){
+   const item=node('button',entry.label,'photo-history-entry');item.type='button';item.dataset.state=entry.state;item.title=['queued','checking','running'].includes(entry.state)?'Selfie in progress':'View saved photo';item.addEventListener('click',()=>viewSavedTask(entry.task));photosRoot.append(item);continue;
+  }
   const h=entry.history,row=node('div',null,'history-item'),label=node(h?'label':'span',null,'history-copy');
   if(h){const check=node('input');check.type='checkbox';check.checked=h.checked;check.setAttribute('aria-label','Show search: '+entry.label);check.addEventListener('change',()=>{h.checked=check.checked;persistHistory();renderHistory();drawHistoryMap({fit:true});});label.append(check);}
   const text=node('span'),detail=h?`${h.radius/1000} km · ${allPoiViews(h.result).length} places`:(entry.kind==='portrait'?'Selfie · ':'')+(entry.state==='running'&&entry.kind==='search'?({sources:'Finding photos',scoring:'Checking photos'}[entry.task?.context?.stage]||'Resolving location'):entry.state);
   text.append(node('strong',entry.label),node('small',`${new Date(entry.created).toLocaleString()} · ${detail}`));label.append(text);
-  if(entry.kind==='portrait'){
-   const context=entry.task.context||{},pos=context.poi;
-   const place=node('button','⌖ '+(context.name||'View background on map'),'photo-place-link');place.type='button';place.title='Show background location on map';place.disabled=!pos||![pos.lat,pos.lon].every(Number.isFinite);place.addEventListener('click',()=>focusPhotoPlace(entry.task));
-   text.append(place,node('small',photoBackgroundInfo(context),'photo-background-info'));
-   if(pos&&[pos.lat,pos.lon].every(Number.isFinite))text.append(node('small',`${pos.lat.toFixed(5)}, ${pos.lon.toFixed(5)}`,'photo-background-coordinates'));
-  }
   const pending=['queued','running','checking'].includes(entry.state),view=node('button',pending?'Progress':entry.state==='failed'?'Details':entry.kind==='portrait'?'View photo':'View');view.type='button';
   view.addEventListener('click',()=>{if(entry.task)viewSavedTask(entry.task);else{showHistorySearch(h.result,h.result.searchContext,h);}});
   row.append(label,view);(entry.kind==='portrait'?photosRoot:root).append(row);
@@ -444,8 +441,9 @@ function showHistorySearch(result,context,history){
 const savedPhoto=node('dialog',null,'photo-studio saved-photo');savedPhoto.setAttribute('aria-label','Saved photo');
 const savedPhotoTop=node('div',null,'studio-heading'),savedPhotoTitle=node('h2','Your saved selfie'),savedPhotoClose=node('button','Close ×');savedPhotoClose.type='button';savedPhotoTop.append(savedPhotoTitle,savedPhotoClose);
 const savedPhotoPlace=node('p',null,'small'),savedPhotoImage=node('img',null,'studio-result'),savedPhotoStatus=node('p',null,'studio-status'),savedPhotoParams=node('div',null,'saved-photo-params'),savedPhotoSave=node('button','Save to Photos','studio-save'),savedPhotoDownload=node('a','Download PNG','studio-save studio-download'),savedPhotoHint=node('p',null,'small');savedPhotoImage.alt='Saved AI-generated travel photo';savedPhotoStatus.setAttribute('role','status');savedPhotoDownload.download='photo-scout-ai-photo.png';
+const savedPhotoBackground=node('section',null,'saved-photo-background');
 const savedPhotoNav=node('nav',null,'saved-photo-nav');savedPhotoNav.setAttribute('aria-label','Navigate to this photo location');
-savedPhoto.append(savedPhotoTop,savedPhotoPlace,savedPhotoNav,savedPhotoImage,savedPhotoStatus,savedPhotoParams,savedPhotoSave,savedPhotoDownload,savedPhotoHint);document.body.append(savedPhoto);
+savedPhoto.append(savedPhotoTop,savedPhotoPlace,savedPhotoBackground,savedPhotoNav,savedPhotoImage,savedPhotoStatus,savedPhotoParams,savedPhotoSave,savedPhotoDownload,savedPhotoHint);document.body.append(savedPhoto);
 let savedPhotoGeneration=0,savedPhotoTimer=null,savedPhotoFile=null,savedPhotoUrl=null;
 function savedPhotoNavigation(context){
  const {lat,lon}=context?.poi||{};
@@ -454,6 +452,10 @@ function savedPhotoNavigation(context){
  return [['Navigate here · Google Maps','https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(destination)],['Apple Maps','https://maps.apple.com/?daddr='+encodeURIComponent(destination)]];
 }
 function renderSavedPhotoParams(context,created){
+ const pos=context?.poi,place=node('button','⌖ '+(context?.name||'Show background on map'),'photo-place-link');place.type='button';place.title='Show background location on map';place.disabled=!pos||![pos.lat,pos.lon].every(Number.isFinite);place.addEventListener('click',()=>{savedPhoto.close();focusPhotoPlace({context});});
+ savedPhotoBackground.replaceChildren(node('h3','Background location'),place,node('p',photoBackgroundInfo(context||{}),'small'));
+ if(pos&&[pos.lat,pos.lon].every(Number.isFinite))savedPhotoBackground.append(node('p',`${pos.lat.toFixed(5)}, ${pos.lon.toFixed(5)}`,'small'));
+ if(context?.sourceUrl)savedPhotoBackground.append(link(context.provider==='google-street-view'?'Open original Street View ↗':'Open original photo ↗',context.sourceUrl));
  const routes=savedPhotoNavigation(context);savedPhotoNav.replaceChildren(...routes.map(([label,url])=>link(label,url)));savedPhotoNav.hidden=!routes.length;
  savedPhotoPlace.textContent=(context?.name||'Saved selfie')+(context?.viewHeadingDegrees!=null?' · '+photoBearing(context).label:'');
  const fields=[['Created',new Date(created*1000).toLocaleString()]];
