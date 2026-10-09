@@ -16,6 +16,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from .geography import GeographicKind, PROXIMITY, filter_places, geographic_places
 from .sources import distance, google_query_points
+from .osm_features import OSMFeatureQuery, fetch_features, matches_features
 from .styles import PHOTO_STYLES, discovery_queries, mapped_categories
 
 
@@ -26,6 +27,7 @@ class SearchParameters(BaseModel):
     radius: int = Field(default=5000, ge=100, le=20000)
     poiQueries: list[str] = Field(default_factory=list, max_length=4)
     geographicKinds: list[GeographicKind] = Field(default_factory=list, max_length=6)
+    osmFeatures: list[OSMFeatureQuery] = Field(default_factory=list,max_length=6)
     photoStyles: list[str] | None = Field(default=None, max_length=8)
     categories: list[str] | None = Field(default=None, max_length=8)
     scoringIntent: str = Field(default='', max_length=1000)
@@ -49,7 +51,7 @@ class SearchPlan(BaseModel):
     placesQueries: list[str]
     placesRole: Literal['target', 'discovery-hints', 'not-requested']
     geographicKinds: list[GeographicKind]
-    mergeStrategy: Literal['places-only', 'spatial-intersection', 'spatial-union', 'area-imagery']
+    mergeStrategy: Literal['places-only', 'spatial-intersection', 'spatial-union', 'area-imagery', 'feature-search']
     rawPlacesLimit: int
     candidateLimit: int = 30
     dedupDistanceMeters: int = 50
@@ -74,8 +76,11 @@ def compile_search(parameters: SearchParameters) -> SearchPlan:
     if kinds and not explicit:
         queries=list(dict.fromkeys(q for k in kinds for q in GEOGRAPHIC_QUERIES[k]))[:4]
     strategy=('places-only' if explicit else 'area-imagery') if not kinds else 'spatial-intersection' if explicit else 'spatial-union'
+    if parameters.osmFeatures:
+        strategy='feature-search'
+        if not explicit:queries=[]
     if strategy=='area-imagery':queries=[]
-    return SearchPlan(parameters=parameters,placesQueries=queries,placesRole='not-requested' if strategy=='area-imagery' else 'target' if explicit else 'discovery-hints',
+    return SearchPlan(parameters=parameters,placesQueries=queries,placesRole='not-requested' if not queries else 'target' if explicit else 'discovery-hints',
         geographicKinds=kinds,mergeStrategy=strategy,rawPlacesLimit=60 if kinds else 30,
         geographicProximityMeters={k:PROXIMITY[k] for k in kinds})
 
@@ -85,6 +90,7 @@ class SearchProviders:
     places: Callable
     osm_places: Callable
     geography: Callable
+    osm_features: Callable = fetch_features
 
 
 @dataclass
@@ -137,26 +143,39 @@ async def search_locations(parameters: SearchParameters, *, database_path: Path,
             'searchPlan':plan.model_dump(),'searchCounts':{'rawNamedPlaces':0,'spatiallyMatchedNamedPlaces':0,
             'generatedGeographicPlaces':0,'returnedCandidates':0}},plan)
     async def named():
+        if not plan.placesQueries:return [],{'status':'not_requested','provider':poi_provider}
         if poi_provider=='google-places':
             return await providers.places(parameters.lat,parameters.lon,parameters.radius,plan.placesQueries,limit=plan.rawPlacesLimit)
         if parameters.poiQueries:
             raise SearchUnavailable('Free-text POI search requires Google Places')
         categories=mapped_categories(parameters.photoStyles) if parameters.photoStyles else parameters.categories
         return await providers.osm_places(parameters.lat,parameters.lon,parameters.radius,categories) if categories is not None else await providers.osm_places(parameters.lat,parameters.lon,parameters.radius)
-    (named_places,named_status),(features,paths,geo_status)=await asyncio.gather(named(),
-        providers.geography(parameters.lat,parameters.lon,parameters.radius,plan.geographicKinds,database_path))
+    (named_places,named_status),(features,paths,geo_status),(feature_groups,feature_status)=await asyncio.gather(named(),
+        providers.geography(parameters.lat,parameters.lon,parameters.radius,plan.geographicKinds,database_path),
+        providers.osm_features(parameters.lat,parameters.lon,parameters.radius,parameters.osmFeatures,database_path))
     raw_count=len(named_places)
     if plan.geographicKinds:
         if geo_status['status']!='ok':
             raise SearchUnavailable('Geographic search is temporarily unavailable; please try again later')
         named_places=filter_places(named_places,features,plan.geographicKinds,parameters.lat,parameters.lon)
+    if parameters.osmFeatures:
+        if feature_status['status']!='ok':raise SearchUnavailable('OSM feature search is temporarily unavailable; please try again later')
+        named_places=[p for p in named_places if matches_features(p,feature_groups,parameters.osmFeatures)]
     generated=geographic_places(parameters.lat,parameters.lon,parameters.radius,features,paths,plan.geographicKinds,limit=plan.candidateLimit) if plan.mergeStrategy=='spatial-union' else []
-    if named_status['status']!='ok' and not generated:
+    geographic_generated=len(generated)
+    if parameters.osmFeatures and not (parameters.poiQueries or parameters.categories):
+        generated=[p for group in feature_groups for p in group if matches_features(p,feature_groups,parameters.osmFeatures)]
+        if plan.geographicKinds:generated=filter_places(generated,features,plan.geographicKinds,parameters.lat,parameters.lon)
+    if named_status['status'] not in ('ok','not_requested') and not generated:
         raise SearchUnavailable('Nearby place search is temporarily unavailable; please try again later')
     places=merge_candidates(named_places,generated,plan)
     audit={'rawNamedPlaces':raw_count,'spatiallyMatchedNamedPlaces':len(named_places),
-           'generatedGeographicPlaces':len(generated),'returnedCandidates':len(places)}
+           'generatedGeographicPlaces':geographic_generated,'returnedCandidates':len(places)}
     status={**named_status,'status':'ok','namedSourceStatus':named_status['status'],'count':len(places),
             'searchPlan':plan.model_dump(),'searchCounts':audit}
+    if parameters.osmFeatures:
+        if not plan.placesQueries:status['provider']='openstreetmap-features'
+        status['osmFeatureSearch']=feature_status
+        status['searchCounts']['osmFeatureCandidates']=sum(len(g) for g in feature_groups)
     if plan.geographicKinds:status['geographicSearch']=geo_status
     return SearchResult(places,features,status,plan)

@@ -17,9 +17,22 @@ interface PhotoMcpOptions {
 }
 
 const geographicKinds=['lake','sea','river','peak','forest','waterside'] as const
+const osmFeature=z.object({
+ label:z.string().min(1).max(120),kind:z.enum(['tagged','intersection']).optional(),
+ filters:z.array(z.object({key:z.string().min(1).max(80).regex(/^[A-Za-z0-9_:.-]+$/),value:z.string().max(160).nullable().optional(),required:z.boolean().optional()}).strict()).max(6).optional(),
+ numericFilters:z.array(z.object({key:z.string().min(1).max(80).regex(/^[A-Za-z0-9_:.-]+$/),minimum:z.number().nullable().optional(),maximum:z.number().nullable().optional()}).strict()).max(4).optional(),
+ proximityMeters:z.number().int().min(0).max(500).optional(),
+}).strict()
+const osmFeatureSchema={type:'object',additionalProperties:false,required:['label'],properties:{
+ label:{type:'string',minLength:1,maxLength:120},kind:{enum:['tagged','intersection'],default:'tagged'},
+ filters:{type:'array',maxItems:6,items:{type:'object',additionalProperties:false,required:['key'],properties:{key:{type:'string',minLength:1,maxLength:80,pattern:'^[A-Za-z0-9_:.-]+$'},value:{type:['string','null'],maxLength:160},required:{type:'boolean',default:true}}}},
+ numericFilters:{type:'array',maxItems:4,items:{type:'object',additionalProperties:false,required:['key'],properties:{key:{type:'string',minLength:1,maxLength:80,pattern:'^[A-Za-z0-9_:.-]+$'},minimum:{type:['number','null']},maximum:{type:['number','null']}}}},
+ proximityMeters:{type:'integer',minimum:0,maximum:500,default:150},
+}}
 const photoArguments={
   query:z.string().max(1000).optional().describe('Natural-language request. Explicit text overrides conflicting structured parameters.'),
   poiQueries:z.array(z.string().min(1).max(200)).max(4).optional().describe('Arbitrary POI categories or business names, e.g. coffee shops.'),
+  osmFeatures:z.array(osmFeature).max(6).optional().describe('OSM physical features and attributes; simultaneous nearby requirements. Tagged features use exact/existence filters; intersections use road topology.'),
   geographicKinds:z.array(z.enum(geographicKinds)).max(6).optional().describe('Spatial requirements; multiple entries must all hold.'),
   scoringIntent:z.string().max(1000).optional().describe('Visual subject, style and requirements for matching and scoring.'),
   lat:z.number().min(-85).max(85).describe('Latitude of the search center.'),
@@ -31,6 +44,7 @@ const photoArguments={
 }
 export const photoInputSchema={type:'object',additionalProperties:false,required:['lat','lon'],properties:{
  query:{type:'string',maxLength:1000},poiQueries:{type:'array',maxItems:4,items:{type:'string',minLength:1,maxLength:200}},
+ osmFeatures:{type:'array',maxItems:6,items:osmFeatureSchema},
  geographicKinds:{type:'array',maxItems:6,items:{enum:geographicKinds}},scoringIntent:{type:'string',maxLength:1000},
  lat:{type:'number',minimum:-85,maximum:85},lon:{type:'number',minimum:-180,maximum:180},
  radius:{type:'integer',minimum:100,maximum:20000,default:1000},limit:{type:'integer',minimum:1,maximum:5,default:3},

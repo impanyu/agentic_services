@@ -23,6 +23,7 @@ from .tasks import TaskStore, SEARCH_RETENTION, prune_records
 from .styles import PHOTO_STYLES, mapped_categories, style_briefs
 from .scoring import explore
 from .geography import GeographicKind, fetch_region, filter_places
+from .osm_features import OSMFeatureQuery
 from .intent import IntentRequest, PoiQuery, resolve_intent
 from .places import nearby_places
 from .search import SearchParameters, SearchProviders, SearchUnavailable, compile_search, search_locations
@@ -45,6 +46,7 @@ class ExploreRequest(BaseModel):
     photoStyles: list[Literal['nature','urban','vintage','iconic','artistic','waterside','minimal','adventure']] | None = Field(default=None,min_length=1,max_length=8)
     categories: list[Literal['viewpoint','park','attraction','museum','artwork','historic','nature','recreation','cafe','restaurant','bar','shop']] | None = Field(default=None,min_length=1,max_length=8)
     poiQueries: list[PoiQuery] = Field(default_factory=list,max_length=4)
+    osmFeatures: list[OSMFeatureQuery] = Field(default_factory=list,max_length=6)
     geographicKinds: list[GeographicKind] = Field(default_factory=list,max_length=6)
     scoringIntent: str = Field(default="",max_length=1000)
     selectedPoiIds: list[str] | None = Field(default=None,max_length=30)
@@ -210,7 +212,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
 
     def sign_catalog(payload,pois,status):
         if not settings.service_api_key: raise HTTPException(503,'Private gateway credential is required')
-        data={'lat':payload.lat,'lon':payload.lon,'radius':payload.radius,'categories':sorted(set(payload.poi_categories())) if payload.poi_categories() is not None else None,'photoStyles':sorted(set(payload.photoStyles)) if payload.photoStyles is not None else None,'poiQueries':payload.poiQueries,'geographicKinds':geographic_kinds(payload),'expires':int(time.time())+3600,'pois':pois,'status':status}
+        data={'lat':payload.lat,'lon':payload.lon,'radius':payload.radius,'categories':sorted(set(payload.poi_categories())) if payload.poi_categories() is not None else None,'photoStyles':sorted(set(payload.photoStyles)) if payload.photoStyles is not None else None,'poiQueries':payload.poiQueries,'osmFeatures':[q.model_dump() for q in payload.osmFeatures],'geographicKinds':geographic_kinds(payload),'expires':int(time.time())+3600,'pois':pois,'status':status}
         encoded=base64.urlsafe_b64encode(json.dumps(data,separators=(',',':')).encode()).decode().rstrip('=')
         signature=hmac.new(settings.service_api_key.encode(),('poi-catalog:'+encoded).encode(),hashlib.sha256).hexdigest()
         return encoded+'.'+signature
@@ -231,6 +233,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
             if data.get('categories')!=(sorted(set(payload.poi_categories())) if payload.poi_categories() is not None else None): raise ValueError()
             if data.get('photoStyles')!=(sorted(set(payload.photoStyles)) if payload.photoStyles is not None else None): raise ValueError()
             if data.get('poiQueries',[])!=payload.poiQueries:raise ValueError()
+            if data.get('osmFeatures',[])!=[q.model_dump() for q in payload.osmFeatures]:raise ValueError()
             if data.get('geographicKinds',[])!=geographic_kinds(payload):raise ValueError()
             wanted=set(payload.selectedPoiIds)
             pois=[p for p in data['pois'] if p['id'] in wanted]
@@ -262,7 +265,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
                 status['sampledImages']=sum(r['provider']==name for r in eligible)
             rows=eligible
             statuses['openstreetmap-geography']=poi_status.get('geographicSearch',{'status':'ok'})
-        statuses['google-places' if os.getenv('PHOTO_SCOUT_POI_PROVIDER')=='google-places' else 'openstreetmap']=poi_status
+        statuses['openstreetmap-features' if poi_status.get('provider')=='openstreetmap-features' else 'google-places' if os.getenv('PHOTO_SCOUT_POI_PROVIDER')=='google-places' else 'openstreetmap']=poi_status
         return rows,statuses,pois
 
     @router.post('/photo-scout/v1/resolve')
@@ -351,7 +354,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
                 payload=ExploreRequest.model_validate({**payload.model_dump(), 'query':'', 'lat':location['lat'], 'lon':location['lon'],
                     'radius':plan['radiusMeters'], 'photoStyles':plan['photoStyles'] or None, 'preferences':plan['preferences'],
                     'poiQueries':plan.get('poiQueries') or [], 'scoringIntent':plan.get('scoringIntent') or plan['preferences'],
-                    'geographicKinds':plan.get('geographicKinds') or [], 'categories':None,'selectedPoiIds':None,'poiCatalogToken':None})
+                    'geographicKinds':plan.get('geographicKinds') or [], 'osmFeatures':plan.get('osmFeatures') or [], 'categories':None,'selectedPoiIds':None,'poiCatalogToken':None})
             retrieval_started=time.monotonic()
             rows,statuses,pois=await catalog(payload,allow_expired)
             retrieval_seconds=time.monotonic()-retrieval_started
@@ -365,7 +368,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
                         points.setdefault(key,{'lat':row['lat'],'lon':row['lon'],'name':row.get('poi',{}).get('name') or 'Photo viewpoint'})
                     context['sampledViewLocations']=list(points.values())
                 context['stage']='scoring';tasks.update_context('search',task_id,context)
-            if rows and not any(s['status']=='ok' for n,s in statuses.items() if n not in ('openstreetmap','google-places')):
+            if rows and not any(s['status']=='ok' for n,s in statuses.items() if n not in ('openstreetmap','google-places','openstreetmap-features')):
                 raise HTTPException(503,'Image sources are temporarily unavailable')
             store.reserve_run()
             scoring_started=time.monotonic()
@@ -378,7 +381,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
                 'uncertainty':'No verified camera direction is available.','coordinateWarning':'Candidate POI; imagery not verified.'}
                 for p in pois if p['id'] not in assessed)
             result['nearbyPois']=pois
-            source=statuses.get('google-places') or statuses.get('openstreetmap') or {}
+            source=statuses.get('google-places') or statuses.get('openstreetmap') or statuses.get('openstreetmap-features') or {}
             result['searchPlan']=source.get('searchPlan') or compile_search(search_parameters(payload)).model_dump()
             result['searchCounts']=source.get('searchCounts',{})
             result['discoveryMethod']='fixed-geographic-and-poi'
@@ -492,7 +495,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
                 # only this query plus the visible current controls are defaults.
                 plan=await resolve_intent(settings,IntentRequest(query=submitted.query,lat=submitted.lat,lon=submitted.lon,radius=submitted.radius,photoStyles=submitted.photoStyles or [],preferences=''))
                 place=plan['locations'][0]
-                values.update(lat=place['lat'],lon=place['lon'],radius=plan['radiusMeters'],photoStyles=plan['photoStyles'] or None,preferences=plan['preferences'],scoringIntent=plan.get('scoringIntent') or plan['preferences'],categories=None,poiQueries=plan.get('poiQueries') or [],geographicKinds=plan.get('geographicKinds') or [],selectedPoiIds=None,poiCatalogToken=None)
+                values.update(lat=place['lat'],lon=place['lon'],radius=plan['radiusMeters'],photoStyles=plan['photoStyles'] or None,preferences=plan['preferences'],scoringIntent=plan.get('scoringIntent') or plan['preferences'],categories=None,poiQueries=plan.get('poiQueries') or [],geographicKinds=plan.get('geographicKinds') or [],osmFeatures=plan.get('osmFeatures') or [],selectedPoiIds=None,poiCatalogToken=None)
                 context['locationLabel']=place['label'];context['explanation']=plan['explanation']
             payload=ExploreRequest.model_validate(values)
             context.update(payload.model_dump(exclude={'query'}));context['query']=submitted.query

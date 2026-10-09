@@ -36,6 +36,7 @@ class ScoreCache:
         data = {'version': 1, 'image': image, 'model': model, 'instructions': instructions,
                 'photoStyles': sorted(payload.photoStyles or []), 'preferences': payload.preferences.strip(),
                 'geographicKinds': sorted(getattr(payload,'geographicKinds',[])),
+                'osmFeatures': [q.model_dump() for q in getattr(payload,'osmFeatures',[])],
                 'poiQueries': sorted(payload.poiQueries), 'scoringIntent': payload.scoringIntent.strip()}
         return hashlib.sha256(json.dumps(data, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
 

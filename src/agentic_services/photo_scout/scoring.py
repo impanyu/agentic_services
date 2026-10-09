@@ -53,7 +53,7 @@ class VisualBatch(BaseModel):
 INSTRUCTIONS='''You are a multimodal photography evaluator in a fixed scoring pipeline.
 Check EVERY supplied image exactly once in this single response.
 FIRST judge whether the actual pixels match request.scoringIntent, poiQueries,
-preferences, geographicKinds and photoStyleBriefs. Spatial proximity is not proof of visual fit: lakeside/sea/river/waterside requests require visible relevant water or shore; forest requests require visible woodland; peak requests require a plausible summit/mountain-view setting. Reject directions facing away from the requested subject. Set matches_request and explain match_reason.
+preferences, geographicKinds, osmFeatures and photoStyleBriefs. Spatial proximity is not proof of visual fit: lakeside/sea/river/waterside requests require visible relevant water or shore; forest requests require visible woodland; peak requests require a plausible summit/mountain-view setting. Reject directions facing away from the requested subject. Set matches_request and explain match_reason.
 Reject clear subject/category mismatches or clear conflicts with explicit visual
 requirements or requested mood. A beautiful landscape is not a coffee shop or motel.
 For an explicitly requested brand, named business or landmark, require visual
@@ -185,7 +185,7 @@ async def explore(settings,payload,rows,statuses):
             if not usable: return {'assessments':[],'downloaded':0,'downloadFailed':len(batch),'scoringFailed':0,'usage':None}
             async with batch_slots:
                 content=[{'type':'input_text','text':json.dumps({
-                    'request':{'scoringIntent':payload.scoringIntent.strip(),'poiQueries':payload.poiQueries,'geographicKinds':payload.geographicKinds,'preferences':payload.preferences.strip(),'photoStyles':sorted(payload.photoStyles or [])},
+                    'request':{'scoringIntent':payload.scoringIntent.strip(),'poiQueries':payload.poiQueries,'geographicKinds':payload.geographicKinds,'osmFeatures':[q.model_dump() for q in payload.osmFeatures],'preferences':payload.preferences.strip(),'photoStyles':sorted(payload.photoStyles or [])},
                     'photoStyleBriefs':style_briefs(payload.photoStyles)})}]
                 for row,data in usable:
                     content.extend([{'type':'input_text','text':json.dumps({'image':{k:v for k,v in row.items() if k not in ('imageUrl','author','distanceMeters','poiDistanceMeters','explorationReason')}})},

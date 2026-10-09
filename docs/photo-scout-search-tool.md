@@ -38,7 +38,7 @@ result = await search_locations(
 
 | Request | Places terms | Geography | Merge strategy |
 | --- | --- | --- | --- |
-| Coffee shops among high-rise buildings | coffee shops | none | places-only; check towers visually |
+| Coffee shops among high-rise buildings | coffee shops | OSM building attributes | feature-search; nearby towers then visual confirmation |
 | Lakeside vintage coffee shops | coffee shops | lake shore | spatial-intersection |
 | Lake views | lakeside parks, lake viewpoints (supporting hints) | lake shore | spatial-union with road/path viewpoints |
 | One address | none | none | area-imagery centered on the geocoded address |
@@ -54,3 +54,26 @@ With geography, Places may retrieve up to 60 raw candidates per query; filtering
 Area imagery skips Places/geometry lookup and returns up to 25 spatial sample targets. An empty `nearbyPois` in this mode means no named POI lookup was requested, not that no imagery exists. Imagery providers can still have no coverage. All modes retain the selected radius and existing image/provider limits.
 
 `searchPlan` exposes routed queries, target-versus-hint roles, geographic constraints, merge strategy and limits. `searchCounts` exposes raw named candidates, spatial matches, generated viewpoints and final candidates. Failed required geography never silently returns unfiltered POIs. Geography-only discovery can continue with road viewpoints when named Places is unavailable, with the named-source failure explicitly reported.
+
+## General OSM features
+
+`osmFeatures` adds generic tag queries and numeric attribute bounds, alongside natural geography. Each item has an English label, kind (`tagged` or `intersection`), filters, numericFilters and proximityMeters. Examples:
+
+```json
+{
+  "lat": 41.892183, "lon": -87.632618, "radius": 1000,
+  "osmFeatures": [{
+    "label": "Traffic lights", "kind": "tagged",
+    "filters": [{"key": "highway", "value": "traffic_signals"}],
+    "proximityMeters": 30
+  }]
+}
+```
+
+Buildings can use `building` existence, `height` or `building:levels` numeric bounds, and material/colour attributes. Other standard tags support crossings, lamps, fountains, benches, artwork, steps, bridges and additional mapped objects. There is no fixed feature-category enum. Tags are validated and escaped; clients cannot submit raw Overpass code. Each query must have at least one required tag anchor. Optional secondary attributes (`required=false`) and numeric bounds retain missing/unparseable values as `unknownAttributes`; known mismatches are excluded. Height values in meters or feet are handled. Exact category tags must be mapped for a feature to be discovered. Missing mapping is never evidence of real-world absence.
+
+Intersection discovery derives junctions from shared OSM road-node IDs with at least three distinct neighbors. Coordinate overlap alone does not establish an intersection; grade-separated crossings with different node IDs are not joined.
+
+OSM features, Places and natural geometry are fetched concurrently. Multiple feature groups are AND proximity constraints; matches within a group are OR. With an explicit POI request, nearby feature matches filter those POIs. Otherwise mapped features themselves become imagery targets. Natural geographic constraints still apply. Required OSM failures are reported explicitly. Street View/scoring remains the visual confirmation, not a guarantee of visibility, access or a safe standing point.
+
+Successful OSM queries are cached for 24 hours. Overpass output is bounded to 1,200 tagged objects or 1,800 road ways per selector, then 120 nearest candidates per feature group and 30 final locations. Large/poorly mapped areas are not exhaustively covered. Returned `osmFeatureSearch`, `osmFeatureCandidates`, `searchPlan`, tags and unknown attributes expose this distinction. The website and HTTP/MCP Agent interfaces carry the same field; it is included in scoring and cache identity.
