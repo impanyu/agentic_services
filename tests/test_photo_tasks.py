@@ -296,23 +296,24 @@ def test_hidden_poi_is_private_to_one_history_keeps_report_and_moves_to_account(
 
 def test_search_category_reaches_poi_lookup_and_excludes_unrelated_places(tmp_path,monkeypatch):
     settings,app,client=setup(tmp_path,monkeypatch);seen=[]
+    monkeypatch.setenv('PHOTO_SCOUT_POI_PROVIDER','google-places')
     async def resolve(settings,payload):
         return {'locations':[{'lat':37.84,'lon':-122.51,'label':'Selected map location'}],
-                'radiusMeters':5000,'limit':3,'photoStyles':['vintage'],'poiCategories':['cafe'],
+                'radiusMeters':5000,'limit':3,'photoStyles':['vintage'],'poiQueries':['coffee shops'],
                 'preferences':'Vintage cafe photography','explanation':'Nearby cafes'}
-    async def nearby(lat,lon,radius,categories):
-        seen.append(categories);return [],{'status':'ok'}
+    async def nearby(lat,lon,radius,queries):
+        seen.append(queries);return [],{'status':'ok'}
     async def candidates(*args,**kwargs):return [],{}
     async def explore(settings,payload,*args):
-        assert payload.categories==['cafe'] and 'Vintage' in payload.preferences
+        assert payload.poiQueries==['coffee shops'] and 'Vintage' in payload.preferences
         return {'spots':[],'summary':'No cafes with verified imagery'}
-    monkeypatch.setattr(routes,'resolve_intent',resolve);monkeypatch.setattr(routes,'nearby_pois',nearby)
+    monkeypatch.setattr(routes,'resolve_intent',resolve);monkeypatch.setattr(routes,'nearby_places',nearby)
     monkeypatch.setattr(routes,'candidates',candidates);monkeypatch.setattr(routes,'explore',explore)
     client.post('/photo-scout/v1/jobs',headers={'X-Request-Token':'c'*32},json={'lat':37.84,'lon':-122.51,'query':'caffe'})
     assert asyncio.run(app.state.process_photo_preview())
-    assert seen==[['cafe']]
+    assert seen==[['coffee shops']]
     context=client.get('/photo-scout/v1/tasks').json()['items'][0]['context']
-    assert context['categories']==['cafe']
+    assert context['poiQueries']==['coffee shops']
 
 def test_remove_history_is_owned_persistent_and_undoable_without_deleting_reports(tmp_path,monkeypatch):
     settings,app,client=setup(tmp_path,monkeypatch)

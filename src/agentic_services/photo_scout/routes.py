@@ -22,7 +22,8 @@ from pydantic import BaseModel, Field, model_validator
 from .tasks import TaskStore, SEARCH_RETENTION, prune_records
 from .styles import PHOTO_STYLES, mapped_categories, style_briefs
 from .scoring import explore
-from .intent import IntentRequest, resolve_intent
+from .intent import IntentRequest, PoiQuery, resolve_intent
+from .places import nearby_places
 from .sources import candidates, nearby_pois, google_enabled, google_image_data, MAX_SCORED_IMAGES
 
 
@@ -37,6 +38,7 @@ class ExploreRequest(BaseModel):
     limit: int = Field(default=3,ge=1,le=5)
     photoStyles: list[Literal['nature','urban','vintage','iconic','artistic','waterside','minimal','adventure']] | None = Field(default=None,min_length=1,max_length=8)
     categories: list[Literal['viewpoint','park','attraction','museum','artwork','historic','nature','recreation','cafe','restaurant','bar','shop']] | None = Field(default=None,min_length=1,max_length=8)
+    poiQueries: list[PoiQuery] = Field(default_factory=list,max_length=4)
     selectedPoiIds: list[str] | None = Field(default=None,max_length=24)
     poiCatalogToken: str | None = Field(default=None,max_length=40000)
     preferences: str = Field(default='Scenic, distinctive public places for photography',max_length=500)
@@ -174,7 +176,11 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
             except httpx.HTTPError as e: raise HTTPException(503,'Stripe is temporarily unavailable') from e
     async def lookup_pois(payload):
         categories=payload.poi_categories()
-        pois,status=await nearby_pois(payload.lat,payload.lon,payload.radius,categories) if categories is not None else await nearby_pois(payload.lat,payload.lon,payload.radius)
+        if os.getenv('PHOTO_SCOUT_POI_PROVIDER')=='google-places':
+            queries=payload.poiQueries or ([PHOTO_STYLES[s]['description']+' photo spots' for s in payload.photoStyles] if payload.photoStyles else [])
+            pois,status=await nearby_places(payload.lat,payload.lon,payload.radius,queries)
+        else:
+            pois,status=await nearby_pois(payload.lat,payload.lon,payload.radius,categories) if categories is not None else await nearby_pois(payload.lat,payload.lon,payload.radius)
         if status['status']!='ok':
             logging.getLogger(__name__).warning('Photo Scout POI search failed: %s',status.get('attempts',[]))
             raise HTTPException(503,'Nearby place search is temporarily unavailable; please try again later')
@@ -182,7 +188,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
 
     def sign_catalog(payload,pois,status):
         if not settings.service_api_key: raise HTTPException(503,'Private gateway credential is required')
-        data={'lat':payload.lat,'lon':payload.lon,'radius':payload.radius,'categories':sorted(set(payload.poi_categories())) if payload.poi_categories() is not None else None,'photoStyles':sorted(set(payload.photoStyles)) if payload.photoStyles is not None else None,'expires':int(time.time())+3600,'pois':pois,'status':status}
+        data={'lat':payload.lat,'lon':payload.lon,'radius':payload.radius,'categories':sorted(set(payload.poi_categories())) if payload.poi_categories() is not None else None,'photoStyles':sorted(set(payload.photoStyles)) if payload.photoStyles is not None else None,'poiQueries':payload.poiQueries,'expires':int(time.time())+3600,'pois':pois,'status':status}
         encoded=base64.urlsafe_b64encode(json.dumps(data,separators=(',',':')).encode()).decode().rstrip('=')
         signature=hmac.new(settings.service_api_key.encode(),('poi-catalog:'+encoded).encode(),hashlib.sha256).hexdigest()
         return encoded+'.'+signature
@@ -202,6 +208,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
             if any(data[k]!=getattr(payload,k) for k in ('lat','lon','radius')): raise ValueError()
             if data.get('categories')!=(sorted(set(payload.poi_categories())) if payload.poi_categories() is not None else None): raise ValueError()
             if data.get('photoStyles')!=(sorted(set(payload.photoStyles)) if payload.photoStyles is not None else None): raise ValueError()
+            if data.get('poiQueries',[])!=payload.poiQueries:raise ValueError()
             wanted=set(payload.selectedPoiIds)
             pois=[p for p in data['pois'] if p['id'] in wanted]
             if len(pois)!=len(wanted): raise ValueError()
@@ -212,7 +219,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
     async def catalog(payload,allow_expired=False):
         pois,poi_status=await chosen_pois(payload,allow_expired)
         rows,statuses=await candidates(payload.lat,payload.lon,payload.radius,pois)
-        statuses['openstreetmap']=poi_status
+        statuses['google-places' if os.getenv('PHOTO_SCOUT_POI_PROVIDER')=='google-places' else 'openstreetmap']=poi_status
         return rows,statuses,pois
 
     @router.post('/photo-scout/v1/resolve')
@@ -280,7 +287,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
             if task_id:
                 context=tasks.context('search',task_id) or payload.model_dump()
                 context['nearbyPois']=pois;context['stage']='scoring';tasks.update_context('search',task_id,context)
-            if rows and not any(s['status']=='ok' for n,s in statuses.items() if n!='openstreetmap'):
+            if rows and not any(s['status']=='ok' for n,s in statuses.items() if n not in ('openstreetmap','google-places')):
                 raise HTTPException(503,'Image sources are temporarily unavailable')
             store.reserve_run()
             result=await explore(settings,payload,rows,statuses)
@@ -293,6 +300,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
             result['nearbyPois']=pois
             result['discoveryMethod']='poi-first'
             result['candidatePoiCount']=len(pois)
+            result['poiProvider']='google-places' if os.getenv('PHOTO_SCOUT_POI_PROVIDER')=='google-places' else 'openstreetmap'
             result['photoStyles']=style_briefs(payload.photoStyles)
             return image_links(result)
 
@@ -311,7 +319,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
                 'imageAnalysisEnabled':google_enabled(),
                 'dailyImageRequestLimit':max(0,int(os.getenv('PHOTO_SCOUT_GOOGLE_DAILY_IMAGE_LIMIT','0'))) or None},
             'limits':{'radiusMeters':20000,'sampledImages':MAX_SCORED_IMAGES,'inspectedImages':MAX_SCORED_IMAGES,'imagesPerBatch':6,'parallelBatches':4,'viewsPerPanorama':8,'googleQueryLocations':25,'timeoutSeconds':660},
-            'analysisMethod':'fixed-batch-scoring','discoveryMethod':'poi-first','poiProviders':{'openstreetmap':'enabled','google-places':'not_connected'},
+            'analysisMethod':'fixed-batch-scoring','discoveryMethod':'poi-first','poiProviders':{'openstreetmap':'standby' if os.getenv('PHOTO_SCOUT_POI_PROVIDER')=='google-places' else 'enabled','google-places':'enabled' if os.getenv('PHOTO_SCOUT_POI_PROVIDER')=='google-places' else 'not_connected'},
             'privacy':'Coordinates/preferences are sent to imagery providers/OpenAI; paid reports retained for 30 days.'}
 
     @router.post('/photo-scout/v1/candidates')
@@ -395,7 +403,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
                 store.reserve_intent()
                 plan=await resolve_intent(settings,IntentRequest(query=submitted.query,lat=submitted.lat,lon=submitted.lon,radius=submitted.radius,limit=submitted.limit,photoStyles=submitted.photoStyles or [],preferences=submitted.preferences))
                 place=plan['locations'][0]
-                values.update(lat=place['lat'],lon=place['lon'],radius=plan['radiusMeters'],limit=plan['limit'],photoStyles=None if plan.get('poiCategories') else (plan['photoStyles'] or None),preferences=plan['preferences'],categories=plan.get('poiCategories') or None,selectedPoiIds=None,poiCatalogToken=None)
+                values.update(lat=place['lat'],lon=place['lon'],radius=plan['radiusMeters'],limit=plan['limit'],photoStyles=plan['photoStyles'] or None,preferences=plan['preferences'],categories=None,poiQueries=plan.get('poiQueries') or [],selectedPoiIds=None,poiCatalogToken=None)
                 context['locationLabel']=place['label'];context['explanation']=plan['explanation']
             payload=ExploreRequest.model_validate(values)
             context.update(payload.model_dump());context['stage']='sources';tasks.update_context('search',job['id'],context)

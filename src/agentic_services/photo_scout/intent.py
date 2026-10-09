@@ -2,14 +2,13 @@
 from __future__ import annotations
 import json
 import math
-import re
-from typing import Literal
+from typing import Literal, Annotated
 import httpx
 from openai import AsyncOpenAI
 from pydantic import BaseModel,Field
 
 Mood=Literal['nature','urban','vintage','iconic','artistic','waterside','minimal','adventure']
-PoiCategory=Literal['viewpoint','park','attraction','museum','artwork','historic','nature','recreation','cafe','restaurant','bar','shop']
+PoiQuery=Annotated[str,Field(min_length=1,max_length=200)]
 class IntentRequest(BaseModel):
     query: str=Field(min_length=1,max_length=1000)
     lat: float=Field(ge=-85,le=85,allow_inf_nan=False)
@@ -19,7 +18,7 @@ class IntentRequest(BaseModel):
     photoStyles: list[Mood]=Field(default_factory=list,max_length=8)
     preferences: str=Field(default='',max_length=500)
 class PhotoIntent(BaseModel):
-    poiCategories: list[PoiCategory]=Field(default_factory=list,max_length=8)
+    poiQueries: list[PoiQuery]=Field(default_factory=list,max_length=4)
     locationQuery: str | None=Field(max_length=200)
     useMapCenter: bool
     photoStyles: list[Mood]=Field(max_length=8)
@@ -30,7 +29,7 @@ class PhotoIntent(BaseModel):
     clarification: str | None=Field(max_length=300)
 INSTRUCTIONS='''Interpret a user's place or photography question for Photo Scout.
 The query text is authoritative. Supplied UI parameters (center, radius, limit, photoStyles, preferences) are defaults only. Any parameter explicitly mentioned in query MUST override a conflicting UI value; preserve UI values only for parameters omitted from query. Example: UI radius=1000, limit=3, photoStyles=[nature], query="urban shots in Paris within 20 km, top 5" => Paris, radiusMeters=20000, limit=5, photoStyles=[urban]. An explicit place overrides the selected map center. If the user requests a city-wide search without a numeric radius, use 20000 meters.
-Extract requested types of places into poiCategories independently of photo mood: cafe (caffe, café, coffee shop, 咖啡店), restaurant, bar, shop, park, museum, artwork, historic, viewpoint, nature, attraction, recreation. These are SOURCE filters, not just preferences. Use [] if no specific type is requested. A generic type like "caffe" or "coffee shops near me" is NOT a geocoding place name: useMapCenter=true, locationQuery=null, poiCategories=["cafe"], and preferences describing cafe photography. For "cafes in Paris", geocode Paris and filter cafe. Preserve explicitly requested photo mood in preferences as well as photoStyles.
+Extract POI discovery intent into poiQueries: free-text search phrases, NOT an enumeration. Accept ANY category, business name, or combination; normalize typos and translated category names. Examples: "caffe" => ["coffee shops"]; "motel" => ["motels"]; "caffe resteraunt" => ["coffee shops","restaurants"]; "vegan bakery" => ["vegan bakeries"]; "Starbucks" => ["Starbucks"]. Never drop an explicit category or business name into generic scenic discovery. Separate geographic center from discovery targets: "motels in Paris within 2km" => locationQuery="Paris", poiQueries=["motels"], radiusMeters=2000. A standalone street address is ONLY locationQuery: poiQueries=[]; then discover photo spots near that address. A standalone category is ONLY poiQueries: useMapCenter=true, locationQuery=null. An explicitly named attraction like Eiffel Tower determines the search center; a business chain such as Starbucks is a POI query unless a specific branch/address is requested. Preserve non-geographic details such as vintage style and quiet outdoor seating in preferences. No fixed list limits the possible poiQueries. Do not substitute generic scenic preferences when a target is stated.
 Extract one canonical geocoding locationQuery, with city/country when stated. For translated place names, prefer the common English or local-language spelling recognized by map data: e.g. 巴黎铁塔 -> Eiffel Tower, Paris, France. Do not send a literal translated nickname when a canonical name is known.
 NEVER invent latitude/longitude. A deterministic geocoder resolves explicit place names.
 Use useMapCenter=true only for 'here', 'near me', selected pin/map, or photo requests without an explicit place. The supplied center is a map selection, not necessarily device location.
@@ -44,6 +43,10 @@ async def parse_intent(settings,payload):
     if not isinstance(response.output_parsed,PhotoIntent):raise ValueError('No parsed search intent')
     return response.output_parsed
 async def geocode(query):
+    import os
+    if os.getenv('PHOTO_SCOUT_POI_PROVIDER')=='google-places':
+        from .places import geocode_address
+        return await geocode_address(query)
     async with httpx.AsyncClient(timeout=15,follow_redirects=False) as client:
         r=await client.get('https://photon.komoot.io/api/',params={'q':query,'limit':5,'lang':'en'},headers={'User-Agent':'AISoup-PhotoScout/1.0 (https://aisoup.net/photo-scout/)'})
         r.raise_for_status(); data=r.json()
@@ -66,20 +69,13 @@ async def geocode(query):
 async def resolve_intent(settings,payload):
     intent=await parse_intent(settings,payload)
     out=intent.model_dump()
-    # Short category-only queries must not be mistaken for named addresses.
-    if re.fullmatch(r'\s*(?:caff[eè]|caf[eé]|coffee(?:\s+shops?)?|咖啡(?:店|馆|館)?)\s*[.!?。！？]?\s*',payload.query,re.IGNORECASE):
-        out.update(poiCategories=['cafe'],locationQuery=None,useMapCenter=True,
-                   preferences=('Cafe and coffee shop photography; '+intent.preferences)[:500],
-                   explanation='Find nearby cafes and coffee shops within the selected search radius.')
-        intent=intent.model_copy(update={'locationQuery':None,'useMapCenter':True})
     out.update({'locations':[],'visuallyAnalyzed':False})
     out['clarification']=None
     if intent.locationQuery:
         out['locations']=await geocode(intent.locationQuery)
         if out['locations']:out['locations']=out['locations'][:1]
         else:
-            out['locations']=[{'lat':payload.lat,'lon':payload.lon,'label':'Selected map location (place name not resolved)','source':'user-map-selection'}]
-            out['explanation']='The place name could not be geocoded; searching the selected map location instead.'
+            raise ValueError('Could not resolve the requested address or place')
     elif intent.useMapCenter:
         out['locations']=[{'lat':payload.lat,'lon':payload.lon,'label':'Selected map location','source':'user-map-selection'}]
     else:

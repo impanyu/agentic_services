@@ -26,8 +26,7 @@ def test_best_effort_unresolved_place_uses_map_without_followup(monkeypatch):
     async def empty(query):return []
     monkeypatch.setattr(intent,'parse_intent',parsed);monkeypatch.setattr(intent,'geocode',empty)
     payload=intent.IntentRequest(query='any sentence',lat=41,lon=-87)
-    result=asyncio.run(intent.resolve_intent(None,payload));assert result['clarification'] is None
-    assert result['locations'][0]['lat']==41;assert 'not resolved' in result['locations'][0]['label']
+    with pytest.raises(ValueError,match='Could not resolve'):asyncio.run(intent.resolve_intent(None,payload))
 
 
 def test_geocoder_validates_and_deduplicates_coordinates(monkeypatch):
@@ -82,10 +81,10 @@ def test_city_geocoder_prefers_named_city_point_to_boundary_centroid(monkeypatch
 
 @pytest.mark.parametrize('query',['caffe','café','coffee shop','咖啡店'])
 def test_short_cafe_query_filters_category_without_geocoding(monkeypatch,query):
-    async def parsed(settings,payload):return plan(locationQuery='Caffe',useMapCenter=False)
+    async def parsed(settings,payload):return plan(poiQueries=['coffee shops'],preferences='Cafe photography')
     async def geocode(query):raise AssertionError('A category is not an address')
     monkeypatch.setattr(intent,'parse_intent',parsed);monkeypatch.setattr(intent,'geocode',geocode)
     result=asyncio.run(intent.resolve_intent(None,intent.IntentRequest(query=query,lat=37.84,lon=-122.51)))
-    assert result['poiCategories']==['cafe']
+    assert result['poiQueries']==['coffee shops']
     assert result['locations'][0]['lat']==37.84
     assert 'Cafe' in result['preferences']
