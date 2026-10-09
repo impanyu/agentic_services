@@ -153,6 +153,6 @@ The free `list_photo_scout_prices` tool describes pricing and coverage; the paid
 `discover_photo_spots` tool costs $2 in Base USDC using x402 MCP. The HTTP endpoint
 retains MPP and the human website remains a free preview. Its [official MCP Registry
 record](https://registry.modelcontextprotocol.io/v0/servers/io.github.impanyu%2Fphoto-scout/versions/0.1.0)
-was verified publicly. Smithery publication awaits account authorization; a settled
+was verified publicly. Photo Scout is also listed on [x402Scan](https://www.x402scan.com/server/131c08a0-027b-4f28-afe6-2a72fdbac7dc) and [MPPScan](https://www.mppscan.com/server/b915b7bda6517cd0e47f1cfaca657b4a4f7b268093117889d34b31bad1915664) at $2/search. Smithery GitHub authorization is complete; publication awaits owner email verification. A settled
 payment has not been independently verified. See [release metadata](services/photo-scout/release.json)
 and [API documentation](docs/photo-scout.md).

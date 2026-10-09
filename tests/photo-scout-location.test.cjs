@@ -132,9 +132,9 @@ test('history merges backend tasks and results by ID, preserving each distinct s
  tasks[1].state='complete';entries=f.historyWith([{id:'first',created:11000,label:'Chicago',radius:500,checked:false,result},{id:'second',created:21000,label:'Chicago',radius:500,checked:true,result}],tasks);
  assert.equal(entries.length,2);assert.ok(entries.every(e=>e.history));assert.equal(entries[0].state,'complete');
 });
-test('selfies and failed searches remain accessible in the single history list',()=>{
+test('photos and failed searches appear in separate menus with independent counts',()=>{
  const f=pageFixture(),entries=f.historyWith([],[{id:'photo',kind:'portrait',created:30,state:'complete',context:{name:'Park'}},{id:'failed',kind:'search',created:20,state:'failed',context:{lat:40,lon:-96}}]);
- assert.equal(entries.length,2);assert.equal(entries[0].kind,'portrait');assert.equal(entries[0].label,'Park');assert.match(entries[1].label,/Around 40/);
+ assert.equal(f.element('history-count').textContent,'1');assert.equal(f.element('photo-count').textContent,'1');assert.equal(entries.length,2);assert.equal(entries[0].kind,'portrait');assert.equal(entries[0].label,'Park');assert.match(entries[1].label,/Around 40/);
 });
 
 

@@ -174,17 +174,17 @@ function refreshPlaceSelfies(box){
  const photos=selfiesAtPlace(box.photoSpot),signature=photos.map(t=>t.id).join(',');
  if(box.dataset.photos===signature)return;
  box.dataset.photos=signature;box.hidden=!photos.length;
- const expanded=box.open;box.replaceChildren(node('summary',`Selfies here (${photos.length})`));
+ box.replaceChildren(node('p',`Your selfies here (${photos.length})`,'place-selfie-heading'));
  const list=node('div',null,'place-selfie-list');
  for(const task of photos){
   const button=node('button',null,'place-selfie-link');button.type='button';
   const style=portraitStyles.find(s=>s[0]===task.context?.generation?.style)?.[1];
-  button.append(node('span',new Date(task.created*1000).toLocaleString()),node('small',[style,photoBearing(task.context||{}).label].filter(Boolean).join(' · ')));
+  button.append(node('span','View selfie ↗'),node('small',[new Date(task.created*1000).toLocaleString(),style,photoBearing(task.context||{}).label].filter(Boolean).join(' · ')));
   button.addEventListener('click',()=>viewSavedTask(task));list.append(button);
  }
- box.append(list);box.open=expanded;
+ box.append(list);
 }
-function placeSelfies(spot){const box=node('details',null,'place-selfies');box.photoSpot=spot;refreshPlaceSelfies(box);return box;}
+function placeSelfies(spot){const box=node('section',null,'place-selfies');box.photoSpot=spot;refreshPlaceSelfies(box);return box;}
 function refreshVisiblePlaceSelfies(){for(const box of document.querySelectorAll('.place-selfies'))refreshPlaceSelfies(box);}
 function render(result,{scroll=true,save=true,mapUpdate=true}={}){const root=el('results');controls.open=false;for(const menu of mapMenus)menu.open=false;root.hidden=false;el('toggle-results').disabled=false;
  const edit=node('button','Close ×','back-button');edit.type='button';edit.addEventListener('click',()=>{root.hidden=true;});
@@ -258,10 +258,10 @@ function historyEntries(){
  return [...searches,...photos].sort((a,b)=>b.created-a.created);
 }
 function renderHistory(){
- const root=el('history-items'),entries=historyEntries();root.replaceChildren();root.append(node('p',taskRecords.filter(t=>['queued','checking','running'].includes(t.state)).length+' / 5 active tasks · Searches and selfies','small'));el('history-count').textContent=String(entries.length);
+ const root=el('history-items'),photosRoot=el('photo-items'),entries=historyEntries(),searches=entries.filter(e=>e.kind==='search'),photos=entries.filter(e=>e.kind==='portrait');root.replaceChildren();photosRoot.replaceChildren();const active=taskRecords.filter(t=>['queued','checking','running'].includes(t.state)).length;for(const list of [root,photosRoot])list.append(node('p',active+' / 5 active tasks','small'));el('history-count').textContent=String(searches.length);el('photo-count').textContent=String(photos.length);
  const completed=entries.filter(e=>e.kind==='search'&&e.history).map(e=>e.history);
  el('history-all').disabled=!completed.length;el('history-all').checked=completed.length>0&&completed.every(h=>h.checked);el('history-all').indeterminate=completed.some(h=>h.checked)&&!completed.every(h=>h.checked);
- if(!entries.length)root.append(node('p','Your searches will appear here.','small'));
+ if(!searches.length)root.append(node('p','Your searches will appear here.','small'));if(!photos.length)photosRoot.append(node('p','Your selfies will appear here.','small'));
  for(const entry of entries){
   const h=entry.history,row=node('div',null,'history-item'),label=node(h?'label':'span',null,'history-copy');
   if(h){const check=node('input');check.type='checkbox';check.checked=h.checked;check.setAttribute('aria-label','Show search: '+entry.label);check.addEventListener('change',()=>{h.checked=check.checked;persistHistory();renderHistory();drawHistoryMap({fit:true});});label.append(check);}
@@ -269,7 +269,7 @@ function renderHistory(){
   text.append(node('strong',entry.label),node('small',`${new Date(entry.created).toLocaleString()} · ${detail}`));label.append(text);
   const pending=['queued','running','checking'].includes(entry.state),view=node('button',pending?'Progress':entry.state==='failed'?'Details':entry.kind==='portrait'?'View photo':'View');view.type='button';
   view.addEventListener('click',()=>{if(entry.task)viewSavedTask(entry.task);else{showHistorySearch(h.result,h.result.searchContext,h);}});
-  row.append(label,view);root.append(row);
+  row.append(label,view);(entry.kind==='portrait'?photosRoot:root).append(row);
  }
 }
 function drawHistoryMap({fit=false}={}){photoLocationLayer.clearLayers();candidatePoiLayer.clearLayers();resultPins=[];for(const h of searchHistory.filter(h=>h.checked)){for(const [i,s] of allPoiViews(h.result).entries()){const pos=s.poi;if(!pos||!Number.isFinite(pos.lat)||!Number.isFinite(pos.lon))continue;const b=photoBearing(s),popup=node('div',null,'photo-popup');popup.append(node('strong',s.name),node('p',s.score==null?'No verified image':`${s.score}/100 · ${b.label}`),node('p',h.label));const show=node('button','View place','popup-shortlist');show.type='button';const reveal=()=>{render(h.result,{save:false,mapUpdate:false});el('photo-spot-'+String(i+1))?.scrollIntoView({block:'nearest',behavior:'smooth'});};show.addEventListener('click',reveal);const selfie=node('button','📷 Take a selfie here','compose-photo popup-selfie');selfie.type='button';selfie.addEventListener('click',()=>openPhotoStudio(s));popup.append(show,selfie,placeSelfies(s));if(s.sourceUrl)popup.append(link(s.provider==='google-street-view'?'Open Street View ↗':'Open original photo ↗',s.sourceUrl));const marker=L.marker([pos.lat,pos.lon],{title:`${s.name} · ${b.label} · ${h.label}`,icon:i<photoTopCount(h.result)?photographerIcon(s,i):directionDot(s)}).addTo(photoLocationLayer).bindPopup(popup).on('popupopen',()=>{for(const box of popup.querySelectorAll('.place-selfies'))refreshPlaceSelfies(box);});resultPins.push(marker);}}if(fit&&resultPins.length)map.fitBounds(L.featureGroup(resultPins).getBounds().pad(.2),{paddingTopLeft:[40,80],paddingBottomRight:[40,250],maxZoom:16});}
@@ -306,7 +306,7 @@ studio.append(studioTop,studioPlace,studioImages,uploadLabel,studioStyles,studio
 // This separate map layer survives shortlist/history redraws and dialog closure.
 const selfieActivityLayer=L.layerGroup().addTo(map);
 const studioTask=node('button',null,'selfie-task');studioTask.type='button';studioTask.hidden=true;studioTask.setAttribute('aria-live','polite');
-const studioTaskSpark=node('span','✦','selfie-task-spark'),studioTaskCopy=node('span',null,'selfie-task-copy'),studioTaskLabel=node('strong'),studioTaskPlace=node('small');studioTaskCopy.append(studioTaskLabel,studioTaskPlace);studioTask.append(studioTaskSpark,studioTaskCopy);document.querySelector('.map-stage').append(studioTask);L.DomEvent.disableClickPropagation(studioTask);studioTask.addEventListener('click',()=>{if(taskRecords.some(t=>t.kind==='portrait'&&['queued','checking','running'].includes(t.state))){if(studio.open)studio.close();el('search-history').open=true;}else studio.showModal();});
+const studioTaskSpark=node('span','✦','selfie-task-spark'),studioTaskCopy=node('span',null,'selfie-task-copy'),studioTaskLabel=node('strong'),studioTaskPlace=node('small');studioTaskCopy.append(studioTaskLabel,studioTaskPlace);studioTask.append(studioTaskSpark,studioTaskCopy);document.querySelector('.map-stage').append(studioTask);L.DomEvent.disableClickPropagation(studioTask);studioTask.addEventListener('click',()=>{if(taskRecords.some(t=>t.kind==='portrait'&&['queued','checking','running'].includes(t.state))){if(studio.open)studio.close();el('photo-history').open=true;}else studio.showModal();});
 function setStudioActivity(state){
  const labels={uploading:'Uploading your photo…',queued:'Selfie queued…',checking:'Checking your photo…',running:'Creating your selfie…',reconnecting:'Reconnecting…',complete:'Your selfie is ready · View',failed:'Selfie needs attention · View'};
  studioTask.hidden=false;studioTask.dataset.state=state;studioTaskLabel.textContent=labels[state]||labels.running;studioTaskPlace.textContent=studioSpot?.name||'Photo studio';studioTask.setAttribute('aria-label',studioTaskLabel.textContent+' · '+studioTaskPlace.textContent+' · Open photo studio');
@@ -469,7 +469,7 @@ savedPhotoSave.addEventListener('click',async()=>{
  savedPhotoSave.disabled=true;try{await navigator.share({files});}catch(error){if(error.name!=='AbortError')savedPhotoHint.textContent='The share menu could not open. Use Download PNG or press and hold the photo.';}finally{savedPhotoSave.disabled=false;}
 });
 async function viewSavedTask(task){
- el('search-history').open=false;
+ el('search-history').open=false;el('photo-history').open=false;
  if(task.kind==='search')el('results').hidden=true;
  if(task.kind==='portrait'){await viewSavedPhoto(task);return;}
  try{
@@ -497,7 +497,7 @@ async function restoreTasks(){
  if(taskRefreshBusy)return;taskRefreshBusy=true;const generation=taskRecoveryGeneration,initial=!tasksReady;let changed=false;
  try{
   const data=await json('/photo-scout/v1/tasks');if(generation!==taskRecoveryGeneration)return;tasksReady=true;
-  const returned=new Set(data.items.map(t=>t.kind+':'+t.id));taskRecords=[...data.items,...taskRecords.filter(t=>t.localPending&&!returned.has(t.kind+':'+t.id))].sort((a,b)=>b.created-a.created);renderHistory();
+  const returned=new Set(data.items.map(t=>t.kind+':'+t.id));taskRecords=[...data.items,...taskRecords.filter(t=>t.localPending&&!returned.has(t.kind+':'+t.id))].sort((a,b)=>b.created-a.created);renderHistory();refreshVisiblePlaceSelfies();
   for(const task of taskRecords.filter(t=>t.kind==='search'&&t.state==='complete')){
    if(searchHistory.some(h=>h.id===task.id))continue;
    const report=await json('/photo-scout/v1/report/'+encodeURIComponent(task.id));if(generation!==taskRecoveryGeneration)return;
