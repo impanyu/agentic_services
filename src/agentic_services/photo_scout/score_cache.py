@@ -30,7 +30,7 @@ class ScoreCache:
 
     @staticmethod
     def key(row, payload, model, instructions):
-        image = {k: v for k, v in row.items() if k not in ('distanceMeters', 'poiDistanceMeters', 'author')}
+        image = {k: v for k, v in row.items() if k not in ('distanceMeters', 'poiDistanceMeters', 'author', 'explorationReason')}
         if image.get('poiCandidates'):
             image['poiCandidates'] = sorted(image['poiCandidates'], key=lambda p: p['id'])
         data = {'version': 1, 'image': image, 'model': model, 'instructions': instructions,

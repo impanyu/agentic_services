@@ -168,7 +168,7 @@ async def explore(settings,payload,rows,statuses):
                     'request':{'scoringIntent':payload.scoringIntent.strip(),'poiQueries':payload.poiQueries,'preferences':payload.preferences.strip(),'photoStyles':sorted(payload.photoStyles or [])},
                     'photoStyleBriefs':style_briefs(payload.photoStyles)})}]
                 for row,data in usable:
-                    content.extend([{'type':'input_text','text':json.dumps({'image':{k:v for k,v in row.items() if k not in ('imageUrl','author','distanceMeters','poiDistanceMeters')}})},
+                    content.extend([{'type':'input_text','text':json.dumps({'image':{k:v for k,v in row.items() if k not in ('imageUrl','author','distanceMeters','poiDistanceMeters','explorationReason')}})},
                         {'type':'input_image','image_url':data,'detail':'high'}])
                 response=None
                 try:

@@ -89,3 +89,10 @@ def test_spatial_context_distinguishes_land_water_and_hole(tmp_path):
     assert d.spatial_context(40,-95.998)['nearbyFeatures'][0]['insideMappedWater'] is False
     d.features[0].update(geometryParts=[outer,inner],memberRoles=['outer','inner'])
     assert d.spatial_context(40,-96)['nearbyFeatures'][0]['insideMappedWater'] is False
+
+
+def test_exploration_reason_does_not_invalidate_score_cache():
+    from agentic_services.photo_scout.score_cache import ScoreCache
+    payload=ExploreRequest(lat=40,lon=-96)
+    row={'id':'view','lat':40,'lon':-96,'imageUrl':'google-streetview://pano/90'}
+    assert ScoreCache.key({**row,'explorationReason':'Nice view'},payload,'model','rules')==ScoreCache.key({**row,'explorationReason':'Water visible'},payload,'model','rules')
