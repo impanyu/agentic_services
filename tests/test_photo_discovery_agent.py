@@ -188,3 +188,23 @@ def test_per_turn_usage_survives_restart(tmp_path):
     event=state(tmp_path).audit[-1]
     assert event['event']=='model_turn' and event['inputTokens']==123 and event['outputTokens']==8
     assert event['durationSeconds']>=0
+
+
+def test_explorer_does_not_receive_legacy_result_count(tmp_path,monkeypatch):
+    captured=[]
+    class Client:
+        def __init__(self,**kwargs):pass
+        async def __aenter__(self):return self
+        async def __aexit__(self,*args):pass
+    async def run(agent,prompt,**kwargs):
+        data=json.loads(prompt);captured.append(data)
+        assert 'limit' not in data['request']
+        tool=next(t for t in agent.tools if t.name=='submit_candidates')
+        params={'explanation':'No matching image evidence was found.'}
+        await tool.on_invoke_tool(ToolContext(None,tool_name=tool.name,tool_call_id='submit',tool_arguments=json.dumps(params)),json.dumps(params))
+        return SimpleNamespace(context_wrapper=SimpleNamespace(usage=SimpleNamespace(input_tokens=0,output_tokens=0,requests=1)))
+    monkeypatch.setattr(discovery_agent,'AsyncOpenAI',Client)
+    monkeypatch.setattr(discovery_agent.Runner,'run',run)
+    settings=SimpleNamespace(database_path=tmp_path/'db',openai_api_key='fixture')
+    _,_,_,result=asyncio.run(discovery_agent.discover(settings,ExploreRequest(lat=40,lon=-96,radius=20000,limit=3),'regression',original_query='architecture'))
+    assert captured and result['candidateCount']==0

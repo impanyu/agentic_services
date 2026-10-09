@@ -56,13 +56,13 @@ def test_text_resolve_auth_and_no_store(tmp_path,monkeypatch):
 
 def test_text_parameters_override_conflicting_ui_defaults(monkeypatch):
     async def parsed(settings,payload):
-        assert payload.radius==500 and payload.limit==3 and payload.photoStyles==['nature']
+        assert payload.radius==500 and payload.photoStyles==['nature']
         return plan(locationQuery='Chicago',useMapCenter=False,radiusMeters=20000,limit=5,photoStyles=['urban'],preferences='Architectural river views')
     async def located(query):return [{'lat':41.88,'lon':-87.63,'label':'Chicago','source':'photon/openstreetmap'}]
     monkeypatch.setattr(intent,'parse_intent',parsed);monkeypatch.setattr(intent,'geocode',located)
     payload=intent.IntentRequest(query='Urban photos in Chicago within 20 km, top 5',lat=40,lon=-96,radius=500,limit=3,photoStyles=['nature'])
     result=asyncio.run(intent.resolve_intent(None,payload))
-    assert result['radiusMeters']==20000 and result['limit']==5 and result['photoStyles']==['urban']
+    assert result['radiusMeters']==20000 and 'limit' not in result and result['photoStyles']==['urban']
     assert result['locations'][0]['lat']==41.88 and result['preferences']=='Architectural river views'
 
 
@@ -88,3 +88,22 @@ def test_short_cafe_query_filters_category_without_geocoding(monkeypatch,query):
     assert result['poiQueries']==['coffee shops']
     assert result['locations'][0]['lat']==37.84
     assert 'Cafe' in result['preferences']
+
+
+def test_legacy_count_does_not_reach_interpretation_model(monkeypatch):
+    import json
+    from types import SimpleNamespace
+    seen=[]
+    class Client:
+        def __init__(self,**kwargs):self.responses=self
+        async def __aenter__(self):return self
+        async def __aexit__(self,*args):pass
+        async def parse(self,**kwargs):
+            seen.append(kwargs)
+            assert 'limit' not in json.loads(kwargs['input'])
+            assert 'limit' not in kwargs['text_format'].model_fields
+            return SimpleNamespace(output_parsed=plan())
+    monkeypatch.setattr(intent,'AsyncOpenAI',Client)
+    payload=intent.IntentRequest(query='architecture',lat=40,lon=-96,radius=20000,limit=3)
+    result=asyncio.run(intent.resolve_intent(SimpleNamespace(openai_api_key='fixture',openai_model='test'),payload))
+    assert seen and 'limit' not in result and result['radiusMeters']==1000

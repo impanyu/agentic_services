@@ -150,9 +150,9 @@ test('history View on desktop focuses the map and opens Shortlist',()=>{
  assert.equal(view.hidden,false);assert.equal(view.shortlistEnabled,true);assert.deepEqual(Array.from(view.moves.at(-1)),[41.8827,-87.6233]);
 });
 
-test('all scored POIs remain ranked even when unsuitable or low scoring, retaining the requested top-count metadata',()=>{
+test('all scored POIs remain ranked even when unsuitable or low scoring, ignoring obsolete top-count metadata',()=>{
  const f=pageFixture(),poiResults=Array.from({length:7},(_,i)=>({id:String(i),poi:{id:String(i)},score:i, recommend:false,imageUrl:'https://example.test/'+i}));
- const result={topLimit:5,poiResults,spots:[]};assert.equal(f.views(result).length,7);assert.deepEqual(Array.from(f.views(result),s=>s.score),[6,5,4,3,2,1,0]);assert.equal(f.topCount(result),5);assert.equal(f.topCount({...result,topLimit:3}),3);
+ const result={topLimit:5,poiResults,spots:[]};assert.equal(f.views(result).length,7);assert.deepEqual(Array.from(f.views(result),s=>s.score),[6,5,4,3,2,1,0]);assert.equal(f.topCount(result),7);assert.equal(f.topCount({...result,topLimit:3}),7);
 });
 
 test('submitting a search immediately fits its current radius even when coordinates have not changed',()=>{

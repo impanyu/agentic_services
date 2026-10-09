@@ -36,7 +36,7 @@ class ExploreRequest(BaseModel):
     lat: float = Field(ge=-85,le=85,allow_inf_nan=False)
     lon: float = Field(ge=-180,le=180,allow_inf_nan=False)
     radius: int = Field(default=1000,ge=100,le=20000)
-    limit: int = Field(default=3,ge=1,le=5)
+    limit: int = Field(default=3,ge=1,le=5,deprecated=True,description='Legacy compatibility field; ignored. All verified matching results are returned.')
     photoStyles: list[Literal['nature','urban','vintage','iconic','artistic','waterside','minimal','adventure']] | None = Field(default=None,min_length=1,max_length=8)
     categories: list[Literal['viewpoint','park','attraction','museum','artwork','historic','nature','recreation','cafe','restaurant','bar','shop']] | None = Field(default=None,min_length=1,max_length=8)
     poiQueries: list[PoiQuery] = Field(default_factory=list,max_length=4)
@@ -437,9 +437,9 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
             context=tasks.context('search',job['id']) or submitted.model_dump()
             if submitted.query.strip():
                 store.reserve_intent()
-                plan=await resolve_intent(settings,IntentRequest(query=submitted.query,lat=submitted.lat,lon=submitted.lon,radius=submitted.radius,limit=submitted.limit,photoStyles=submitted.photoStyles or [],preferences=submitted.preferences))
+                plan=await resolve_intent(settings,IntentRequest(query=submitted.query,lat=submitted.lat,lon=submitted.lon,radius=submitted.radius,photoStyles=submitted.photoStyles or [],preferences=submitted.preferences))
                 place=plan['locations'][0]
-                values.update(lat=place['lat'],lon=place['lon'],radius=plan['radiusMeters'],limit=plan['limit'],photoStyles=plan['photoStyles'] or None,preferences=plan['preferences'],scoringIntent=plan.get('scoringIntent') or plan['preferences'],categories=None,poiQueries=plan.get('poiQueries') or [],selectedPoiIds=None,poiCatalogToken=None)
+                values.update(lat=place['lat'],lon=place['lon'],radius=plan['radiusMeters'],photoStyles=plan['photoStyles'] or None,preferences=plan['preferences'],scoringIntent=plan.get('scoringIntent') or plan['preferences'],categories=None,poiQueries=plan.get('poiQueries') or [],selectedPoiIds=None,poiCatalogToken=None)
                 context['locationLabel']=place['label'];context['explanation']=plan['explanation']
             payload=ExploreRequest.model_validate(values)
             context.update(payload.model_dump());context['stage']='sources';tasks.update_context('search',job['id'],context)

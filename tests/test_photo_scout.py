@@ -531,7 +531,7 @@ def test_fixed_pipeline_scores_every_image_and_globally_ranks(tmp_path,monkeypat
     result=asyncio.run(visual.explore(settings,ExploreRequest(lat=0,lon=0,photoStyles=['waterside'],poiQueries=['coffee shops'],scoringIntent='waterside coffee shops with outdoor seating',poiCatalogToken='secret-token'),_scoring_rows(),{}))
     assert set(downloaded)==set(seen)=={str(i) for i in range(13)}
     assert result['inspectedImages']==13 and len(result['imageAssessments'])==13
-    assert [spot['image_id'] for spot in result['spots']]==['12','11','10']
+    assert [spot['image_id'] for spot in result['spots']]==[str(i) for i in range(12,-1,-1)]
     assert result['analysisMethod']=='fixed-batch-scoring' and result['scoring']['batches']==3
     assert result['usage']=={'requests':3,'inputTokens':30,'outputTokens':60} and peak<=4
 
@@ -551,7 +551,7 @@ def test_fixed_pipeline_reports_partial_failures(tmp_path,monkeypatch):
         return SimpleNamespace(output_parsed=visual.VisualBatch(assessments=assessments),usage=SimpleNamespace(input_tokens=10,output_tokens=20))
     _scoring_client(monkeypatch,parse);monkeypatch.setattr(visual,'image_data',image)
     result=asyncio.run(visual.explore(settings,ExploreRequest(lat=0,lon=0),_scoring_rows(),{}))
-    assert len(result['spots'])==3 and result['inspectedImages']==7
+    assert len(result['spots'])==7 and result['inspectedImages']==7
     assert all(s['recommend'] is False for s in result['spots'])
     assert result['scoring']=={'checkedImages':7,'filteredOutImages':0,'matchedImages':7,'candidateImages':13,'downloadedImages':12,'scoredImages':7,'downloadFailedImages':1,'scoringFailedImages':5,'batches':3,'cachedImages':0,'newlyScoredImages':7}
     assert len(result['imageAssessments'])==7 and 'could not be scored' in result['coverage']
@@ -792,8 +792,8 @@ def test_low_scoring_unsuitable_pois_still_fill_selected_top_five(tmp_path,monke
     _scoring_client(monkeypatch,parse);monkeypatch.setattr(visual,'image_data',image)
     result=asyncio.run(visual.explore(settings,ExploreRequest(lat=0,lon=0,limit=5),_scoring_rows(),{}))
     assert len(result['poiResults'])==13
-    assert result['topLimit']==5 and len(result['spots'])==5
-    assert [s['score'] for s in result['spots']]==[12,11,10,9,8]
+    assert result['topLimit']==13 and len(result['spots'])==13
+    assert [s['score'] for s in result['spots']]==list(range(12,-1,-1))
     assert all(s['recommend'] is False for s in result['spots'])
 
 

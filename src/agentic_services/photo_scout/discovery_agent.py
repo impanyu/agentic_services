@@ -67,6 +67,17 @@ Do not mechanically download all eight compass directions everywhere. Inspect pr
 angles first, use the map/imagery to decide where to look next. Spend the budget on evidence.
 Use manage_candidate to add, update or remove inspected views and list_candidates to review.
 You decide where to explore, which tools to use, and when evidence is sufficient.
+Return a collection of evidenced matching places, not a tiny top-N selection.
+Finding two or three good views is not by itself a reason to stop. Before refining
+one location repeatedly, consider whether inspecting other promising known places
+would improve geographic and subject diversity, especially in a large search area.
+Treat result-count requests as presentation preferences, not exploration stopping
+criteria. Retain distinct relevant modest-quality options for downstream ranking.
+When Street View is missing, inspect promising retrieved photos from other sources
+if they may answer the request. Do not mistake an uninspected place for a rejected one.
+At submission, explain important unchecked opportunities and why more exploration
+is unlikely to help or no longer fits the budget. These are judgment guidelines,
+not mandatory quotas or a submission gate.
 Prefer a deliberate search over the first matching picture: consider several promising
 areas and compare their photographic potential, especially across a large region.
 When an image shows obstructions, clutter or weak composition, consider moving the lookup
@@ -501,7 +512,7 @@ async def discover(settings,payload,job_id=None,progress=None,initial_pois=None,
                 model=OpenAIResponsesModel(model,client),tools=state.tools(),
                 tool_use_behavior=state.finish_tools,
                 model_settings=ModelSettings(max_tokens=2500,reasoning=Reasoning(effort='low'),parallel_tool_calls=False,store=False))
-            prompt=json.dumps({'originalQuery':original_query,'request':payload.model_dump(exclude={'poiCatalogToken'}),'photoStyleBriefs':style_briefs(payload.photoStyles),
+            prompt=json.dumps({'originalQuery':original_query,'request':payload.model_dump(exclude={'poiCatalogToken','limit'}),'photoStyleBriefs':style_briefs(payload.photoStyles),
                 'knownPlaces':list(state.pois.values()),'previousCandidates':list(state.selected),
                 'knownViews':[state.public(r) for r in state.views.values()],
                 'bounds':{'center':[payload.lat,payload.lon],'radiusMeters':payload.radius},'mission':'Explore, inspect, collect, submit.'})

@@ -206,7 +206,7 @@ async def explore(settings,payload,rows,statuses):
         if poi_id in seen_pois:continue
         seen_pois.add(poi_id);item['recommend']=assessment.recommend
         item['assessmentStatus']='rated';poi_results.append(item)
-    spots=poi_results[:payload.limit] if poi_results else validate_result(VisualResult(spots=eligible,summary=''),rows,scored,payload.limit)
+    spots=poi_results if poi_results else validate_result(VisualResult(spots=eligible,summary=''),rows,scored,len(rows))
     mood=', '.join(s['label'] for s in style_briefs(payload.photoStyles))
     summary=(f'Highest-scoring photo opportunities{(" for "+mood) if mood else ""}: '+
         '; '.join(s['name'] for s in spots)+'. See the inspected visual evidence and composition ideas below.') if spots else (
@@ -223,7 +223,7 @@ async def explore(settings,payload,rows,statuses):
     downloaded=sum(r['downloaded'] for r in results);failed_downloads=sum(r['downloadFailed'] for r in results)
     failed_scoring=sum(r['scoringFailed'] for r in results)
     usages=[r['usage'] for r in results if r['usage']]
-    return {'topLimit':payload.limit,'spots':spots,'poiResults':poi_results,'summary':summary,'sources':statuses,
+    return {'topLimit':len(spots),'spots':spots,'poiResults':poi_results,'summary':summary,'sources':statuses,
         'inspectedImages':len(assessments),'inspectedImageSources':sorted({by_id[a.image_id]['provider'] for a in assessments}),
         'imageAssessments':audit,'analysisMethod':'fixed-batch-scoring',
         'scoring':{'checkedImages':len(assessments),'filteredOutImages':filtered_out,'matchedImages':len(scored),'candidateImages':len(rows),'downloadedImages':downloaded,'scoredImages':len(scored),'cachedImages':len(cached),'newlyScoredImages':sum(a.matches_request for a in fresh),
