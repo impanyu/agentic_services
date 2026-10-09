@@ -181,4 +181,4 @@ html:has(body.photo-app),body.photo-app{height:100%;overflow:hidden}.photo-app m
 
 .remove-notice{padding:10px;border-radius:10px;background:#f5efdf;color:#796747!important}.remove-undo{border:0;background:none;color:#765393;text-decoration:underline;font-weight:600;cursor:pointer}
 
-.poi-view-label{margin:6px 0 3px}.poi-view-hint{font-size:10px!important;margin:3px 0 9px!important;color:#8c8095}.photo-popup .popup-selfies{display:block;width:100%;padding:8px 12px;margin-top:8px;min-height:36px;border:1px solid #dfd4eb;border-radius:10px;background:#f4eef9;color:#71528b;cursor:pointer}.place-photos{width:min(440px,calc(100vw - 24px))}.place-photos .place-selfies{margin-top:12px}
+.poi-view-label{margin:6px 0 3px}.poi-view-hint{font-size:10px!important;margin:3px 0 9px!important;color:#8c8095}
