@@ -42,7 +42,7 @@ def test_private_job_edits_both_images_and_removes_upload(tmp_path,monkeypatch,i
     body={'portrait':'data:image/png;base64,'+base64.b64encode(raw).decode(),'background':'https://www.google.com/maps/@?map_action=pano&pano=abc&heading=90&pitch=-20','provider':'google-street-view','place':'Test park'}
     assert client.post('/photo-scout/v1/portraits',json=body).status_code==401
     assert client.post('/photo-scout/v1/portraits',json=body|{'style':'unsupported'},headers=auth).status_code==422
-    for field in ['posture','weather','expression']:
+    for field in ['posture','weather','expression','framing']:
         assert client.post('/photo-scout/v1/portraits',json=body|{field:'unsupported'},headers=auth).status_code==422
     body.update(posture='walking',weather='golden_hour',expression='big_smile')
     result=client.post('/photo-scout/v1/portraits',json=body,headers=auth);assert result.status_code==202
@@ -62,9 +62,9 @@ def test_private_job_edits_both_images_and_removes_upload(tmp_path,monkeypatch,i
     assert 'relight the entire scene and subjects together' in calls[0]['prompt']
     completed=client.get(path,headers=owned).json();assert completed['state']=='complete'
     assert completed['context']['viewHeadingDegrees']==90 and completed['context']['viewPitchDegrees']==0
-    assert completed['context']['viewFovDegrees']==60
-    assert completed['context']['backgroundPreparation']['comparedFovDegrees']==[60,45]
-    assert completed['context']['generation']=={'style':'natural','posture':'walking','weather':'golden_hour','expression':'big_smile','directions':''}
+    assert completed['context']['viewFovDegrees']==90
+    assert completed['context']['backgroundPreparation']['comparedFovDegrees']==[90,60,45]
+    assert completed['context']['generation']=={'style':'natural','posture':'walking','weather':'golden_hour','expression':'big_smile','framing':'auto','directions':''}
     history=client.get('/photo-scout/v1/tasks',headers=auth).json()
     assert history['items'][0]['context']['generation']==completed['context']['generation']
     image=client.get(path+'/image',headers=owned);assert image.content==raw;assert image.headers['cache-control']=='private, no-store'
@@ -130,7 +130,7 @@ def test_subject_check_blocks_empty_or_failed_checks_and_allows_people_cartoons_
     state=client.get('/photo-scout/v1/portraits/'+job['id'],headers=auth|{'X-Report-Token':job['token']}).json()
     assert calls[0][0]=='check';assert calls[0][1]['store'] is False
     if count:
-        assert state['state']=='complete';assert [c[0] for c in calls]==['check','background','background','background-check','edit']
+        assert state['state']=='complete';assert [c[0] for c in calls]==['check','background','background','background','background-check','edit']
         assert 'cartoon' in calls[0][1]['instructions'] and 'animals' in calls[0][1]['instructions']
         assert 'EVERY visible foreground subject' in calls[-1][1]['prompt']
         assert 'do not turn them into real humans or animals' in calls[-1][1]['prompt']
@@ -144,7 +144,7 @@ def test_subject_check_blocks_empty_or_failed_checks_and_allows_people_cartoons_
         assert db.execute('SELECT photo,payload FROM photo_portraits').fetchone()==(None,None)
 
 
-@pytest.mark.parametrize('fov,expected',[(120,[60,45]),(50,[50,45]),(40,[40])])
+@pytest.mark.parametrize('fov,expected',[(120,[90,60,45]),(50,[50,45]),(40,[40])])
 def test_background_selector_uses_provider_zoom_not_warped_pixels(monkeypatch,fov,expected):
     refs=[];raw=photo();requests=[]
     async def background(ref):refs.append(ref);return 'data:image/png;base64,'+base64.b64encode(raw).decode()
@@ -173,3 +173,19 @@ def test_background_selector_rejects_severe_seams_and_invalid_indices(monkeypatc
         asyncio.run(portraits.prepare_background(Client(portraits.BackgroundChoice(index=0,distortion='severe',reason='Bowed buildings and duplicated edges')),'google-streetview://pano/0','vision'))
     with pytest.raises(ValueError,match='assessment unavailable'):
         asyncio.run(portraits.prepare_background(Client(portraits.BackgroundChoice(index=1,distortion='minimal',reason='View')),'google-streetview://pano/0/0/40','vision'))
+
+
+@pytest.mark.parametrize('framing',['90','60','45'])
+def test_explicit_framing_is_not_overridden(monkeypatch,framing):
+    refs=[];raw=photo()
+    async def background(ref):
+        refs.append(ref)
+        return 'data:image/png;base64,'+base64.b64encode(raw).decode()
+    monkeypatch.setattr(portraits,'image_data',background)
+    class Client:
+        def __init__(self):self.responses=self
+        async def parse(self,**kwargs):
+            return SimpleNamespace(output_parsed=portraits.BackgroundChoice(index=0,distortion='minimal',reason='Natural background'))
+    _,ref,meta=asyncio.run(portraits.prepare_background(Client(),'google-streetview://pano/135/0/120','vision',framing))
+    assert refs==[f'google-streetview://pano/135/0/{framing}']
+    assert ref==refs[0] and meta['fovDegrees']==int(framing) and meta['requestedFraming']==framing

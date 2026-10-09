@@ -89,3 +89,5 @@ originalSourceUrl retains the originally requested view. Other providers keep th
 original image. The synthesis prompt calls for natural camera perspective while
 preserving location geometry and provider marks. Image generation quality stays
 unchanged. See Google Street View's [FOV documentation](https://developers.google.com/maps/documentation/streetview/request-streetview).
+
+Street View discovery defaults to 120° at eight compass headings for wide context. The selfie panel offers Auto, 90°, 60°, and 45° framing. Auto compares provider-rendered 90°/60°/45° projections (never wider than the selected input view); explicit choices use the selected FOV and still check distortion. Framing applies only to Google Street View; static photo sources keep their original background. Saved photo context retains the requested and actual framing.
