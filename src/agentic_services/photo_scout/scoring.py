@@ -84,7 +84,10 @@ restricted facilities, or when no listed POI is visually supported. Still score 
 Each image's poiCandidates (or poi) lists permitted POIs. Set poi_id to the supplied
 ID actually supported by the image; use null when none is supported. Proximity alone
 is not evidence of identity. Do not invent locations, names, coordinates or images.
-Use the supplied POI name when identified. If none is identified, use the image title.
+Use the supplied POI name when identified. If allowUnlistedPlace=true and no named
+POI is visually supported, set poi_id=null and describe the visible scene with a
+short photographic label (e.g. Tree-lined corner). Do not invent an official place
+or business name. Such unnamed camera locations are valid photo opportunities.
 Keep visible_evidence concise (1-3 sentences), photo_tip and uncertainty 1-2 sentences.
 Multiple views can depict the same place. Compare their composition and camera pitch;
 score each independently so the highest-scoring eligible view can represent that POI.
@@ -104,9 +107,16 @@ def validate_result(result,rows,inspected,limit):
         row={**by_id[choice.image_id]}
         if row.get('poi'):
             matches={p['id']:p for p in row.get('poiCandidates',[row['poi']])}
-            if choice.poi_id not in matches: continue
-            row['poi']=matches[choice.poi_id]
-            row['poiDistanceMeters']=round(distance((row['lat'],row['lon']),(row['poi']['lat'],row['poi']['lon'])))
+            if choice.poi_id in matches:
+                row['poi']=matches[choice.poi_id]
+                row['poiDistanceMeters']=round(distance((row['lat'],row['lon']),(row['poi']['lat'],row['poi']['lon'])))
+            elif row.get('allowUnlistedPlace') and choice.poi_id is None:
+                row.pop('poi',None);row.pop('poiDistanceMeters',None)
+            else:continue
+        if not row.get('poi') and row.get('allowUnlistedPlace'):
+            location_id=('google:'+row['imageUrl'].split('/')[2]) if row['provider']=='google-street-view' else f"photo-location:{row['lat']:.5f},{row['lon']:.5f}"
+            row['poi']={'id':location_id,'lat':row['lat'],'lon':row['lon'],'name':choice.name,'category':'photo-location'}
+            row['namedPoi']=False
         if row.get('poi') and any(x.get('poi',{}).get('id')==row['poi']['id'] for x in out): continue
         if any(distance((row['lat'],row['lon']),(x['lat'],x['lon']))<35 for x in out): continue
         public_row={**row}

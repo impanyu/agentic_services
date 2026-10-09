@@ -89,7 +89,7 @@ def test_paid_fulfillment_is_reused(tmp_path,monkeypatch):
     vs=VerificationStore(settings.database_path)
     router,retrieve,fulfill=create_photo_router(settings,lambda x:None,vs)
     store=PhotoStore(settings.database_path);job,token=store.create(ExploreRequest(lat=0,lon=0),200)
-    async def images(*a): return [{'id':'test'}],{'test':{'status':'ok'}}
+    async def images(*a,**kw): return [{'id':'test'}],{'test':{'status':'ok'}}
     async def pois(*a): return [],{'status':'ok'}
     calls=[]
     async def model(*a): calls.append(1);return {'spots':[],'sources':{},'summary':'No good images'}
@@ -112,7 +112,7 @@ def test_shared_webhook_queues_photo_delivery_without_success_page(tmp_path,monk
     session={'id':'cs_test_abc','client_reference_id':job,'metadata':{'serviceId':'photo-scout'},'currency':'usd','amount_total':200,'mode':'payment','payment_status':'paid','livemode':False}
     real=httpx.AsyncClient
     monkeypatch.setattr(routes.httpx,'AsyncClient',lambda **kw:real(transport=httpx.MockTransport(lambda r:httpx.Response(200,json=session))))
-    async def images(*a): return [{'id':'test'}],{'test':{'status':'ok'}}
+    async def images(*a,**kw): return [{'id':'test'}],{'test':{'status':'ok'}}
     async def pois(*a): return [],{'status':'ok'}
     calls=[]
     async def model(*a): calls.append(1);return {'spots':[],'sources':{},'summary':'No good images'}
@@ -294,7 +294,7 @@ def test_free_website_mode_auth_payment_and_budget(tmp_path,monkeypatch):
     monkeypatch.setenv('PHOTO_SCOUT_HUMAN_FREE_PREVIEW','1')
     assert client.get('/photo-scout/v1/status').json()['humanPriceUsd']=='0.00'
     assert client.get('/photo-scout/v1/status').json()['humanFreePreview'] is True
-    async def images(*a): return [{'id':'test'}],{'test':{'status':'ok'}}
+    async def images(*a,**kw): return [{'id':'test'}],{'test':{'status':'ok'}}
     async def pois(*a): return [],{'status':'ok'}
     calls=[]
     async def model(*a): calls.append(1);return {'spots':[],'sources':{},'summary':'No good images'}
@@ -358,7 +358,7 @@ def test_poi_first_and_signed_google_image_delivery(tmp_path,monkeypatch):
     async def model(*a):
         calls.append('agent');return {'spots':[{'provider':'google-street-view','streetViewReference':'google-streetview://fixture/90','imageUrl':None}], 'sources':{},'summary':'Park'}
     monkeypatch.setattr(routes,'nearby_pois',pois);monkeypatch.setattr(routes,'candidates',images);monkeypatch.setattr(routes,'explore',model)
-    result=client.post('/photo-scout/v1/preview',json={'lat':0,'lon':0},headers={'Authorization':'Bearer private'})
+    result=client.post('/photo-scout/v1/preview',json={'lat':0,'lon':0,'poiQueries':['parks']},headers={'Authorization':'Bearer private'})
     assert result.status_code==200 and calls==['pois','images','agent']
     body=result.json();assert body['candidatePoiCount']==1 and body['discoveryMethod']=='poi-first'
     image_url=body['spots'][0]['imageUrl'];assert 'private' not in image_url
@@ -868,3 +868,85 @@ def test_relevance_filter_and_scoring_share_one_call_and_cache_rejections(tmp_pa
     all_rejected=asyncio.run(visual.explore(settings,payload,rows[:2],{}))
     assert all_rejected['spots']==[] and all_rejected['poiResults']==[]
     assert all_rejected['scoring']['scoredImages']==0 and all_rejected['inspectedImages']==2
+
+
+def test_area_exploration_keeps_images_far_from_pois_and_without_any_poi(monkeypatch):
+    import agentic_services.photo_scout.sources as sources
+    monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_ENABLED','0');monkeypatch.setenv('PHOTO_SCOUT_PANORAMAX_ENABLED','1')
+    monkeypatch.delenv('PHOTO_SCOUT_MAPILLARY_TOKEN',raising=False)
+    async def commons(*args):return [{'id':'commons','provider':'wikimedia-commons','lat':0,'lon':.006,'imageUrl':'commons'}]
+    async def panoramax(*args):return [{'id':'pano','provider':'panoramax','lat':0,'lon':.005,'imageUrl':'pano'}]
+    monkeypatch.setattr(sources,'commons',commons);monkeypatch.setattr(sources,'panoramax',panoramax)
+    poi={'id':'park','lat':0,'lon':0}
+    targeted,_=asyncio.run(sources.candidates(0,0,1000,[poi]));assert targeted==[]
+    broad,_=asyncio.run(sources.candidates(0,0,1000,[poi],visual_exploration=True))
+    assert {r['id'] for r in broad}=={'commons','pano'}
+    assert all(r['allowUnlistedPlace'] and not r.get('poi') for r in broad)
+    empty_catalog,_=asyncio.run(sources.candidates(0,0,1000,[],visual_exploration=True))
+    assert len(empty_catalog)==2
+
+
+def test_visual_exploration_retains_best_angle_for_unnamed_location(tmp_path,monkeypatch):
+    import json
+    from types import SimpleNamespace
+    import agentic_services.photo_scout.scoring as visual
+    settings=Settings(openai_api_key='test',openai_model='test',database_path=tmp_path/'db',base_url='https://api.test')
+    rows=[{'id':str(i),'provider':'google-street-view','lat':0,'lon':.001,
+        'allowUnlistedPlace':True,'imageUrl':f'google-streetview://unnamed/{i*45}',
+        'viewHeadingDegrees':i*45,'poi':{'id':'nearby-cafe','name':'Cafe','lat':0,'lon':0}} for i in range(8)]
+    async def image(url):return 'data:image/jpeg;base64,/9j/dGVzdA=='
+    async def parse(**kw):
+        batch=[json.loads(c['text'])['image'] for c in kw['input'][0]['content'][1:] if c['type']=='input_text']
+        return SimpleNamespace(output_parsed=visual.VisualBatch(assessments=[visual.ImageAssessment(
+            image_id=r['id'],poi_id=None,name='Tree-lined corner',score=int(r['id']),recommend=True,
+            matches_request=True,match_reason='Scenic street scene',visible_evidence='Trees frame the street.',photo_tip='Frame the trees.',uncertainty='Access unknown',confidence='medium') for r in batch]),usage=None)
+    _scoring_client(monkeypatch,parse);monkeypatch.setattr(visual,'image_data',image)
+    result=asyncio.run(visual.explore(settings,ExploreRequest(lat=0,lon=0),rows,{}))
+    assert len(result['poiResults'])==1
+    spot=result['poiResults'][0]
+    assert spot['viewHeadingDegrees']==315 and spot['score']==7
+    assert spot['poi']=={'id':'google:unnamed','lat':0,'lon':.001,'name':'Tree-lined corner','category':'photo-location'}
+    assert spot['namedPoi'] is False and len(result['imageAssessments'])==8
+    strict=[{**r,'allowUnlistedPlace':False} for r in rows]
+    assert asyncio.run(visual.explore(settings,ExploreRequest(lat=0,lon=0,poiQueries=['cafes']),strict,{}))['poiResults']==[]
+
+
+def test_visual_exploration_survives_place_provider_failure(tmp_path,monkeypatch):
+    from fastapi import HTTPException
+    import agentic_services.photo_scout.routes as routes
+    monkeypatch.setenv('PHOTO_SCOUT_ENABLED','1');monkeypatch.setenv('PHOTO_SCOUT_HUMAN_FREE_PREVIEW','1')
+    settings=Settings(openai_api_key='test',openai_model='test',database_path=tmp_path/'db',base_url='https://api.test',service_api_key='private')
+    async def pois(*args):raise HTTPException(503,'Unavailable')
+    calls=[]
+    async def images(lat,lon,radius,targets,**kwargs):
+        calls.append(kwargs);assert targets==[]
+        return [],{'panoramax':{'status':'ok'}}
+    async def model(*args):return {'spots':[],'poiResults':[],'summary':'No images','sources':args[-1]}
+    monkeypatch.setattr(routes,'nearby_pois',pois);monkeypatch.setattr(routes,'candidates',images);monkeypatch.setattr(routes,'explore',model)
+    client=TestClient(create_app(settings=settings));headers={'Authorization':'Bearer private'}
+    broad=client.post('/photo-scout/v1/preview',json={'lat':0,'lon':0,'photoStyles':['nature']},headers=headers)
+    assert broad.status_code==200 and broad.json()['discoveryMethod']=='visual-area-and-poi'
+    assert calls==[{'visual_exploration':True}]
+    strict=client.post('/photo-scout/v1/preview',json={'lat':0,'lon':0,'poiQueries':['cafes']},headers=headers)
+    assert strict.status_code==503
+
+
+def test_google_visual_sampling_covers_area_and_poi_anchors_with_eight_headings(monkeypatch):
+    from agentic_services.photo_scout.sources import google_streetview
+    monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_API_KEY','fixture')
+    requests=[]
+    def handler(request):
+        location=request.url.params['location'];requests.append(location)
+        lat,lon=map(float,location.split(','))
+        return httpx.Response(200,json={'status':'OK','pano_id':'pano'+str(len(requests)),
+            'location':{'lat':lat,'lng':lon},'copyright':'Google'})
+    targets=[{'id':str(i),'lat':0,'lon':.0001*i} for i in range(5)]
+    async def run():
+        async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
+            return await google_streetview(client,0,0,1000,targets,area_sampling=True)
+    rows=asyncio.run(run())
+    assert len(requests)==25 and len(rows)<=200
+    assert any(abs(float(p.split(',')[0]))>.003 for p in requests)
+    assert {r['poi']['id'] for r in rows if r.get('poi')}=={str(i) for i in range(5)}
+    panoramas={r['imageUrl'].split('/')[2] for r in rows}
+    assert all({r['viewHeadingDegrees'] for r in rows if r['imageUrl'].split('/')[2]==p}==set(range(0,360,45)) for p in panoramas)

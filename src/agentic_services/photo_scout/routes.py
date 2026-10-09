@@ -217,9 +217,16 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
             raise HTTPException(422,'Place selection is invalid or expired; find nearby places again')
         return pois,{**data['status'],'count':len(pois),'catalogCount':len(data['pois'])}
 
+    def visual_exploration(payload):
+        return not payload.poiQueries and payload.categories is None and payload.selectedPoiIds is None
+
     async def catalog(payload,allow_expired=False):
-        pois,poi_status=await chosen_pois(payload,allow_expired)
-        rows,statuses=await candidates(payload.lat,payload.lon,payload.radius,pois)
+        visual=visual_exploration(payload)
+        try:pois,poi_status=await chosen_pois(payload,allow_expired)
+        except HTTPException as error:
+            if not visual or error.status_code!=503:raise
+            pois=[];poi_status={'status':'unavailable','role':'optional-place-context'}
+        rows,statuses=await candidates(payload.lat,payload.lon,payload.radius,pois,**({'visual_exploration':True} if visual else {}))
         statuses['google-places' if os.getenv('PHOTO_SCOUT_POI_PROVIDER')=='google-places' else 'openstreetmap']=poi_status
         return rows,statuses,pois
 
@@ -287,7 +294,14 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
             rows,statuses,pois=await catalog(payload,allow_expired)
             if task_id:
                 context=tasks.context('search',task_id) or payload.model_dump()
-                context['nearbyPois']=pois;context['stage']='scoring';tasks.update_context('search',task_id,context)
+                context['nearbyPois']=pois
+                if visual_exploration(payload):
+                    points={}
+                    for row in rows:
+                        key=(round(row['lat'],5),round(row['lon'],5))
+                        points.setdefault(key,{'lat':row['lat'],'lon':row['lon'],'name':row.get('poi',{}).get('name') or 'Photo viewpoint'})
+                    context['sampledViewLocations']=list(points.values())
+                context['stage']='scoring';tasks.update_context('search',task_id,context)
             if rows and not any(s['status']=='ok' for n,s in statuses.items() if n not in ('openstreetmap','google-places')):
                 raise HTTPException(503,'Image sources are temporarily unavailable')
             store.reserve_run()
@@ -299,7 +313,8 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
                 'uncertainty':'No verified camera direction is available.','coordinateWarning':'Candidate POI; imagery not verified.'}
                 for p in pois if p['id'] not in assessed)
             result['nearbyPois']=pois
-            result['discoveryMethod']='poi-first'
+            result['discoveryMethod']='visual-area-and-poi' if visual_exploration(payload) else 'poi-first'
+            result['photoLocationCount']=sum(p.get('poi',{}).get('category')=='photo-location' for p in result.get('poiResults',[]))
             result['candidatePoiCount']=len(pois)
             result['poiProvider']='google-places' if os.getenv('PHOTO_SCOUT_POI_PROVIDER')=='google-places' else 'openstreetmap'
             result['photoStyles']=style_briefs(payload.photoStyles)
@@ -320,7 +335,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
                 'imageAnalysisEnabled':google_enabled(),
                 'dailyImageRequestLimit':max(0,int(os.getenv('PHOTO_SCOUT_GOOGLE_DAILY_IMAGE_LIMIT','0'))) or None},
             'limits':{'radiusMeters':20000,'sampledImages':MAX_SCORED_IMAGES,'inspectedImages':MAX_SCORED_IMAGES,'imagesPerBatch':6,'parallelBatches':4,'viewsPerPanorama':8,'googleQueryLocations':25,'timeoutSeconds':660},
-            'analysisMethod':'fixed-batch-scoring','discoveryMethod':'poi-first','poiProviders':{'openstreetmap':'standby' if os.getenv('PHOTO_SCOUT_POI_PROVIDER')=='google-places' else 'enabled','google-places':'enabled' if os.getenv('PHOTO_SCOUT_POI_PROVIDER')=='google-places' else 'not_connected'},
+            'analysisMethod':'fixed-batch-scoring','discoveryMethod':'intent-based','discoveryMethods':['poi-first','visual-area-and-poi'],'poiProviders':{'openstreetmap':'standby' if os.getenv('PHOTO_SCOUT_POI_PROVIDER')=='google-places' else 'enabled','google-places':'enabled' if os.getenv('PHOTO_SCOUT_POI_PROVIDER')=='google-places' else 'not_connected'},
             'privacy':'Coordinates/preferences are sent to imagery providers/OpenAI; paid reports retained for 30 days.'}
 
     @router.post('/photo-scout/v1/candidates')
@@ -328,7 +343,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
         require_api(authorization)
         source_limit()
         rows,statuses,pois=await catalog(payload)
-        return {'candidates':rows,'sources':statuses,'nearbyPois':pois,'discoveryMethod':'poi-first','visuallyAnalyzed':False}
+        return {'candidates':rows,'sources':statuses,'nearbyPois':pois,'discoveryMethod':'visual-area-and-poi' if visual_exploration(payload) else 'poi-first','visuallyAnalyzed':False}
 
     @router.post('/photo-scout/v1/discover')
     async def discover(payload: ExploreRequest,request: Request,response: Response,authorization: str | None=Header(None)):

@@ -222,13 +222,21 @@ def google_query_points(lat,lon,radius):
     return result
 
 
-async def google_streetview(client, lat, lon, radius, targets=None):
+async def google_streetview(client, lat, lon, radius, targets=None, area_sampling=False):
     """Bounded outdoor panorama discovery. Never put the credential in candidate URLs."""
     import asyncio
     import re
     from urllib.parse import urlencode
     key=os.getenv('PHOTO_SCOUT_GOOGLE_API_KEY','')
-    points=[(p["lat"],p["lon"]) for p in targets] if targets is not None else google_query_points(lat,lon,radius)
+    if area_sampling:
+        # Reserve most samples for the region, plus a few named POI anchors.
+        anchors=list(targets or [])[:5]
+        area_points=google_query_points(lat,lon,radius)[:25-len(anchors)]
+        points=area_points+[(p['lat'],p['lon']) for p in anchors]
+        target_rows=[None]*len(area_points)+anchors
+    else:
+        points=[(p['lat'],p['lon']) for p in targets] if targets is not None else google_query_points(lat,lon,radius)
+        target_rows=list(targets) if targets is not None else [None]*len(points)
     slots=asyncio.Semaphore(5)
     async def search(p):
         async with slots:
@@ -248,16 +256,17 @@ async def google_streetview(client, lat, lon, radius, targets=None):
         if not math.isfinite(lat2) or not math.isfinite(lon2) or abs(lat2)>85 or abs(lon2)>180: continue
         if distance((lat,lon),(lat2,lon2))>radius: continue
         if pano in seen:
-            if targets is not None:
-                poi=targets[index]
+            if target_rows[index] is not None:
+                poi=target_rows[index]
                 for row in rows:
                     if row['imageUrl'].startswith(f'google-streetview://{pano}/'):
-                        if all(p['id']!=poi['id'] for p in row['poiCandidates']):row['poiCandidates'].append(poi)
+                        if all(p['id']!=poi['id'] for p in row.get('poiCandidates',[])):
+                            row.setdefault('poiCandidates',[]).append(poi);row.setdefault('poi',poi)
             continue
-        if targets is None and any(distance((lat2,lon2),p)<spacing for p in locations): continue
+        if target_rows[index] is None and any(distance((lat2,lon2),p)<spacing for p in locations): continue
         seen.add(pano)
         locations.append((lat2,lon2))
-        poi=targets[index] if targets is not None else None
+        poi=target_rows[index]
         # Eight compass headings cover 360 degrees with overlapping views.
         views=[(heading,0) for heading in range(0,360,45)]
         for heading,pitch in views:
@@ -305,15 +314,15 @@ def diverse_sample(rows,limit=12):
     return selected
 
 
-async def candidates(lat,lon,radius,pois=None):
+async def candidates(lat,lon,radius,pois=None,visual_exploration=False):
     import asyncio
     statuses={}; rows=[]
-    if pois == []: return [],statuses
+    if pois == [] and not visual_exploration: return [],statuses
     async with httpx.AsyncClient(timeout=25,headers=HEADERS,follow_redirects=False) as client:
         providers=[('wikimedia-commons',commons)]
         if google_enabled():
             async def google(client,lat,lon,radius):
-                return await google_streetview(client,lat,lon,radius,targets=pois)
+                return await google_streetview(client,lat,lon,radius,targets=pois,**({'area_sampling':True} if visual_exploration else {}))
             providers.append(('google-street-view',google))
         if os.getenv('PHOTO_SCOUT_PANORAMAX_ENABLED','1')=='1':
             providers.append(('panoramax',panoramax))
@@ -327,17 +336,18 @@ async def candidates(lat,lon,radius,pois=None):
                 statuses[name]={'status':'ok','eligibleImages':len(result)}; rows+=result
                 if name=='google-street-view':
                     statuses[name].update(samplingSpacingMeters=google_sampling_spacing(radius),maxViewsPerLocation=VIEWS_PER_PANORAMA,
-                        queriedLocations=len(pois) if pois is not None else len(google_query_points(lat,lon,radius)))
+                        queriedLocations=(min(25,len(google_query_points(lat,lon,radius))+min(5,len(pois or []))) if visual_exploration else len(pois) if pois is not None else len(google_query_points(lat,lon,radius))),samplingMode='area-and-poi' if visual_exploration else 'poi' if pois is not None else 'area')
     valid=[]
     for row in rows:
         d=distance((lat,lon),(row['lat'],row['lon']))
         if d<=radius:
+            if visual_exploration:row['allowUnlistedPlace']=True
             if pois is not None and not row.get('poi'):
-                if not pois: continue
-                nearest=min(pois,key=lambda p:distance((row['lat'],row['lon']),(p['lat'],p['lon'])))
-                separation=distance((row['lat'],row['lon']),(nearest['lat'],nearest['lon']))
-                if separation>250: continue
-                row['poi']=nearest;row['poiCandidates']=[p for p in pois if distance((row['lat'],row['lon']),(p['lat'],p['lon']))<=250];row['poiDistanceMeters']=round(separation)
+                nearby=[p for p in pois if distance((row['lat'],row['lon']),(p['lat'],p['lon']))<=250]
+                if not nearby and not visual_exploration:continue
+                if nearby:
+                    nearest=min(nearby,key=lambda p:distance((row['lat'],row['lon']),(p['lat'],p['lon'])))
+                    row['poi']=nearest;row['poiCandidates']=nearby;row['poiDistanceMeters']=round(distance((row['lat'],row['lon']),(nearest['lat'],nearest['lon'])))
             row['distanceMeters']=round(d); valid.append(row)
     # Keep every angle of each discovered Google panorama; a global 24-image
     # cut previously discarded most alternate views before the model saw them.
