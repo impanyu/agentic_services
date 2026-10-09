@@ -181,7 +181,8 @@ def test_google_candidates_keep_angles_without_credentials(monkeypatch):
             return await google_streetview(c,0,0,1000)
     rows=asyncio.run(run())
     assert len(rows)==8 and {r['viewHeadingDegrees'] for r in rows}==set(range(0,360,45))
-    assert all(r['viewFovDegrees']==120 for r in rows)
+    assert all(r['viewFovDegrees']==60 for r in rows)
+    assert all(r['imageUrl'].endswith('/0/60') and 'fov=60' in r['sourceUrl'] for r in rows)
     assert {r['viewPitchDegrees'] for r in rows}=={0}
     assert all('pitch=0' in r['sourceUrl'] for r in rows)
     assert 'secret-fixture' not in json.dumps(rows)
