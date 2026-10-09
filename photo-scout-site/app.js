@@ -96,6 +96,15 @@ async function switchMapStyle(style){
 const mapMenus=[...document.querySelectorAll('.map-overlay-controls details')];
 for(const menu of mapMenus)menu.addEventListener('toggle',()=>{if(!menu.open)return;for(const other of mapMenus)if(other!==menu)other.open=false;controls.open=false;});
 controls.addEventListener('toggle',()=>{if(controls.open)for(const menu of mapMenus)menu.open=false;});
+function closeMenusOutside(target){
+ for(const menu of mapMenus)if(menu.open&&!menu.contains(target))menu.open=false;
+ if(controls.open&&!controls.contains(target))controls.open=false;
+ if(!target.closest?.('.leaflet-control-layers'))overlayControl.collapse?.();
+}
+// Capture before Leaflet stops propagation, including taps on the map.
+document.addEventListener('pointerdown',event=>closeMenusOutside(event.target),true);
+document.addEventListener('keydown',event=>{if(event.key==='Escape'){for(const menu of mapMenus)menu.open=false;controls.open=false;overlayControl.collapse?.();}});
+
 if(window.ResizeObserver)new window.ResizeObserver(entries=>{document.body.style.setProperty('--scout-dock-height',entries[0].target.getBoundingClientRect().height+'px');}).observe(document.querySelector('.scout-dock'));
 document.querySelectorAll('[data-map-style]').forEach(b=>b.addEventListener('click',()=>switchMapStyle(b.dataset.mapStyle)));
 switchMapStyle('minimal');
