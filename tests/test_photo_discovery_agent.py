@@ -78,3 +78,14 @@ def test_budget_still_allows_submission(tmp_path):
     d=state(tmp_path);d.calls=d.max_calls
     with pytest.raises(ValueError):d.tick('find_streetview')
     d.tick('submit_candidates');assert d.submit('Budget reached')['submitted']
+
+
+def test_spatial_context_distinguishes_land_water_and_hole(tmp_path):
+    d=state(tmp_path)
+    outer=[[-96.001,39.999],[-95.999,39.999],[-95.999,40.001],[-96.001,40.001],[-96.001,39.999]]
+    inner=[[-96.0001,39.9999],[-95.9999,39.9999],[-95.9999,40.0001],[-96.0001,40.0001],[-96.0001,39.9999]]
+    d.features=[{'id':'lake','kind':'water','tags':{},'geometryParts':[outer],'memberRoles':[]}]
+    assert d.spatial_context(40,-96)['nearbyFeatures'][0]['insideMappedWater'] is True
+    assert d.spatial_context(40,-95.998)['nearbyFeatures'][0]['insideMappedWater'] is False
+    d.features[0].update(geometryParts=[outer,inner],memberRoles=['outer','inner'])
+    assert d.spatial_context(40,-96)['nearbyFeatures'][0]['insideMappedWater'] is False

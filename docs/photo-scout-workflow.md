@@ -22,8 +22,8 @@ Photo Scout is a deterministic application pipeline. Models do not choose tools 
 
 Enable `PHOTO_SCOUT_EXPLORER_ENABLED=1`; set `PHOTO_SCOUT_EXPLORER_MODEL`
 (default `gpt-6.1-sol`). Scoring keeps `PHOTO_SCOUT_MODEL` (currently Luna).
-The caller-owned Agents SDK runtime uses nine tools: `search_places`,
-`query_geography`, `view_map`, `find_streetview`, `search_photos`, `inspect_view`,
+The caller-owned Agents SDK runtime uses ten tools: `search_places`,
+`query_geography`, `analyze_position`, `view_map`, `find_streetview`, `search_photos`, `inspect_view`,
 `manage_candidate`, `list_candidates`, and terminal `submit_candidates`.
 
 The explorer receives the original user query plus resolved location, radius,
