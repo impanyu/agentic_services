@@ -552,7 +552,7 @@ def test_fixed_pipeline_reports_partial_failures(tmp_path,monkeypatch):
     result=asyncio.run(visual.explore(settings,ExploreRequest(lat=0,lon=0),_scoring_rows(),{}))
     assert len(result['spots'])==3 and result['inspectedImages']==7
     assert all(s['recommend'] is False for s in result['spots'])
-    assert result['scoring']=={'candidateImages':13,'downloadedImages':12,'scoredImages':7,'downloadFailedImages':1,'scoringFailedImages':5,'batches':3,'cachedImages':0,'newlyScoredImages':7}
+    assert result['scoring']=={'checkedImages':7,'filteredOutImages':0,'matchedImages':7,'candidateImages':13,'downloadedImages':12,'scoredImages':7,'downloadFailedImages':1,'scoringFailedImages':5,'batches':3,'cachedImages':0,'newlyScoredImages':7}
     assert len(result['imageAssessments'])==7 and 'could not be scored' in result['coverage']
 
 
@@ -835,3 +835,36 @@ def test_cafe_filter_is_applied_at_overpass_source(monkeypatch):
     monkeypatch.setattr(sources.httpx,'AsyncClient',lambda **kw:real(transport=httpx.MockTransport(handler)))
     rows,status=asyncio.run(sources.nearby_pois(0,0,1000,['cafe']))
     assert [p['name'] for p in rows]==['Cafe']
+
+
+def test_relevance_filter_and_scoring_share_one_call_and_cache_rejections(tmp_path,monkeypatch):
+    import json
+    from types import SimpleNamespace
+    import agentic_services.photo_scout.scoring as visual
+    settings=Settings(openai_api_key='test',openai_model='test',database_path=tmp_path/'db',base_url='https://api.test')
+    rows=_scoring_rows()[:3]
+    for row,provider in zip(rows,['wikimedia-commons','panoramax','google-street-view']):row['provider']=provider
+    calls=[]
+    async def image(url):return 'data:image/jpeg;base64,/9j/dGVzdA=='
+    async def parse(**kw):
+        calls.append(kw)
+        batch=[json.loads(c['text'])['image'] for c in kw['input'][0]['content'][1:] if c['type']=='input_text']
+        choices=[visual.ImageAssessment(image_id=r['id'],poi_id=r['poi']['id'],name=r['poi']['name'],
+            score=None if r['id']!='2' else 8,recommend=False,matches_request=r['id']=='2',
+            match_reason='A landscape, not a cafe.' if r['id']!='2' else 'The requested cafe is visible.',
+            visible_evidence='Visible scene.',photo_tip='',uncertainty='',confidence='high') for r in batch]
+        return SimpleNamespace(output_parsed=visual.VisualBatch(assessments=choices),usage=None)
+    _scoring_client(monkeypatch,parse);monkeypatch.setattr(visual,'image_data',image)
+    payload=ExploreRequest(lat=0,lon=0,poiQueries=['cafes'],scoringIntent='cafes')
+    result=asyncio.run(visual.explore(settings,payload,rows,{}))
+    assert len(calls)==1 and result['inspectedImages']==3
+    assert result['scoring']['filteredOutImages']==2 and result['scoring']['scoredImages']==1
+    assert len(result['poiResults'])==1 and result['poiResults'][0]['score']==8
+    rejected=[a for a in result['imageAssessments'] if not a['matches_request']]
+    assert len(rejected)==2 and all(a['score'] is None and not a['eligibleForRecommendation'] and a['exclusionReason'] for a in rejected)
+    second=asyncio.run(visual.explore(settings,payload,rows,{}))
+    assert len(calls)==1 and second['scoring']['cachedImages']==3
+    assert second['scoring']['filteredOutImages']==2
+    all_rejected=asyncio.run(visual.explore(settings,payload,rows[:2],{}))
+    assert all_rejected['spots']==[] and all_rejected['poiResults']==[]
+    assert all_rejected['scoring']['scoredImages']==0 and all_rejected['inspectedImages']==2
