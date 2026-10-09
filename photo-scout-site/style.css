@@ -166,3 +166,5 @@ html:has(body.photo-app),body.photo-app{height:100%;overflow:hidden}.photo-app m
 .place-selfie-heading{margin:0;padding:10px 12px;font-size:12px;font-weight:700}.photo-history .history-menu h3{font-size:14px;margin:0 0 6px}.map-overlay-controls .search-history>summary{white-space:nowrap}
 
 @media(max-width:760px){.map-stage:has(.leaflet-popup) .map-overlay-controls{visibility:hidden;pointer-events:none}}
+
+.history-item .photo-place-link{display:block;padding:6px 0;border:0;background:transparent;color:#795397;font-size:12px;font-weight:600;text-decoration:underline;text-underline-offset:3px;text-align:left}.history-item .photo-place-link:disabled{color:#887b92;text-decoration:none}.photo-history .history-item{align-items:flex-start}.photo-history .history-item>.history-copy{display:block}.photo-history .history-item>button{flex:none;margin-top:3px}.photo-background-info,.photo-background-coordinates{line-height:1.5}
