@@ -200,11 +200,12 @@ function focusPhotoPlace(task){
  map.setView([pos.lat,pos.lon],17);marker.openPopup();
 }
 function refreshPlaceSelfies(box){
- const photos=selfiesAtPlace(box.photoSpot),signature=photos.map(t=>t.id).join(',');
+ const photos=selfiesAtPlace(box.photoSpot),signature=(tasksReady?'ready:':'loading:')+photos.map(t=>t.id).join(',');
  if(box.dataset.photos===signature)return;
- box.dataset.photos=signature;box.hidden=!photos.length;
+ box.dataset.photos=signature;box.hidden=false;
  box.replaceChildren(node('p',`Your selfies here (${photos.length})`,'place-selfie-heading'));
  const list=node('div',null,'place-selfie-list');
+ if(!photos.length)list.append(node('p',tasksReady?'No saved selfies for this place in your account or guest session.':'Loading your saved selfies…','place-selfie-empty'));
  for(const task of photos){
   const button=node('button',null,'place-selfie-link');button.type='button';
   const style=portraitStyles.find(s=>s[0]===task.context?.generation?.style)?.[1];
