@@ -258,3 +258,21 @@ test('finishing the selected search automatically opens its shortlist',async()=>
  await f.restoreWith([{...task,state:'complete'}],{current:{state:'complete',context,result:{spots:[],summary:'Done'}}});
  assert.equal(f.element('results').hidden,false);assert.equal(f.element('toggle-results').disabled,false);
 });
+
+test('Google popup refreshes expired previews, bounds retries and recovers on reopening',async()=>{
+ const source=readFileSync('photo-scout-site/app.js','utf8');
+ const handlers={},image={dataset:{},addEventListener(type,fn){handlers[type]=fn;},replaceWith(){throw Error('Preview image must remain retryable');}};
+ const box={dataset:{},photoSpot:{provider:'google-street-view',sourceUrl:'https://www.google.com/maps/@?pano=test',imageUrl:'expired'},append(){},querySelector(){return image;}};
+ const popup={querySelectorAll(){return [box];}};let calls=0,fail=false;
+ const context={node(){return {};},async json(){calls++;if(fail)throw Error('Transient failure');return {imageUrls:['fresh-'+calls]};}};
+ vm.runInNewContext(source.slice(source.indexOf('function loadPopupPhoto('),source.indexOf('function photoBackgroundInfo'))+
+ source.slice(source.indexOf('async function refreshThumbnail('),source.indexOf('async function json('))+';this.open=loadPopupPhoto;',context);
+ const settle=async()=>{await Promise.resolve();await Promise.resolve();};
+ context.open(popup);await settle();assert.equal(image.src,'fresh-1');
+ handlers.error();await settle();assert.equal(image.src,'fresh-2');
+ handlers.error();await settle();assert.equal(calls,2);assert.equal(box.previewStatus.hidden,false);
+ context.open(popup);await settle();assert.equal(image.src,'fresh-3');handlers.load();assert.equal(box.previewStatus.hidden,true);
+ fail=true;context.open(popup,true);await settle();assert.equal(image.hidden,true);
+ fail=false;context.open(popup);await settle();assert.equal(image.src,'fresh-5');handlers.load();assert.equal(image.hidden,false);
+ box.photoSpot.sourceUrl+='&heading=90';context.open(popup,true);await settle();assert.equal(image.src,'fresh-6');
+});

@@ -79,3 +79,13 @@ def test_city_geocoder_prefers_named_city_point_to_boundary_centroid(monkeypatch
     features=[{'geometry':{'coordinates':[-87.57,41.72]},'properties':{'name':'Chicago','osm_key':'boundary'}},{'geometry':{'coordinates':[-87.62,41.87]},'properties':{'name':'Chicago','osm_key':'place','osm_value':'city'}}]
     monkeypatch.setattr(intent.httpx,'AsyncClient',lambda **kw:real(transport=httpx.MockTransport(lambda r:httpx.Response(200,json={'features':features}))))
     assert asyncio.run(intent.geocode('Chicago, Illinois, USA'))[0]['lat']==41.87
+
+@pytest.mark.parametrize('query',['caffe','café','coffee shop','咖啡店'])
+def test_short_cafe_query_filters_category_without_geocoding(monkeypatch,query):
+    async def parsed(settings,payload):return plan(locationQuery='Caffe',useMapCenter=False)
+    async def geocode(query):raise AssertionError('A category is not an address')
+    monkeypatch.setattr(intent,'parse_intent',parsed);monkeypatch.setattr(intent,'geocode',geocode)
+    result=asyncio.run(intent.resolve_intent(None,intent.IntentRequest(query=query,lat=37.84,lon=-122.51)))
+    assert result['poiCategories']==['cafe']
+    assert result['locations'][0]['lat']==37.84
+    assert 'Cafe' in result['preferences']

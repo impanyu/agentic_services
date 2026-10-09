@@ -817,3 +817,17 @@ def test_agent_discovery_requires_paid_order_and_retains_token_protected_report(
     store=VerificationStore(settings.database_path)
     assert store.get_order_with_token(order,token)['receipt']['signature']
     assert store.get_order_with_token(order,'stranger') is None
+
+def test_cafe_filter_is_applied_at_overpass_source(monkeypatch):
+    import agentic_services.photo_scout.sources as sources
+    real=httpx.AsyncClient
+    def handler(request):
+        query=request.url.params['data']
+        assert '["amenity"~"^(cafe)$"]' in query
+        assert 'historic' not in query and 'viewpoint' not in query
+        return httpx.Response(200,json={'elements':[
+            {'type':'node','id':1,'lat':0,'lon':0.001,'tags':{'name':'Cafe','amenity':'cafe'}},
+            {'type':'node','id':2,'lat':0,'lon':0.002,'tags':{'name':'Fort','historic':'fort'}}]})
+    monkeypatch.setattr(sources.httpx,'AsyncClient',lambda **kw:real(transport=httpx.MockTransport(handler)))
+    rows,status=asyncio.run(sources.nearby_pois(0,0,1000,['cafe']))
+    assert [p['name'] for p in rows]==['Cafe']

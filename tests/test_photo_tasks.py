@@ -293,3 +293,23 @@ def test_hidden_poi_is_private_to_one_history_keeps_report_and_moves_to_account(
     assert account.post(path,json=body,headers=headers).status_code==403
     assert account.post(path,json=body|{'hidden':False},headers=headers|{'X-CSRF-Token':'csrf'}).json()['hiddenPois']=={}
     assert account.get('/photo-scout/v1/report/'+job).json()['result']['spots']==report['spots']
+
+def test_search_category_reaches_poi_lookup_and_excludes_unrelated_places(tmp_path,monkeypatch):
+    settings,app,client=setup(tmp_path,monkeypatch);seen=[]
+    async def resolve(settings,payload):
+        return {'locations':[{'lat':37.84,'lon':-122.51,'label':'Selected map location'}],
+                'radiusMeters':5000,'limit':3,'photoStyles':['vintage'],'poiCategories':['cafe'],
+                'preferences':'Vintage cafe photography','explanation':'Nearby cafes'}
+    async def nearby(lat,lon,radius,categories):
+        seen.append(categories);return [],{'status':'ok'}
+    async def candidates(*args,**kwargs):return [],{}
+    async def explore(settings,payload,*args):
+        assert payload.categories==['cafe'] and 'Vintage' in payload.preferences
+        return {'spots':[],'summary':'No cafes with verified imagery'}
+    monkeypatch.setattr(routes,'resolve_intent',resolve);monkeypatch.setattr(routes,'nearby_pois',nearby)
+    monkeypatch.setattr(routes,'candidates',candidates);monkeypatch.setattr(routes,'explore',explore)
+    client.post('/photo-scout/v1/jobs',headers={'X-Request-Token':'c'*32},json={'lat':37.84,'lon':-122.51,'query':'caffe'})
+    assert asyncio.run(app.state.process_photo_preview())
+    assert seen==[['cafe']]
+    context=client.get('/photo-scout/v1/tasks').json()['items'][0]['context']
+    assert context['categories']==['cafe']

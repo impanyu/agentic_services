@@ -2,12 +2,14 @@
 from __future__ import annotations
 import json
 import math
+import re
 from typing import Literal
 import httpx
 from openai import AsyncOpenAI
 from pydantic import BaseModel,Field
 
 Mood=Literal['nature','urban','vintage','iconic','artistic','waterside','minimal','adventure']
+PoiCategory=Literal['viewpoint','park','attraction','museum','artwork','historic','nature','recreation','cafe','restaurant','bar','shop']
 class IntentRequest(BaseModel):
     query: str=Field(min_length=1,max_length=1000)
     lat: float=Field(ge=-85,le=85,allow_inf_nan=False)
@@ -17,6 +19,7 @@ class IntentRequest(BaseModel):
     photoStyles: list[Mood]=Field(default_factory=list,max_length=8)
     preferences: str=Field(default='',max_length=500)
 class PhotoIntent(BaseModel):
+    poiCategories: list[PoiCategory]=Field(default_factory=list,max_length=8)
     locationQuery: str | None=Field(max_length=200)
     useMapCenter: bool
     photoStyles: list[Mood]=Field(max_length=8)
@@ -27,6 +30,7 @@ class PhotoIntent(BaseModel):
     clarification: str | None=Field(max_length=300)
 INSTRUCTIONS='''Interpret a user's place or photography question for Photo Scout.
 The query text is authoritative. Supplied UI parameters (center, radius, limit, photoStyles, preferences) are defaults only. Any parameter explicitly mentioned in query MUST override a conflicting UI value; preserve UI values only for parameters omitted from query. Example: UI radius=1000, limit=3, photoStyles=[nature], query="urban shots in Paris within 20 km, top 5" => Paris, radiusMeters=20000, limit=5, photoStyles=[urban]. An explicit place overrides the selected map center. If the user requests a city-wide search without a numeric radius, use 20000 meters.
+Extract requested types of places into poiCategories independently of photo mood: cafe (caffe, café, coffee shop, 咖啡店), restaurant, bar, shop, park, museum, artwork, historic, viewpoint, nature, attraction, recreation. These are SOURCE filters, not just preferences. Use [] if no specific type is requested. A generic type like "caffe" or "coffee shops near me" is NOT a geocoding place name: useMapCenter=true, locationQuery=null, poiCategories=["cafe"], and preferences describing cafe photography. For "cafes in Paris", geocode Paris and filter cafe. Preserve explicitly requested photo mood in preferences as well as photoStyles.
 Extract one canonical geocoding locationQuery, with city/country when stated. For translated place names, prefer the common English or local-language spelling recognized by map data: e.g. 巴黎铁塔 -> Eiffel Tower, Paris, France. Do not send a literal translated nickname when a canonical name is known.
 NEVER invent latitude/longitude. A deterministic geocoder resolves explicit place names.
 Use useMapCenter=true only for 'here', 'near me', selected pin/map, or photo requests without an explicit place. The supplied center is a map selection, not necessarily device location.
@@ -62,6 +66,12 @@ async def geocode(query):
 async def resolve_intent(settings,payload):
     intent=await parse_intent(settings,payload)
     out=intent.model_dump()
+    # Short category-only queries must not be mistaken for named addresses.
+    if re.fullmatch(r'\s*(?:caff[eè]|caf[eé]|coffee(?:\s+shops?)?|咖啡(?:店|馆|館)?)\s*[.!?。！？]?\s*',payload.query,re.IGNORECASE):
+        out.update(poiCategories=['cafe'],locationQuery=None,useMapCenter=True,
+                   preferences=('Cafe and coffee shop photography; '+intent.preferences)[:500],
+                   explanation='Find nearby cafes and coffee shops within the selected search radius.')
+        intent=intent.model_copy(update={'locationQuery':None,'useMapCenter':True})
     out.update({'locations':[],'visuallyAnalyzed':False})
     out['clarification']=None
     if intent.locationQuery:

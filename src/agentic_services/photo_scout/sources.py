@@ -422,12 +422,16 @@ POI_CATEGORY_FILTERS = {
     'historic': {'historic': None},
     'nature': {'natural': ['beach','peak','water','wood']},
     'recreation': {'leisure': ['recreation_ground']},
+    'cafe': {'amenity': ['cafe']},
+    'restaurant': {'amenity': ['restaurant','fast_food']},
+    'bar': {'amenity': ['bar','pub','biergarten']},
+    'shop': {'shop': None},
 }
 
 
 async def nearby_pois(lat,lon,radius,categories=None):
     # Apply category filters at the source, before the bounded POI selection.
-    allowed=list(POI_CATEGORY_FILTERS) if categories is None else categories
+    allowed=[c for c in POI_CATEGORY_FILTERS if c not in {'cafe','restaurant','bar','shop'}] if categories is None else categories
     points=[(lat,lon)]
     if radius>5000:
         dy=radius*.65/111320;dx=dy/max(.01,math.cos(math.radians(lat)))
