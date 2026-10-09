@@ -189,3 +189,7 @@ html:has(body.photo-app),body.photo-app{height:100%;overflow:hidden}.photo-app m
 .photo-history-row{display:flex;gap:8px;align-items:center;border-bottom:1px solid #eee7ef}
 .photo-history-row .photo-history-entry{flex:1;min-width:0;border-bottom:0}
 .history-remove,.photo-history-row .history-remove{padding:7px 9px;border:1px solid #ddd0e8;border-radius:8px;background:#f4edf9;color:#71508a;font-size:11px;cursor:pointer;flex-shrink:0}
+/* An expanded menu covers subsequent controls rather than sharing their layer. */
+.map-overlay-controls:has(>details[open]){z-index:900}
+.map-overlay-controls>details[open]{z-index:900}
+.map-overlay-controls .history-menu{background:#fffdf8}
