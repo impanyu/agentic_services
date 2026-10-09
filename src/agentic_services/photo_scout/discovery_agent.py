@@ -103,7 +103,7 @@ def geometry_parts(element):
     for line,role in lines:
         part=[]
         for point in line:
-            if 'lon' in point and 'lat' in point:
+            if isinstance(point,dict) and point.get('lon') is not None and point.get('lat') is not None:
                 part.append([point['lon'],point['lat']])
             elif part:
                 parts.append(part);roles.append(role);part=[]

@@ -107,7 +107,7 @@ def test_usage_audit_checkpoint_does_not_break_submission(tmp_path):
 
 def test_cropped_geometry_does_not_invent_connecting_segments():
     from agentic_services.photo_scout.discovery_agent import geometry_parts
-    parts,roles=geometry_parts({'type':'relation','members':[{'role':'outer','geometry':[{'lon':1,'lat':2},{'lon':2,'lat':2},{},{'lon':5,'lat':6}]}]})
+    parts,roles=geometry_parts({'type':'relation','members':[{'role':'outer','geometry':[{'lon':1,'lat':2},{'lon':2,'lat':2},None,{}, {'lon':5,'lat':6}]}]})
     assert parts==[[[1,2],[2,2]],[[5,6]]] and roles==['outer','outer']
 
 
