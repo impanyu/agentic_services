@@ -76,13 +76,18 @@ Do not mechanically download all eight compass directions everywhere. Inspect pr
 angles first, use the map/imagery to decide where to look next. Spend the budget on evidence.
 Use manage_candidate to add, update or remove inspected views and list_candidates to review.
 You decide where to explore, which tools to use, and when evidence is sufficient.
-Before normal submission, inspect at least 24 different actual images. Use a diverse
-set of promising locations and directions relevant to the request. Repeated views
-and failed downloads do not count; do not inflate coverage by only zooming the same
-composition. Prefer inspect_batch to compare up to 8 images across different places
-and sources in one model turn; inspect_views compares up to 8 directions at one place.
-If useful imagery is unavailable or the budget prevents reaching 24, explicitly
-explain the shortfall and what you tried in submit_candidates; never fabricate images.
+Aim to RETURN roughly 24 DISTINCT MATCHING PLACES when the region and imagery
+support that many. This is a best-effort breadth goal, not a minimum number of images
+or a hard quota. Collect inspected evidence for each retained place. Multiple headings,
+zooms, repeated views or photos of the same landmark do not count as extra places.
+Prioritize finding and visually verifying more distinct relevant places before spending
+many inspections fine-tuning a few favorites. Use batch searches, panorama lookups and
+inspect_batch across places to expand coverage efficiently. Retain modest-quality
+matching places with honest weaknesses; downstream scoring will rank them.
+If the region has fewer evidenced matching places, imagery is insufficient, or budget
+limits further useful work, return fewer and explain why. Never add unrelated places,
+unsupported locations or duplicate angles to reach the target. There is NO image-count
+minimum. View as many images as useful to identify distinct matching places.
 Return a collection of evidenced matching places, not a tiny top-N selection.
 Finding two or three good views is not by itself a reason to stop. Before refining
 one location repeatedly, consider whether inspecting other promising known places
@@ -101,9 +106,8 @@ point or trying other headings/fov. Use inspect_views to compare selected direct
 efficiently when useful; choose them from geographic and visual evidence, not blind sweeps.
 Balance breadth across locations with depth at promising viewpoints. Spend more effort
 where another lookup is likely to improve the shortlist; avoid repetitive low-value calls.
-Consider another imagery source when coverage is weak. No minimum count of locations,
-directions or candidates is required, and no fixed exploration sequence applies.
-The normal image-inspection target is 24 distinct images as described above.
+Consider another imagery source when coverage is weak. The 24-place goal is
+best effort within the existing budget, not a mandatory quota or fixed sequence.
 Use record_view_decisions and review_exploration when useful to retain visual comparisons,
 rejection reasons and unresolved coverage. These tools are optional aids, not prerequisites.
 Make your own stopping decision based on the user request, evidence, remaining uncertainty
@@ -242,7 +246,17 @@ class Discovery:
         if self.progress:
             self.progress({'stage':stage,'nearbyPois':list(self.pois.values()),
                 'sampledViewLocations':[{'lat':r['lat'],'lon':r['lon'],'name':r['title']} for r in self.views.values()],
-                'exploration':{'toolCalls':self.calls,'inspectedViews':self.images,'distinctInspectedImages':len(self.inspected),'inspectionTarget':24,'candidates':len(self.selected),'lastAction':next((r['tool'] for r in reversed(self.audit) if 'tool' in r),None)}})
+                'exploration':{'toolCalls':self.calls,'inspectedViews':self.images,'distinctInspectedImages':len(self.inspected),'candidatePlaceTarget':24,'candidatePlaces':self.candidate_place_count(),'candidates':len(self.selected),'lastAction':next((r['tool'] for r in reversed(self.audit) if 'tool' in r),None)}})
+
+    def candidate_place_count(self):
+        keys=set()
+        for view_id in self.selected:
+            row=self.views[view_id];poi=row.get('poi') or {}
+            if poi.get('id'):key=('poi',poi['id'])
+            elif row.get('provider')=='google-street-view':key=('pano',row['imageUrl'].split('/')[2])
+            else:key=('position',round(row['lat'],4),round(row['lon'],4))
+            keys.add(key)
+        return len(keys)
 
     def point(self, lat, lon):
         if not all(math.isfinite(v) for v in (lat,lon)) or abs(lat)>85 or abs(lon)>180:
@@ -400,7 +414,7 @@ class Discovery:
         self.images+=1
         data=await sources.image_data(row['imageUrl'])
         self.views[row['id']]=row;self.inspected.add(row['id']);self.checkpoint()
-        return [ToolOutputText(text=json.dumps({'view':self.public(row),'remainingImages':self.max_images-self.images,'distinctInspectedImages':len(self.inspected),'inspectionTarget':24})),ToolOutputImage(image_url=data,detail='high')]
+        return [ToolOutputText(text=json.dumps({'view':self.public(row),'remainingImages':self.max_images-self.images,'distinctInspectedImages':len(self.inspected),'candidatePlaceTarget':24,'candidatePlaces':self.candidate_place_count()})),ToolOutputImage(image_url=data,detail='high')]
 
     async def inspect_batch(self, items):
         if not 1<=len(items)<=8:raise ValueError('Choose 1–8 images')
@@ -537,7 +551,7 @@ class Discovery:
             """Review candidate evidence and remaining exploration budgets."""
             self.tick('list_candidates')
             return {'candidates':[{'view':self.public(self.views[k]),'reason':v} for k,v in self.selected.items()],
-                'remainingToolCalls':max(0,self.max_calls-self.calls),'remainingImages':self.max_images-self.images}
+                'candidatePlaces':self.candidate_place_count(),'candidatePlaceTarget':24,'remainingToolCalls':max(0,self.max_calls-self.calls),'remainingImages':self.max_images-self.images}
         @scout_tool
         def record_view_decisions(view_ids:list[str],decision:str,reason:str):
             """Record keep/reject evidence for inspected views. Kept views must also be added with manage_candidate."""
@@ -631,7 +645,7 @@ async def discover(settings,payload,job_id=None,progress=None,initial_pois=None,
             def instructions(ctx,agent):
                 remaining=max(0,state.max_calls-state.calls)
                 turns_left=max(0,state.max_turns-ctx.usage.requests)
-                return INSTRUCTIONS+f'\nModel turns remaining: {turns_left}. Distinct images inspected: {len(state.inspected)}; normal inspection target: 24. Remaining tools: {remaining}; images: {state.max_images-state.images}; candidates: {len(state.selected)}. '+('Budget is nearly exhausted. Prioritize submitting the current candidates with an honest coverage explanation.' if remaining<8 or turns_left<=6 or time.monotonic()-state.started>state.max_seconds-70 else '')
+                return INSTRUCTIONS+f'\nModel turns remaining: {turns_left}. Distinct images inspected: {len(state.inspected)}; Best-effort distinct place target: 24; retained distinct places: {state.candidate_place_count()}. Remaining tools: {remaining}; images: {state.max_images-state.images}; candidates: {len(state.selected)}. '+('Budget is nearly exhausted. Prioritize submitting the current candidates with an honest coverage explanation.' if remaining<8 or turns_left<=6 or time.monotonic()-state.started>state.max_seconds-70 else '')
             agent=Agent(name='Photo Scout Explorer',instructions=instructions,
                 model=OpenAIResponsesModel(model,client),tools=state.tools(),
                 tool_use_behavior=state.finish_tools,
@@ -656,4 +670,4 @@ async def discover(settings,payload,job_id=None,progress=None,initial_pois=None,
     rows=[{**state.views[k],'explorationReason':reason} for k,reason in state.selected.items()]
     for name,status in state.statuses.items():
         if status.get('status')=='ok':status.update(sampledImages=sum(r['provider']==name for r in rows))
-    return rows,state.statuses,list(state.pois.values()),{'candidateCount':len(rows),'inspectedViews':state.images,'toolCalls':state.calls,'submissionNote':state.note,'audit':state.audit,'review':state.review,'viewDecisions':state.decisions}
+    return rows,state.statuses,list(state.pois.values()),{'candidateCount':len(rows),'candidatePlaces':state.candidate_place_count(),'candidatePlaceTarget':24,'inspectedViews':state.images,'toolCalls':state.calls,'submissionNote':state.note,'audit':state.audit,'review':state.review,'viewDecisions':state.decisions}

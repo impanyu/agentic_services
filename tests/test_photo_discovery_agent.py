@@ -316,3 +316,28 @@ def test_geography_batch_has_two_way_concurrency(tmp_path,monkeypatch):
     monkeypatch.setattr(d,'geographic_features',features)
     result=invoke(d,'query_geography_batch',{'queries':[{'lat':40,'lon':-96,'radius':500,'kind':k} for k in ('water','paths','parks')]})
     assert peak==2 and [v['result']['kind'] for v in result['results']]==['water','paths','parks']
+
+
+def test_candidate_place_progress_counts_places_not_images(tmp_path):
+    progress=[]
+    d=Discovery(SimpleNamespace(database_path=tmp_path/'db'),ExploreRequest(lat=40,lon=-96),'progress',progress.append)
+    for i in range(3):
+        d.views[str(i)]={'id':str(i),'lat':40,'lon':-96,'title':'Same landmark','poi':{'id':'landmark'}}
+        d.inspected.add(str(i));d.selected[str(i)]='Matching angle'
+    d.views['other']={'id':'other','lat':40.001,'lon':-96,'title':'Other landmark','poi':{'id':'other-place'}}
+    d.inspected.add('other');d.selected['other']='Another matching place';d.images=4
+    d.checkpoint()
+    counts=progress[-1]['exploration']
+    assert counts['distinctInspectedImages']==4 and counts['candidatePlaces']==2
+    assert counts['candidatePlaceTarget']==24 and 'inspectionTarget' not in counts
+    assert state(tmp_path).candidate_place_count()==0  # Different job; no shared user state.
+    restored=Discovery(SimpleNamespace(database_path=tmp_path/'db'),ExploreRequest(lat=40,lon=-96),'progress')
+    assert restored.candidate_place_count()==2
+
+
+def test_unlisted_panorama_angles_are_one_candidate_place(tmp_path):
+    d=state(tmp_path)
+    for angle in (0,90,180):
+        key=str(angle);d.views[key]={'id':key,'provider':'google-street-view','imageUrl':f'google-streetview://same-pano/{angle}','lat':40,'lon':-96}
+        d.selected[key]='Visible match'
+    assert d.candidate_place_count()==1
