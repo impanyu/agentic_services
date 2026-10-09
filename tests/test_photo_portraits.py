@@ -32,7 +32,7 @@ def test_private_job_edits_both_images_and_removes_upload(tmp_path,monkeypatch,i
         def __init__(self,**kwargs):self.images=self;self.responses=self
         async def __aenter__(self):return self
         async def __aexit__(self,*args):pass
-        async def parse(self,**kwargs):return SimpleNamespace(output_parsed=portraits.SubjectCheck(human_count=1))
+        async def parse(self,**kwargs):return SimpleNamespace(output_parsed=portraits.BackgroundChoice(index=0,distortion='minimal',reason='Natural perspective with open foreground') if kwargs['text_format'] is portraits.BackgroundChoice else portraits.SubjectCheck(human_count=1))
         async def edit(self,**kwargs):
             calls.append(kwargs);return SimpleNamespace(data=[SimpleNamespace(b64_json=base64.b64encode(raw).decode())])
     async def background(ref):return 'data:image/png;base64,'+base64.b64encode(raw).decode()
@@ -61,7 +61,9 @@ def test_private_job_edits_both_images_and_removes_upload(tmp_path,monkeypatch,i
     assert 'cheerful broad smile' in calls[0]['prompt']
     assert 'relight the entire scene and subjects together' in calls[0]['prompt']
     completed=client.get(path,headers=owned).json();assert completed['state']=='complete'
-    assert completed['context']['viewHeadingDegrees']==90 and completed['context']['viewPitchDegrees']==-20
+    assert completed['context']['viewHeadingDegrees']==90 and completed['context']['viewPitchDegrees']==0
+    assert completed['context']['viewFovDegrees']==60
+    assert completed['context']['backgroundPreparation']['comparedFovDegrees']==[60,45]
     assert completed['context']['generation']=={'style':'natural','posture':'walking','weather':'golden_hour','expression':'big_smile','directions':''}
     history=client.get('/photo-scout/v1/tasks',headers=auth).json()
     assert history['items'][0]['context']['generation']==completed['context']['generation']
@@ -109,6 +111,9 @@ def test_subject_check_blocks_empty_or_failed_checks_and_allows_people_cartoons_
         async def __aenter__(self):return self
         async def __aexit__(self,*args):pass
         async def parse(self,**kwargs):
+            if kwargs['text_format'] is portraits.BackgroundChoice:
+                calls.append(('background-check',kwargs))
+                return SimpleNamespace(output_parsed=portraits.BackgroundChoice(index=0,distortion='minimal',reason='Natural perspective and visible scene'))
             calls.append(('check',kwargs))
             return SimpleNamespace(output_parsed=portraits.SubjectCheck(**{kind:count}) if count is not None else None)
         async def edit(self,**kwargs):
@@ -125,7 +130,7 @@ def test_subject_check_blocks_empty_or_failed_checks_and_allows_people_cartoons_
     state=client.get('/photo-scout/v1/portraits/'+job['id'],headers=auth|{'X-Report-Token':job['token']}).json()
     assert calls[0][0]=='check';assert calls[0][1]['store'] is False
     if count:
-        assert state['state']=='complete';assert [c[0] for c in calls]==['check','background','edit']
+        assert state['state']=='complete';assert [c[0] for c in calls]==['check','background','background','background-check','edit']
         assert 'cartoon' in calls[0][1]['instructions'] and 'animals' in calls[0][1]['instructions']
         assert 'EVERY visible foreground subject' in calls[-1][1]['prompt']
         assert 'do not turn them into real humans or animals' in calls[-1][1]['prompt']
@@ -137,3 +142,34 @@ def test_subject_check_blocks_empty_or_failed_checks_and_allows_people_cartoons_
         assert ('person, cartoon character or animal' if count==0 else 'Could not check') in state['error']
     with sqlite3.connect(settings.database_path) as db:
         assert db.execute('SELECT photo,payload FROM photo_portraits').fetchone()==(None,None)
+
+
+@pytest.mark.parametrize('fov,expected',[(120,[60,45]),(50,[50,45]),(40,[40])])
+def test_background_selector_uses_provider_zoom_not_warped_pixels(monkeypatch,fov,expected):
+    refs=[];raw=photo();requests=[]
+    async def background(ref):refs.append(ref);return 'data:image/png;base64,'+base64.b64encode(raw).decode()
+    monkeypatch.setattr(portraits,'image_data',background)
+    class Client:
+        responses=None
+        def __init__(self):self.responses=self
+        async def parse(self,**kwargs):
+            requests.append(kwargs)
+            return SimpleNamespace(output_parsed=portraits.BackgroundChoice(index=len(expected)-1,distortion='minimal',reason='Straight lines and clear foreground'))
+    image,ref,meta=asyncio.run(portraits.prepare_background(Client(),f'google-streetview://pano/135/-20/{fov}','vision'))
+    assert refs==[f'google-streetview://pano/135/0/{angle}' for angle in expected]
+    assert image==raw and ref==refs[-1] and meta['fovDegrees']==expected[-1]
+    assert requests[0]['store'] is False
+    assert sum(v['type']=='input_image' for v in requests[0]['input'][0]['content'])==len(expected)
+
+
+def test_background_selector_rejects_severe_seams_and_invalid_indices(monkeypatch):
+    from fastapi import HTTPException
+    async def background(ref):return 'data:image/png;base64,'+base64.b64encode(photo()).decode()
+    monkeypatch.setattr(portraits,'image_data',background)
+    class Client:
+        def __init__(self,choice):self.responses=self;self.choice=choice
+        async def parse(self,**kwargs):return SimpleNamespace(output_parsed=self.choice)
+    with pytest.raises(HTTPException,match='strong panorama distortion'):
+        asyncio.run(portraits.prepare_background(Client(portraits.BackgroundChoice(index=0,distortion='severe',reason='Bowed buildings and duplicated edges')),'google-streetview://pano/0','vision'))
+    with pytest.raises(ValueError,match='assessment unavailable'):
+        asyncio.run(portraits.prepare_background(Client(portraits.BackgroundChoice(index=1,distortion='minimal',reason='View')),'google-streetview://pano/0/0/40','vision'))

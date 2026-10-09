@@ -72,3 +72,20 @@ OSM errors include endpoint and exception/HTTP status, not raw request URLs.
 Candidate decisions and final review persist with the private job; this is an
 operational action log, not a recording of hidden model reasoning. Existing
 records cannot retroactively acquire parameters or rejection reasons.
+
+### Selfie background preparation
+
+Before editing with a Google Street View background, request the same panorama
+and heading at level pitch with FOV min(original, 60) and min(original, 45).
+This obtains fresh provider-rendered views rather than locally warping/cropping
+imagery or attribution. A small vision model (`PHOTO_SCOUT_BACKGROUND_MODEL`,
+default `gpt-6-luna`) compares the available views for optical/stitching distortion,
+scene identity and usable foreground. Existing narrower views are never widened.
+Severe defects in the best view fail before image generation with an actionable
+message; moderate residual distortion is recorded rather than guaranteed corrected.
+The selected FOV, direction, assessment and reason are saved in private photo
+context and shown in Background info. The source link opens the view actually used;
+originalSourceUrl retains the originally requested view. Other providers keep their
+original image. The synthesis prompt calls for natural camera perspective while
+preserving location geometry and provider marks. Image generation quality stays
+unchanged. See Google Street View's [FOV documentation](https://developers.google.com/maps/documentation/streetview/request-streetview).

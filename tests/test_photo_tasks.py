@@ -53,7 +53,7 @@ def test_guest_portrait_recovery_owns_image_without_exposing_tokens_or_upload(tm
         def __init__(self,**kwargs):self.images=self;self.responses=self
         async def __aenter__(self):return self
         async def __aexit__(self,*args):pass
-        async def parse(self,**kwargs):return SimpleNamespace(output_parsed=portraits.SubjectCheck(human_count=2))
+        async def parse(self,**kwargs):return SimpleNamespace(output_parsed=portraits.BackgroundChoice(index=0,distortion='minimal',reason='Natural perspective') if kwargs['text_format'] is portraits.BackgroundChoice else portraits.SubjectCheck(human_count=2))
         async def edit(self,**kwargs):return SimpleNamespace(data=[SimpleNamespace(b64_json=base64.b64encode(raw).decode())])
     async def background(*args):return 'data:image/png;base64,'+base64.b64encode(raw).decode()
     monkeypatch.setattr(portraits,'AsyncOpenAI',Client);monkeypatch.setattr(portraits,'image_data',background)
@@ -129,7 +129,7 @@ def test_two_portrait_workers_generate_concurrently_without_mixing_context(tmp_p
             def __init__(self,**kwargs):self.images=self;self.responses=self
             async def __aenter__(self):return self
             async def __aexit__(self,*args):pass
-            async def parse(self,**kwargs):return SimpleNamespace(output_parsed=portraits.SubjectCheck(human_count=2))
+            async def parse(self,**kwargs):return SimpleNamespace(output_parsed=portraits.BackgroundChoice(index=0,distortion='minimal',reason='Natural perspective') if kwargs['text_format'] is portraits.BackgroundChoice else portraits.SubjectCheck(human_count=2))
             async def edit(self,**kwargs):
                 entered.append(kwargs)
                 if len(entered)==2:both.set()

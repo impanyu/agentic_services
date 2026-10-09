@@ -583,6 +583,7 @@ function renderSavedPhotoParams(context,created){
  if(context?.generation){const g=context.generation,label=(select,value)=>[...select.options].find(o=>o.value===value)?.textContent||value;
   fields.push(['Style',portraitStyles.find(s=>s[0]===g.style)?.[1]||g.style],['Posture',label(studioPosture,g.posture)],['Weather & light',label(studioWeather,g.weather)],['Expression',label(studioExpression,g.expression)],['Your directions',g.directions||'None']);
  }
+ if(context?.backgroundPreparation){const p=context.backgroundPreparation;fields.push(['Background framing',`${p.fovDegrees}° field of view · ${p.distortion} distortion`],['Background selection',p.reason]);}
  const list=node('dl');for(const [label,value] of fields)list.append(node('dt',label),node('dd',value));
  savedPhotoParams.replaceChildren(list,...(context?.generation?[]:[node('p','The generation settings were not saved for this older photo.','small')]));
  savedPhotoBackground.append(savedPhotoNav,savedPhotoParams);
