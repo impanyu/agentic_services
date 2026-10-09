@@ -5,11 +5,12 @@ import os
 import secrets
 import sqlite3
 import time
-from fastapi import APIRouter, Request, Response
+from fastapi import APIRouter, HTTPException, Request, Response
 
 GUEST_COOKIE='photo_scout_guest'
 ACCOUNT_COOKIE='photo_scout_session'
 SEARCH_RETENTION=30*86400
+ACTIVE_TASK_LIMIT=5
 
 def digest(token):return hashlib.sha256(token.encode()).hexdigest()
 
@@ -42,6 +43,18 @@ class TaskStore:
     def bind_in(self,db,kind,job,identity,context):
         guest,user=identity
         # Ownership and admission commit together. Retries never transfer ownership.
+        if db.execute('SELECT 1 FROM photo_task_owners WHERE kind=? AND job=?',(kind,job)).fetchone():return
+        now=time.time()
+        active=db.execute("""
+            SELECT count(*) FROM photo_task_owners o
+            LEFT JOIN photo_scout_jobs s ON o.kind='search' AND s.id=o.job
+            LEFT JOIN photo_portraits p ON o.kind='portrait' AND p.id=o.job
+            WHERE (o.user_id=? OR (o.user_id IS NULL AND o.guest=?))
+            AND ((s.state IN ('queued','running') AND s.created>?)
+                 OR (p.state IN ('queued','checking','running') AND p.expires>?))
+            """,(user,guest,now-SEARCH_RETENTION,now)).fetchone()[0]
+        if active>=ACTIVE_TASK_LIMIT:
+            raise HTTPException(429,'You already have 5 active tasks (searches and selfies combined). Wait for a task to finish, then try again.')
         db.execute('INSERT OR IGNORE INTO photo_task_owners VALUES(?,?,?,?,?,?)',(kind,job,guest,user,time.time(),json.dumps(context)))
     def allowed(self,kind,job,request):
         guest,user=self.identity(request)

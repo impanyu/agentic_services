@@ -225,7 +225,7 @@ function historyEntries(){
  return [...searches,...photos].sort((a,b)=>b.created-a.created);
 }
 function renderHistory(){
- const root=el('history-items'),entries=historyEntries();root.replaceChildren();el('history-count').textContent=String(entries.length);
+ const root=el('history-items'),entries=historyEntries();root.replaceChildren();root.append(node('p',taskRecords.filter(t=>['queued','checking','running'].includes(t.state)).length+' / 5 active tasks · Searches and selfies','small'));el('history-count').textContent=String(entries.length);
  const completed=entries.filter(e=>e.kind==='search'&&e.history).map(e=>e.history);
  el('history-all').disabled=!completed.length;el('history-all').checked=completed.length>0&&completed.every(h=>h.checked);el('history-all').indeterminate=completed.some(h=>h.checked)&&!completed.every(h=>h.checked);
  if(!entries.length)root.append(node('p','Your searches will appear here.','small'));

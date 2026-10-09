@@ -144,3 +144,40 @@ def test_two_portrait_workers_generate_concurrently_without_mixing_context(tmp_p
     results=[client.get('/photo-scout/v1/portraits/'+job).json() for job in jobs]
     assert all(r['state']=='complete' for r in results)
     assert [r['context']['poi']['lat'] for r in results]==[40,41]
+
+
+def test_five_active_tasks_combines_search_and_portrait_and_releases_finished_slots(tmp_path,monkeypatch):
+    settings,app,client=setup(tmp_path,monkeypatch)
+    jobs=[client.post('/photo-scout/v1/jobs',headers={'X-Request-Token':str(i)*32},json={'lat':40,'lon':-96}).json()['jobId'] for i in range(4)]
+    buffer=io.BytesIO();Image.new('RGB',(16,16),'green').save(buffer,format='PNG')
+    payload={'portrait':'data:image/png;base64,'+base64.b64encode(buffer.getvalue()).decode(),'provider':'google-street-view','background':'https://www.google.com/maps/@?map_action=pano&pano=abc&heading=90','place':'Park','lat':40,'lon':-96}
+    assert client.post('/photo-scout/v1/portraits',json=payload).status_code==202
+    rejected=client.post('/photo-scout/v1/jobs',headers={'X-Request-Token':'z'*32},json={'lat':40,'lon':-96})
+    assert rejected.status_code==429 and '5 active tasks' in rejected.json()['detail']
+    assert client.post('/photo-scout/v1/portraits',json=payload).status_code==429
+    with sqlite3.connect(settings.database_path) as db:
+        assert db.execute('SELECT count(*) FROM photo_scout_jobs').fetchone()[0]==4
+        assert db.execute('SELECT count(*) FROM photo_portraits').fetchone()[0]==1
+        assert db.execute('SELECT runs FROM photo_portrait_budget').fetchone()[0]==1
+        db.execute("UPDATE photo_scout_jobs SET state='failed' WHERE id=?",(jobs[0],))
+    assert client.post('/photo-scout/v1/jobs',headers={'X-Request-Token':'z'*32},json={'lat':40,'lon':-96}).status_code==202
+    # Retrying an admitted search does not consume another slot.
+    assert client.post('/photo-scout/v1/jobs',headers={'X-Request-Token':'1'*32},json={'lat':40,'lon':-96}).status_code==202
+    other=TestClient(app,base_url='https://api.test',headers={'Authorization':'Bearer private'})
+    assert other.post('/photo-scout/v1/jobs',headers={'X-Request-Token':'o'*32},json={'lat':40,'lon':-96}).status_code==202
+
+
+def test_account_limit_spans_sessions_and_concurrent_admission_is_atomic(tmp_path,monkeypatch):
+    from concurrent.futures import ThreadPoolExecutor
+    settings,app,client=setup(tmp_path,monkeypatch)
+    with sqlite3.connect(settings.database_path) as db:
+        for token in ['alice-one','alice-two']:
+            db.execute('INSERT INTO photo_sessions VALUES(?,?,?,?,?)',(hashlib.sha256(token.encode()).hexdigest(),'alice','{}','csrf',time.time()+3600))
+    client.cookies.set(COOKIE,'alice-one')
+    for i in range(4):assert client.post('/photo-scout/v1/jobs',headers={'X-Request-Token':str(i)*32},json={'lat':40,'lon':-96}).status_code==202
+    def submit(i):
+        browser=TestClient(app,base_url='https://api.test',headers={'Authorization':'Bearer private'})
+        browser.cookies.set(COOKIE,'alice-two')
+        return browser.post('/photo-scout/v1/jobs',headers={'X-Request-Token':str(i)*32},json={'lat':40,'lon':-96}).status_code
+    with ThreadPoolExecutor(max_workers=2) as executor:assert sorted(executor.map(submit,[5,6]))==[202,429]
+    with sqlite3.connect(settings.database_path) as db:assert db.execute('SELECT count(*) FROM photo_task_owners WHERE user_id=?',('alice',)).fetchone()[0]==5
