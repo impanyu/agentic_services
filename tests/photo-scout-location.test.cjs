@@ -298,3 +298,14 @@ test('pressing the search button leaves expanded settings stable until submit',(
  assert.equal(controls.open,false,'an ordinary outside click still closes settings');
  assert.equal(collapsed,2);
 });
+
+test('reload hydrates existing Commons history from the backend without rerunning a search',async()=>{
+ const f=pageFixture(),spot={id:'commons:1',name:'Lake',provider:'wikimedia-commons',lat:40,lon:-96,score:83,poi:{id:'lake',name:'Lake',lat:40,lon:-96},sourceUrl:'https://commons.wikimedia.org/wiki/File:Lake.jpg'};
+ f.historyWith([{id:'saved',created:100,label:'Lake',checked:false,radius:1000,result:{spots:[spot],poiResults:[spot]}}],[]);
+ const report={spots:[{...spot,imageUrl:'https://upload.wikimedia.org/lake.jpg'}],poiResults:[{...spot,imageUrl:'https://upload.wikimedia.org/lake.jpg'}],sources:{},inspectedImages:1};
+ const state=await f.restoreWith([{id:'saved',kind:'search',state:'complete',created:100,context:{lat:40,lon:-96,radius:1000}}],{saved:{state:'complete',result:report}});
+ assert.equal(state.history.length,1);assert.equal(state.history[0].checked,false);assert.equal(state.history[0].result.spots[0].imageUrl,'https://upload.wikimedia.org/lake.jpg');
+ await f.restoreWith([{id:'saved',kind:'search',state:'complete',created:100,context:{lat:40,lon:-96,radius:1000}}],{saved:{state:'complete',result:report}});
+ assert.equal(f.recoveryRequests().filter(r=>r.url.endsWith('/report/saved')).length,1);
+ assert.ok(f.recoveryRequests().every(r=>r.method==='GET'));
+});

@@ -1,6 +1,7 @@
 'use strict';
 let lastRemovedPoi=null,selectedPoiView=null,poiViewOverrides=new Map(),poiPreviewTimer=null;
 let removedHistoryItems=new Set(),lastRemovedHistory=null;
+const hydratedSearches=new Set();
 let tasksReady=false,taskRecords=[],taskRefreshBusy=false,taskRecoveryGeneration=0,taskRefreshTimer=null;
 const api=location.hostname==='localhost'||location.hostname==='127.0.0.1'?'': 'https://api.aisoup.net';
 const el=id=>document.getElementById(id), message=s=>{el('message').textContent=s;if(searchBusy||pipelineBusy||resolving)el('progress-detail').textContent=s};
@@ -650,7 +651,7 @@ function syncPortraitActivities(){
 }
 function resetTaskRecovery(){
  if(savedPhoto.open)savedPhoto.close();if(portraitProgress.open)portraitProgress.close();
- focusedSearchId=null;selectedPoiView=null;lastRemovedPoi=null;lastRemovedHistory=null;removedHistoryItems.clear();poiViewOverrides.clear();taskRecoveryGeneration++;clearTimeout(taskRefreshTimer);taskRecords=[];hiddenPoisBySearch.clear();displayedResult=null;displayedSearchId=null;tasksReady=false;activeSearch=null;pollGeneration++;searchBusy=false;studioBusy=false;studioJob=null;clearTimeout(studioTimer);clearStudioOutput();studioPrepared=null;studioFile=null;studioUpload.value='';studioUpload.disabled=false;studioPose.disabled=false;studioStyles.disabled=false;studioOptions.disabled=false;studioGenerate.disabled=true;personPreview.hidden=true;personPreview.removeAttribute('src');studioTask.hidden=true;selfieActivityLayer.clearLayers();renderHistory();updateSubmitState();
+ focusedSearchId=null;selectedPoiView=null;lastRemovedPoi=null;lastRemovedHistory=null;removedHistoryItems.clear();poiViewOverrides.clear();taskRecoveryGeneration++;hydratedSearches.clear();clearTimeout(taskRefreshTimer);taskRecords=[];hiddenPoisBySearch.clear();displayedResult=null;displayedSearchId=null;tasksReady=false;activeSearch=null;pollGeneration++;searchBusy=false;studioBusy=false;studioJob=null;clearTimeout(studioTimer);clearStudioOutput();studioPrepared=null;studioFile=null;studioUpload.value='';studioUpload.disabled=false;studioPose.disabled=false;studioStyles.disabled=false;studioOptions.disabled=false;studioGenerate.disabled=true;personPreview.hidden=true;personPreview.removeAttribute('src');studioTask.hidden=true;selfieActivityLayer.clearLayers();renderHistory();updateSubmitState();
 }
 async function restoreTasks(){
  if(taskRefreshBusy)return;taskRefreshBusy=true;const generation=taskRecoveryGeneration,initial=!tasksReady;let changed=false;
@@ -660,9 +661,9 @@ async function restoreTasks(){
   if(JSON.stringify([...incomingHidden].map(([id,keys])=>[id,[...keys]]))!==JSON.stringify([...hiddenPoisBySearch].map(([id,keys])=>[id,[...keys]]))){hiddenPoisBySearch=incomingHidden;changed=true;refreshDisplayedShortlist();}
   const returned=new Set(data.items.map(t=>t.kind+':'+t.id));taskRecords=[...data.items,...taskRecords.filter(t=>t.localPending&&!returned.has(t.kind+':'+t.id))].sort((a,b)=>b.created-a.created);renderHistory();refreshVisiblePlaceSelfies();
   for(const task of taskRecords.filter(t=>t.kind==='search'&&t.state==='complete')){
-   if(searchHistory.some(h=>h.id===task.id))continue;
+   if(hydratedSearches.has(task.id))continue;
    const report=await json('/photo-scout/v1/report/'+encodeURIComponent(task.id));if(generation!==taskRecoveryGeneration)return;
-   if(report.result&&!removedHistoryItems.has('search:'+task.id)){changed=true;searchHistory.push({id:task.id,created:task.created*1000,label:task.context.query||task.context.locationLabel||`Around ${task.context.lat}, ${task.context.lon}`,radius:task.context.radius||1000,checked:true,result:{...report.result,searchContext:task.context}});}
+   if(report.result&&!removedHistoryItems.has('search:'+task.id)){changed=true;hydratedSearches.add(task.id);const existing=searchHistory.find(h=>h.id===task.id),record={id:task.id,created:task.created*1000,label:task.context.query||task.context.locationLabel||`Around ${task.context.lat}, ${task.context.lon}`,radius:task.context.radius||1000,checked:existing?.checked??true,result:{...report.result,searchContext:task.context}};if(existing)Object.assign(existing,record);else searchHistory.push(record);}
   }
   searchHistory.sort((a,b)=>b.created-a.created);if(changed){persistHistory();drawHistoryMap();}renderHistory();syncPortraitActivities();refreshVisiblePlaceSelfies();
   if(initial&&!activeSearch){const task=taskRecords.find(t=>t.kind==='search'&&['queued','running'].includes(t.state));if(task){activeSearch={jobId:task.id,context:task.context};applyTaskContext(task.context);activeSearch.draft=searchDraft();}}
