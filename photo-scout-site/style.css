@@ -175,4 +175,3 @@ html:has(body.photo-app),body.photo-app{height:100%;overflow:hidden}.photo-app m
 
 .photo-history-entry strong{display:block}.photo-history-entry small{display:block;margin-top:5px;font-size:10px;font-weight:400;color:#84748b}
 
-.scout-dock{bottom:52px}@media(max-width:760px){.scout-dock{bottom:calc(36px + env(safe-area-inset-bottom))}.leaflet-bottom.leaflet-right{bottom:calc(var(--scout-dock-height,90px) + 46px + env(safe-area-inset-bottom))}}@media(max-height:500px) and (max-width:1000px) and (orientation:landscape){.scout-dock{bottom:calc(24px + env(safe-area-inset-bottom))}}
