@@ -278,7 +278,7 @@ def test_google_query_grid_covers_area_and_limits_concurrency(monkeypatch):
         async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as c:
             return await google_streetview(c,0,0,1000)
     assert asyncio.run(run())==[]
-    assert requests==25 and peak<=12
+    assert requests==25 and peak<=24
 
 
 def test_free_website_mode_auth_payment_and_budget(tmp_path,monkeypatch):
@@ -520,6 +520,8 @@ def test_fixed_pipeline_scores_every_image_and_globally_ranks(tmp_path,monkeypat
         nonlocal active,peak
         assert 'tools' not in kw and kw['store'] is False
         assert 'EVERY supplied image' in kw['instructions']
+        assert '8-16 words' in kw['instructions']
+        assert 'retain the full' in kw['instructions']
         content=kw['input'][0]['content'];request=json.loads(content[0]['text'])
         assert request['photoStyleBriefs'][0]['label']=='Water & reflections'
         assert request['request']['poiQueries']==['coffee shops']
@@ -722,7 +724,7 @@ def test_score_cache_reuses_successful_views_without_download_or_model(tmp_path,
     _scoring_client(monkeypatch,parse);monkeypatch.setattr(visual,'image_data',image)
     first=asyncio.run(visual.explore(settings,ExploreRequest(lat=0,lon=0),_scoring_rows(),{}))
     second=asyncio.run(visual.explore(settings,ExploreRequest(lat=.001,lon=0,radius=2000,limit=5),_scoring_rows(),{}))
-    assert len(downloads)==13 and len(calls)==2
+    assert len(downloads)==13 and len(calls)==1
     assert first['scoring']['newlyScoredImages']==13
     assert second['scoring']['cachedImages']==13 and second['scoring']['newlyScoredImages']==0
     assert len(second['poiResults'])==13 and any(p['recommend'] is False for p in second['poiResults'])
@@ -732,7 +734,7 @@ def test_score_cache_reuses_successful_views_without_download_or_model(tmp_path,
     changed=_scoring_rows();changed[-1]['sourceDate']='new-version'
     third=asyncio.run(visual.explore(settings,ExploreRequest(lat=0,lon=0),changed,{}))
     assert third['scoring']['cachedImages']==12 and third['scoring']['newlyScoredImages']==1
-    assert len(downloads)==14 and len(calls)==3
+    assert len(downloads)==14 and len(calls)==2
 
 
 def test_score_cache_context_and_expiry(tmp_path,monkeypatch):
@@ -956,3 +958,37 @@ def test_google_visual_sampling_covers_area_and_poi_anchors_with_eight_headings(
     assert {r['poi']['id'] for r in rows if r.get('poi')}=={str(i) for i in range(5)}
     panoramas={r['imageUrl'].split('/')[2] for r in rows}
     assert all({r['viewHeadingDegrees'] for r in rows if r['imageUrl'].split('/')[2]==p}==set(range(0,360,45)) for p in panoramas)
+
+
+def test_larger_parallel_batches_score_all_224_views_without_dropping_last_batch(tmp_path,monkeypatch):
+    import json
+    from types import SimpleNamespace
+    import agentic_services.photo_scout.scoring as visual
+    for key in ('PHOTO_SCOUT_SCORING_BATCH_SIZE','PHOTO_SCOUT_SCORING_CONCURRENCY','PHOTO_SCOUT_IMAGE_DOWNLOAD_CONCURRENCY'):
+        monkeypatch.delenv(key,raising=False)
+    settings=Settings(openai_api_key='test',openai_model='test',database_path=tmp_path/'db',base_url='https://api.test')
+    rows=[{'id':str(i),'lat':0,'lon':i*.0002,'provider':'test','imageUrl':str(i),
+           'poi':{'id':f'poi:{i}','name':f'Place {i}','lat':0,'lon':i*.0002}} for i in range(224)]
+    downloads=0;peak_downloads=0;started=0;peak_models=0;models=0;gate=asyncio.Event();sizes=[]
+    async def image(url):
+        nonlocal downloads,peak_downloads
+        downloads+=1;peak_downloads=max(peak_downloads,downloads)
+        await asyncio.sleep(.001);downloads-=1
+        return 'data:image/jpeg;base64,/9j/dGVzdA=='
+    async def parse(**kwargs):
+        nonlocal started,peak_models,models
+        batch=[json.loads(c['text'])['image'] for c in kwargs['input'][0]['content'][1:] if c['type']=='input_text']
+        assert kwargs['max_output_tokens']>=len(batch)*900
+        sizes.append(len(batch));started+=1;models+=1;peak_models=max(peak_models,models)
+        if started==10:gate.set()
+        await asyncio.wait_for(gate.wait(),2)
+        models-=1
+        return SimpleNamespace(output_parsed=visual.VisualBatch(assessments=[visual.ImageAssessment(
+            image_id=r['id'],poi_id=r['poi']['id'],name=r['poi']['name'],score=100 if r['id']=='223' else 30,recommend=True,
+            visible_evidence='Visible sculpture',photo_tip='Frame sculpture',uncertainty='Access unknown',confidence='medium') for r in batch]),usage=None)
+    _scoring_client(monkeypatch,parse);monkeypatch.setattr(visual,'image_data',image)
+    result=asyncio.run(visual.explore(settings,ExploreRequest(lat=0,lon=0),rows,{}))
+    assert sizes.count(24)==9 and sizes.count(8)==1
+    assert 16<peak_downloads<=32 and 8<peak_models<=12
+    assert result['inspectedImages']==224 and result['scoring']['scoringFailedImages']==0
+    assert len(result['spots'])==224 and result['spots'][0]['image_id']=='223'

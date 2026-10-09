@@ -47,7 +47,7 @@ class ImageAssessment(VisualChoice):
 
 
 class VisualBatch(BaseModel):
-    assessments: list[ImageAssessment] = Field(min_length=1,max_length=16)
+    assessments: list[ImageAssessment] = Field(min_length=1,max_length=32)
 
 
 INSTRUCTIONS='''You are a multimodal photography evaluator in a fixed scoring pipeline.
@@ -100,6 +100,16 @@ images. Lighting advice must be conditional. Return English and explicit uncerta
 '''
 
 
+# Presentation-only guidance; keep the evaluation criteria/cache identity stable.
+OUTPUT_FORMAT='''For matches_request=false, use a short match_reason (one brief sentence,
+about 8-16 words) and set name, visible_evidence, photo_tip and uncertainty to empty
+strings, poi_id=null, score=null, recommend=false, confidence="low". Do not spend
+output explaining composition or photography tips for a rejected image. Preserve
+one complete schema object for EVERY image. For matching images, retain the full
+normal evidence, score, photography tip and uncertainty. This changes output length
+only, not the matching criteria or scoring standards.'''
+
+
 def validate_result(result,rows,inspected,limit):
     by_id={r['id']:r for r in rows}; out=[]
     for choice in sorted(result.spots,key=lambda c:c.score,reverse=True):
@@ -149,9 +159,9 @@ async def explore(settings,payload,rows,statuses):
             cached.append(assessment)
         else:
             missing.append(row)
-    batch_size=max(1,min(16,int(os.getenv('PHOTO_SCOUT_SCORING_BATCH_SIZE','12'))))
+    batch_size=max(1,min(32,int(os.getenv('PHOTO_SCOUT_SCORING_BATCH_SIZE','24'))))
     batches=[missing[i:i+batch_size] for i in range(0,len(missing),batch_size)]
-    batch_slots=asyncio.Semaphore(max(1,min(8,int(os.getenv('PHOTO_SCOUT_SCORING_CONCURRENCY','8')))));download_slots=asyncio.Semaphore(16)
+    batch_slots=asyncio.Semaphore(max(1,min(16,int(os.getenv('PHOTO_SCOUT_SCORING_CONCURRENCY','12')))));download_slots=asyncio.Semaphore(max(1,min(64,int(os.getenv('PHOTO_SCOUT_IMAGE_DOWNLOAD_CONCURRENCY','32')))))
     async def download(row):
         try:
             async with download_slots:
@@ -161,10 +171,12 @@ async def explore(settings,payload,rows,statuses):
             return row,None
     async with AsyncOpenAI(api_key=settings.openai_api_key,timeout=180,max_retries=0) as client:
         async def score_batch(batch):
+            # Download preparation does not occupy a model-call slot. Every
+            # batch can prepare concurrently, bounded by download_slots.
+            loaded=await asyncio.gather(*(download(row) for row in batch))
+            usable=[(row,data) for row,data in loaded if data]
+            if not usable: return {'assessments':[],'downloaded':0,'downloadFailed':len(batch),'scoringFailed':0,'usage':None}
             async with batch_slots:
-                loaded=await asyncio.gather(*(download(row) for row in batch))
-                usable=[(row,data) for row,data in loaded if data]
-                if not usable: return {'assessments':[],'downloaded':0,'downloadFailed':len(batch),'scoringFailed':0,'usage':None}
                 content=[{'type':'input_text','text':json.dumps({
                     'request':{'scoringIntent':payload.scoringIntent.strip(),'poiQueries':payload.poiQueries,'geographicKinds':payload.geographicKinds,'preferences':payload.preferences.strip(),'photoStyles':sorted(payload.photoStyles or [])},
                     'photoStyleBriefs':style_briefs(payload.photoStyles)})}]
@@ -173,9 +185,9 @@ async def explore(settings,payload,rows,statuses):
                         {'type':'input_image','image_url':data,'detail':'high'}])
                 response=None
                 try:
-                    response=await client.responses.parse(model=model,instructions=INSTRUCTIONS,
+                    response=await client.responses.parse(model=model,instructions=INSTRUCTIONS+'\n'+OUTPUT_FORMAT,
                         input=[{'role':'user','content':content}],text_format=VisualBatch,
-                        max_output_tokens=12000,store=False)
+                        max_output_tokens=max(12000,len(usable)*900),store=False)
                     output=response.output_parsed
                     ids=[a.image_id for a in output.assessments] if output else []
                     if len(ids)!=len(set(ids)) or set(ids)!={r['id'] for r,_ in usable}:

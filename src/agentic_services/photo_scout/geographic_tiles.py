@@ -104,7 +104,7 @@ async def fetch_tiles(lat,lon,radius,kinds,database_path):
             template=data['tiles'][0]
             if not template.startswith('https://tiles.openfreemap.org/planet/') or not template.endswith('/{z}/{x}/{y}.pbf'):raise ValueError('Unexpected vector tile endpoint')
             _manifest=(time.time()+3600,template)
-        template=_manifest[1];slots=asyncio.Semaphore(8);hits=[]
+        template=_manifest[1];slots=asyncio.Semaphore(12);hits=[]
         async def load(coord):
             z,x,y=coord;url=template.replace('{z}',str(z)).replace('{x}',str(x)).replace('{y}',str(y))
             with sqlite3.connect(database_path) as db:

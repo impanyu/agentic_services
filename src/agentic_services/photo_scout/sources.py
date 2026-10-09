@@ -237,7 +237,7 @@ async def google_streetview(client, lat, lon, radius, targets=None, area_samplin
     else:
         points=[(p['lat'],p['lon']) for p in targets] if targets is not None else google_query_points(lat,lon,radius)
         target_rows=list(targets) if targets is not None else [None]*len(points)
-    slots=asyncio.Semaphore(12)
+    slots=asyncio.Semaphore(max(1,min(32,int(os.getenv('PHOTO_SCOUT_STREETVIEW_CONCURRENCY','24')))))
     async def search(p):
         async with slots:
             return await get_json(client,'https://maps.googleapis.com/maps/api/streetview/metadata',
