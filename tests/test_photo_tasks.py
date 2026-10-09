@@ -23,7 +23,7 @@ def test_guest_search_admitted_before_resolution_recovers_after_restart_and_keep
     response=client.get('/photo-scout/v1/tasks');assert response.json()['items']==[]
     assert 'HttpOnly' in response.headers['set-cookie'] and 'Secure' in response.headers['set-cookie']
     async def resolve(settings,payload):
-        calls.append('resolve');assert payload.radius==1000
+        calls.append('resolve');assert payload.radius==1000 and payload.preferences==''
         return {'locations':[{'lat':48.8,'lon':2.3,'label':'Paris'}],'radiusMeters':20000,'limit':5,'photoStyles':['urban'],'preferences':'architecture','explanation':'Paris, 20 km'}
     async def nearby(*args):return [],{'status':'ok','provider':'openstreetmap'}
     async def candidates(*args,**kwargs):return [],{}
@@ -31,12 +31,19 @@ def test_guest_search_admitted_before_resolution_recovers_after_restart_and_keep
         calls.append('score');assert payload.lat==48.8 and payload.radius==20000 and payload.photoStyles==['urban']
         return {'spots':[],'summary':'Saved result'}
     monkeypatch.setattr(routes,'resolve_intent',resolve);monkeypatch.setattr(routes,'nearby_pois',nearby);monkeypatch.setattr(routes,'candidates',candidates);monkeypatch.setattr(routes,'explore',explore)
-    response=client.post('/photo-scout/v1/jobs',headers={'X-Request-Token':'s'*32},json={'lat':0,'lon':0,'query':'Urban Paris, 20 km, top 5'})
+    response=client.post('/photo-scout/v1/jobs',headers={'X-Request-Token':'s'*32},json={'lat':0,'lon':0,'query':'Urban Paris, 20 km, top 5','preferences':'Previous search required visible lake water'})
     assert response.status_code==202 and calls==[];job=response.json()['jobId']
     assert client.get('/photo-scout/v1/tasks').json()['items'][0]['state']=='queued'
     restarted=create_app(settings=settings);assert asyncio.run(restarted.state.process_photo_preview());assert calls==['resolve','score']
     restored=TestClient(restarted,base_url='https://api.test',headers={'Authorization':'Bearer private'});restored.cookies.set(GUEST_COOKIE,client.cookies.get(GUEST_COOKIE))
     tasks=restored.get('/photo-scout/v1/tasks').json()['items'];assert tasks[0]['state']=='complete' and tasks[0]['context']['radius']==20000
+    assert tasks[0]['context']['query']=='Urban Paris, 20 km, top 5'
+    # Old deployments overwrote the raw query with ExploreRequest's empty default.
+    with sqlite3.connect(settings.database_path) as db:
+        broken=dict(tasks[0]['context'],query='')
+        db.execute('UPDATE photo_task_owners SET context=? WHERE job=?',(json.dumps(broken),job))
+    assert restored.get('/photo-scout/v1/tasks').json()['items'][0]['context']['query']=='Urban Paris, 20 km, top 5'
+    assert TaskStore(settings.database_path).context('search',job)['query']=='Urban Paris, 20 km, top 5'
     assert 'reportToken' not in json.dumps(tasks)
     result=restored.get('/photo-scout/v1/report/'+job);assert result.status_code==200 and result.json()['result']['summary']=='Saved result'
     stranger=TestClient(restarted,base_url='https://api.test',headers={'Authorization':'Bearer private'})

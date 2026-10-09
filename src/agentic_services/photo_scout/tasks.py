@@ -120,8 +120,14 @@ class TaskStore:
             row=db.execute('SELECT guest,user_id FROM photo_task_owners WHERE kind=? AND job=?',(kind,job)).fetchone()
         return bool(row and ((user and row['user_id']==user) or (guest and row['user_id'] is None and row['guest']==guest)))
     def context(self,kind,job):
-        with self.db() as db:row=db.execute('SELECT context FROM photo_task_owners WHERE kind=? AND job=?',(kind,job)).fetchone()
-        return json.loads(row['context']) if row else None
+        with self.db() as db:
+            row=db.execute('SELECT context FROM photo_task_owners WHERE kind=? AND job=?',(kind,job)).fetchone()
+            if not row:return None
+            context=json.loads(row['context'])
+            if kind=='search':
+                original=db.execute('SELECT payload FROM photo_scout_jobs WHERE id=?',(job,)).fetchone()
+                if original:context['query']=json.loads(original['payload']).get('query','')
+            return context
     def update_context(self,kind,job,context):
         with self.db() as db:db.execute('UPDATE photo_task_owners SET context=? WHERE kind=? AND job=?',(json.dumps(context),kind,job))
     def attach_user(self,request,user):
@@ -153,12 +159,14 @@ class TaskStore:
                 owner='user:'+row['user_id'] if row['user_id'] else 'guest:'+row['guest']
                 if db.execute('SELECT 1 FROM photo_removed_items WHERE owner=? AND kind=? AND job=?',(owner,row['kind'],row['job'])).fetchone():continue
                 table='photo_scout_jobs' if row['kind']=='search' else 'photo_portraits'
-                columns='id,created,state,error'+(',expires' if row['kind']=='portrait' else '')
+                columns='id,created,state,error'+(',expires' if row['kind']=='portrait' else ',payload')
                 task=db.execute('SELECT '+columns+' FROM '+table+' WHERE id=?',(row['job'],)).fetchone()
                 if not task:continue
                 expiry=None if row['user_id'] else db.execute('SELECT expires FROM photo_guests WHERE hash=?',(row['guest'],)).fetchone()[0]
                 if expiry is not None and expiry<=now:continue
-                items.append({'id':row['job'],'kind':row['kind'],'created':task['created'],'expiresAt':expiry,'state':task['state'],'error':task['error'],'context':json.loads(row['context'])})
+                context=json.loads(row['context'])
+                if row['kind']=='search':context['query']=json.loads(task['payload']).get('query','')
+                items.append({'id':row['job'],'kind':row['kind'],'created':task['created'],'expiresAt':expiry,'state':task['state'],'error':task['error'],'context':context})
         return items
 
 def create_tasks_router(settings,require_api):

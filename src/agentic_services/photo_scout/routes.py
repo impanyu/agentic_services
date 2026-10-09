@@ -470,12 +470,16 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
             context=tasks.context('search',job['id']) or submitted.model_dump()
             if submitted.query.strip():
                 store.reserve_intent()
-                plan=await resolve_intent(settings,IntentRequest(query=submitted.query,lat=submitted.lat,lon=submitted.lon,radius=submitted.radius,photoStyles=submitted.photoStyles or [],preferences=submitted.preferences))
+                # The website has no editable preferences control. Old clients
+                # may submit a previous report's generated, hidden preferences;
+                # only this query plus the visible current controls are defaults.
+                plan=await resolve_intent(settings,IntentRequest(query=submitted.query,lat=submitted.lat,lon=submitted.lon,radius=submitted.radius,photoStyles=submitted.photoStyles or [],preferences=''))
                 place=plan['locations'][0]
                 values.update(lat=place['lat'],lon=place['lon'],radius=plan['radiusMeters'],photoStyles=plan['photoStyles'] or None,preferences=plan['preferences'],scoringIntent=plan.get('scoringIntent') or plan['preferences'],categories=None,poiQueries=plan.get('poiQueries') or [],geographicKinds=plan.get('geographicKinds') or [],selectedPoiIds=None,poiCatalogToken=None)
                 context['locationLabel']=place['label'];context['explanation']=plan['explanation']
             payload=ExploreRequest.model_validate(values)
-            context.update(payload.model_dump());context['stage']='sources';tasks.update_context('search',job['id'],context)
+            context.update(payload.model_dump(exclude={'query'}));context['query']=submitted.query
+            context['stage']='sources';tasks.update_context('search',job['id'],context)
             result=await run(payload,allow_expired=True,task_id=job['id'])
             store.update(job['id'],state='complete',result=json.dumps(result),error=None,lease_until=0)
         except Exception as error:

@@ -309,3 +309,18 @@ test('reload hydrates existing Commons history from the backend without rerunnin
  assert.equal(f.recoveryRequests().filter(r=>r.url.endsWith('/report/saved')).length,1);
  assert.ok(f.recoveryRequests().every(r=>r.method==='GET'));
 });
+
+test('history-derived hidden requirements never become fresh search defaults',async()=>{
+ const f=pageFixture();f.element('preferences').defaultValue='Scenic public photography';f.element('preferences').value='Old lake requirement';
+ f.applyContext({lat:41,lon:-87,radius:2000,query:'great lake view',preferences:'Generated lake requirement'});
+ assert.equal(f.element('preferences').value,'Old lake requirement','history does not write parsed requirements back into the input');
+ f.element('prompt-query').value='caffe among high rise buildings';
+ const result=await f.submitMultiple();
+ assert.equal(result.submitted.length,2);
+ for(const payload of result.submitted){assert.equal(payload.query,'caffe among high rise buildings');assert.equal(payload.preferences,'Scenic public photography');}
+});
+
+test('immutable backend search query repairs a stale cached history title',()=>{
+ const f=pageFixture();const entries=f.historyWith([{id:'search',label:'Selected map location',created:1000,checked:true,result:{spots:[]}}],[{id:'search',kind:'search',created:1,state:'complete',context:{query:'caffe among high rise buildings',lat:41,lon:-87}}]);
+ assert.equal(entries[0].label,'caffe among high rise buildings');
+});
