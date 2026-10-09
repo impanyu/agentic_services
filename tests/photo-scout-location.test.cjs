@@ -317,7 +317,7 @@ test('history-derived hidden requirements never become fresh search defaults',as
  f.element('prompt-query').value='caffe among high rise buildings';
  const result=await f.submitMultiple();
  assert.equal(result.submitted.length,2);
- for(const payload of result.submitted){assert.equal(payload.query,'caffe among high rise buildings');assert.equal(payload.preferences,'Scenic public photography');}
+ for(const payload of result.submitted){assert.equal(payload.query,'caffe among high rise buildings');assert.equal(payload.preferences,undefined,'fresh website requests omit the hidden preferences field');}
 });
 
 test('immutable backend search query repairs a stale cached history title',()=>{

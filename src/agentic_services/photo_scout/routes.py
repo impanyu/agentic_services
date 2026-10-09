@@ -33,6 +33,9 @@ class ThumbnailRequest(BaseModel):
     sourceUrls: list[str] = Field(max_length=24)
 
 
+DEFAULT_PHOTO_PREFERENCES = 'Scenic, distinctive public places for photography'
+
+
 class ExploreRequest(BaseModel):
     query: str = Field(default="",max_length=1000)
     lat: float = Field(ge=-85,le=85,allow_inf_nan=False)
@@ -46,7 +49,7 @@ class ExploreRequest(BaseModel):
     scoringIntent: str = Field(default="",max_length=1000)
     selectedPoiIds: list[str] | None = Field(default=None,max_length=30)
     poiCatalogToken: str | None = Field(default=None,max_length=40000)
-    preferences: str = Field(default='Scenic, distinctive public places for photography',max_length=500)
+    preferences: str = Field(default=DEFAULT_PHOTO_PREFERENCES,max_length=500)
 
     @model_validator(mode='after')
     def validate_style_filters(self):
@@ -60,6 +63,15 @@ class ExploreRequest(BaseModel):
 
 class SearchTaskRequest(ExploreRequest):
     query: str = Field(default='',max_length=1000)
+
+
+def current_website_task(payload: SearchTaskRequest) -> SearchTaskRequest:
+    # There is no editable preferences field in the website. Cached clients may
+    # still submit a previous report's hidden value, even with an empty query.
+    # A signed catalog instead carries preferences resolved for that catalog.
+    if payload.selectedPoiIds is None:
+        return payload.model_copy(update={'preferences': DEFAULT_PHOTO_PREFERENCES})
+    return payload
 
 
 class PhotoStore:
@@ -457,6 +469,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
         if not x_request_token or not re.fullmatch(r'[A-Za-z0-9_-]{32,128}',x_request_token):
             raise HTTPException(422,'A private request token of at least 32 characters is required')
         source_limit()
+        payload=current_website_task(payload)
         # Validate signed place selection before durable admission, without fetching images.
         if payload.selectedPoiIds is not None: await chosen_pois(payload)
         identity=tasks.identity(request,response)
@@ -469,7 +482,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
         job=store.claim_preview()
         if not job: return False
         try:
-            submitted=SearchTaskRequest.model_validate_json(job['payload'])
+            submitted=current_website_task(SearchTaskRequest.model_validate_json(job['payload']))
             values=submitted.model_dump(exclude={'query'})
             context=tasks.context('search',job['id']) or submitted.model_dump()
             if submitted.query.strip():

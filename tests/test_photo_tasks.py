@@ -354,3 +354,41 @@ def test_removed_account_photo_requires_csrf_and_stays_out_of_tasks(tmp_path,mon
     payload={'kind':'portrait','id':'photo'}
     assert client.post('/photo-scout/v1/removed-items',headers={'Origin':'https://aisoup.net'},json=payload).status_code==403
     assert client.post('/photo-scout/v1/removed-items',headers={'Origin':'https://aisoup.net','X-CSRF-Token':'csrf'},json=payload).status_code==200
+
+
+def test_blank_search_after_text_search_does_not_inherit_hidden_preferences(tmp_path,monkeypatch):
+    settings,app,client=setup(tmp_path,monkeypatch);seen=[]
+    async def resolve(settings,payload):
+        assert payload.query=='high rise buildings with glass wall' and payload.preferences==''
+        return {'locations':[{'lat':41.89,'lon':-87.63,'label':'Map location'}],
+            'radiusMeters':2000,'photoStyles':['urban'],'preferences':'Show glass facades.',
+            'scoringIntent':'High-rise buildings with glass facades','explanation':'Glass architecture'}
+    async def candidates(*args,**kwargs):return [],{}
+    async def nearby(*args):return [],{'status':'ok','provider':'openstreetmap'}
+    async def explore(settings,payload,*args):
+        seen.append(payload.model_dump());return {'spots':[],'summary':'Saved result'}
+    monkeypatch.setattr(routes,'resolve_intent',resolve);monkeypatch.setattr(routes,'candidates',candidates)
+    monkeypatch.setattr(routes,'nearby_pois',nearby);monkeypatch.setattr(routes,'explore',explore)
+    base={'lat':41.89,'lon':-87.63,'radius':2000}
+    first=client.post('/photo-scout/v1/jobs',headers={'X-Request-Token':'a'*32},json=base|{'query':'high rise buildings with glass wall'})
+    assert first.status_code==202;assert asyncio.run(app.state.process_photo_preview())
+    second=client.post('/photo-scout/v1/jobs',headers={'X-Request-Token':'b'*32},json=base|{'query':'','preferences':'Show glass facades.'})
+    assert second.status_code==202
+    assert second.json()['context']['preferences']==routes.DEFAULT_PHOTO_PREFERENCES
+    # Also protect a stale job queued before this deployment, not just admission.
+    with sqlite3.connect(settings.database_path) as db:
+        raw=json.loads(db.execute('SELECT payload FROM photo_scout_jobs WHERE id=?',(second.json()['jobId'],)).fetchone()[0])
+        raw['preferences']='Show glass facades.'
+        db.execute('UPDATE photo_scout_jobs SET payload=? WHERE id=?',(json.dumps(raw),second.json()['jobId']))
+    assert asyncio.run(app.state.process_photo_preview())
+    assert seen[0]['scoringIntent']=='High-rise buildings with glass facades'
+    assert seen[1]['query']=='' and seen[1]['preferences']==routes.DEFAULT_PHOTO_PREFERENCES
+    assert seen[1]['scoringIntent']=='' and seen[1]['poiQueries']==[] and seen[1]['geographicKinds']==[]
+    assert seen[1]['photoStyles'] is None and seen[1]['radius']==2000
+    saved=client.get('/photo-scout/v1/report/'+second.json()['jobId']).json()['context']
+    assert saved['preferences']==routes.DEFAULT_PHOTO_PREFERENCES and saved['query']==''
+
+
+def test_signed_current_catalog_keeps_its_own_resolved_preferences():
+    request=routes.SearchTaskRequest(lat=0,lon=0,selectedPoiIds=['place-1'],poiCatalogToken='signed',preferences='Current catalog style')
+    assert routes.current_website_task(request).preferences=='Current catalog style'
