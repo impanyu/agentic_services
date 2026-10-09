@@ -37,8 +37,8 @@ class SubmitModel(Model):
     def __init__(self):self.calls=0
     async def get_response(self,*args,**kwargs):
         self.calls+=1
-        name='review_exploration' if self.calls==1 else 'submit_candidates'
-        arguments=json.dumps({'comparison':'No images were found; no visual comparison is possible.', 'unexplored_places':[], 'coverage_limitations':'All available imagery sources were unavailable; there is no image evidence to inspect.'}) if self.calls==1 else '{"explanation":"No coverage"}'
+        name='submit_candidates'
+        arguments='{"explanation":"Agent decided no useful coverage"}'
         return ModelResponse(output=[ResponseFunctionToolCall(type='function_call',id=f'fc_{self.calls}',call_id=f'call_{self.calls}',name=name,arguments=arguments)],usage=Usage(),response_id=f'r{self.calls}')
     async def stream_response(self,*args,**kwargs):
         raise NotImplementedError
@@ -49,7 +49,7 @@ def test_submit_stops_sdk_without_another_model_turn(tmp_path):
     d=state(tmp_path);model=SubmitModel()
     agent=Agent(name='test',model=model,tools=d.tools(),tool_use_behavior=d.finish_tools)
     asyncio.run(Runner.run(agent,'Submit',run_config=RunConfig(tracing_disabled=True)))
-    assert d.submitted and model.calls==2
+    assert d.submitted and model.calls==1
 
 
 def test_inspect_keeps_actual_location_heading_and_fov(tmp_path,monkeypatch):
@@ -127,27 +127,33 @@ def invoke(d,name,params):
     return asyncio.run(tool.on_invoke_tool(ToolContext(None,tool_name=name,tool_call_id='trace-call',tool_arguments=json.dumps(params)),json.dumps(params)))
 
 
-def test_rejected_submit_is_logged_and_does_not_stop_agent(tmp_path):
+def test_submit_without_review_or_coverage_quota_is_logged(tmp_path):
     d=state(tmp_path)
-    result=invoke(d,'submit_candidates',{'explanation':'Two views are enough'})
-    assert 'ready review' in result and not d.submitted
-    assert not d.finish_tools(None,[]).is_final_output
+    result=invoke(d,'submit_candidates',{'explanation':'Agent decided further exploration is not useful'})
+    assert result['submitted'] and d.submitted
+    assert d.finish_tools(None,[]).is_final_output
     event=state(tmp_path).audit[-1]
-    assert event['outcome']=='failed' and event['errorType']=='ValueError'
-    assert event['parameters']['explanation']=='Two views are enough'
+    assert event['outcome']=='completed' and event['error'] is None
+    assert event['parameters']['explanation']=='Agent decided further exploration is not useful'
     assert event['durationSeconds']>=0 and event['callId']=='trace-call'
 
 
-def test_review_requires_decisions_and_specific_sparse_coverage_reason(tmp_path):
+def test_optional_review_reports_gaps_without_blocking_submit(tmp_path):
     d=state(tmp_path);d.views['one']={'id':'one','lat':40,'lon':-96};d.inspected={'one'}
-    p={'comparison':'A promising lake view was inspected, but alternative positions remain unchecked.', 'unexplored_places':['Other shoreline'], 'coverage_limitations':''}
-    assert not invoke(d,'review_exploration',p)['ready']
-    invoke(d,'record_view_decisions',{'view_ids':['one'],'decision':'reject','reason':'Only a road is visible, with no lake.'})
-    assert not invoke(d,'review_exploration',p)['ready']
-    p['coverage_limitations']='Repeated imagery lookups around the shoreline found no other panoramas; alternative sources returned no photos.'
-    assert invoke(d,'review_exploration',p)['ready']
-    invoke(d,'submit_candidates',{'explanation':'Partial coverage'})
-    assert d.submitted and state(tmp_path).decisions['one']['decision']=='reject'
+    p={'comparison':'One view looks promising.', 'unexplored_places':['Other shoreline'], 'coverage_limitations':''}
+    review=invoke(d,'review_exploration',p)
+    assert review['advisoryOnly'] and review['missingDecisions']==['one']
+    assert 'ready' not in review and 'targetPositions' not in review
+    invoke(d,'submit_candidates',{'explanation':'The Agent decided to stop'})
+    assert d.submitted and state(tmp_path).review['distinctPositions']==1
+
+
+def test_tool_failure_remains_logged(tmp_path):
+    d=state(tmp_path)
+    result=invoke(d,'inspect_view',{'view_id':'unknown','heading':0,'fov':80})
+    assert 'Unknown view' in result and not d.finish_tools(None,[]).is_final_output
+    event=state(tmp_path).audit[-1]
+    assert event['outcome']=='failed' and event['errorType']=='ValueError'
 
 
 def test_batch_views_preserve_ids_and_partial_failure_evidence(tmp_path,monkeypatch):
@@ -168,7 +174,7 @@ def test_batch_views_preserve_ids_and_partial_failure_evidence(tmp_path,monkeypa
 
 
 def test_further_discovery_invalidates_coverage_review(tmp_path):
-    d=state(tmp_path);d.review={'ready':True};d.tick('inspect_views')
+    d=state(tmp_path);d.review={'advisoryOnly':True};d.tick('inspect_views')
     assert d.review is None
 
 

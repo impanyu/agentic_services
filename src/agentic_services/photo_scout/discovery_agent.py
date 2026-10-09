@@ -44,21 +44,21 @@ per location are allowed. No numeric scoring in exploration: the evaluator score
 Do not mechanically download all eight compass directions everywhere. Inspect promising
 angles first, use the map/imagery to decide where to look next. Spend the budget on evidence.
 Use manage_candidate to add, update or remove inspected views and list_candidates to review.
-Do not stop merely because two views match. Build a shortlist of promising regions before
-opening images. For large regions compare different relevant lakes/parks/neighborhoods.
-Inspect multiple land positions at promising sites, not just the POI centroid. If a view
-has wires, roads or obstructions, try a nearby viewpoint and compare several directions
-using inspect_views. Use geography bearings to choose directions; avoid blind sweeps.
-Record every inspected view's keep/reject decision with record_view_decisions, including
-visual evidence and why an alternative was rejected. If coverage is missing, try another
-position or imagery source before giving up. Aim for at least three distinct positions
-for small regions and six for regions over 5 km when coverage permits; this is a coverage
-target, not a requirement to invent candidates or fill a quota.
-Before submission call review_exploration: compare your candidates, explain which promising
-places remain unchecked and why further exploration is unlikely to improve the result.
-The review reports gaps. Resolve them while budget remains, or explicitly justify partial
-coverage. Candidate quality, variety and evidence determine completion, not requested top size.
-After reviewing exploration, call submit_candidates. This is the REQUIRED
+You decide where to explore, which tools to use, and when evidence is sufficient.
+Prefer a deliberate search over the first matching picture: consider several promising
+areas and compare their photographic potential, especially across a large region.
+When an image shows obstructions, clutter or weak composition, consider moving the lookup
+point or trying other headings/fov. Use inspect_views to compare selected directions
+efficiently when useful; choose them from geographic and visual evidence, not blind sweeps.
+Balance breadth across locations with depth at promising viewpoints. Spend more effort
+where another lookup is likely to improve the shortlist; avoid repetitive low-value calls.
+Consider another imagery source when coverage is weak. No minimum count of locations,
+images, directions or candidates is required, and no fixed exploration sequence applies.
+Use record_view_decisions and review_exploration when useful to retain visual comparisons,
+rejection reasons and unresolved coverage. These tools are optional aids, not prerequisites.
+Make your own stopping decision based on the user request, evidence, remaining uncertainty
+and expected value of further exploration. Explain that decision in submit_candidates.
+When you judge the candidate list ready, call submit_candidates. This is the REQUIRED
 terminal action, freezes the list and ends your turn; the backend automatically scores it.
 You cannot see scores or explore after submitting. Submit partial or empty results with
 an honest explanation when evidence or coverage is insufficient. Never finish with prose
@@ -291,7 +291,7 @@ class Discovery:
         return {'submitted':True,'candidateCount':len(self.selected),'next':'automatic-batch-scoring'}
 
     def finish_tools(self, context, results):
-        # A rejected submission must return to the model, not terminate the SDK.
+        # Only a successful submission terminates the SDK; other tool failures return to the model.
         return ToolsToFinalOutputResult(is_final_output=self.submitted,
             final_output={'submitted':True,'candidateCount':len(self.selected)} if self.submitted else None)
 
@@ -422,28 +422,21 @@ class Discovery:
             self.checkpoint();return {'recorded':view_ids,'decision':decision}
         @function_tool(failure_error_function=logged_error)
         def review_exploration(comparison:str,unexplored_places:list[str],coverage_limitations:str):
-            """Required before submit. Compare selected/rejected compositions and locations. List promising unchecked places with reasons. Explain concrete coverage limitations, or use empty string if none."""
+            """Optional reflection aid. Compare compositions and locations, list unchecked places and limitations. Does not impose thresholds or gate submission."""
             self.tick('review_exploration')
             missing=sorted(self.inspected-set(self.decisions))
             positions={(round(self.views[k]['lat'],4),round(self.views[k]['lon'],4)) for k in self.inspected}
-            target=6 if self.payload.radius>5000 else 3
-            gaps=[]
-            if missing:gaps.append('Record keep/reject visual reasons for all inspected views')
-            if len(positions)<target:gaps.append(f'Only {len(positions)} distinct positions compared; target {target} when imagery permits')
-            if unexplored_places:gaps.append('Promising places remain unchecked; explore them or justify diminishing returns')
-            if len(comparison.strip())<40:raise ValueError('Give a concrete visual and location comparison')
-            exhausted=self.calls>=self.max_calls-5 or self.images>=self.max_images or time.monotonic()-self.started>self.max_seconds-60
             self.review={'comparison':comparison[:2500],'unexploredPlaces':unexplored_places[:30],
-                'coverageLimitations':coverage_limitations[:2000],'gaps':gaps,'missingDecisions':missing,
-                'distinctPositions':len(positions),'targetPositions':target,'budgetExhausted':exhausted,
-                'ready':not missing and (not gaps or exhausted or len(coverage_limitations.strip())>=40)}
+                'coverageLimitations':coverage_limitations[:2000],'missingDecisions':missing,
+                'distinctPositions':len(positions),'inspectedViews':len(self.inspected),
+                'remainingToolCalls':max(0,self.max_calls-self.calls),
+                'remainingImages':max(0,self.max_images-self.images),
+                'advisoryOnly':True,'note':'Agent decides whether more exploration is useful; this review does not gate submission.'}
             self.checkpoint();return self.review
         @function_tool(failure_error_function=logged_error)
         def submit_candidates(explanation:str):
             """TERMINAL: freeze current candidate list, end exploration and trigger automatic backend multimodal scoring."""
             self.tick('submit_candidates')
-            if not self.review or not self.review['ready']:
-                raise ValueError('Submission needs a ready review_exploration. Record view decisions, compare locations, and resolve or explain coverage gaps first.')
             return self.submit(explanation)
         tools=[search_places,query_geography,analyze_position,view_map,find_streetview,search_photos,inspect_view,inspect_views,manage_candidate,list_candidates,record_view_decisions,review_exploration,submit_candidates]
         for tool in tools:
@@ -481,7 +474,7 @@ async def discover(settings,payload,job_id=None,progress=None,initial_pois=None,
             def instructions(ctx,agent):
                 remaining=max(0,state.max_calls-state.calls)
                 turns_left=max(0,state.max_turns-ctx.usage.requests)
-                return INSTRUCTIONS+f'\nModel turns remaining: {turns_left}. Remaining tools: {remaining}; images: {state.max_images-state.images}; candidates: {len(state.selected)}. '+('Finish decisions and coverage review, then submit now; explain budget limitations.' if remaining<8 or turns_left<=6 or time.monotonic()-state.started>state.max_seconds-70 else '')
+                return INSTRUCTIONS+f'\nModel turns remaining: {turns_left}. Remaining tools: {remaining}; images: {state.max_images-state.images}; candidates: {len(state.selected)}. '+('Budget is nearly exhausted. Prioritize submitting the current candidates with an honest coverage explanation.' if remaining<8 or turns_left<=6 or time.monotonic()-state.started>state.max_seconds-70 else '')
             agent=Agent(name='Photo Scout Explorer',instructions=instructions,
                 model=OpenAIResponsesModel(model,client),tools=state.tools(),
                 tool_use_behavior=state.finish_tools,

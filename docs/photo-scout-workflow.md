@@ -53,17 +53,17 @@ the previous workflow available for rollback.
 
 ### Coverage review and structured action logs
 
-Explorer v2 compares promising regions before stopping. `inspect_views` compares
-up to four selected headings in one call (serial provider reads, one model turn).
-`record_view_decisions` records visual keep/reject evidence; adding a candidate
-also records its keep reason. `review_exploration` requires a concrete comparison,
-unchecked promising places, and explicit coverage limitations. All inspected
-views need decisions before ordinary submission. Coverage targets are three
-positions in small regions, six above 5 km; fewer are allowed with a recorded
-coverage explanation or budget exhaustion. These targets cannot guarantee good
-recommendations or comprehensive coverage. Further discovery invalidates review.
-A rejected submission returns to the model; only successful submission ends it.
-Hard deadlines preserve selected evidence even if review is incomplete.
+Exploration breadth, image-driven follow-up and stopping are encouraged through the
+prompt, not enforced by a fixed sequence, count threshold or submission gate.
+The Agent decides which locations/directions to inspect and whether another lookup
+is likely to improve its shortlist. `inspect_views` compares up to four chosen
+headings in one call (serial provider reads, one model turn). `record_view_decisions`
+and `review_exploration` are optional reflection/logging aids. Adding a candidate
+also records its keep reason. Review reports evidence and unexamined views without
+judging readiness; submission works with or without a review. Only user bounds,
+actual inspected-image provenance and resource budgets are enforced. Successful
+submission ends the Agent and triggers scoring; hard deadlines preserve selected
+evidence with an explicit partial-coverage note.
 
 Each tool audit event records call ID, parsed parameters, start time, duration,
 outcome, sanitized result metadata, errors and evidence counts. Image bytes,
