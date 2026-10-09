@@ -1,5 +1,21 @@
 # Photo Scout fixed workflow
 
+## Current search path (2026-10-09)
+
+Search now always uses the fixed pipeline, for both website jobs and paid HTTP/MCP requests. `PHOTO_SCOUT_EXPLORER_ENABLED` no longer enables the historical autonomous explorer. The explorer module remains available for offline experimentation, but is not called by production search.
+
+1. Resolve natural-language `query` to location, arbitrary `poiQueries`, moods, radius, preferences, `scoringIntent` and spatial `geographicKinds`. Text overrides conflicting structured controls. An empty query skips text interpretation.
+2. Run Google Places and OSM geometry lookup concurrently. Geographic kinds are lake, sea, river, peak, forest and generic waterside. Multiple kinds are intersected. Lake shore uses polygon boundaries (including reconstructed multipolygon holes), not a lake centroid. Shore/river proximity is a discovery hypothesis, not proof of visibility.
+3. Filter named POIs by spatial requirements. For requests without an explicit POI category/business, also generate positions along eligible mapped roads/paths near geographic features. Exclude mapped private/no-foot access and motorway/trunk paths. Access and safe standing positions remain unverified. Merge/deduplicate up to 24 candidate places; this is bounded coverage, not all places in the region. Source feature proximity defaults are 150 m for lake/sea/waterside, 100 m for river, 300 m for peak, and containment for forest.
+4. Query Street View metadata in parallel, deduplicate panoramas and retain eight horizontal headings at 120 degrees. Recheck actual camera positions against geographic constraints. Commons and Panoramax are retrieved in parallel, associated with nearby candidates and checked by the same visual model. Up to 224 directional/static images enter scoring.
+5. Check subject/style requirements and score together in each structured multimodal response. Default 12 images per batch, up to eight concurrent batches (`PHOTO_SCOUT_SCORING_BATCH_SIZE`: 1–16; `PHOTO_SCOUT_SCORING_CONCURRENCY`: 1–8). Successful assessments reuse the existing context-sensitive cache. Every image-backed matching place is returned, including low scores; unverified candidates do not enter `spots`.
+
+Successful OSM geometry is cached in SQLite for 24 hours. Live Overpass requests have a four-second overall retrieval deadline with a backup endpoint. If unavailable, cached OpenFreeMap/OpenMapTiles vector geometry provides a five-second fallback: water, waterways, woods, mountain peaks and roads/paths are decoded from up to 16 tiles. Adjacent polygons are stitched before extracting shores, and an outer border prevents clipped tile edges becoming false shores. This geometry is generalized and may omit small features. Tile data is cached for seven days and fallback provenance is included in source status. An unavailable geographic source fails explicitly instead of silently returning geographically unrelated places. Named Places queries preserve successful responses when another query fails. Results expose retrieval/scoring/total timing measurements; cold searches with many uncached images are not guaranteed to complete in ten seconds. Queue time and website text parsing happen outside these result timing measurements.
+
+MCP and HTTP accept `query`, `poiQueries`, `geographicKinds` and `scoringIntent`; `limit` is deprecated and ignored. Existing asynchronous job ownership, history, account retention, image attribution and selfie generation remain in place.
+
+## Earlier implementation notes
+
 Photo Scout is a deterministic application pipeline. Models do not choose tools or execute code.
 
 - Text input: a structured-output model extracts a place, photo mood, radius, and preferences. Photon resolves the place to coordinates; the first provider-ranked match is used, preferring a named city point over same-named boundary centroids when resolving a city and its resolved name is displayed. The model never generates coordinates. Inputs use best-effort interpretation without clarification or candidate selection. When no place can be resolved, the selected map coordinate is used with an explicit explanation. Mentioned photo moods, search radius and descriptive preferences are applied automatically. All visually verified matching results are returned and ranked; there is no three- or five-result target. Text explicitly overrides conflicting UI values; omitted parameters preserve current controls. Radius, moods and preferences remain available for manual input as overlays on the full-page map. Coordinates are display-only and selected through the map, text or device location; mood selection supports multiple choices. Distances are converted to meters and clamped to the supported 100–20000 meter range.
@@ -18,7 +34,7 @@ Photo Scout is a deterministic application pipeline. Models do not choose tools 
 
 - Google sign-in uses an independent OAuth web client configured by `PHOTO_SCOUT_GOOGLE_CLIENT_ID`, `PHOTO_SCOUT_GOOGLE_CLIENT_SECRET`, callback `https://api.aisoup.net/photo-scout/v1/auth/callback`. Scopes: openid/email/profile. Code flow validates state, PKCE, ID token signature, issuer, audience, nonce and expiration. HttpOnly Secure SameSite=Lax sessions use host-only cookies. Account writes require matching frontend Origin and a session CSRF token. Gateway passes redirects without following and permits credentialed CORS only for configured company origins. Guest history migrates into account history after successful sign-in; sign-out clears account views from the browser.
 
-## Agent exploration (2026-10-09)
+## Historical agent exploration (not used by current searches)
 
 Enable `PHOTO_SCOUT_EXPLORER_ENABLED=1`; set `PHOTO_SCOUT_EXPLORER_MODEL`
 (default `gpt-6.1-sol`). Scoring keeps `PHOTO_SCOUT_MODEL` (currently Luna).

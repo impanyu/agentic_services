@@ -42,10 +42,11 @@ async def nearby_places(lat,lon,radius,queries):
     queries=list(dict.fromkeys(q.strip() for q in queries if q.strip()))[:4]
     if not queries:queries=['scenic places and tourist attractions']
     responses=await asyncio.gather(*(search_text(q,center=(lat,lon),radius=radius) for q in queries),return_exceptions=True)
-    if any(isinstance(r,Exception) for r in responses):
+    if all(isinstance(r,Exception) for r in responses):
         return [],{'status':'unavailable','provider':'google-places','queries':queries}
     groups=[];seen=set()
     for response in responses:
+        if isinstance(response,Exception):continue
         group=[]
         for row in response:
             pos=row.get('location',{});lat2,lon2=pos.get('latitude'),pos.get('longitude')

@@ -6,6 +6,7 @@ from typing import Literal, Annotated
 import httpx
 from openai import AsyncOpenAI
 from pydantic import BaseModel,Field
+from .geography import GeographicKind
 
 Mood=Literal['nature','urban','vintage','iconic','artistic','waterside','minimal','adventure']
 PoiQuery=Annotated[str,Field(min_length=1,max_length=200)]
@@ -18,6 +19,7 @@ class IntentRequest(BaseModel):
     photoStyles: list[Mood]=Field(default_factory=list,max_length=8)
     preferences: str=Field(default='',max_length=500)
 class PhotoIntent(BaseModel):
+    geographicKinds: list[GeographicKind]=Field(default_factory=list,max_length=6)
     scoringIntent: str=Field(default="",max_length=1000)
     poiQueries: list[PoiQuery]=Field(default_factory=list,max_length=4)
     locationQuery: str | None=Field(max_length=200)
@@ -27,7 +29,8 @@ class PhotoIntent(BaseModel):
     preferences: str=Field(max_length=500)
     explanation: str=Field(max_length=400)
     clarification: str | None=Field(max_length=300)
-INSTRUCTIONS='''Interpret a user's place or photography question for Photo Scout.
+INSTRUCTIONS='''Extract geographicKinds for spatial requirements: lake (lakeside, lake shore), sea (seaside, coastline, beach), river (riverbank), peak (mountaintop or summit), forest (in woods), waterside (unspecified waterfront). Multiple kinds mean ALL constraints must hold; alternatives should use the best matching broad kind, not contradictory simultaneous constraints. Extract these independently from arbitrary poiQueries: 'lakeside coffee shops' => geographicKinds=['lake'], poiQueries=['coffee shops']; 'lake shore photos' => geographicKinds=['lake'], poiQueries=[]; 'mountaintop' => geographicKinds=['peak'], poiQueries=[]. A lake/sea/forest is geographic context, not automatically a business/category query. Keep geographic requirements in scoringIntent/preferences so the images must visibly support them. If only UI waterside mood is supplied, use geographicKinds=['waterside']; explicit text such as urban streets overrides a conflicting waterside mood and constraint. Do not infer constraints just from a place name such as Lakeview or Forest Park.
+Interpret a user's place or photography question for Photo Scout.
 The query text is authoritative. Supplied UI parameters (center, radius, photoStyles, preferences) are defaults only. Any parameter explicitly mentioned in query MUST override a conflicting UI value; preserve UI values only for parameters omitted from query. Example: UI radius=1000, photoStyles=[nature], query="urban shots in Paris within 20 km" => Paris, radiusMeters=20000, photoStyles=[urban]. An explicit place overrides the selected map center. If the user requests a city-wide search without a numeric radius, use 20000 meters.
 Extract POI discovery intent into poiQueries: free-text search phrases, NOT an enumeration. Accept ANY category, business name, or combination; normalize typos and translated category names. Examples: "caffe" => ["coffee shops"]; "motel" => ["motels"]; "caffe resteraunt" => ["coffee shops","restaurants"]; "vegan bakery" => ["vegan bakeries"]; "Starbucks" => ["Starbucks"]. Never drop an explicit category or business name into generic scenic discovery. Separate geographic center from discovery targets: "motels in Paris within 2km" => locationQuery="Paris", poiQueries=["motels"], radiusMeters=2000. A standalone street address is ONLY locationQuery: poiQueries=[]; then discover photo spots near that address. A standalone category is ONLY poiQueries: useMapCenter=true, locationQuery=null. An explicitly named attraction like Eiffel Tower determines the search center; a business chain such as Starbucks is a POI query unless a specific branch/address is requested. Preserve non-geographic details such as vintage style and quiet outdoor seating in preferences. When ONLY a photo mood or broad photographic exploration is specified (Surprise me, scenic views, beautiful streets, photo spots), leave poiQueries=[] so area imagery exploration applies. These broad visual requests are not named POI categories; never turn them into generic scenic places or tourist attractions queries. An explicit category such as cafes or motels still produces poiQueries. Explicit target categories or business names always take precedence over mood discovery hints. No fixed list limits the possible poiQueries. Do not substitute generic scenic preferences when a target is stated.
 Extract one canonical geocoding locationQuery, with city/country when stated. For translated place names, prefer the common English or local-language spelling recognized by map data: e.g. 巴黎铁塔 -> Eiffel Tower, Paris, France. Do not send a literal translated nickname when a canonical name is known.

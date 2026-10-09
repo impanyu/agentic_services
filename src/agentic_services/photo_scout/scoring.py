@@ -47,13 +47,13 @@ class ImageAssessment(VisualChoice):
 
 
 class VisualBatch(BaseModel):
-    assessments: list[ImageAssessment] = Field(min_length=1,max_length=6)
+    assessments: list[ImageAssessment] = Field(min_length=1,max_length=16)
 
 
 INSTRUCTIONS='''You are a multimodal photography evaluator in a fixed scoring pipeline.
 Check EVERY supplied image exactly once in this single response.
 FIRST judge whether the actual pixels match request.scoringIntent, poiQueries,
-preferences and photoStyleBriefs. Set matches_request and explain match_reason.
+preferences, geographicKinds and photoStyleBriefs. Spatial proximity is not proof of visual fit: lakeside/sea/river/waterside requests require visible relevant water or shore; forest requests require visible woodland; peak requests require a plausible summit/mountain-view setting. Reject directions facing away from the requested subject. Set matches_request and explain match_reason.
 Reject clear subject/category mismatches or clear conflicts with explicit visual
 requirements or requested mood. A beautiful landscape is not a coffee shop or motel.
 Do not infer a match merely from title, provider or proximity. Accept plausible
@@ -149,8 +149,9 @@ async def explore(settings,payload,rows,statuses):
             cached.append(assessment)
         else:
             missing.append(row)
-    batches=[missing[i:i+6] for i in range(0,len(missing),6)]
-    batch_slots=asyncio.Semaphore(4);download_slots=asyncio.Semaphore(8)
+    batch_size=max(1,min(16,int(os.getenv('PHOTO_SCOUT_SCORING_BATCH_SIZE','12'))))
+    batches=[missing[i:i+batch_size] for i in range(0,len(missing),batch_size)]
+    batch_slots=asyncio.Semaphore(max(1,min(8,int(os.getenv('PHOTO_SCOUT_SCORING_CONCURRENCY','8')))));download_slots=asyncio.Semaphore(16)
     async def download(row):
         try:
             async with download_slots:
@@ -165,7 +166,7 @@ async def explore(settings,payload,rows,statuses):
                 usable=[(row,data) for row,data in loaded if data]
                 if not usable: return {'assessments':[],'downloaded':0,'downloadFailed':len(batch),'scoringFailed':0,'usage':None}
                 content=[{'type':'input_text','text':json.dumps({
-                    'request':{'scoringIntent':payload.scoringIntent.strip(),'poiQueries':payload.poiQueries,'preferences':payload.preferences.strip(),'photoStyles':sorted(payload.photoStyles or [])},
+                    'request':{'scoringIntent':payload.scoringIntent.strip(),'poiQueries':payload.poiQueries,'geographicKinds':payload.geographicKinds,'preferences':payload.preferences.strip(),'photoStyles':sorted(payload.photoStyles or [])},
                     'photoStyleBriefs':style_briefs(payload.photoStyles)})}]
                 for row,data in usable:
                     content.extend([{'type':'input_text','text':json.dumps({'image':{k:v for k,v in row.items() if k not in ('imageUrl','author','distanceMeters','poiDistanceMeters','explorationReason')}})},
@@ -206,7 +207,7 @@ async def explore(settings,payload,rows,statuses):
         if poi_id in seen_pois:continue
         seen_pois.add(poi_id);item['recommend']=assessment.recommend
         item['assessmentStatus']='rated';poi_results.append(item)
-    spots=poi_results if poi_results else validate_result(VisualResult(spots=eligible,summary=''),rows,scored,len(rows))
+    spots=list(poi_results) if poi_results else validate_result(VisualResult(spots=eligible,summary=''),rows,scored,len(rows))
     mood=', '.join(s['label'] for s in style_briefs(payload.photoStyles))
     summary=(f'Highest-scoring photo opportunities{(" for "+mood) if mood else ""}: '+
         '; '.join(s['name'] for s in spots)+'. See the inspected visual evidence and composition ideas below.') if spots else (

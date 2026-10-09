@@ -16,15 +16,22 @@ interface PhotoMcpOptions {
   price: string
 }
 
+const geographicKinds=['lake','sea','river','peak','forest','waterside'] as const
 const photoArguments={
+  query:z.string().max(1000).optional().describe('Natural-language request. Explicit text overrides conflicting structured parameters.'),
+  poiQueries:z.array(z.string().min(1).max(200)).max(4).optional().describe('Arbitrary POI categories or business names, e.g. coffee shops.'),
+  geographicKinds:z.array(z.enum(geographicKinds)).max(6).optional().describe('Spatial requirements; multiple entries must all hold.'),
+  scoringIntent:z.string().max(1000).optional().describe('Visual subject, style and requirements for matching and scoring.'),
   lat:z.number().min(-85).max(85).describe('Latitude of the search center.'),
   lon:z.number().min(-180).max(180).describe('Longitude of the search center.'),
   radius:z.number().int().min(100).max(20000).optional().describe('Search radius in meters; default 1000.'),
-  limit:z.number().int().min(1).max(5).optional().describe('Number of top-ranked photo spots; default 3. All scored POIs remain in poiResults.'),
+  limit:z.number().int().min(1).max(5).optional().describe('Deprecated compatibility field; ignored. All verified matching places are returned.'),
   photoStyles:z.array(z.enum(['nature','urban','vintage','iconic','artistic','waterside','minimal','adventure'])).min(1).max(8).optional().describe('Optional desired photo moods.'),
   preferences:z.string().max(500).optional().describe('Additional photography preferences.'),
 }
 export const photoInputSchema={type:'object',additionalProperties:false,required:['lat','lon'],properties:{
+ query:{type:'string',maxLength:1000},poiQueries:{type:'array',maxItems:4,items:{type:'string',minLength:1,maxLength:200}},
+ geographicKinds:{type:'array',maxItems:6,items:{enum:geographicKinds}},scoringIntent:{type:'string',maxLength:1000},
  lat:{type:'number',minimum:-85,maximum:85},lon:{type:'number',minimum:-180,maximum:180},
  radius:{type:'integer',minimum:100,maximum:20000,default:1000},limit:{type:'integer',minimum:1,maximum:5,default:3},
  photoStyles:{type:'array',minItems:1,maxItems:8,items:{enum:['nature','urban','vintage','iconic','artistic','waterside','minimal','adventure']}},preferences:{type:'string',maxLength:500},
@@ -70,7 +77,7 @@ export async function createPhotoMcpHandler(options: PhotoMcpOptions): Promise<(
       outputSchema: z.object({ priceUsd: z.string(), network: z.string(), scope: z.string() }),
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     }, async () => {
-      const details = { priceUsd: options.price, network: 'Base USDC', scope: 'One nearby photo search; up to 25 candidate POIs, eight horizontal directions per panorama; results depend on coverage.' }
+      const details = { priceUsd: options.price, network: 'Base USDC', scope: 'One nearby photo search; up to 24 candidate locations, eight horizontal directions per panorama; results depend on coverage.' }
       return { content: [{ type: 'text', text: JSON.stringify(details) }], structuredContent: details }
     })
     server.registerTool('discover_photo_spots', {

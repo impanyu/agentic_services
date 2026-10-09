@@ -22,7 +22,7 @@ from pydantic import BaseModel, Field, model_validator
 from .tasks import TaskStore, SEARCH_RETENTION, prune_records
 from .styles import PHOTO_STYLES, mapped_categories, style_briefs, discovery_queries
 from .scoring import explore
-from .discovery_agent import discover as discover_viewpoints
+from .geography import GeographicKind, fetch_region, filter_places, geographic_places, merge_places
 from .intent import IntentRequest, PoiQuery, resolve_intent
 from .places import nearby_places
 from .sources import candidates, nearby_pois, google_enabled, google_image_data, MAX_SCORED_IMAGES
@@ -33,6 +33,7 @@ class ThumbnailRequest(BaseModel):
 
 
 class ExploreRequest(BaseModel):
+    query: str = Field(default="",max_length=1000)
     lat: float = Field(ge=-85,le=85,allow_inf_nan=False)
     lon: float = Field(ge=-180,le=180,allow_inf_nan=False)
     radius: int = Field(default=1000,ge=100,le=20000)
@@ -40,6 +41,7 @@ class ExploreRequest(BaseModel):
     photoStyles: list[Literal['nature','urban','vintage','iconic','artistic','waterside','minimal','adventure']] | None = Field(default=None,min_length=1,max_length=8)
     categories: list[Literal['viewpoint','park','attraction','museum','artwork','historic','nature','recreation','cafe','restaurant','bar','shop']] | None = Field(default=None,min_length=1,max_length=8)
     poiQueries: list[PoiQuery] = Field(default_factory=list,max_length=4)
+    geographicKinds: list[GeographicKind] = Field(default_factory=list,max_length=6)
     scoringIntent: str = Field(default="",max_length=1000)
     selectedPoiIds: list[str] | None = Field(default=None,max_length=24)
     poiCatalogToken: str | None = Field(default=None,max_length=40000)
@@ -176,29 +178,48 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
                 r=await client.request(method,'https://api.stripe.com/v1/'+path,auth=(stripe_key(),''),data=data)
                 r.raise_for_status(); return r.json()
             except httpx.HTTPError as e: raise HTTPException(503,'Stripe is temporarily unavailable') from e
-    async def lookup_pois(payload):
+    def geographic_kinds(payload):
+        return payload.geographicKinds or (['waterside'] if 'waterside' in (payload.photoStyles or []) else [])
+
+    async def lookup_pois(payload,include_geometry=False):
         categories=payload.poi_categories()
-        if os.getenv('PHOTO_SCOUT_POI_PROVIDER')=='google-places':
-            queries=discovery_queries(payload.poiQueries,payload.photoStyles,payload.categories)
-            pois,status=await nearby_places(payload.lat,payload.lon,payload.radius,queries)
-        else:
-            pois,status=await nearby_pois(payload.lat,payload.lon,payload.radius,categories) if categories is not None else await nearby_pois(payload.lat,payload.lon,payload.radius)
+        async def named():
+            if os.getenv('PHOTO_SCOUT_POI_PROVIDER')=='google-places':
+                queries=discovery_queries(payload.poiQueries,payload.photoStyles,payload.categories)
+                if kinds and not payload.poiQueries and not payload.categories:
+                    hints={'lake':['lakeside parks','lake viewpoints'],'sea':['beaches','coastal viewpoints'],
+                           'river':['riverfront parks','riverwalks'],'peak':['mountain peaks','mountain viewpoints'],
+                           'forest':['forest trails','forest parks'],'waterside':['waterfront promenades','waterside parks']}
+                    queries=list(dict.fromkeys(q for k in kinds for q in hints[k]))[:4]
+                return await nearby_places(payload.lat,payload.lon,payload.radius,queries)
+            return await nearby_pois(payload.lat,payload.lon,payload.radius,categories) if categories is not None else await nearby_pois(payload.lat,payload.lon,payload.radius)
+        kinds=geographic_kinds(payload)
+        (pois,status),(features,paths,geo_status)=await asyncio.gather(named(),fetch_region(payload.lat,payload.lon,payload.radius,kinds,settings.database_path))
+        if kinds:
+            if geo_status['status']!='ok':
+                raise HTTPException(503,'Geographic search is temporarily unavailable; please try again later')
+            pois=filter_places(pois,features,kinds,payload.lat,payload.lon)
+            # Explicit categories/businesses stay authoritative: do not add generic
+            # shore points to a request for lakeside cafes or motels.
+            generated=[] if payload.poiQueries or payload.categories else geographic_places(payload.lat,payload.lon,payload.radius,features,paths,kinds)
+            pois=merge_places(pois,generated)
+            status={**status,'status':'ok','count':len(pois),'geographicSearch':geo_status}
+            if include_geometry:status['_features']=features
         if status['status']!='ok':
-            logging.getLogger(__name__).warning('Photo Scout POI search failed: %s',status.get('attempts',[]))
             raise HTTPException(503,'Nearby place search is temporarily unavailable; please try again later')
         return pois,status
 
     def sign_catalog(payload,pois,status):
         if not settings.service_api_key: raise HTTPException(503,'Private gateway credential is required')
-        data={'lat':payload.lat,'lon':payload.lon,'radius':payload.radius,'categories':sorted(set(payload.poi_categories())) if payload.poi_categories() is not None else None,'photoStyles':sorted(set(payload.photoStyles)) if payload.photoStyles is not None else None,'poiQueries':payload.poiQueries,'expires':int(time.time())+3600,'pois':pois,'status':status}
+        data={'lat':payload.lat,'lon':payload.lon,'radius':payload.radius,'categories':sorted(set(payload.poi_categories())) if payload.poi_categories() is not None else None,'photoStyles':sorted(set(payload.photoStyles)) if payload.photoStyles is not None else None,'poiQueries':payload.poiQueries,'geographicKinds':geographic_kinds(payload),'expires':int(time.time())+3600,'pois':pois,'status':status}
         encoded=base64.urlsafe_b64encode(json.dumps(data,separators=(',',':')).encode()).decode().rstrip('=')
         signature=hmac.new(settings.service_api_key.encode(),('poi-catalog:'+encoded).encode(),hashlib.sha256).hexdigest()
         return encoded+'.'+signature
 
-    async def chosen_pois(payload,allow_expired=False):
+    async def chosen_pois(payload,allow_expired=False,include_geometry=False):
         if payload.selectedPoiIds is None:
             if payload.poiCatalogToken: raise HTTPException(422,'Select places from the supplied catalog')
-            return await lookup_pois(payload)
+            return await lookup_pois(payload,include_geometry)
         if not payload.selectedPoiIds or len(set(payload.selectedPoiIds))!=len(payload.selectedPoiIds):
             raise HTTPException(422,'Select at least one place, without duplicates')
         try:
@@ -211,23 +232,37 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
             if data.get('categories')!=(sorted(set(payload.poi_categories())) if payload.poi_categories() is not None else None): raise ValueError()
             if data.get('photoStyles')!=(sorted(set(payload.photoStyles)) if payload.photoStyles is not None else None): raise ValueError()
             if data.get('poiQueries',[])!=payload.poiQueries:raise ValueError()
+            if data.get('geographicKinds',[])!=geographic_kinds(payload):raise ValueError()
             wanted=set(payload.selectedPoiIds)
             pois=[p for p in data['pois'] if p['id'] in wanted]
             if len(pois)!=len(wanted): raise ValueError()
         except (AttributeError,ValueError,KeyError,TypeError):
             raise HTTPException(422,'Place selection is invalid or expired; find nearby places again')
-        return pois,{**data['status'],'count':len(pois),'catalogCount':len(data['pois'])}
+        status={**data['status'],'count':len(pois),'catalogCount':len(data['pois'])}
+        if include_geometry and geographic_kinds(payload):
+            features,_,geo_status=await fetch_region(payload.lat,payload.lon,payload.radius,geographic_kinds(payload),settings.database_path)
+            if geo_status['status']!='ok':raise HTTPException(503,'Geographic search is temporarily unavailable')
+            status['_features']=features
+        return pois,status
 
     def visual_exploration(payload):
-        return not payload.poiQueries and payload.categories is None and payload.selectedPoiIds is None
+        return not payload.poiQueries and not geographic_kinds(payload) and payload.categories is None and payload.selectedPoiIds is None
 
     async def catalog(payload,allow_expired=False):
         visual=visual_exploration(payload)
-        try:pois,poi_status=await chosen_pois(payload,allow_expired)
+        try:pois,poi_status=await chosen_pois(payload,allow_expired,include_geometry=True)
         except HTTPException as error:
             if not visual or error.status_code!=503:raise
             pois=[];poi_status={'status':'unavailable','role':'optional-place-context'}
         rows,statuses=await candidates(payload.lat,payload.lon,payload.radius,pois,**({'visual_exploration':True} if visual else {}))
+        features=poi_status.pop('_features',[])
+        if geographic_kinds(payload):
+            eligible=filter_places(rows,features,geographic_kinds(payload),payload.lat,payload.lon)
+            for name,status in statuses.items():
+                status['geographicallyExcludedImages']=sum(r['provider']==name for r in rows)-sum(r['provider']==name for r in eligible)
+                status['sampledImages']=sum(r['provider']==name for r in eligible)
+            rows=eligible
+            statuses['openstreetmap-geography']=poi_status.get('geographicSearch',{'status':'ok'})
         statuses['google-places' if os.getenv('PHOTO_SCOUT_POI_PROVIDER')=='google-places' else 'openstreetmap']=poi_status
         return rows,statuses,pois
 
@@ -295,18 +330,18 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
     async def run(payload,allow_expired=False,task_id=None):
         enabled()
         async with lock, asyncio.timeout(660):
-            agent_mode=os.getenv('PHOTO_SCOUT_EXPLORER_ENABLED','0')=='1'
-            exploration=None
-            if agent_mode:
-                context=tasks.context('search',task_id) if task_id else {}
-                context=context or payload.model_dump()
-                def progress(update):
-                    context.update(update)
-                    if task_id:tasks.update_context('search',task_id,context)
-                initial=None
-                if payload.selectedPoiIds is not None:initial,_=await chosen_pois(payload,allow_expired)
-                rows,statuses,pois,exploration=await discover_viewpoints(settings,payload,task_id,progress,initial,context.get('query',''))
-            else:rows,statuses,pois=await catalog(payload,allow_expired)
+            started=time.monotonic()
+            if payload.query.strip():
+                store.reserve_intent()
+                plan=await resolve_intent(settings,IntentRequest(query=payload.query,lat=payload.lat,lon=payload.lon,radius=payload.radius,photoStyles=payload.photoStyles or [],preferences=payload.preferences))
+                location=plan['locations'][0]
+                payload=ExploreRequest.model_validate({**payload.model_dump(), 'query':'', 'lat':location['lat'], 'lon':location['lon'],
+                    'radius':plan['radiusMeters'], 'photoStyles':plan['photoStyles'] or None, 'preferences':plan['preferences'],
+                    'poiQueries':plan.get('poiQueries') or [], 'scoringIntent':plan.get('scoringIntent') or plan['preferences'],
+                    'geographicKinds':plan.get('geographicKinds') or [], 'categories':None,'selectedPoiIds':None,'poiCatalogToken':None})
+            retrieval_started=time.monotonic()
+            rows,statuses,pois=await catalog(payload,allow_expired)
+            retrieval_seconds=time.monotonic()-retrieval_started
             if task_id:
                 context=tasks.context('search',task_id) or payload.model_dump()
                 context['nearbyPois']=pois
@@ -320,7 +355,9 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
             if rows and not any(s['status']=='ok' for n,s in statuses.items() if n not in ('openstreetmap','google-places')):
                 raise HTTPException(503,'Image sources are temporarily unavailable')
             store.reserve_run()
+            scoring_started=time.monotonic()
             result=await explore(settings,payload,rows,statuses)
+            result['timings']={'retrievalSeconds':round(retrieval_seconds,3),'scoringSeconds':round(time.monotonic()-scoring_started,3),'totalSeconds':round(time.monotonic()-started,3)}
             assessed={p['poi']['id'] for p in result.get('poiResults',[]) if p.get('poi')}
             result.setdefault('poiResults',[]).extend({'poi':p,'name':p['name'],'score':None,
                 'assessmentStatus':'no_verified_view','viewHeadingDegrees':None,
@@ -328,12 +365,8 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
                 'uncertainty':'No verified camera direction is available.','coordinateWarning':'Candidate POI; imagery not verified.'}
                 for p in pois if p['id'] not in assessed)
             result['nearbyPois']=pois
-            result['discoveryMethod']='agent-exploration' if agent_mode else 'visual-area-and-poi' if visual_exploration(payload) else 'poi-first'
-            if exploration:
-                result['exploration']=exploration
-                if not rows:
-                    result['summary']=exploration['submissionNote'] or 'The explorer found no viewpoints matching your request.'
-                    result['coverage']=f"Explorer inspected {exploration['inspectedViews']} views; no candidates were submitted for batch scoring. Coverage depends on available imagery."
+            result['discoveryMethod']='fixed-geographic-and-poi'
+            result['geographicKinds']=geographic_kinds(payload)
             result['photoLocationCount']=sum(p.get('poi',{}).get('category')=='photo-location' for p in result.get('poiResults',[]))
             result['candidatePoiCount']=len(pois)
             result['poiProvider']='google-places' if os.getenv('PHOTO_SCOUT_POI_PROVIDER')=='google-places' else 'openstreetmap'
@@ -355,7 +388,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
                 'imageAnalysisEnabled':google_enabled(),
                 'dailyImageRequestLimit':max(0,int(os.getenv('PHOTO_SCOUT_GOOGLE_DAILY_IMAGE_LIMIT','0'))) or None},
             'limits':{'radiusMeters':20000,'sampledImages':MAX_SCORED_IMAGES,'inspectedImages':MAX_SCORED_IMAGES,'imagesPerBatch':6,'parallelBatches':4,'viewsPerPanorama':8,'googleQueryLocations':25,'timeoutSeconds':660},
-            'analysisMethod':'fixed-batch-scoring','discoveryMethod':'agent-exploration' if os.getenv('PHOTO_SCOUT_EXPLORER_ENABLED','0')=='1' else 'intent-based','discoveryMethods':['agent-exploration','poi-first','visual-area-and-poi'],'poiProviders':{'openstreetmap':'standby' if os.getenv('PHOTO_SCOUT_POI_PROVIDER')=='google-places' else 'enabled','google-places':'enabled' if os.getenv('PHOTO_SCOUT_POI_PROVIDER')=='google-places' else 'not_connected'},
+            'analysisMethod':'fixed-batch-scoring','discoveryMethod':'fixed-geographic-and-poi','discoveryMethods':['fixed-geographic-and-poi'],'geographicProvider':'openstreetmap','poiProviders':{'openstreetmap':'standby' if os.getenv('PHOTO_SCOUT_POI_PROVIDER')=='google-places' else 'enabled','google-places':'enabled' if os.getenv('PHOTO_SCOUT_POI_PROVIDER')=='google-places' else 'not_connected'},
             'privacy':'Coordinates/preferences are sent to imagery providers/OpenAI; paid reports retained for 30 days.'}
 
     @router.post('/photo-scout/v1/candidates')
@@ -363,7 +396,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
         require_api(authorization)
         source_limit()
         rows,statuses,pois=await catalog(payload)
-        return {'candidates':rows,'sources':statuses,'nearbyPois':pois,'discoveryMethod':'visual-area-and-poi' if visual_exploration(payload) else 'poi-first','visuallyAnalyzed':False}
+        return {'candidates':rows,'sources':statuses,'nearbyPois':pois,'discoveryMethod':'fixed-geographic-and-poi','visuallyAnalyzed':False}
 
     @router.post('/photo-scout/v1/discover')
     async def discover(payload: ExploreRequest,request: Request,response: Response,authorization: str | None=Header(None)):
@@ -439,7 +472,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
                 store.reserve_intent()
                 plan=await resolve_intent(settings,IntentRequest(query=submitted.query,lat=submitted.lat,lon=submitted.lon,radius=submitted.radius,photoStyles=submitted.photoStyles or [],preferences=submitted.preferences))
                 place=plan['locations'][0]
-                values.update(lat=place['lat'],lon=place['lon'],radius=plan['radiusMeters'],photoStyles=plan['photoStyles'] or None,preferences=plan['preferences'],scoringIntent=plan.get('scoringIntent') or plan['preferences'],categories=None,poiQueries=plan.get('poiQueries') or [],selectedPoiIds=None,poiCatalogToken=None)
+                values.update(lat=place['lat'],lon=place['lon'],radius=plan['radiusMeters'],photoStyles=plan['photoStyles'] or None,preferences=plan['preferences'],scoringIntent=plan.get('scoringIntent') or plan['preferences'],categories=None,poiQueries=plan.get('poiQueries') or [],geographicKinds=plan.get('geographicKinds') or [],selectedPoiIds=None,poiCatalogToken=None)
                 context['locationLabel']=place['label'];context['explanation']=plan['explanation']
             payload=ExploreRequest.model_validate(values)
             context.update(payload.model_dump());context['stage']='sources';tasks.update_context('search',job['id'],context)

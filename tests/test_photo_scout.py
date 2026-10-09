@@ -278,7 +278,7 @@ def test_google_query_grid_covers_area_and_limits_concurrency(monkeypatch):
         async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as c:
             return await google_streetview(c,0,0,1000)
     assert asyncio.run(run())==[]
-    assert requests==25 and peak<=5
+    assert requests==25 and peak<=12
 
 
 def test_free_website_mode_auth_payment_and_budget(tmp_path,monkeypatch):
@@ -361,7 +361,7 @@ def test_poi_first_and_signed_google_image_delivery(tmp_path,monkeypatch):
     monkeypatch.setattr(routes,'nearby_pois',pois);monkeypatch.setattr(routes,'candidates',images);monkeypatch.setattr(routes,'explore',model)
     result=client.post('/photo-scout/v1/preview',json={'lat':0,'lon':0,'poiQueries':['parks']},headers={'Authorization':'Bearer private'})
     assert result.status_code==200 and calls==['pois','images','agent']
-    body=result.json();assert body['candidatePoiCount']==1 and body['discoveryMethod']=='poi-first'
+    body=result.json();assert body['candidatePoiCount']==1 and body['discoveryMethod']=='fixed-geographic-and-poi'
     image_url=body['spots'][0]['imageUrl'];assert 'private' not in image_url
     image_calls=[]
     async def jpeg(ref):image_calls.append(ref);return 'data:image/jpeg;base64,/9j/dGVzdA=='
@@ -464,11 +464,13 @@ def test_photo_mood_maps_to_categories_and_is_bound_to_catalog(tmp_path,monkeypa
     monkeypatch.setenv('PHOTO_SCOUT_ENABLED','1');monkeypatch.setenv('PHOTO_SCOUT_HUMAN_FREE_PREVIEW','1')
     client=TestClient(create_app(settings=settings));headers={'Authorization':'Bearer private'};calls=[]
     async def pois(lat,lon,radius,categories):
-        calls.append(categories);return [{'id':'park','name':'Park','category':'park'}],{'status':'ok'}
-    async def images(lat,lon,radius,targets):return [{'id':'img'}],{'panoramax':{'status':'ok'}}
+        calls.append(categories);return [{'id':'park','name':'Park','category':'park','lat':0,'lon':0}],{'status':'ok'}
+    async def images(lat,lon,radius,targets):return [{'id':'img','provider':'panoramax','lat':0,'lon':0}],{'panoramax':{'status':'ok'}}
     async def model(settings,payload,rows,statuses):
         assert payload.photoStyles==['waterside'] and payload.categories is None
         return {'spots':[],'summary':'No visible water in the inspected view.'}
+    async def geography(*args):return [{'id':'water','name':'Lake','kinds':['waterside'],'geometry':{'type':'LineString','coordinates':[[0,-.001],[0,.001]]}}],[],{'status':'ok'}
+    monkeypatch.setattr(routes,'fetch_region',geography)
     monkeypatch.setattr(routes,'nearby_pois',pois);monkeypatch.setattr(routes,'candidates',images);monkeypatch.setattr(routes,'explore',model)
     assert len(client.get('/photo-scout/v1/status').json()['photoStyles'])==8
     for fields in ({'photoStyles':[]},{'photoStyles':['unknown']},{'photoStyles':['nature'],'categories':['park']}):
@@ -507,6 +509,7 @@ def _scoring_rows():
 
 
 def test_fixed_pipeline_scores_every_image_and_globally_ranks(tmp_path,monkeypatch):
+    monkeypatch.setenv('PHOTO_SCOUT_SCORING_BATCH_SIZE','6')
     import json
     from types import SimpleNamespace
     import agentic_services.photo_scout.scoring as visual
@@ -520,6 +523,7 @@ def test_fixed_pipeline_scores_every_image_and_globally_ranks(tmp_path,monkeypat
         content=kw['input'][0]['content'];request=json.loads(content[0]['text'])
         assert request['photoStyleBriefs'][0]['label']=='Water & reflections'
         assert request['request']['poiQueries']==['coffee shops']
+        assert request['request']['geographicKinds']==['lake']
         assert request['request']['scoringIntent']=='waterside coffee shops with outdoor seating'
         assert 'poiCatalogToken' not in request['request']
         rows=[json.loads(c['text'])['image'] for c in content[1:] if c['type']=='input_text']
@@ -528,15 +532,16 @@ def test_fixed_pipeline_scores_every_image_and_globally_ranks(tmp_path,monkeypat
         await asyncio.sleep(0);active-=1
         return SimpleNamespace(output_parsed=visual.VisualBatch(assessments=[_scoring_assessment(visual,r) for r in rows]),usage=SimpleNamespace(input_tokens=10,output_tokens=20))
     _scoring_client(monkeypatch,parse);monkeypatch.setattr(visual,'image_data',image)
-    result=asyncio.run(visual.explore(settings,ExploreRequest(lat=0,lon=0,photoStyles=['waterside'],poiQueries=['coffee shops'],scoringIntent='waterside coffee shops with outdoor seating',poiCatalogToken='secret-token'),_scoring_rows(),{}))
+    result=asyncio.run(visual.explore(settings,ExploreRequest(lat=0,lon=0,photoStyles=['waterside'],geographicKinds=['lake'],poiQueries=['coffee shops'],scoringIntent='waterside coffee shops with outdoor seating',poiCatalogToken='secret-token'),_scoring_rows(),{}))
     assert set(downloaded)==set(seen)=={str(i) for i in range(13)}
     assert result['inspectedImages']==13 and len(result['imageAssessments'])==13
     assert [spot['image_id'] for spot in result['spots']]==[str(i) for i in range(12,-1,-1)]
     assert result['analysisMethod']=='fixed-batch-scoring' and result['scoring']['batches']==3
-    assert result['usage']=={'requests':3,'inputTokens':30,'outputTokens':60} and peak<=4
+    assert result['usage']=={'requests':3,'inputTokens':30,'outputTokens':60} and peak<=8
 
 
 def test_fixed_pipeline_reports_partial_failures(tmp_path,monkeypatch):
+    monkeypatch.setenv('PHOTO_SCOUT_SCORING_BATCH_SIZE','6')
     import json
     from types import SimpleNamespace
     import agentic_services.photo_scout.scoring as visual
@@ -717,7 +722,7 @@ def test_score_cache_reuses_successful_views_without_download_or_model(tmp_path,
     _scoring_client(monkeypatch,parse);monkeypatch.setattr(visual,'image_data',image)
     first=asyncio.run(visual.explore(settings,ExploreRequest(lat=0,lon=0),_scoring_rows(),{}))
     second=asyncio.run(visual.explore(settings,ExploreRequest(lat=.001,lon=0,radius=2000,limit=5),_scoring_rows(),{}))
-    assert len(downloads)==13 and len(calls)==3
+    assert len(downloads)==13 and len(calls)==2
     assert first['scoring']['newlyScoredImages']==13
     assert second['scoring']['cachedImages']==13 and second['scoring']['newlyScoredImages']==0
     assert len(second['poiResults'])==13 and any(p['recommend'] is False for p in second['poiResults'])
@@ -727,7 +732,7 @@ def test_score_cache_reuses_successful_views_without_download_or_model(tmp_path,
     changed=_scoring_rows();changed[-1]['sourceDate']='new-version'
     third=asyncio.run(visual.explore(settings,ExploreRequest(lat=0,lon=0),changed,{}))
     assert third['scoring']['cachedImages']==12 and third['scoring']['newlyScoredImages']==1
-    assert len(downloads)==14 and len(calls)==4
+    assert len(downloads)==14 and len(calls)==3
 
 
 def test_score_cache_context_and_expiry(tmp_path,monkeypatch):
@@ -926,7 +931,7 @@ def test_visual_exploration_survives_place_provider_failure(tmp_path,monkeypatch
     monkeypatch.setattr(routes,'nearby_pois',pois);monkeypatch.setattr(routes,'candidates',images);monkeypatch.setattr(routes,'explore',model)
     client=TestClient(create_app(settings=settings));headers={'Authorization':'Bearer private'}
     broad=client.post('/photo-scout/v1/preview',json={'lat':0,'lon':0,'photoStyles':['nature']},headers=headers)
-    assert broad.status_code==200 and broad.json()['discoveryMethod']=='visual-area-and-poi'
+    assert broad.status_code==200 and broad.json()['discoveryMethod']=='fixed-geographic-and-poi'
     assert calls==[{'visual_exploration':True}]
     strict=client.post('/photo-scout/v1/preview',json={'lat':0,'lon':0,'poiQueries':['cafes']},headers=headers)
     assert strict.status_code==503

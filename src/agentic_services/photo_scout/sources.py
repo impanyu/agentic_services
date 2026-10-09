@@ -36,13 +36,13 @@ def image_host(url):
     return u.scheme == 'https' and not u.username and not u.password and u.port in (None,443) and (host == 'upload.wikimedia.org' or host.endswith('.fbcdn.net') or host in PANORAMAX_IMAGE_HOSTS)
 
 
-async def get_json(client, url, params=None, headers=None):
-    async with client.stream('GET', url, params=params, headers=headers) as r:
+async def get_json(client, url, params=None, headers=None, *, method='GET', max_bytes=2_000_000):
+    async with client.stream(method, url, params=params if method=='GET' else None, data=params if method=='POST' else None, headers=headers) as r:
         r.raise_for_status()
         data = bytearray()
         async for chunk in r.aiter_bytes():
             data.extend(chunk)
-            if len(data) > 2_000_000:
+            if len(data) > max_bytes:
                 raise ValueError('Source response exceeds limit')
     import json
     return json.loads(data)
@@ -237,7 +237,7 @@ async def google_streetview(client, lat, lon, radius, targets=None, area_samplin
     else:
         points=[(p['lat'],p['lon']) for p in targets] if targets is not None else google_query_points(lat,lon,radius)
         target_rows=list(targets) if targets is not None else [None]*len(points)
-    slots=asyncio.Semaphore(5)
+    slots=asyncio.Semaphore(12)
     async def search(p):
         async with slots:
             return await get_json(client,'https://maps.googleapis.com/maps/api/streetview/metadata',
