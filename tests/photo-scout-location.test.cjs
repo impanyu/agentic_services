@@ -276,3 +276,17 @@ test('Google popup refreshes expired previews, bounds retries and recovers on re
  fail=false;context.open(popup);await settle();assert.equal(image.src,'fresh-5');handlers.load();assert.equal(image.hidden,false);
  box.photoSpot.sourceUrl+='&heading=90';context.open(popup,true);await settle();assert.equal(image.src,'fresh-6');
 });
+
+test('pressing the search button leaves expanded settings stable until submit',()=>{
+ const source=readFileSync('photo-scout-site/app.js','utf8');
+ const controls={open:true,contains:()=>false},menu={open:true,contains:()=>false};let collapsed=0;
+ const context={controls,mapMenus:[menu],overlayControl:{collapse(){collapsed++;}}};
+ vm.runInNewContext(source.slice(source.indexOf('function closeMenusOutside('),source.indexOf('// Capture before Leaflet')),context);
+ const submitTarget={closest:selector=>selector==='#prompt-form'?{}:null};
+ context.closeMenusOutside(submitTarget);
+ assert.equal(controls.open,true,'pointerdown must not move the button before pointerup');
+ assert.equal(menu.open,false);
+ context.closeMenusOutside({closest:()=>null});
+ assert.equal(controls.open,false,'an ordinary outside click still closes settings');
+ assert.equal(collapsed,2);
+});
