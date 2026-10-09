@@ -597,6 +597,14 @@ function paymentOptions(tier: VerificationTier) {
 }
 
 function mountPhotoRoute(handler: PaymentHandler): void {
+  // GET is a quote-only discovery probe. Never forward credentials or settle
+  // a GET request; actual searches remain POST with validated coordinates.
+  app.get(photoOperation.path,async c=>{
+    if(process.env.PHOTO_SCOUT_ENABLED!=='1'||photoPriceCents<50)return c.text('Photo Scout paid exploration is not enabled',503)
+    const quote=new Request(withPublicUrl(c.req.raw).url,{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'})
+    const offer=await handler(quote)
+    return offer.status===402?offer.challenge:c.text('Use POST to submit a paid search',405)
+  })
   app.post(photoOperation.path, async (c, next) => {
     if (process.env.PHOTO_SCOUT_ENABLED !== '1' || photoPriceCents < 50) return c.text('Photo Scout paid exploration is not enabled', 503)
     // Directory probes carry no body. Quote first without consuming provider

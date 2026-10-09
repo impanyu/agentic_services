@@ -53,6 +53,8 @@ def check_photo_release(release,live):
             check((release['paidTool'].encode() in data and release['freeTool'].encode() in data) if method=='tools/list' else b'Payment required to access this tool' in data if label=='Unpaid MCP challenge' else release['agentPriceUsd'].encode() in data,label+' contents')
         status,headers,_=request('https://api.aisoup.net'+release['paidHttpPath'],method='POST',body=b'{"lat":41.8827,"lon":-87.6233,"radius":500}',content_type='application/json')
         check(status==402 and bool(headers.get('WWW-Authenticate') or headers.get('Payment-Required')),'Unpaid HTTP payment challenge')
+        status,headers,_=request('https://api.aisoup.net'+release['paidHttpPath'])
+        check(status==402 and bool(headers.get('Payment-Required')),'GET discovery probe returns a quote without executing a search')
         status,headers,_=request('https://api.aisoup.net'+release['paidHttpPath'],method='POST',body=b'{}',content_type='application/json')
         check(status==402 and bool(headers.get('Payment-Required')) and bool(headers.get('WWW-Authenticate')),'Body-free directory probe receives x402 and MPP offers')
         status,_,_=request('https://api.aisoup.net'+release['paidHttpPath'],method='POST',body=b'{}',content_type='application/json',auth='Payment invalid')
