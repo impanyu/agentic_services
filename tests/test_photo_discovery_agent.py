@@ -208,3 +208,36 @@ def test_explorer_does_not_receive_legacy_result_count(tmp_path,monkeypatch):
     settings=SimpleNamespace(database_path=tmp_path/'db',openai_api_key='fixture')
     _,_,_,result=asyncio.run(discovery_agent.discover(settings,ExploreRequest(lat=40,lon=-96,radius=20000,limit=3),'regression',original_query='architecture'))
     assert captured and result['candidateCount']==0
+
+
+def test_multi_place_batch_downloads_concurrently_and_keeps_partial_results(tmp_path,monkeypatch):
+    d=state(tmp_path);active=0;peak=0;loaded=[]
+    d.views['pano']={'id':'pano','provider':'google-street-view','lat':40,'lon':-96,'imageUrl':'google-streetview://pano/0','title':'Street'}
+    d.views['photo']={'id':'photo','provider':'wikimedia-commons','lat':40,'lon':-96,'imageUrl':'https://upload.wikimedia.org/photo.jpg','title':'Photo'}
+    async def load(ref):
+        nonlocal active,peak
+        loaded.append(ref);active+=1;peak=max(peak,active)
+        await asyncio.sleep(.01);active-=1
+        if '/90/' in ref:raise RuntimeError('secret must never appear')
+        return 'data:image/jpeg;base64,pixels'
+    monkeypatch.setattr(discovery_agent.sources,'image_data',load)
+    views=[{'view_id':'pano','heading':h,'fov':120} for h in (0,45,90,135,180)]
+    views.extend([{'view_id':'photo','heading':0,'fov':120},{'view_id':'pano','heading':0,'fov':120}])
+    output=invoke(d,'inspect_batch',{'views':views})
+    assert peak==4 and len(loaded)==6 and d.images==6
+    assert len(d.inspected)==5 and d.calls==1
+    assert sum(isinstance(v,discovery_agent.ToolOutputImage) for v in output)==5
+    texts=[json.loads(v.text) for v in output if isinstance(v,discovery_agent.ToolOutputText)]
+    assert sum(v.get('status')=='failed' for v in texts)==1
+    assert {v['view']['provider'] for v in texts if 'view' in v}=={'google-street-view','wikimedia-commons'}
+    assert 'secret must never appear' not in str(d.audit)
+    assert len(state(tmp_path).inspected)==5
+
+
+def test_batch_budget_is_checked_before_any_download(tmp_path,monkeypatch):
+    d=state(tmp_path);d.images=d.max_images-1;loaded=[]
+    d.views['pano']={'id':'pano','provider':'google-street-view','imageUrl':'google-streetview://pano/0'}
+    async def load(ref):loaded.append(ref)
+    monkeypatch.setattr(discovery_agent.sources,'image_data',load)
+    result=invoke(d,'inspect_views',{'view_id':'pano','headings':[0,45],'fov':120})
+    assert 'image budget' in result and not loaded and d.images==d.max_images-1

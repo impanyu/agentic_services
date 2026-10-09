@@ -18,6 +18,7 @@ from agents import ToolOutputImage, ToolOutputText, MaxTurnsExceeded
 from agents.run_config import ModelInputData, ToolExecutionConfig
 from agents.agent import ToolsToFinalOutputResult
 from agents.lifecycle import RunHooks
+from pydantic import BaseModel, Field
 from openai import AsyncOpenAI
 from openai.types.shared import Reasoning
 
@@ -67,6 +68,13 @@ Do not mechanically download all eight compass directions everywhere. Inspect pr
 angles first, use the map/imagery to decide where to look next. Spend the budget on evidence.
 Use manage_candidate to add, update or remove inspected views and list_candidates to review.
 You decide where to explore, which tools to use, and when evidence is sufficient.
+Before normal submission, inspect at least 24 different actual images. Use a diverse
+set of promising locations and directions relevant to the request. Repeated views
+and failed downloads do not count; do not inflate coverage by only zooming the same
+composition. Prefer inspect_batch to compare up to 8 images across different places
+and sources in one model turn; inspect_views compares up to 8 directions at one place.
+If useful imagery is unavailable or the budget prevents reaching 24, explicitly
+explain the shortfall and what you tried in submit_candidates; never fabricate images.
 Return a collection of evidenced matching places, not a tiny top-N selection.
 Finding two or three good views is not by itself a reason to stop. Before refining
 one location repeatedly, consider whether inspecting other promising known places
@@ -86,7 +94,8 @@ efficiently when useful; choose them from geographic and visual evidence, not bl
 Balance breadth across locations with depth at promising viewpoints. Spend more effort
 where another lookup is likely to improve the shortlist; avoid repetitive low-value calls.
 Consider another imagery source when coverage is weak. No minimum count of locations,
-images, directions or candidates is required, and no fixed exploration sequence applies.
+directions or candidates is required, and no fixed exploration sequence applies.
+The normal image-inspection target is 24 distinct images as described above.
 Use record_view_decisions and review_exploration when useful to retain visual comparisons,
 rejection reasons and unresolved coverage. These tools are optional aids, not prerequisites.
 Make your own stopping decision based on the user request, evidence, remaining uncertainty
@@ -104,7 +113,7 @@ def compact_model_input(data):
     """Keep call/result pairs, but do not resend old large read bodies each turn."""
     items=data.model_data.input
     names={i.get('call_id'):i.get('name') for i in items if isinstance(i,dict) and i.get('type')=='function_call'}
-    reads=[n for n,i in enumerate(items) if isinstance(i,dict) and i.get('type')=='function_call_output' and names.get(i.get('call_id')) in {'query_geography','view_map','search_places','search_photos','find_streetview','inspect_view','inspect_views'}]
+    reads=[n for n,i in enumerate(items) if isinstance(i,dict) and i.get('type')=='function_call_output' and names.get(i.get('call_id')) in {'query_geography','view_map','search_places','search_photos','find_streetview','inspect_view','inspect_views','inspect_batch'}]
     archive=set(reads[:-3]);output=[]
     for index,item in enumerate(items):
         if index in archive:
@@ -164,6 +173,12 @@ class ExplorationHooks(RunHooks):
         self.state.checkpoint()
 
 
+class ViewInspection(BaseModel):
+    view_id: str = Field(min_length=1,max_length=300)
+    heading: int = Field(ge=0,le=359)
+    fov: int = Field(ge=30,le=120)
+
+
 class Discovery:
     def __init__(self, settings, payload, job_id=None, progress=None):
         self.settings, self.payload, self.progress = settings, payload, progress
@@ -194,7 +209,7 @@ class Discovery:
         if self.progress:
             self.progress({'stage':stage,'nearbyPois':list(self.pois.values()),
                 'sampledViewLocations':[{'lat':r['lat'],'lon':r['lon'],'name':r['title']} for r in self.views.values()],
-                'exploration':{'toolCalls':self.calls,'inspectedViews':self.images,'candidates':len(self.selected),'lastAction':next((r['tool'] for r in reversed(self.audit) if 'tool' in r),None)}})
+                'exploration':{'toolCalls':self.calls,'inspectedViews':self.images,'distinctInspectedImages':len(self.inspected),'inspectionTarget':24,'candidates':len(self.selected),'lastAction':next((r['tool'] for r in reversed(self.audit) if 'tool' in r),None)}})
 
     def point(self, lat, lon):
         if not all(math.isfinite(v) for v in (lat,lon)) or abs(lat)>85 or abs(lon)>180:
@@ -352,7 +367,24 @@ class Discovery:
         self.images+=1
         data=await sources.image_data(row['imageUrl'])
         self.views[row['id']]=row;self.inspected.add(row['id']);self.checkpoint()
-        return [ToolOutputText(text=json.dumps({'view':self.public(row),'remainingImages':self.max_images-self.images})),ToolOutputImage(image_url=data,detail='high')]
+        return [ToolOutputText(text=json.dumps({'view':self.public(row),'remainingImages':self.max_images-self.images,'distinctInspectedImages':len(self.inspected),'inspectionTarget':24})),ToolOutputImage(image_url=data,detail='high')]
+
+    async def inspect_batch(self, items):
+        if not 1<=len(items)<=8:raise ValueError('Choose 1–8 images')
+        unique=[];seen=set()
+        for item in items:
+            row=self.views.get(item.view_id,{})
+            key=(row.get('imageUrl','').split('/')[2],item.heading,item.fov) if row.get('provider')=='google-street-view' else (item.view_id,)
+            if key not in seen:seen.add(key);unique.append(item)
+        if self.images+len(unique)>self.max_images:raise ValueError('Not enough image budget for this batch')
+        slots=asyncio.Semaphore(4)
+        async def load(item):
+            async with slots:
+                try:return await self.inspect(item.view_id,item.heading,item.fov)
+                except Exception as error:
+                    return [ToolOutputText(text=json.dumps({'view_id':item.view_id,'heading':item.heading,'fov':item.fov,'status':'failed','error':await tool_error(None,error)}))]
+        results=await asyncio.gather(*(load(item) for item in unique))
+        return [part for result in results for part in result]
 
     def tools(self):
         async def logged_error(context,error):
@@ -413,16 +445,15 @@ class Discovery:
             return await self.inspect(view_id,heading,fov)
         @function_tool(failure_error_function=logged_error)
         async def inspect_views(view_id:str,headings:list[int],fov:int):
-            """Compare 1–4 chosen directions of one panorama in one call, preserving per-image IDs. Not a blind compass sweep."""
+            """Compare 1–8 chosen directions of one panorama together; images load concurrently. Preserve IDs, choose meaningful directions."""
             self.tick('inspect_views')
-            if not 1<=len(headings)<=4:raise ValueError('Choose 1–4 directions')
-            if self.images+len(headings)>self.max_images:raise ValueError('Not enough image budget for this batch')
-            output=[]
-            for heading in dict.fromkeys(headings):
-                try:output.extend(await self.inspect(view_id,heading,fov))
-                except Exception as error:
-                    output.append(ToolOutputText(text=json.dumps({'heading':heading,'status':'failed','error':await tool_error(None,error)})))
-            return output
+            if not 1<=len(headings)<=8:raise ValueError('Choose 1–8 directions')
+            return await self.inspect_batch([ViewInspection(view_id=view_id,heading=h,fov=fov) for h in headings])
+        @function_tool(failure_error_function=logged_error)
+        async def inspect_batch(views:list[ViewInspection]):
+            """See 1–8 actual images across different places, headings and providers in one call, downloaded with four-way concurrency. For static photos use heading=0, fov=120. Each image has its own ID and metadata; failed images are reported individually."""
+            self.tick('inspect_batch')
+            return await self.inspect_batch(views)
         @function_tool(failure_error_function=logged_error)
         def manage_candidate(view_id:str,action:str,reason:str):
             """Add/update an inspected view or remove a candidate. Reasons explain visual fit, not numeric scores."""
@@ -471,7 +502,7 @@ class Discovery:
             """TERMINAL: freeze current candidate list, end exploration and trigger automatic backend multimodal scoring."""
             self.tick('submit_candidates')
             return self.submit(explanation)
-        tools=[search_places,query_geography,analyze_position,view_map,find_streetview,search_photos,inspect_view,inspect_views,manage_candidate,list_candidates,record_view_decisions,review_exploration,submit_candidates]
+        tools=[search_places,query_geography,analyze_position,view_map,find_streetview,search_photos,inspect_view,inspect_views,inspect_batch,manage_candidate,list_candidates,record_view_decisions,review_exploration,submit_candidates]
         for tool in tools:
             original=tool.on_invoke_tool
             async def logged(context,arguments,original=original,name=tool.name):
@@ -507,7 +538,7 @@ async def discover(settings,payload,job_id=None,progress=None,initial_pois=None,
             def instructions(ctx,agent):
                 remaining=max(0,state.max_calls-state.calls)
                 turns_left=max(0,state.max_turns-ctx.usage.requests)
-                return INSTRUCTIONS+f'\nModel turns remaining: {turns_left}. Remaining tools: {remaining}; images: {state.max_images-state.images}; candidates: {len(state.selected)}. '+('Budget is nearly exhausted. Prioritize submitting the current candidates with an honest coverage explanation.' if remaining<8 or turns_left<=6 or time.monotonic()-state.started>state.max_seconds-70 else '')
+                return INSTRUCTIONS+f'\nModel turns remaining: {turns_left}. Distinct images inspected: {len(state.inspected)}; normal inspection target: 24. Remaining tools: {remaining}; images: {state.max_images-state.images}; candidates: {len(state.selected)}. '+('Budget is nearly exhausted. Prioritize submitting the current candidates with an honest coverage explanation.' if remaining<8 or turns_left<=6 or time.monotonic()-state.started>state.max_seconds-70 else '')
             agent=Agent(name='Photo Scout Explorer',instructions=instructions,
                 model=OpenAIResponsesModel(model,client),tools=state.tools(),
                 tool_use_behavior=state.finish_tools,
