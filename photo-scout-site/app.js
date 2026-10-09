@@ -180,6 +180,7 @@ function selfiesAtPlace(spot){
  return taskRecords.filter(task=>task.kind==='portrait'&&task.state==='complete'&&
   !(task.expiresAt!=null&&task.expiresAt<=Date.now()/1000)&&samePhotoPlace(spot,task.context||{})).sort((a,b)=>b.created-a.created);
 }
+function refreshDisplayedShortlist(){if(!displayedResult)return;const hidden=el('results').hidden;render(displayedResult,{save:false,mapUpdate:false,historyId:displayedSearchId});el('results').hidden=hidden;}
 function removePoiButton(spot,searchId){
  const button=node('button','Remove','remove-poi');button.type='button';button.hidden=!searchId;button.title='Remove this place from this search history';
  button.addEventListener('click',async()=>{
@@ -187,8 +188,7 @@ function removePoiButton(spot,searchId){
   try{
    const data=await json('/photo-scout/v1/hidden-pois',{method:'POST',headers:{'Content-Type':'application/json',...(csrfToken?{'X-CSRF-Token':csrfToken}:{})},body:JSON.stringify({searchId,poiId:poiHistoryKey(spot),hidden:true})});
    hiddenPoisBySearch=new Map(Object.entries(data.hiddenPois).map(([id,keys])=>[id,new Set(keys)]));lastRemovedPoi={searchId,poiId:poiHistoryKey(spot),name:spot.name};
-   const showShortlist=displayedResult&&!el('results').hidden;drawHistoryMap();renderHistory();
-   if(showShortlist)render(displayedResult,{save:false,mapUpdate:false,historyId:displayedSearchId});
+   drawHistoryMap();renderHistory();refreshDisplayedShortlist();
    message('Place removed from this search history.');
   }catch(error){button.disabled=false;button.textContent='Remove';message(error.message);}
  });return button;
@@ -597,7 +597,7 @@ async function restoreTasks(){
  try{
   const visiting=!document.hidden;const data=await json('/photo-scout/v1/tasks'+(visiting?'?visit=true':''));if(visiting){try{sessionStorage.setItem(HISTORY_KEY+'-last-visit',String(Date.now()));}catch{}}if(generation!==taskRecoveryGeneration)return;tasksReady=true;
   const incomingHidden=new Map(Object.entries(data.hiddenPois||{}).map(([id,keys])=>[id,new Set(keys)]));
-  if(JSON.stringify([...incomingHidden].map(([id,keys])=>[id,[...keys]]))!==JSON.stringify([...hiddenPoisBySearch].map(([id,keys])=>[id,[...keys]]))){hiddenPoisBySearch=incomingHidden;changed=true;if(displayedResult&&!el('results').hidden)render(displayedResult,{save:false,mapUpdate:false,historyId:displayedSearchId});}
+  if(JSON.stringify([...incomingHidden].map(([id,keys])=>[id,[...keys]]))!==JSON.stringify([...hiddenPoisBySearch].map(([id,keys])=>[id,[...keys]]))){hiddenPoisBySearch=incomingHidden;changed=true;refreshDisplayedShortlist();}
   const returned=new Set(data.items.map(t=>t.kind+':'+t.id));taskRecords=[...data.items,...taskRecords.filter(t=>t.localPending&&!returned.has(t.kind+':'+t.id))].sort((a,b)=>b.created-a.created);renderHistory();refreshVisiblePlaceSelfies();
   for(const task of taskRecords.filter(t=>t.kind==='search'&&t.state==='complete')){
    if(searchHistory.some(h=>h.id===task.id))continue;
