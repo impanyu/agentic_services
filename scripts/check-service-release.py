@@ -42,6 +42,8 @@ def check_photo_release(release,live):
         check(status==200 and manifest.get('mcpUrl')==base+'/mcp' and manifest['payment']['perCallUsd']==release['agentPriceUsd'],'Public manifest MCP and price')
         status,_,data=request(base+'/openapi.json');doc=json.loads(data)
         check(status==200 and doc['paths'][release['paidHttpPath']]['post']['x-payment-info']['amount']==release['agentPriceUsd'],'Public OpenAPI price')
+        status,_,data=request('https://api.aisoup.net/openapi.json');root_doc=json.loads(data)
+        check(status==200 and root_doc['paths'].get(release['paidHttpPath'],{}).get('post',{}).get('x-payment-info',{}).get('price',{}).get('amount')==release['agentPriceUsd'],'Root OpenAPI advertises Photo Scout and its price')
         accept='application/json, text/event-stream'
         for method,params,label in [('tools/list',{},'MCP tools'),('tools/call',{'name':release['freeTool'],'arguments':{}},'Free pricing tool'),('tools/call',{'name':release['paidTool'],'arguments':{'lat':41.8827,'lon':-87.6233,'radius':500}},'Unpaid MCP challenge')]:
             status,_,data=request(base+'/mcp',method='POST',body=json.dumps({'jsonrpc':'2.0','id':1,'method':method,'params':params}).encode(),content_type='application/json',accept=accept)
@@ -50,8 +52,14 @@ def check_photo_release(release,live):
         status,headers,_=request('https://api.aisoup.net'+release['paidHttpPath'],method='POST',body=b'{"lat":41.8827,"lon":-87.6233,"radius":500}',content_type='application/json')
         check(status==402 and bool(headers.get('WWW-Authenticate') or headers.get('Payment-Required')),'Unpaid HTTP payment challenge')
         for name,url in release.get('directories',{}).items():
+            if not url:continue
             status,_,data=request(url)
-            check(status==200 and json.loads(data)['server']['name']==registry['name'] and json.loads(data)['server']['remotes']==registry['remotes'],name+' public listing identity and endpoint')
+            if name=='mcpRegistry':
+                check(status==200 and json.loads(data)['server']['name']==registry['name'] and json.loads(data)['server']['remotes']==registry['remotes'],name+' public listing identity and endpoint')
+            elif name=='smithery':
+                check(status==200 and release['paidTool'].encode() in data and b'photo-scout' in data,'Smithery public tool listing')
+            elif name in ('x402Scan','mppScan'):
+                check(status==200 and release['paidHttpPath'].encode() in data,name+' public paid route listing')
     print(f'Result: {len(errors)} failures. Settled payment and unlisted directories require separate verification.')
     return int(bool(errors))
 

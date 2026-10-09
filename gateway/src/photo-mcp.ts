@@ -24,7 +24,7 @@ const photoArguments={
   photoStyles:z.array(z.enum(['nature','urban','vintage','iconic','artistic','waterside','minimal','adventure'])).min(1).max(8).optional().describe('Optional desired photo moods.'),
   preferences:z.string().max(500).optional().describe('Additional photography preferences.'),
 }
-const inputSchema={type:'object',additionalProperties:false,required:['lat','lon'],properties:{
+export const photoInputSchema={type:'object',additionalProperties:false,required:['lat','lon'],properties:{
  lat:{type:'number',minimum:-85,maximum:85},lon:{type:'number',minimum:-180,maximum:180},
  radius:{type:'integer',minimum:100,maximum:20000,default:1000},limit:{type:'integer',minimum:1,maximum:5,default:3},
  photoStyles:{type:'array',minItems:1,maxItems:8,items:{enum:['nature','urban','vintage','iconic','artistic','waterside','minimal','adventure']}},preferences:{type:'string',maxLength:500},
@@ -51,7 +51,7 @@ export async function createPhotoMcpHandler(options: PhotoMcpOptions): Promise<(
       toolName: 'discover_photo_spots',
       description: `Find nearby photo spots from location coordinates. Price: $${options.price} USDC on Base per call.`,
       transport: 'streamable-http',
-      inputSchema,
+      inputSchema:photoInputSchema,
       example: { lat:41.8827,lon:-87.6233,radius:500,limit:3 },
     }),
   })

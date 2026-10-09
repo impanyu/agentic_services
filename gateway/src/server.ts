@@ -5,7 +5,7 @@ import { generate as generatePaymentOpenApi } from 'mppx/discovery'
 import { Mppx, evm, stripe } from 'mppx/server'
 import { createMcpHandler } from './mcp.js'
 import { createContractorMcpHandler } from './contractor-mcp.js'
-import { createPhotoMcpHandler } from './photo-mcp.js'
+import { createPhotoMcpHandler, photoInputSchema } from './photo-mcp.js'
 
 const recipient = requireEnv('PAYMENT_RECIPIENT') as `0x${string}`
 const secretKey = requireEnv('MPP_SECRET_KEY')
@@ -948,6 +948,13 @@ function mountPaidRoutes(
       },
     },
   }
+  if(process.env.PHOTO_SCOUT_ENABLED==='1'&&photoPriceCents>=50)discoveryPaths[photoOperation.path]={post:{
+    operationId:'discoverPhotoSpots',tags:['Photo Scout'],summary:'Discover nearby photo spots from inspected imagery',
+    description:`Photo Scout: compare street-level images and return ranked POIs, camera headings, scores and reasons. Costs $${photoOperation.price} per search.`,
+    requestBody:{required:true,content:{'application/json':{schema:photoInputSchema,example:{lat:41.8827,lon:-87.6233,radius:500,limit:3}}}},
+    responses:{'200':{description:'Ranked photo spots with source links and a signed order receipt'},'402':{description:'x402 or MPP payment required'},'422':{description:'Invalid input or no eligible imagery in the sampled area'}},
+    'x-payment-info':{price:{mode:'fixed',currency:'USD',amount:photoOperation.price},protocols:[{x402:{}},{mpp:{method:'evm',intent:'charge',currency:evm.assets.base.USDC.address}}]},
+  }}
   app.get('/openapi.json', (c) => jsonDocumentResponse(discoveryDocument, 'public, max-age=300'))
 }
 
