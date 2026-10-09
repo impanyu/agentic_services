@@ -359,7 +359,7 @@ def test_poi_first_and_signed_google_image_delivery(tmp_path,monkeypatch):
     async def model(*a):
         calls.append('agent');return {'spots':[{'provider':'google-street-view','streetViewReference':'google-streetview://fixture/90','imageUrl':None}], 'sources':{},'summary':'Park'}
     monkeypatch.setattr(routes,'nearby_pois',pois);monkeypatch.setattr(routes,'candidates',images);monkeypatch.setattr(routes,'explore',model)
-    result=client.post('/photo-scout/v1/preview',json={'lat':0,'lon':0,'poiQueries':['parks']},headers={'Authorization':'Bearer private'})
+    result=client.post('/photo-scout/v1/preview',json={'lat':0,'lon':0,'categories':['park']},headers={'Authorization':'Bearer private'})
     assert result.status_code==200 and calls==['pois','images','agent']
     body=result.json();assert body['candidatePoiCount']==1 and body['discoveryMethod']=='fixed-geographic-and-poi'
     image_url=body['spots'][0]['imageUrl'];assert 'private' not in image_url
@@ -396,19 +396,19 @@ def test_poi_selection_catalog_is_bound_and_restricts_exploration(tmp_path,monke
     monkeypatch.setenv('PHOTO_SCOUT_ENABLED','1');monkeypatch.setenv('PHOTO_SCOUT_HUMAN_FREE_PREVIEW','1')
     settings=Settings(openai_api_key='test',openai_model='test',base_url='https://api.test',database_path=tmp_path/'db',service_api_key='private')
     client=TestClient(create_app(settings=settings));headers={'Authorization':'Bearer private'};calls=[]
-    places=[{'id':str(i),'name':f'Park {i}','lat':0,'lon':0,'category':'park'} for i in range(2)]
+    places=[{'id':str(i),'name':f'Park {i}','lat':0,'lon':i*.001,'category':'park'} for i in range(2)]
     async def pois(*a):calls.append('pois');return places,{'status':'ok','count':2}
     async def images(lat,lon,radius,targets):
         calls.append('images');assert targets==[places[1]]
         return [{'id':'image'}],{'panoramax':{'status':'ok'}}
     async def model(*a):calls.append('agent');return {'spots':[]}
     monkeypatch.setattr(routes,'nearby_pois',pois);monkeypatch.setattr(routes,'candidates',images);monkeypatch.setattr(routes,'explore',model)
-    assert client.post('/photo-scout/v1/pois',json={'lat':0,'lon':0}).status_code==401
-    response=client.post('/photo-scout/v1/pois',json={'lat':0,'lon':0},headers=headers)
+    assert client.post('/photo-scout/v1/pois',json={'lat':0,'lon':0,'categories':['park']}).status_code==401
+    response=client.post('/photo-scout/v1/pois',json={'lat':0,'lon':0,'categories':['park']},headers=headers)
     assert response.status_code==200 and calls==['pois']
     assert response.headers['cache-control']=='private, no-store'
     token=response.json()['poiCatalogToken']
-    payload={'lat':0,'lon':0,'selectedPoiIds':['1'],'poiCatalogToken':token}
+    payload={'lat':0,'lon':0,'categories':['park'],'selectedPoiIds':['1'],'poiCatalogToken':token}
     for change in ({'selectedPoiIds':[]},{'selectedPoiIds':['1','1']},{'selectedPoiIds':['unknown']},{'lat':1},{'radius':2000},{'poiCatalogToken':token+'x'},{'poiCatalogToken':None}):
         assert client.post('/photo-scout/v1/preview',json={**payload,**change},headers=headers).status_code==422
     assert calls==['pois']

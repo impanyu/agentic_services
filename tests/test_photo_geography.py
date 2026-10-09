@@ -72,7 +72,7 @@ def test_fixed_search_keeps_lakeside_cafes_and_excludes_displaced_panorama(tmp_p
         arrived.add(name)
         if len(arrived)==2:barrier.set()
         await asyncio.wait_for(barrier.wait(),1)
-    async def named(lat,lon,radius,queries):
+    async def named(lat,lon,radius,queries,**kwargs):
         await entered('places');assert queries==['coffee shops']
         return [{'id':'shore','name':'Lake Cafe','lat':0,'lon':-.005},
                 {'id':'far','name':'Inland Cafe','lat':0,'lon':-.015}],{'status':'ok'}
@@ -106,7 +106,7 @@ def test_natural_language_api_query_overrides_structured_fields(tmp_path,monkeyp
         return {'locations':[{'lat':1,'lon':2}],'radiusMeters':2000,'photoStyles':['waterside'],
                 'preferences':'Visible sea','poiQueries':['coffee shops'],'scoringIntent':'Seaside cafes','geographicKinds':['sea']}
     async def geographic(*args):return [],[],{'status':'ok'}
-    async def named(lat,lon,radius,queries):
+    async def named(lat,lon,radius,queries,**kwargs):
         assert (lat,lon,radius)==(1,2,2000);return [],{'status':'ok'}
     async def images(*args,**kw):return [],{}
     async def score(settings,payload,*args):

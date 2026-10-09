@@ -308,7 +308,7 @@ def test_search_category_reaches_poi_lookup_and_excludes_unrelated_places(tmp_pa
         return {'locations':[{'lat':37.84,'lon':-122.51,'label':'Selected map location'}],
                 'radiusMeters':5000,'limit':3,'photoStyles':['vintage'],'poiQueries':['coffee shops'],
                 'preferences':'Vintage cafe photography','scoringIntent':'Vintage coffee shops with outdoor seating','explanation':'Nearby cafes'}
-    async def nearby(lat,lon,radius,queries):
+    async def nearby(lat,lon,radius,queries,**kwargs):
         seen.append(queries);return [],{'status':'ok'}
     async def candidates(*args,**kwargs):return [],{}
     async def explore(settings,payload,*args):

@@ -50,10 +50,11 @@ async def geocode_address(query):
                           'source':'google-places'})
     return locations
 
-async def nearby_places(lat,lon,radius,queries):
+async def nearby_places(lat,lon,radius,queries,*,limit=30):
+    limit=max(1,min(60,limit))
     queries=list(dict.fromkeys(q.strip() for q in queries if q.strip()))[:4]
     if not queries:queries=['scenic places and tourist attractions']
-    responses=await asyncio.gather(*(search_text(q,center=(lat,lon),radius=radius,limit=30) for q in queries),return_exceptions=True)
+    responses=await asyncio.gather(*(search_text(q,center=(lat,lon),radius=radius,limit=limit) for q in queries),return_exceptions=True)
     if all(isinstance(r,Exception) for r in responses):
         return [],{'status':'unavailable','provider':'google-places','queries':queries}
     groups=[];seen=set()
@@ -76,6 +77,6 @@ async def nearby_places(lat,lon,radius,queries):
                           'visuallyAnalyzed':False})
         groups.append(group)
     from itertools import zip_longest
-    selected=[p for batch in zip_longest(*groups) for p in batch if p][:30]
+    selected=[p for batch in zip_longest(*groups) for p in batch if p][:limit]
     return selected,{'status':'ok','provider':'google-places','count':len(selected),
                     'foundPois':len(seen),'queries':queries,'coverage':'bounded-text-search'}

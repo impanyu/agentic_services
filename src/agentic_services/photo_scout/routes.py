@@ -20,11 +20,12 @@ from fastapi import APIRouter, Header, HTTPException, Request, Response
 from pydantic import BaseModel, Field, model_validator
 
 from .tasks import TaskStore, SEARCH_RETENTION, prune_records
-from .styles import PHOTO_STYLES, mapped_categories, style_briefs, discovery_queries
+from .styles import PHOTO_STYLES, mapped_categories, style_briefs
 from .scoring import explore
-from .geography import GeographicKind, fetch_region, filter_places, geographic_places, merge_places
+from .geography import GeographicKind, fetch_region, filter_places
 from .intent import IntentRequest, PoiQuery, resolve_intent
 from .places import nearby_places
+from .search import SearchParameters, SearchProviders, SearchUnavailable, compile_search, search_locations
 from .sources import candidates, nearby_pois, google_enabled, google_image_data, MAX_SCORED_IMAGES
 
 
@@ -181,33 +182,19 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
     def geographic_kinds(payload):
         return payload.geographicKinds or (['waterside'] if 'waterside' in (payload.photoStyles or []) else [])
 
+    def search_parameters(payload):
+        return SearchParameters.model_validate(payload.model_dump(include=set(SearchParameters.model_fields)))
+
     async def lookup_pois(payload,include_geometry=False):
-        categories=payload.poi_categories()
-        async def named():
-            if os.getenv('PHOTO_SCOUT_POI_PROVIDER')=='google-places':
-                queries=discovery_queries(payload.poiQueries,payload.photoStyles,payload.categories)
-                if kinds and not payload.poiQueries and not payload.categories:
-                    hints={'lake':['lakeside parks','lake viewpoints'],'sea':['beaches','coastal viewpoints'],
-                           'river':['riverfront parks','riverwalks'],'peak':['mountain peaks','mountain viewpoints'],
-                           'forest':['forest trails','forest parks'],'waterside':['waterfront promenades','waterside parks']}
-                    queries=list(dict.fromkeys(q for k in kinds for q in hints[k]))[:4]
-                return await nearby_places(payload.lat,payload.lon,payload.radius,queries)
-            return await nearby_pois(payload.lat,payload.lon,payload.radius,categories) if categories is not None else await nearby_pois(payload.lat,payload.lon,payload.radius)
-        kinds=geographic_kinds(payload)
-        (pois,status),(features,paths,geo_status)=await asyncio.gather(named(),fetch_region(payload.lat,payload.lon,payload.radius,kinds,settings.database_path))
-        if kinds:
-            if geo_status['status']!='ok':
-                raise HTTPException(503,'Geographic search is temporarily unavailable; please try again later')
-            pois=filter_places(pois,features,kinds,payload.lat,payload.lon)
-            # Explicit categories/businesses stay authoritative: do not add generic
-            # shore points to a request for lakeside cafes or motels.
-            generated=[] if payload.poiQueries or payload.categories else geographic_places(payload.lat,payload.lon,payload.radius,features,paths,kinds)
-            pois=merge_places(pois,generated)
-            status={**status,'status':'ok','count':len(pois),'geographicSearch':geo_status}
-            if include_geometry:status['_features']=features
-        if status['status']!='ok':
-            raise HTTPException(503,'Nearby place search is temporarily unavailable; please try again later')
-        return pois,status
+        try:
+            result=await search_locations(search_parameters(payload),database_path=settings.database_path,
+                providers=SearchProviders(nearby_places,nearby_pois,fetch_region),
+                poi_provider=os.getenv('PHOTO_SCOUT_POI_PROVIDER','openstreetmap'))
+        except SearchUnavailable as error:
+            raise HTTPException(503,str(error)) from error
+        status=dict(result.status)
+        if include_geometry:status['_features']=result.features
+        return result.places,status
 
     def sign_catalog(payload,pois,status):
         if not settings.service_api_key: raise HTTPException(503,'Private gateway credential is required')
@@ -246,7 +233,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
         return pois,status
 
     def visual_exploration(payload):
-        return not payload.poiQueries and not geographic_kinds(payload) and payload.categories is None and payload.selectedPoiIds is None
+        return compile_search(search_parameters(payload)).mergeStrategy=='area-imagery' and payload.selectedPoiIds is None
 
     async def catalog(payload,allow_expired=False):
         visual=visual_exploration(payload)
@@ -277,6 +264,20 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
         except Exception as error:
             logging.getLogger(__name__).warning('Photo Scout text resolution failed: %s',type(error).__name__)
             raise HTTPException(503,'Text search is temporarily unavailable. You can still choose a location on the map.') from error
+
+    @router.post('/photo-scout/v1/search',operation_id='search_photo_locations')
+    async def search_tool(payload: SearchParameters,response: Response,authorization: str | None=Header(None)):
+        require_api(authorization);enabled();source_limit()
+        try:
+            result=await search_locations(payload,database_path=settings.database_path,
+                providers=SearchProviders(nearby_places,nearby_pois,fetch_region),
+                poi_provider=os.getenv('PHOTO_SCOUT_POI_PROVIDER','openstreetmap'))
+        except SearchUnavailable as error:
+            raise HTTPException(503,str(error)) from error
+        response.headers['Cache-Control']='private, no-store'
+        return {'nearbyPois':result.places,'source':result.status,'searchPlan':result.plan.model_dump(),
+                'searchCounts':result.status['searchCounts'],'imageryTargets':result.imagery_targets,
+                'imagerySampling':'area' if result.plan.mergeStrategy=='area-imagery' else 'poi'}
 
     @router.post('/photo-scout/v1/pois')
     async def list_pois(payload: ExploreRequest,authorization: str | None=Header(None)):
@@ -365,6 +366,9 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
                 'uncertainty':'No verified camera direction is available.','coordinateWarning':'Candidate POI; imagery not verified.'}
                 for p in pois if p['id'] not in assessed)
             result['nearbyPois']=pois
+            source=statuses.get('google-places') or statuses.get('openstreetmap') or {}
+            result['searchPlan']=source.get('searchPlan') or compile_search(search_parameters(payload)).model_dump()
+            result['searchCounts']=source.get('searchCounts',{})
             result['discoveryMethod']='fixed-geographic-and-poi'
             result['geographicKinds']=geographic_kinds(payload)
             result['photoLocationCount']=sum(p.get('poi',{}).get('category')=='photo-location' for p in result.get('poiResults',[]))
