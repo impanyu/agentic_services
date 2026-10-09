@@ -86,3 +86,61 @@ def test_account_tasks_follow_user_across_browsers_but_are_hidden_after_logout(t
     assert client.post('/photo-scout/v1/auth/logout',headers={'Origin':'https://aisoup.net','X-CSRF-Token':'alice-csrf'}).status_code==200
     assert client.get('/photo-scout/v1/tasks').json()['items']==[];assert client.get('/photo-scout/v1/report/'+job).status_code==404
     other.cookies.set(COOKIE,'bob');assert other.get('/photo-scout/v1/tasks').json()['items']==[]
+
+
+def test_two_search_workers_score_independent_jobs_concurrently(tmp_path,monkeypatch):
+    settings,app,client=setup(tmp_path,monkeypatch)
+    async def nearby(*args):return [],{'status':'ok','provider':'openstreetmap'}
+    async def candidates(*args,**kwargs):return [],{}
+    monkeypatch.setattr(routes,'nearby_pois',nearby);monkeypatch.setattr(routes,'candidates',candidates)
+    jobs=[client.post('/photo-scout/v1/jobs',headers={'X-Request-Token':str(i)*32},json={'lat':40+i,'lon':-96}).json()['jobId'] for i in range(2)]
+    async def exercise():
+        both=asyncio.Event();release=asyncio.Event();entered=[]
+        async def explore(settings,payload,*args):
+            entered.append(payload.lat)
+            if len(entered)==2:both.set()
+            await release.wait()
+            return {'spots':[],'summary':str(payload.lat)}
+        monkeypatch.setattr(routes,'explore',explore)
+        workers=[asyncio.create_task(app.state.process_photo_preview()) for _ in range(2)]
+        try:
+            await asyncio.wait_for(both.wait(),2)
+            assert sorted(entered)==[40,41]
+        finally:release.set()
+        assert await asyncio.gather(*workers)==[True,True]
+    asyncio.run(exercise())
+    results=[client.get('/photo-scout/v1/report/'+job).json() for job in jobs]
+    assert [r['state'] for r in results]==['complete','complete']
+    assert [r['result']['summary'] for r in results]==['40.0','41.0']
+
+
+def test_two_portrait_workers_generate_concurrently_without_mixing_context(tmp_path,monkeypatch):
+    settings,app,client=setup(tmp_path,monkeypatch)
+    buffer=io.BytesIO();Image.new('RGB',(16,16),'green').save(buffer,format='PNG');encoded=base64.b64encode(buffer.getvalue()).decode()
+    async def background(*args):return 'data:image/png;base64,'+encoded
+    monkeypatch.setattr(portraits,'image_data',background)
+    jobs=[]
+    for i in range(2):
+        r=client.post('/photo-scout/v1/portraits',json={'portrait':'data:image/png;base64,'+encoded,'provider':'google-street-view','background':'https://www.google.com/maps/@?map_action=pano&pano=abc&heading=90','place':'Park '+str(i),'lat':40+i,'lon':-96})
+        assert r.status_code==202;jobs.append(r.json()['id'])
+    async def exercise():
+        both=asyncio.Event();release=asyncio.Event();entered=[]
+        class Client:
+            def __init__(self,**kwargs):self.images=self;self.responses=self
+            async def __aenter__(self):return self
+            async def __aexit__(self,*args):pass
+            async def parse(self,**kwargs):return SimpleNamespace(output_parsed=portraits.SubjectCheck(human_count=2))
+            async def edit(self,**kwargs):
+                entered.append(kwargs)
+                if len(entered)==2:both.set()
+                await release.wait()
+                return SimpleNamespace(data=[SimpleNamespace(b64_json=encoded)])
+        monkeypatch.setattr(portraits,'AsyncOpenAI',Client)
+        workers=[asyncio.create_task(app.state.process_photo_portrait()) for _ in range(2)]
+        try:await asyncio.wait_for(both.wait(),2)
+        finally:release.set()
+        assert await asyncio.gather(*workers)==[True,True]
+    asyncio.run(exercise())
+    results=[client.get('/photo-scout/v1/portraits/'+job).json() for job in jobs]
+    assert all(r['state']=='complete' for r in results)
+    assert [r['context']['poi']['lat'] for r in results]==[40,41]

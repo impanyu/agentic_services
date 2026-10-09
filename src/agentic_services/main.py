@@ -217,13 +217,13 @@ def create_app(
                     logging.getLogger(__name__).exception('Photo Scout queue worker failed')
                     worked=False
                 if not worked: await asyncio.sleep(5)
-        photo_task=asyncio.create_task(photo_worker())
+        photo_tasks=[asyncio.create_task(photo_worker()) for _ in range(max(1,min(4,int(os.getenv('PHOTO_SCOUT_SEARCH_CONCURRENCY','2')))))]
         async def portrait_worker():
             while True:
                 try:worked=await app.state.process_photo_portrait()
                 except Exception:worked=False
                 if not worked:await asyncio.sleep(3)
-        portrait_task=asyncio.create_task(portrait_worker())
+        portrait_tasks=[asyncio.create_task(portrait_worker()) for _ in range(max(1,min(4,int(os.getenv('PHOTO_SCOUT_PORTRAIT_CONCURRENCY','2')))))]
         async def niche_collector() -> None:
             store = ManagerStore(resolved_settings.database_path)
             while True:
@@ -263,14 +263,8 @@ def create_app(
         finally:
             task.cancel()
             niche_task.cancel()
-            photo_task.cancel()
-            portrait_task.cancel()
-            try:await portrait_task
-            except asyncio.CancelledError:pass
-            try:
-                await photo_task
-            except asyncio.CancelledError:
-                pass
+            for job in photo_tasks+portrait_tasks:job.cancel()
+            await asyncio.gather(*photo_tasks,*portrait_tasks,return_exceptions=True)
             try:
                 await task
             except asyncio.CancelledError:

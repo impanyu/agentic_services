@@ -138,7 +138,7 @@ class PhotoStore:
 
 def create_photo_router(settings,require_api,verification_store):
     router=APIRouter(tags=['Photo Scout']); store=PhotoStore(settings.database_path); tasks=TaskStore(settings.database_path)
-    lock=asyncio.Lock()
+    lock=asyncio.Semaphore(max(1,min(4,int(os.getenv('PHOTO_SCOUT_SEARCH_CONCURRENCY','2')))))
     source_requests=[]
     image_requests=[]
     def source_limit():
@@ -274,7 +274,6 @@ def create_photo_router(settings,require_api,verification_store):
 
     async def run(payload,allow_expired=False,task_id=None):
         enabled()
-        if lock.locked(): raise HTTPException(429,'An exploration is in progress; try again shortly')
         async with lock, asyncio.timeout(660):
             rows,statuses,pois=await catalog(payload,allow_expired)
             if task_id:
