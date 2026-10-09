@@ -17,3 +17,27 @@ def mapped_categories(styles):
 
 def style_briefs(styles):
     return [{'id':style,'label':PHOTO_STYLES[style]['label'],'description':PHOTO_STYLES[style]['description']} for style in styles or []]
+
+
+# Discovery hints, not claims that a place visually matches the mood.
+MOOD_PLACE_QUERIES = {
+    'nature': ['parks', 'botanical gardens'],
+    'urban': ['architecture landmarks', 'city plazas'],
+    'vintage': ['historic districts', 'historic buildings'],
+    'iconic': ['famous landmarks', 'scenic viewpoints'],
+    'artistic': ['public art', 'street murals'],
+    'waterside': ['waterfront promenades', 'lakeside parks'],
+    'minimal': ['modern architecture', 'public plazas'],
+    'adventure': ['hiking trails', 'scenic viewpoints'],
+}
+
+def discovery_queries(poi_queries, styles, categories=None):
+    # Explicit user targets are authoritative; mood still guides image scoring.
+    if poi_queries:
+        return list(dict.fromkeys(poi_queries))[:4]
+    if categories:
+        return list(dict.fromkeys(c.replace('_',' ') for c in categories))[:4]
+    from itertools import zip_longest
+    batches=zip_longest(*(MOOD_PLACE_QUERIES[s] for s in styles or []))
+    terms=list(dict.fromkeys(q for batch in batches for q in batch if q))
+    return terms[:4] or ['scenic places and tourist attractions']

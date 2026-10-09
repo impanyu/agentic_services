@@ -20,7 +20,7 @@ from fastapi import APIRouter, Header, HTTPException, Request, Response
 from pydantic import BaseModel, Field, model_validator
 
 from .tasks import TaskStore, SEARCH_RETENTION, prune_records
-from .styles import PHOTO_STYLES, mapped_categories, style_briefs
+from .styles import PHOTO_STYLES, mapped_categories, style_briefs, discovery_queries
 from .scoring import explore
 from .intent import IntentRequest, PoiQuery, resolve_intent
 from .places import nearby_places
@@ -177,7 +177,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
     async def lookup_pois(payload):
         categories=payload.poi_categories()
         if os.getenv('PHOTO_SCOUT_POI_PROVIDER')=='google-places':
-            queries=payload.poiQueries or ([PHOTO_STYLES[s]['description']+' photo spots' for s in payload.photoStyles] if payload.photoStyles else [])
+            queries=discovery_queries(payload.poiQueries,payload.photoStyles,payload.categories)
             pois,status=await nearby_places(payload.lat,payload.lon,payload.radius,queries)
         else:
             pois,status=await nearby_pois(payload.lat,payload.lon,payload.radius,categories) if categories is not None else await nearby_pois(payload.lat,payload.lon,payload.radius)

@@ -44,3 +44,12 @@ def test_poi_queries_accept_arbitrary_categories_and_names():
     plan=dict(locationQuery=None,useMapCenter=True,photoStyles=[],radiusMeters=1000,limit=3,preferences='',explanation='',clarification=None)
     for query in ['motels','vegan bakeries','industrial turbine museums','Starbucks']:
         assert intent.PhotoIntent(**plan,poiQueries=[query]).poiQueries==[query]
+
+def test_mood_discovery_mapping_preserves_explicit_target():
+    from agentic_services.photo_scout.styles import discovery_queries,PHOTO_STYLES,MOOD_PLACE_QUERIES
+    assert set(MOOD_PLACE_QUERIES)==set(PHOTO_STYLES)
+    assert discovery_queries(['coffee shops'],['vintage'])==['coffee shops']
+    assert discovery_queries([],['nature'])==['parks','botanical gardens']
+    assert discovery_queries([],['artistic','waterside'])==['public art','waterfront promenades','street murals','lakeside parks']
+    assert discovery_queries([],[],['museum'])==['museum']
+    assert discovery_queries([],[])==['scenic places and tourist attractions']
