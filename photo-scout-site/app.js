@@ -492,8 +492,8 @@ function showHistorySearch(result,context,history){
  el('search-history').open=false;
  if(history&&!history.checked){history.checked=true;persistHistory();renderHistory();}
  render(result,{save:false,mapUpdate:false,historyId:history?.id});drawHistoryMap();
- // History View focuses the map on every screen; open Shortlist only on request.
- el('results').hidden=true;
+ // Show the recorded area together with its complete shortlist.
+ el('results').hidden=false;
  focusHistorySearch(context,result,history);
 }
 const savedPhoto=node('dialog',null,'photo-studio saved-photo');savedPhoto.setAttribute('aria-label','Saved photo');
@@ -571,7 +571,7 @@ async function viewSavedTask(task){
  if(task.kind==='portrait'){await viewSavedPhoto(task);return;}
  try{
   const report=await json('/photo-scout/v1/report/'+encodeURIComponent(task.id)),context=report.context||task.context;
-  if(report.state==='complete'){showHistorySearch(report.result,context,searchHistory.find(h=>h.id===task.id));return;}
+  if(report.state==='complete'){let history=searchHistory.find(h=>h.id===task.id);if(!history){history={id:task.id,created:task.created*1000,label:context.query||context.locationLabel||`Around ${context.lat}, ${context.lon}`,radius:context.radius||1000,checked:true,result:{...report.result,searchContext:context}};searchHistory.push(history);persistHistory();renderHistory();}showHistorySearch(history.result,context,history);return;}
   focusHistorySearch(context,null,null);
   if(report.state==='failed')setProgress(2,'Search could not be completed',report.error||'Please try a new search.','error');
   else{activeSearch={jobId:task.id,context,draft:searchDraft()};restoreTasks();}
@@ -609,7 +609,7 @@ async function restoreTasks(){
    const follow=!activeSearch.draft||activeSearch.draft===searchDraft();activeSearch.context=focus.context;
    if(follow){applyTaskContext(focus.context);activeSearch.draft=searchDraft();}
    if(focus.state==='complete'){
-    const h=searchHistory.find(h=>h.id===focus.id);if(h&&follow){focusedSearchId=h.id;drawHistoryMap();render(h.result,{save:false,mapUpdate:false});el('results').hidden=true;fitSearchRange();setProgress(2,'Your shortlist is ready','Saved in History. Open Shortlist to view this search.','complete');}activeSearch=null;stopPoiScan();
+    const h=searchHistory.find(h=>h.id===focus.id);if(h&&follow){focusedSearchId=h.id;drawHistoryMap();render(h.result,{save:false,mapUpdate:false});el('results').hidden=false;fitSearchRange();setProgress(2,'Your shortlist is ready','Results are shown in Shortlist and saved in Search history.','complete');}activeSearch=null;stopPoiScan();
    }else if(focus.state==='failed'){if(follow)setProgress(2,'Search could not be completed',focus.error||'View details in History.','error');activeSearch=null;stopPoiScan();}
    else if(follow){const stage=focus.context?.stage;setProgress(stage==='scoring'?2:stage==='sources'?1:0,focus.state==='queued'?'Your search is queued…':stage==='scoring'?'Reviewing & ranking photos…':stage==='sources'?'Finding nearby places & photos…':'Understanding your request…','Progress is saved in History. You can start another search.','running',true);if(stage==='scoring')startPoiScan();}
   }

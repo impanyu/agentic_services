@@ -145,9 +145,9 @@ test('historical View always refits its recorded area, even if its selected coor
  const legacy=f.focusRecorded(null,{spots:[]},{label:'Around 41.8827, -87.6233',radius:500});assert.equal(legacy.radius,'500');assert.deepEqual(Array.from(legacy.moves.at(-1)),[41.8827,-87.6233]);
 });
 
-test('history View on desktop focuses the map and leaves Shortlist closed but available',()=>{
+test('history View on desktop focuses the map and opens Shortlist',()=>{
  const f=pageFixture(),view=f.viewRecorded({lat:41.8827,lon:-87.6233,radius:500},{spots:[],sources:{},summary:'Saved report'});
- assert.equal(view.hidden,true);assert.equal(view.shortlistEnabled,true);assert.deepEqual(Array.from(view.moves.at(-1)),[41.8827,-87.6233]);
+ assert.equal(view.hidden,false);assert.equal(view.shortlistEnabled,true);assert.deepEqual(Array.from(view.moves.at(-1)),[41.8827,-87.6233]);
 });
 
 test('all scored POIs remain ranked even when unsuitable or low scoring, retaining the requested top-count metadata',()=>{
@@ -249,4 +249,12 @@ test('arrow view controls wrap bearing, clamp tilt, and preserve the original sc
  assert.equal(changed.spot.viewHeadingDegrees,5);assert.equal(changed.spot.viewPitchDegrees,90);assert.match(changed.spot.sourceUrl,/heading=5/);assert.match(changed.spot.sourceUrl,/pitch=90/);assert.match(changed.icon.html,/photo-rank">4/);
  assert.equal(spot.viewHeadingDegrees,350);assert.equal(spot.viewPitchDegrees,80);assert.equal(changed.spot.score,90);
  const left=f.rotateView({...spot,viewHeadingDegrees:0,viewPitchDegrees:-90},['ArrowLeft','ArrowDown']);assert.equal(left.spot.viewHeadingDegrees,345);assert.equal(left.spot.viewPitchDegrees,-90);
+});
+
+
+test('finishing the selected search automatically opens its shortlist',async()=>{
+ const f=pageFixture(),context={lat:41.88,lon:-87.62,radius:500,query:'Current search'},task={id:'current',kind:'search',state:'queued',created:100,context};
+ await f.restoreWith([task],{});
+ await f.restoreWith([{...task,state:'complete'}],{current:{state:'complete',context,result:{spots:[],summary:'Done'}}});
+ assert.equal(f.element('results').hidden,false);assert.equal(f.element('toggle-results').disabled,false);
 });
