@@ -27,7 +27,7 @@ FILTERS = {
 }
 # Discovery proximity is only a hypothesis; the vision scorer verifies visibility.
 PROXIMITY = {'lake': 150, 'sea': 150, 'river': 100, 'peak': 300, 'forest': 0, 'waterside': 150}
-MAX_PLACES = 24
+MAX_PLACES = 30
 
 class Region:
     def __init__(self, lat, lon):

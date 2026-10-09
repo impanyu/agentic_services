@@ -43,7 +43,7 @@ class ExploreRequest(BaseModel):
     poiQueries: list[PoiQuery] = Field(default_factory=list,max_length=4)
     geographicKinds: list[GeographicKind] = Field(default_factory=list,max_length=6)
     scoringIntent: str = Field(default="",max_length=1000)
-    selectedPoiIds: list[str] | None = Field(default=None,max_length=24)
+    selectedPoiIds: list[str] | None = Field(default=None,max_length=30)
     poiCatalogToken: str | None = Field(default=None,max_length=40000)
     preferences: str = Field(default='Scenic, distinctive public places for photography',max_length=500)
 
@@ -387,7 +387,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
             'googleStreetView':{'credentialConfigured':bool(os.getenv('PHOTO_SCOUT_GOOGLE_API_KEY')),
                 'imageAnalysisEnabled':google_enabled(),
                 'dailyImageRequestLimit':max(0,int(os.getenv('PHOTO_SCOUT_GOOGLE_DAILY_IMAGE_LIMIT','0'))) or None},
-            'limits':{'radiusMeters':20000,'sampledImages':MAX_SCORED_IMAGES,'inspectedImages':MAX_SCORED_IMAGES,'imagesPerBatch':max(1,min(32,int(os.getenv('PHOTO_SCOUT_SCORING_BATCH_SIZE','24')))),'parallelBatches':max(1,min(16,int(os.getenv('PHOTO_SCOUT_SCORING_CONCURRENCY','12')))),'viewsPerPanorama':8,'googleQueryLocations':25,'timeoutSeconds':660},
+            'limits':{'radiusMeters':20000,'candidatePlaces':30,'sampledImages':MAX_SCORED_IMAGES,'inspectedImages':MAX_SCORED_IMAGES,'imagesPerBatch':max(1,min(32,int(os.getenv('PHOTO_SCOUT_SCORING_BATCH_SIZE','24')))),'parallelBatches':max(1,min(16,int(os.getenv('PHOTO_SCOUT_SCORING_CONCURRENCY','12')))),'viewsPerPanorama':8,'googleQueryLocations':30,'timeoutSeconds':660},
             'analysisMethod':'fixed-batch-scoring','discoveryMethod':'fixed-geographic-and-poi','discoveryMethods':['fixed-geographic-and-poi'],'geographicProvider':'openstreetmap','poiProviders':{'openstreetmap':'standby' if os.getenv('PHOTO_SCOUT_POI_PROVIDER')=='google-places' else 'enabled','google-places':'enabled' if os.getenv('PHOTO_SCOUT_POI_PROVIDER')=='google-places' else 'not_connected'},
             'privacy':'Coordinates/preferences are sent to imagery providers/OpenAI; paid reports retained for 30 days.'}
 

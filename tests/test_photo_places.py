@@ -27,6 +27,23 @@ def test_places_failure_never_falls_back_to_unrelated_scenic_pois(monkeypatch):
     rows,status=asyncio.run(places.nearby_places(40,-96,1000,['motels']))
     assert rows==[] and status['status']=='unavailable'
 
+def test_single_query_paginates_and_returns_30_candidates(monkeypatch):
+    import json
+    monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_API_KEY','fixture')
+    real=httpx.AsyncClient;calls=[]
+    def handler(request):
+        body=json.loads(request.content);calls.append(body)
+        assert body['pageSize']==20
+        start=20 if body.get('pageToken')=='second' else 0
+        return httpx.Response(200,json={'places':[
+            {'id':str(i),'displayName':{'text':f'Cafe {i}'},'location':{'latitude':40+i*.00001,'longitude':-96}}
+            for i in range(start,start+20)],'nextPageToken':'second' if start==0 else 'third'})
+    monkeypatch.setattr(places.httpx,'AsyncClient',lambda **kw:real(transport=httpx.MockTransport(handler)))
+    rows,status=asyncio.run(places.nearby_places(40,-96,1000,['coffee shops']))
+    assert len(rows)==30 and len(calls)==2 and rows[-1]['id']=='google:29'
+    assert {k:v for k,v in calls[1].items() if k!='pageToken'}==calls[0]
+    assert status['count']==30
+
 def test_explicit_address_is_geocoded_separately_from_discovery_query(monkeypatch):
     monkeypatch.setenv('PHOTO_SCOUT_POI_PROVIDER','google-places')
     async def parse(settings,payload):

@@ -18,7 +18,7 @@ def lake():
 def test_lakeside_candidates_use_paths_and_shore_not_lake_centroid():
     paths=[{'id':'road','name':'Shore Trail','geometry':{'type':'LineString','coordinates':[[-.005,-.005],[-.005,.005]]}}]
     rows=geo.geographic_places(0,0,2000,[lake()],paths,['lake'])
-    assert len(rows)>1 and len(rows)<=24
+    assert len(rows)>1 and len(rows)<=30
     assert all(abs(p['lon']+.005)<.000001 for p in rows)
     assert all(geo.matches_position(p['lat'],p['lon'],[lake()],['lake']) for p in rows)
     assert not geo.matches_position(0,0,[lake()],['lake'])

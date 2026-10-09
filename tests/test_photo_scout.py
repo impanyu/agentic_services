@@ -960,7 +960,8 @@ def test_google_visual_sampling_covers_area_and_poi_anchors_with_eight_headings(
     assert all({r['viewHeadingDegrees'] for r in rows if r['imageUrl'].split('/')[2]==p}==set(range(0,360,45)) for p in panoramas)
 
 
-def test_larger_parallel_batches_score_all_224_views_without_dropping_last_batch(tmp_path,monkeypatch):
+@pytest.mark.parametrize("count",[224,264])
+def test_larger_parallel_batches_score_all_views_without_dropping_last_batch(tmp_path,monkeypatch,count):
     import json
     from types import SimpleNamespace
     import agentic_services.photo_scout.scoring as visual
@@ -968,7 +969,7 @@ def test_larger_parallel_batches_score_all_224_views_without_dropping_last_batch
         monkeypatch.delenv(key,raising=False)
     settings=Settings(openai_api_key='test',openai_model='test',database_path=tmp_path/'db',base_url='https://api.test')
     rows=[{'id':str(i),'lat':0,'lon':i*.0002,'provider':'test','imageUrl':str(i),
-           'poi':{'id':f'poi:{i}','name':f'Place {i}','lat':0,'lon':i*.0002}} for i in range(224)]
+           'poi':{'id':f'poi:{i}','name':f'Place {i}','lat':0,'lon':i*.0002}} for i in range(count)]
     downloads=0;peak_downloads=0;started=0;peak_models=0;models=0;gate=asyncio.Event();sizes=[]
     async def image(url):
         nonlocal downloads,peak_downloads
@@ -980,15 +981,16 @@ def test_larger_parallel_batches_score_all_224_views_without_dropping_last_batch
         batch=[json.loads(c['text'])['image'] for c in kwargs['input'][0]['content'][1:] if c['type']=='input_text']
         assert kwargs['max_output_tokens']>=len(batch)*900
         sizes.append(len(batch));started+=1;models+=1;peak_models=max(peak_models,models)
-        if started==10:gate.set()
+        if started==(count+23)//24:gate.set()
         await asyncio.wait_for(gate.wait(),2)
         models-=1
         return SimpleNamespace(output_parsed=visual.VisualBatch(assessments=[visual.ImageAssessment(
-            image_id=r['id'],poi_id=r['poi']['id'],name=r['poi']['name'],score=100 if r['id']=='223' else 30,recommend=True,
+            image_id=r['id'],poi_id=r['poi']['id'],name=r['poi']['name'],score=100 if r['id']==str(count-1) else 30,recommend=True,
             visible_evidence='Visible sculpture',photo_tip='Frame sculpture',uncertainty='Access unknown',confidence='medium') for r in batch]),usage=None)
     _scoring_client(monkeypatch,parse);monkeypatch.setattr(visual,'image_data',image)
     result=asyncio.run(visual.explore(settings,ExploreRequest(lat=0,lon=0),rows,{}))
-    assert sizes.count(24)==9 and sizes.count(8)==1
+    assert sum(sizes)==count and max(sizes)==24
+    assert len(sizes)==(count+23)//24
     assert 16<peak_downloads<=32 and 8<peak_models<=12
-    assert result['inspectedImages']==224 and result['scoring']['scoringFailedImages']==0
-    assert len(result['spots'])==224 and result['spots'][0]['image_id']=='223'
+    assert result['inspectedImages']==count and result['scoring']['scoringFailedImages']==0
+    assert len(result['spots'])==count and result['spots'][0]['image_id']==str(count-1)

@@ -13,7 +13,7 @@ PANORAMAX_IMAGE_HOSTS = frozenset({
     'panoramax-storage-public-fast.s3.gra.perf.cloud.ovh.net',
 })
 
-MAX_SCORED_IMAGES = 224
+MAX_SCORED_IMAGES = 264
 VIEWS_PER_PANORAMA = 8
 
 HEADERS = {'User-Agent': 'AISoupPhotoScout/0.1 (https://aisoup.net/contact/)'}
@@ -498,7 +498,7 @@ async def nearby_pois(lat,lon,radius,categories=None):
     for p in sorted(result,key=lambda p:(p['category']!='viewpoint',p['distanceMeters'])):
         region=min(range(len(points)),key=lambda i:distance(points[i],(p['lat'],p['lon'])))
         groups.setdefault((region,p['category']),[]).append(p)
-    selected=[p for batch in zip_longest(*groups.values()) for p in batch if p][:24]
+    selected=[p for batch in zip_longest(*groups.values()) for p in batch if p][:30]
     return selected,{'status':'ok','count':len(selected),'foundPois':len(result),
         'endpoint':urlsplit(endpoint).hostname,'attempts':errors,
         'sampledAreas':len(points),'areaRadiusMeters':sample_radius,'coverage':'bounded-area-sample'}

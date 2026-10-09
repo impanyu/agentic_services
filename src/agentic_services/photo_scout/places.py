@@ -6,12 +6,13 @@ import httpx
 
 from .sources import distance, text
 
-FIELDS='places.id,places.displayName,places.location,places.primaryType,places.googleMapsUri,places.attributions'
+FIELDS='places.id,places.displayName,places.location,places.primaryType,places.googleMapsUri,places.attributions,nextPageToken'
 
 async def search_text(query, *, center=None, radius=None, limit=20):
     key=os.getenv('PHOTO_SCOUT_GOOGLE_PLACES_API_KEY') or os.getenv('PHOTO_SCOUT_GOOGLE_API_KEY')
     if not key:raise ValueError('Google Places credential unavailable')
-    body={'textQuery':query,'pageSize':limit,'languageCode':'en'}
+    limit=max(1,min(60,limit))
+    body={'textQuery':query,'pageSize':min(20,limit),'languageCode':'en'}
     if center is not None and radius is not None:
         lat,lon=center;dy=radius/111320;dx=dy/max(.01,math.cos(math.radians(lat)))
         west,east=lon-dx,lon+dx
@@ -22,10 +23,21 @@ async def search_text(query, *, center=None, radius=None, limit=20):
         else:
             body['locationBias']={'circle':{'center':{'latitude':lat,'longitude':lon},'radius':radius}}
     async with httpx.AsyncClient(timeout=25,follow_redirects=False) as client:
-        response=await client.post('https://places.googleapis.com/v1/places:searchText',
-            headers={'X-Goog-Api-Key':key,'X-Goog-FieldMask':FIELDS},json=body)
-        response.raise_for_status()
-        return response.json().get('places',[])
+        rows=[];seen_tokens=set()
+        for _ in range(math.ceil(limit/20)):
+            try:
+                response=await client.post('https://places.googleapis.com/v1/places:searchText',
+                    headers={'X-Goog-Api-Key':key,'X-Goog-FieldMask':FIELDS},json=body)
+                response.raise_for_status()
+                data=response.json()
+            except (httpx.HTTPError,ValueError):
+                if rows:break
+                raise
+            rows.extend(data.get('places',[]))
+            token=data.get('nextPageToken')
+            if len(rows)>=limit or not token or token in seen_tokens:break
+            seen_tokens.add(token);body['pageToken']=token
+        return rows[:limit]
 
 async def geocode_address(query):
     rows=await search_text(query,limit=1)
@@ -41,7 +53,7 @@ async def geocode_address(query):
 async def nearby_places(lat,lon,radius,queries):
     queries=list(dict.fromkeys(q.strip() for q in queries if q.strip()))[:4]
     if not queries:queries=['scenic places and tourist attractions']
-    responses=await asyncio.gather(*(search_text(q,center=(lat,lon),radius=radius) for q in queries),return_exceptions=True)
+    responses=await asyncio.gather(*(search_text(q,center=(lat,lon),radius=radius,limit=30) for q in queries),return_exceptions=True)
     if all(isinstance(r,Exception) for r in responses):
         return [],{'status':'unavailable','provider':'google-places','queries':queries}
     groups=[];seen=set()
@@ -64,6 +76,6 @@ async def nearby_places(lat,lon,radius,queries):
                           'visuallyAnalyzed':False})
         groups.append(group)
     from itertools import zip_longest
-    selected=[p for batch in zip_longest(*groups) for p in batch if p][:24]
+    selected=[p for batch in zip_longest(*groups) for p in batch if p][:30]
     return selected,{'status':'ok','provider':'google-places','count':len(selected),
                     'foundPois':len(seen),'queries':queries,'coverage':'bounded-text-search'}
