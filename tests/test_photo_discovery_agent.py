@@ -22,7 +22,7 @@ def test_bounds_and_inspection_required(tmp_path):
     with pytest.raises(ValueError):d.point(float('nan'),-96)
     tool=next(t for t in d.tools() if t.name=='manage_candidate')
     result=asyncio.run(tool.on_invoke_tool(ToolContext(None,tool_name=tool.name,tool_call_id="call",tool_arguments="{}"),json.dumps({'view_id':'invented','action':'add','reason':'nice'})))
-    assert not d.selected and 'error' in str(result).lower()
+    assert not d.selected and 'Inspect actual image' in str(result)
 
 
 def test_freeze_checkpoint_and_recover(tmp_path):

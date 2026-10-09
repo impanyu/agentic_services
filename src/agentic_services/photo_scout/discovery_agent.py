@@ -49,6 +49,11 @@ Return concise English explanations. No invented sources, IDs or imagery.
 '''
 
 
+async def tool_error(context,error):
+    # HTTP exceptions can contain credential-bearing source URLs.
+    return str(error) if isinstance(error,ValueError) else "Tool unavailable ("+type(error).__name__+"). Try another source or submit current candidates."
+
+
 class Discovery:
     def __init__(self, settings, payload, job_id=None, progress=None):
         self.settings, self.payload, self.progress = settings, payload, progress
@@ -174,7 +179,7 @@ class Discovery:
         return {'submitted':True,'candidateCount':len(self.selected),'next':'automatic-batch-scoring'}
 
     def tools(self):
-        @function_tool
+        @function_tool(failure_error_function=tool_error)
         async def search_places(query:str,lat:float,lon:float,radius:int):
             """Search Google Places by free text around a point inside the user region; repeat with different queries."""
             self.tick('search_places');self.point(lat,lon)
@@ -183,15 +188,15 @@ class Discovery:
             if self.payload.selectedPoiIds is not None:pois=[p for p in pois if p['id'] in self.payload.selectedPoiIds]
             self.pois.update({p['id']:p for p in pois});self.statuses['google-places']=status;self.checkpoint()
             return {'places':pois,'status':status}
-        @function_tool
+        @function_tool(failure_error_function=tool_error)
         async def query_geography(lat:float,lon:float,radius:int,kind:str):
             """Read water/paths/parks/buildings/viewpoints/coast geometry. For lakes query water and nearby paths."""
             self.tick('query_geography');return await self.geographic_features(lat,lon,radius,kind)
-        @function_tool
+        @function_tool(failure_error_function=tool_error)
         def view_map(lat:float,lon:float,span_meters:int):
             """View queried geography and numbered places/views. Pan by changing center, zoom by changing span."""
             self.tick('view_map');return self.render_map(lat,lon,span_meters)
-        @function_tool
+        @function_tool(failure_error_function=tool_error)
         async def find_streetview(lat:float,lon:float):
             """Find a Google panorama near any selected land position. Returns actual camera coordinates and available view IDs."""
             self.tick('find_streetview');self.point(lat,lon)
@@ -205,7 +210,7 @@ class Discovery:
                 if nearby:r.update(poi=nearby[0],poiCandidates=nearby)
             self.statuses['google-street-view']={'status':'ok','samplingMode':'agent-selected'}
             return {'views':self.add_views(rows)}
-        @function_tool
+        @function_tool(failure_error_function=tool_error)
         async def search_photos(provider:str,lat:float,lon:float,radius:int):
             """Search wikimedia-commons or panoramax around a chosen point for additional actual geolocated photos."""
             self.tick('search_photos');self.point(lat,lon)
@@ -216,7 +221,7 @@ class Discovery:
             rows=[r for r in rows if sources.distance((self.payload.lat,self.payload.lon),(r['lat'],r['lon']))<=self.payload.radius][:24]
             self.statuses[provider]={'status':'ok','eligibleImages':len(rows)}
             return {'views':self.add_views(rows)}
-        @function_tool
+        @function_tool(failure_error_function=tool_error)
         async def inspect_view(view_id:str,heading:int,fov:int):
             """See actual pixels. For Google set any heading 0–359 and fov 30–120; for static photos use heading=0,fov=120."""
             self.tick('inspect_view')
@@ -224,13 +229,13 @@ class Discovery:
             row=dict(self.views[view_id])
             if row['provider']=='google-street-view':
                 if not 0<=heading<360 or not 30<=fov<=120:raise ValueError('Invalid heading/fov')
-                pano=row['imageUrl'].split('/')[2];row.update(id=f'google:{pano}:{heading}:f{fov}',imageUrl=f'google-streetview://{pano}/{heading}/0/{fov}',viewHeadingDegrees=heading,viewFovDegrees=fov)
+                pano=row['imageUrl'].split('/')[2];row.update(id=f'google:{pano}:{heading}:f{fov}',imageUrl=f'google-streetview://{pano}/{heading}/0/{fov}',viewHeadingDegrees=heading,viewFovDegrees=fov,title=f'Street View facing {heading} degrees, fov {fov}')
                 row['sourceUrl']='https://www.google.com/maps/@?'+urlencode({'api':1,'map_action':'pano','pano':pano,'viewpoint':f"{row['lat']},{row['lon']}",'heading':heading,'pitch':0,'fov':fov})
             self.images+=1
             data=await sources.image_data(row['imageUrl'])
             self.views[row['id']]=row;self.inspected.add(row['id']);self.checkpoint()
             return [ToolOutputText(text=json.dumps({'view':self.public(row),'remainingImages':self.max_images-self.images})),ToolOutputImage(image_url=data,detail='high')]
-        @function_tool
+        @function_tool(failure_error_function=tool_error)
         def manage_candidate(view_id:str,action:str,reason:str):
             """Add/update an inspected view or remove a candidate. Reasons explain visual fit, not numeric scores."""
             self.tick('manage_candidate')
@@ -241,13 +246,13 @@ class Discovery:
                 self.selected[view_id]=reason[:600]
             else:raise ValueError('Unknown action')
             self.checkpoint();return {'candidateCount':len(self.selected)}
-        @function_tool
+        @function_tool(failure_error_function=tool_error)
         def list_candidates():
             """Review candidate evidence and remaining exploration budgets."""
             self.tick('list_candidates')
             return {'candidates':[{'view':self.public(self.views[k]),'reason':v} for k,v in self.selected.items()],
                 'remainingToolCalls':max(0,self.max_calls-self.calls),'remainingImages':self.max_images-self.images}
-        @function_tool
+        @function_tool(failure_error_function=tool_error)
         def submit_candidates(explanation:str):
             """TERMINAL: freeze current candidate list, end exploration and trigger automatic backend multimodal scoring."""
             self.tick('submit_candidates');return self.submit(explanation)
