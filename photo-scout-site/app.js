@@ -549,6 +549,7 @@ function focusHistorySearch(context,result,history){
  }
 }
 function showHistorySearch(result,context,history){
+ el('search-progress').hidden=true;el('message').textContent='';
  activeSearch=null;stopPoiScan();focusedSearchId=history?.id||searchHistory.find(h=>h.result===result)?.id||null;
  el('search-history').open=false;
  if(history&&!history.checked){history.checked=true;persistHistory();renderHistory();}
