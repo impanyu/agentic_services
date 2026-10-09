@@ -146,3 +146,13 @@ The `api.aisoup.net` URL-prefix property is verified in Google Search Console an
 The repository contains the v0 protocol, a runnable tiered Web Evidence service, full provider-source provenance, URL snapshots with raw and normalized SHA-256 hashes, SQLite persistence, machine-readable discovery, and an x402/MPP dual-protocol payment gateway. Each paid HTTP, MCP, or A2A execution creates an order, signed receipt, and detailed revenue/cost ledger entry. The admin dashboard reports per-order OpenAI token and Web Search costs, gross profit, and margins. Production USDC settlement and public MCP, A2A, x402, and MPP directory discovery have been verified. MPP Stripe has passed an isolated two-account sandbox payment; a real live-mode card charge remains an acceptance requirement. The next milestone is additional evidence operations and ongoing directory health monitoring.
 
 Niche Manager runtime and deployment: [operations](docs/niche-manager-operations.md).
+
+
+Photo Scout's agent API is public at `https://api.aisoup.net/photo-scout/mcp`.
+The free `list_photo_scout_prices` tool describes pricing and coverage; the paid
+`discover_photo_spots` tool costs $2 in Base USDC using x402 MCP. The HTTP endpoint
+retains MPP and the human website remains a free preview. Its [official MCP Registry
+record](https://registry.modelcontextprotocol.io/v0/servers/io.github.impanyu%2Fphoto-scout/versions/0.1.0)
+was verified publicly. Smithery publication awaits account authorization; a settled
+payment has not been independently verified. See [release metadata](services/photo-scout/release.json)
+and [API documentation](docs/photo-scout.md).

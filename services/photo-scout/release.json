@@ -10,5 +10,9 @@
   "humanFreePreview": true,
   "mcpRegistry": "services/photo-scout/server.json",
   "paymentVerified": false,
-  "directories": {}
+  "directories": {
+    "mcpRegistry": "https://registry.modelcontextprotocol.io/v0/servers/io.github.impanyu%2Fphoto-scout/versions/0.1.0"
+  },
+  "smitheryStatus": "awaiting-owner-github-authorization",
+  "publicationWorkflow": "https://github.com/impanyu/agentic_services/actions/runs/37868660684"
 }

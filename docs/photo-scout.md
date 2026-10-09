@@ -387,3 +387,11 @@ Release metadata: `services/photo-scout/release.json` and `server.json`. Run
 verify public metadata, free pricing, tool discovery and unpaid payment challenges
 without spending money. Directory publication and settled-payment delivery are
 separate gates; record independently verified public URLs in the release file.
+
+Public verification: the official MCP Registry record `io.github.impanyu/photo-scout`
+v0.1.0 is active and points to the deployed endpoint. Publication workflow:
+https://github.com/impanyu/agentic_services/actions/runs/37868660684.
+All local/public release checks passed, as did 60 backend tests and the gateway
+TypeScript check. These checks did not spend money and do not prove a settled payment.
+Smithery login requires GitHub email access plus gist/star/watch permissions and is
+awaiting the owner's action-time confirmation before authorization and submission.

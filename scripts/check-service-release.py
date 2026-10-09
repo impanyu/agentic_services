@@ -49,7 +49,10 @@ def check_photo_release(release,live):
             check((release['paidTool'].encode() in data and release['freeTool'].encode() in data) if method=='tools/list' else b'Payment required to access this tool' in data if label=='Unpaid MCP challenge' else release['agentPriceUsd'].encode() in data,label+' contents')
         status,headers,_=request('https://api.aisoup.net'+release['paidHttpPath'],method='POST',body=b'{"lat":41.8827,"lon":-87.6233,"radius":500}',content_type='application/json')
         check(status==402 and bool(headers.get('WWW-Authenticate') or headers.get('Payment-Required')),'Unpaid HTTP payment challenge')
-    print(f'Result: {len(errors)} failures. Settled payment and directory listings require separate verification.')
+        for name,url in release.get('directories',{}).items():
+            status,_,data=request(url)
+            check(status==200 and json.loads(data)['server']['name']==registry['name'] and json.loads(data)['server']['remotes']==registry['remotes'],name+' public listing identity and endpoint')
+    print(f'Result: {len(errors)} failures. Settled payment and unlisted directories require separate verification.')
     return int(bool(errors))
 
 
