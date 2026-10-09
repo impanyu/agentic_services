@@ -16,6 +16,8 @@ from PIL import Image, ImageDraw
 from agents import Agent, Runner, ModelSettings, OpenAIResponsesModel, RunConfig, function_tool
 from agents import ToolOutputImage, ToolOutputText, MaxTurnsExceeded
 from agents.run_config import ModelInputData, ToolExecutionConfig
+from agents.agent import ToolsToFinalOutputResult
+from agents.lifecycle import RunHooks
 from openai import AsyncOpenAI
 from openai.types.shared import Reasoning
 
@@ -42,7 +44,21 @@ per location are allowed. No numeric scoring in exploration: the evaluator score
 Do not mechanically download all eight compass directions everywhere. Inspect promising
 angles first, use the map/imagery to decide where to look next. Spend the budget on evidence.
 Use manage_candidate to add, update or remove inspected views and list_candidates to review.
-When enough useful viewpoints are collected, call submit_candidates. This is the REQUIRED
+Do not stop merely because two views match. Build a shortlist of promising regions before
+opening images. For large regions compare different relevant lakes/parks/neighborhoods.
+Inspect multiple land positions at promising sites, not just the POI centroid. If a view
+has wires, roads or obstructions, try a nearby viewpoint and compare several directions
+using inspect_views. Use geography bearings to choose directions; avoid blind sweeps.
+Record every inspected view's keep/reject decision with record_view_decisions, including
+visual evidence and why an alternative was rejected. If coverage is missing, try another
+position or imagery source before giving up. Aim for at least three distinct positions
+for small regions and six for regions over 5 km when coverage permits; this is a coverage
+target, not a requirement to invent candidates or fill a quota.
+Before submission call review_exploration: compare your candidates, explain which promising
+places remain unchecked and why further exploration is unlikely to improve the result.
+The review reports gaps. Resolve them while budget remains, or explicitly justify partial
+coverage. Candidate quality, variety and evidence determine completion, not requested top size.
+After reviewing exploration, call submit_candidates. This is the REQUIRED
 terminal action, freezes the list and ends your turn; the backend automatically scores it.
 You cannot see scores or explore after submitting. Submit partial or empty results with
 an honest explanation when evidence or coverage is insufficient. Never finish with prose
@@ -55,7 +71,7 @@ def compact_model_input(data):
     """Keep call/result pairs, but do not resend old large read bodies each turn."""
     items=data.model_data.input
     names={i.get('call_id'):i.get('name') for i in items if isinstance(i,dict) and i.get('type')=='function_call'}
-    reads=[n for n,i in enumerate(items) if isinstance(i,dict) and i.get('type')=='function_call_output' and names.get(i.get('call_id')) in {'query_geography','view_map','search_places','search_photos','find_streetview','inspect_view'}]
+    reads=[n for n,i in enumerate(items) if isinstance(i,dict) and i.get('type')=='function_call_output' and names.get(i.get('call_id')) in {'query_geography','view_map','search_places','search_photos','find_streetview','inspect_view','inspect_views'}]
     archive=set(reads[:-3]);output=[]
     for index,item in enumerate(items):
         if index in archive:
@@ -100,6 +116,21 @@ async def tool_error(context,error):
     return str(error) if isinstance(error,ValueError) else "Tool unavailable ("+type(error).__name__+"). Try another source or submit current candidates."
 
 
+class ExplorationHooks(RunHooks):
+    def __init__(self,state):self.state=state;self.started=None
+
+    async def on_llm_start(self,context,agent,system_prompt,input_items):
+        self.started=time.monotonic()
+
+    async def on_llm_end(self,context,agent,response):
+        self.state.audit.append({'event':'model_turn','model':agent.model.model,
+            'responseId':response.response_id,'inputTokens':response.usage.input_tokens,
+            'outputTokens':response.usage.output_tokens,
+            'durationSeconds':round(time.monotonic()-self.started,3) if self.started else None,
+            'elapsedSeconds':round(time.monotonic()-self.state.started)})
+        self.state.checkpoint()
+
+
 class Discovery:
     def __init__(self, settings, payload, job_id=None, progress=None):
         self.settings, self.payload, self.progress = settings, payload, progress
@@ -108,7 +139,9 @@ class Discovery:
         self.features = []; self.statuses = {}; self.audit = []; self.submitted = False
         self.note = ''; self.calls = 0; self.images = 0
         self.started = time.monotonic()
-        self.max_calls = 60; self.max_images = 64; self.max_candidates = 48
+        self.max_calls = 100; self.max_images = 96; self.max_candidates = 48
+        self.max_turns = 64; self.max_seconds = 420
+        self.decisions = {}; self.review = None; self.active_event = None
         self.path = settings.database_path
         with sqlite3.connect(self.path, timeout=15) as db:
             db.execute('CREATE TABLE IF NOT EXISTS photo_scout_exploration (job TEXT PRIMARY KEY, state TEXT NOT NULL, updated REAL NOT NULL)')
@@ -118,16 +151,17 @@ class Discovery:
                 self.inspected=set(state['inspected']);self.selected=state['selected'];self.audit=state['audit']
                 self.submitted=state['submitted'];self.note=state['note'];self.statuses=state['statuses']
                 self.features=state.get('features',[]);self.calls=state.get('calls',0);self.images=state.get('images',0)
+                self.decisions=state.get('decisions',{});self.review=state.get('review')
 
     def checkpoint(self, stage='exploring'):
-        state={k:getattr(self,k) for k in ('pois','views','selected','audit','submitted','note','statuses','calls','images','features')}
+        state={k:getattr(self,k) for k in ('pois','views','selected','audit','submitted','note','statuses','calls','images','features','decisions','review')}
         state['inspected']=sorted(self.inspected)
         with sqlite3.connect(self.path,timeout=15) as db:
             db.execute('INSERT OR REPLACE INTO photo_scout_exploration VALUES(?,?,?)',(self.job_id,json.dumps(state),time.time()))
         if self.progress:
             self.progress({'stage':stage,'nearbyPois':list(self.pois.values()),
                 'sampledViewLocations':[{'lat':r['lat'],'lon':r['lon'],'name':r['title']} for r in self.views.values()],
-                'exploration':{'toolCalls':self.calls,'inspectedViews':self.images,'candidates':len(self.selected),'lastAction':self.audit[-1].get('tool','submit_candidates') if self.audit else None}})
+                'exploration':{'toolCalls':self.calls,'inspectedViews':self.images,'candidates':len(self.selected),'lastAction':next((r['tool'] for r in reversed(self.audit) if 'tool' in r),None)}})
 
     def point(self, lat, lon):
         if not all(math.isfinite(v) for v in (lat,lon)) or abs(lat)>85 or abs(lon)>180:
@@ -137,9 +171,12 @@ class Discovery:
 
     def tick(self, name):
         if self.submitted:raise ValueError('Already submitted; exploration is closed')
-        if name!='submit_candidates' and (self.calls>=self.max_calls or time.monotonic()-self.started>270):
+        if name not in ('submit_candidates','review_exploration','record_view_decisions') and (self.calls>=self.max_calls or time.monotonic()-self.started>self.max_seconds-30):
             raise ValueError('Exploration budget reached. Submit existing candidates now.')
-        self.calls+=1;self.audit.append({'tool':name,'elapsedSeconds':round(time.monotonic()-self.started)})
+        self.calls+=1
+        if self.active_event is None:self.audit.append({'tool':name,'elapsedSeconds':round(time.monotonic()-self.started)})
+        if name not in ('submit_candidates','review_exploration','record_view_decisions','list_candidates','analyze_position','view_map'):
+            self.review=None
         self.checkpoint()
 
     def public(self, row):
@@ -166,16 +203,20 @@ class Discovery:
         dy=radius*1.2/111320;dx=dy/max(.01,math.cos(math.radians(lat)))
         bbox=f'{max(-85,lat-dy)},{max(-180,lon-dx)},{min(85,lat+dy)},{min(180,lon+dx)}'
         query=f'[out:json][timeout:15][maxsize:16777216];nwr(around:{radius},{lat},{lon}){filters[kind]};out geom({bbox}) 60;'
+        attempts=[]
         async with httpx.AsyncClient(timeout=20,headers=sources.HEADERS) as client:
             for endpoint in ('https://overpass-api.de/api/interpreter','https://overpass.private.coffee/api/interpreter'):
                 try:
                     data=await sources.get_json(client,endpoint,{'data':query})
                     if data.get('remark'):raise ValueError('Incomplete geometry response')
                     break
-                except Exception:
+                except Exception as error:
+                    attempts.append({'endpoint':endpoint,'errorType':type(error).__name__,
+                        'httpStatus':error.response.status_code if isinstance(error,httpx.HTTPStatusError) else None})
                     data=None
         if data is None:
-            self.statuses['openstreetmap']={'status':'unavailable'};return {'status':'unavailable','features':[]}
+            self.statuses['openstreetmap']={'status':'unavailable','attempts':attempts}
+            return {'status':'unavailable','features':[],'attempts':attempts}
         features=[]
         for e in data.get('elements',[]):
             geometry,roles=geometry_parts(e)
@@ -249,8 +290,44 @@ class Discovery:
         self.submitted=True;self.note=explanation[:1000];self.checkpoint('scoring')
         return {'submitted':True,'candidateCount':len(self.selected),'next':'automatic-batch-scoring'}
 
+    def finish_tools(self, context, results):
+        # A rejected submission must return to the model, not terminate the SDK.
+        return ToolsToFinalOutputResult(is_final_output=self.submitted,
+            final_output={'submitted':True,'candidateCount':len(self.selected)} if self.submitted else None)
+
+    def audit_summary(self, value, depth=0):
+        if depth>5:return 'nested metadata omitted'
+        if isinstance(value,ToolOutputImage):return {'imagePreview':True}
+        if isinstance(value,ToolOutputText):
+            try:return self.audit_summary(json.loads(value.text),depth+1)
+            except ValueError:return value.text[:1000]
+        if isinstance(value,dict):
+            return {k:self.audit_summary(v,depth+1) for k,v in value.items()
+                if k not in {'imageUrl','image_url','geometryParts','sourceUrl','licenseUrl','poiCatalogToken'}}
+        if isinstance(value,list):return [self.audit_summary(v,depth+1) for v in value[:60]]
+        if isinstance(value,str):return 'image bytes omitted' if value.startswith('data:') else value[:1500]
+        return value
+
+    async def inspect(self, view_id, heading, fov):
+        if self.images>=self.max_images:raise ValueError('Image budget reached; submit candidates')
+        if view_id not in self.views:raise ValueError('Unknown view ID')
+        row=dict(self.views[view_id])
+        if row['provider']=='google-street-view':
+            if not 0<=heading<360 or not 30<=fov<=120:raise ValueError('Invalid heading/fov')
+            pano=row['imageUrl'].split('/')[2];row.update(id=f'google:{pano}:{heading}:f{fov}',imageUrl=f'google-streetview://{pano}/{heading}/0/{fov}',viewHeadingDegrees=heading,viewFovDegrees=fov,title=f'Street View facing {heading} degrees, fov {fov}')
+            row['sourceUrl']='https://www.google.com/maps/@?'+urlencode({'api':1,'map_action':'pano','pano':pano,'viewpoint':f"{row['lat']},{row['lon']}",'heading':heading,'pitch':0,'fov':fov})
+        self.images+=1
+        data=await sources.image_data(row['imageUrl'])
+        self.views[row['id']]=row;self.inspected.add(row['id']);self.checkpoint()
+        return [ToolOutputText(text=json.dumps({'view':self.public(row),'remainingImages':self.max_images-self.images})),ToolOutputImage(image_url=data,detail='high')]
+
     def tools(self):
-        @function_tool(failure_error_function=tool_error)
+        async def logged_error(context,error):
+            message=await tool_error(context,error)
+            if self.active_event is not None:self.active_event.update(outcome='failed',errorType=type(error).__name__,error=message)
+            return message
+
+        @function_tool(failure_error_function=logged_error)
         async def search_places(query:str,lat:float,lon:float,radius:int):
             """Search Google Places by free text around a point inside the user region; repeat with different queries."""
             self.tick('search_places');self.point(lat,lon)
@@ -259,19 +336,19 @@ class Discovery:
             if self.payload.selectedPoiIds is not None:pois=[p for p in pois if p['id'] in self.payload.selectedPoiIds]
             self.pois.update({p['id']:p for p in pois});self.statuses['google-places']=status;self.checkpoint()
             return {'places':pois,'status':status}
-        @function_tool(failure_error_function=tool_error)
+        @function_tool(failure_error_function=logged_error)
         async def query_geography(lat:float,lon:float,radius:int,kind:str):
             """Read water/paths/parks/buildings/viewpoints/coast geometry. For lakes query water and nearby paths."""
             self.tick('query_geography');return await self.geographic_features(lat,lon,radius,kind)
-        @function_tool(failure_error_function=tool_error)
+        @function_tool(failure_error_function=logged_error)
         def analyze_position(lat:float,lon:float):
             """Compute distances to queried lake shores/paths and bearings, plus water containment when closed rings exist."""
             self.tick('analyze_position');return self.spatial_context(lat,lon)
-        @function_tool(failure_error_function=tool_error)
+        @function_tool(failure_error_function=logged_error)
         def view_map(lat:float,lon:float,span_meters:int):
             """View queried geography and numbered places/views. Pan by changing center, zoom by changing span."""
             self.tick('view_map');return self.render_map(lat,lon,span_meters)
-        @function_tool(failure_error_function=tool_error)
+        @function_tool(failure_error_function=logged_error)
         async def find_streetview(lat:float,lon:float):
             """Find a Google panorama near any selected land position. Returns actual camera coordinates and available view IDs."""
             self.tick('find_streetview');self.point(lat,lon)
@@ -285,7 +362,7 @@ class Discovery:
                 if nearby:r.update(poi=nearby[0],poiCandidates=nearby)
             self.statuses['google-street-view']={'status':'ok','samplingMode':'agent-selected'}
             return {'views':self.add_views(rows)}
-        @function_tool(failure_error_function=tool_error)
+        @function_tool(failure_error_function=logged_error)
         async def search_photos(provider:str,lat:float,lon:float,radius:int):
             """Search wikimedia-commons or panoramax around a chosen point for additional actual geolocated photos."""
             self.tick('search_photos');self.point(lat,lon)
@@ -296,42 +373,102 @@ class Discovery:
             rows=[r for r in rows if sources.distance((self.payload.lat,self.payload.lon),(r['lat'],r['lon']))<=self.payload.radius][:24]
             self.statuses[provider]={'status':'ok','eligibleImages':len(rows)}
             return {'views':self.add_views(rows)}
-        @function_tool(failure_error_function=tool_error)
+        @function_tool(failure_error_function=logged_error)
         async def inspect_view(view_id:str,heading:int,fov:int):
             """See actual pixels. For Google set any heading 0–359 and fov 30–120; for static photos use heading=0,fov=120."""
             self.tick('inspect_view')
-            if self.images>=self.max_images:raise ValueError('Image budget reached; submit candidates')
-            row=dict(self.views[view_id])
-            if row['provider']=='google-street-view':
-                if not 0<=heading<360 or not 30<=fov<=120:raise ValueError('Invalid heading/fov')
-                pano=row['imageUrl'].split('/')[2];row.update(id=f'google:{pano}:{heading}:f{fov}',imageUrl=f'google-streetview://{pano}/{heading}/0/{fov}',viewHeadingDegrees=heading,viewFovDegrees=fov,title=f'Street View facing {heading} degrees, fov {fov}')
-                row['sourceUrl']='https://www.google.com/maps/@?'+urlencode({'api':1,'map_action':'pano','pano':pano,'viewpoint':f"{row['lat']},{row['lon']}",'heading':heading,'pitch':0,'fov':fov})
-            self.images+=1
-            data=await sources.image_data(row['imageUrl'])
-            self.views[row['id']]=row;self.inspected.add(row['id']);self.checkpoint()
-            return [ToolOutputText(text=json.dumps({'view':self.public(row),'remainingImages':self.max_images-self.images})),ToolOutputImage(image_url=data,detail='high')]
-        @function_tool(failure_error_function=tool_error)
+            return await self.inspect(view_id,heading,fov)
+        @function_tool(failure_error_function=logged_error)
+        async def inspect_views(view_id:str,headings:list[int],fov:int):
+            """Compare 1–4 chosen directions of one panorama in one call, preserving per-image IDs. Not a blind compass sweep."""
+            self.tick('inspect_views')
+            if not 1<=len(headings)<=4:raise ValueError('Choose 1–4 directions')
+            if self.images+len(headings)>self.max_images:raise ValueError('Not enough image budget for this batch')
+            output=[]
+            for heading in dict.fromkeys(headings):
+                try:output.extend(await self.inspect(view_id,heading,fov))
+                except Exception as error:
+                    output.append(ToolOutputText(text=json.dumps({'heading':heading,'status':'failed','error':await tool_error(None,error)})))
+            return output
+        @function_tool(failure_error_function=logged_error)
         def manage_candidate(view_id:str,action:str,reason:str):
             """Add/update an inspected view or remove a candidate. Reasons explain visual fit, not numeric scores."""
             self.tick('manage_candidate')
-            if action=='remove':self.selected.pop(view_id,None)
+            if action=='remove':
+                self.selected.pop(view_id,None);self.decisions[view_id]={'decision':'reject','reason':reason[:1000]}
             elif action in ('add','update'):
                 if view_id not in self.inspected:raise ValueError('Inspect actual image before adding')
                 if len(self.selected)>=self.max_candidates and view_id not in self.selected:raise ValueError('Candidate list full')
                 self.selected[view_id]=reason[:600]
+                self.decisions[view_id]={'decision':'keep','reason':reason[:1000]}
             else:raise ValueError('Unknown action')
             self.checkpoint();return {'candidateCount':len(self.selected)}
-        @function_tool(failure_error_function=tool_error)
+        @function_tool(failure_error_function=logged_error)
         def list_candidates():
             """Review candidate evidence and remaining exploration budgets."""
             self.tick('list_candidates')
             return {'candidates':[{'view':self.public(self.views[k]),'reason':v} for k,v in self.selected.items()],
                 'remainingToolCalls':max(0,self.max_calls-self.calls),'remainingImages':self.max_images-self.images}
-        @function_tool(failure_error_function=tool_error)
+        @function_tool(failure_error_function=logged_error)
+        def record_view_decisions(view_ids:list[str],decision:str,reason:str):
+            """Record keep/reject evidence for inspected views. Kept views must also be added with manage_candidate."""
+            self.tick('record_view_decisions')
+            if decision not in ('keep','reject') or not reason.strip():raise ValueError('Provide keep/reject and visual reason')
+            if any(k not in self.inspected for k in view_ids):raise ValueError('Decisions require inspected images')
+            self.review=None
+            for k in view_ids:
+                self.decisions[k]={'decision':decision,'reason':reason[:1000]}
+                if decision=='reject':self.selected.pop(k,None)
+            self.checkpoint();return {'recorded':view_ids,'decision':decision}
+        @function_tool(failure_error_function=logged_error)
+        def review_exploration(comparison:str,unexplored_places:list[str],coverage_limitations:str):
+            """Required before submit. Compare selected/rejected compositions and locations. List promising unchecked places with reasons. Explain concrete coverage limitations, or use empty string if none."""
+            self.tick('review_exploration')
+            missing=sorted(self.inspected-set(self.decisions))
+            positions={(round(self.views[k]['lat'],4),round(self.views[k]['lon'],4)) for k in self.inspected}
+            target=6 if self.payload.radius>5000 else 3
+            gaps=[]
+            if missing:gaps.append('Record keep/reject visual reasons for all inspected views')
+            if len(positions)<target:gaps.append(f'Only {len(positions)} distinct positions compared; target {target} when imagery permits')
+            if unexplored_places:gaps.append('Promising places remain unchecked; explore them or justify diminishing returns')
+            if len(comparison.strip())<40:raise ValueError('Give a concrete visual and location comparison')
+            exhausted=self.calls>=self.max_calls-5 or self.images>=self.max_images or time.monotonic()-self.started>self.max_seconds-60
+            self.review={'comparison':comparison[:2500],'unexploredPlaces':unexplored_places[:30],
+                'coverageLimitations':coverage_limitations[:2000],'gaps':gaps,'missingDecisions':missing,
+                'distinctPositions':len(positions),'targetPositions':target,'budgetExhausted':exhausted,
+                'ready':not missing and (not gaps or exhausted or len(coverage_limitations.strip())>=40)}
+            self.checkpoint();return self.review
+        @function_tool(failure_error_function=logged_error)
         def submit_candidates(explanation:str):
             """TERMINAL: freeze current candidate list, end exploration and trigger automatic backend multimodal scoring."""
-            self.tick('submit_candidates');return self.submit(explanation)
-        return [search_places,query_geography,analyze_position,view_map,find_streetview,search_photos,inspect_view,manage_candidate,list_candidates,submit_candidates]
+            self.tick('submit_candidates')
+            if not self.review or not self.review['ready']:
+                raise ValueError('Submission needs a ready review_exploration. Record view decisions, compare locations, and resolve or explain coverage gaps first.')
+            return self.submit(explanation)
+        tools=[search_places,query_geography,analyze_position,view_map,find_streetview,search_photos,inspect_view,inspect_views,manage_candidate,list_candidates,record_view_decisions,review_exploration,submit_candidates]
+        for tool in tools:
+            original=tool.on_invoke_tool
+            async def logged(context,arguments,original=original,name=tool.name):
+                try:params=json.loads(arguments)
+                except ValueError:params={'invalidArguments':True}
+                event={'tool':name,'callId':context.tool_call_id,'parameters':self.audit_summary(params),
+                    'elapsedSeconds':round(time.monotonic()-self.started),'startedAt':time.time(),'outcome':'running'}
+                self.audit.append(event);self.active_event=event;self.checkpoint()
+                try:
+                    result=await original(context,arguments)
+                    event.setdefault('error',None)
+                    if event['outcome']=='running':event['outcome']='completed'
+                    event['result']=self.audit_summary(result)
+                    return result
+                except BaseException as error:
+                    event.update(outcome='cancelled' if isinstance(error,asyncio.CancelledError) else 'failed',errorType=type(error).__name__)
+                    raise
+                finally:
+                    event.update(durationSeconds=round(time.time()-event['startedAt'],3),
+                        counts={'places':len(self.pois),'inspectedViews':len(self.inspected),'candidates':len(self.selected)})
+                    self.active_event=None;self.checkpoint('scoring' if self.submitted else 'exploring')
+            tool.on_invoke_tool=logged
+        return tools
 
 
 async def discover(settings,payload,job_id=None,progress=None,initial_pois=None,original_query=""):
@@ -343,23 +480,24 @@ async def discover(settings,payload,job_id=None,progress=None,initial_pois=None,
             model=os.getenv('PHOTO_SCOUT_EXPLORER_MODEL','gpt-6.1-sol')
             def instructions(ctx,agent):
                 remaining=max(0,state.max_calls-state.calls)
-                turns_left=max(0,36-ctx.usage.requests)
-                return INSTRUCTIONS+f'\nModel turns remaining: {turns_left}. Remaining tools: {remaining}; images: {state.max_images-state.images}; candidates: {len(state.selected)}. '+('Submit now.' if remaining<5 or turns_left<=5 or time.monotonic()-state.started>230 else '')
+                turns_left=max(0,state.max_turns-ctx.usage.requests)
+                return INSTRUCTIONS+f'\nModel turns remaining: {turns_left}. Remaining tools: {remaining}; images: {state.max_images-state.images}; candidates: {len(state.selected)}. '+('Finish decisions and coverage review, then submit now; explain budget limitations.' if remaining<8 or turns_left<=6 or time.monotonic()-state.started>state.max_seconds-70 else '')
             agent=Agent(name='Photo Scout Explorer',instructions=instructions,
                 model=OpenAIResponsesModel(model,client),tools=state.tools(),
-                tool_use_behavior={'stop_at_tool_names':['submit_candidates']},
+                tool_use_behavior=state.finish_tools,
                 model_settings=ModelSettings(max_tokens=2500,reasoning=Reasoning(effort='low'),parallel_tool_calls=False,store=False))
             prompt=json.dumps({'originalQuery':original_query,'request':payload.model_dump(exclude={'poiCatalogToken'}),'photoStyleBriefs':style_briefs(payload.photoStyles),
                 'knownPlaces':list(state.pois.values()),'previousCandidates':list(state.selected),
                 'knownViews':[state.public(r) for r in state.views.values()],
                 'bounds':{'center':[payload.lat,payload.lon],'radiusMeters':payload.radius},'mission':'Explore, inspect, collect, submit.'})
             try:
-                result=await asyncio.wait_for(Runner.run(agent,prompt,max_turns=36,
-                    run_config=RunConfig(tracing_disabled=True,call_model_input_filter=compact_model_input,tool_execution=ToolExecutionConfig(max_function_tool_concurrency=1))),timeout=300)
-            except (asyncio.TimeoutError,MaxTurnsExceeded):
+                result=await asyncio.wait_for(Runner.run(agent,prompt,max_turns=state.max_turns,hooks=ExplorationHooks(state),
+                    run_config=RunConfig(tracing_disabled=True,call_model_input_filter=compact_model_input,tool_execution=ToolExecutionConfig(max_function_tool_concurrency=1))),timeout=state.max_seconds)
+            except (asyncio.TimeoutError,MaxTurnsExceeded) as error:
                 # Hard deadline preserves already inspected/selected evidence. No
                 # invented automatic candidates or return to agent after scoring.
-                state.submit('Exploration time limit reached; submitting the viewpoints already selected.')
+                state.audit.append({'event':'forced_submission','reason':type(error).__name__,'elapsedSeconds':round(time.monotonic()-state.started),'review':state.review})
+                state.submit('Exploration budget reached; submitting the viewpoints already selected. Coverage review may be incomplete.')
             else:
                 if not state.submitted:raise ValueError('Explorer finished without submitting candidates')
                 usage=result.context_wrapper.usage
@@ -368,4 +506,4 @@ async def discover(settings,payload,job_id=None,progress=None,initial_pois=None,
     rows=[{**state.views[k],'explorationReason':reason} for k,reason in state.selected.items()]
     for name,status in state.statuses.items():
         if status.get('status')=='ok':status.update(sampledImages=sum(r['provider']==name for r in rows))
-    return rows,state.statuses,list(state.pois.values()),{'candidateCount':len(rows),'inspectedViews':state.images,'toolCalls':state.calls,'submissionNote':state.note,'audit':state.audit}
+    return rows,state.statuses,list(state.pois.values()),{'candidateCount':len(rows),'inspectedViews':state.images,'toolCalls':state.calls,'submissionNote':state.note,'audit':state.audit,'review':state.review,'viewDecisions':state.decisions}

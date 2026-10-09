@@ -43,9 +43,32 @@ ranked locations. No agent turn occurs after scoring. Candidate state, geography
 and action audit persist by private task ID for worker restart recovery; expired
 jobs' exploration records are pruned. Browser disconnection does not cancel work.
 
-Initial limits: 60 tool calls, 64 exploratory image inspections, 48 candidates,
-36 model turns and 300 seconds exploration, within the existing 660-second task
+Exploration limits: 100 tool calls, 96 exploratory image inspections, 48 candidates,
+64 model turns and 420 seconds exploration, within the existing 660-second task
 limit. Deadline/turn exhaustion submits already selected evidence with an explicit
 partial-coverage note; it never fabricates candidates. Provider failure is exposed
 to the agent so it can select another search/source. Setting the flag to 0 keeps
 the previous workflow available for rollback.
+
+
+### Coverage review and structured action logs
+
+Explorer v2 compares promising regions before stopping. `inspect_views` compares
+up to four selected headings in one call (serial provider reads, one model turn).
+`record_view_decisions` records visual keep/reject evidence; adding a candidate
+also records its keep reason. `review_exploration` requires a concrete comparison,
+unchecked promising places, and explicit coverage limitations. All inspected
+views need decisions before ordinary submission. Coverage targets are three
+positions in small regions, six above 5 km; fewer are allowed with a recorded
+coverage explanation or budget exhaustion. These targets cannot guarantee good
+recommendations or comprehensive coverage. Further discovery invalidates review.
+A rejected submission returns to the model; only successful submission ends it.
+Hard deadlines preserve selected evidence even if review is incomplete.
+
+Each tool audit event records call ID, parsed parameters, start time, duration,
+outcome, sanitized result metadata, errors and evidence counts. Image bytes,
+credential-bearing provider URLs and bulk geometry are excluded from audit.
+OSM errors include endpoint and exception/HTTP status, not raw request URLs.
+Candidate decisions and final review persist with the private job; this is an
+operational action log, not a recording of hidden model reasoning. Existing
+records cannot retroactively acquire parameters or rejection reasons.

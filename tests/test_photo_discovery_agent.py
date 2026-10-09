@@ -37,7 +37,9 @@ class SubmitModel(Model):
     def __init__(self):self.calls=0
     async def get_response(self,*args,**kwargs):
         self.calls+=1
-        return ModelResponse(output=[ResponseFunctionToolCall(type='function_call',id='fc_1',call_id='call_1',name='submit_candidates',arguments='{"explanation":"No coverage"}')],usage=Usage(),response_id='r1')
+        name='review_exploration' if self.calls==1 else 'submit_candidates'
+        arguments=json.dumps({'comparison':'No images were found; no visual comparison is possible.', 'unexplored_places':[], 'coverage_limitations':'All available imagery sources were unavailable; there is no image evidence to inspect.'}) if self.calls==1 else '{"explanation":"No coverage"}'
+        return ModelResponse(output=[ResponseFunctionToolCall(type='function_call',id=f'fc_{self.calls}',call_id=f'call_{self.calls}',name=name,arguments=arguments)],usage=Usage(),response_id=f'r{self.calls}')
     async def stream_response(self,*args,**kwargs):
         raise NotImplementedError
         yield
@@ -45,9 +47,9 @@ class SubmitModel(Model):
 
 def test_submit_stops_sdk_without_another_model_turn(tmp_path):
     d=state(tmp_path);model=SubmitModel()
-    agent=Agent(name='test',model=model,tools=d.tools(),tool_use_behavior={'stop_at_tool_names':['submit_candidates']})
+    agent=Agent(name='test',model=model,tools=d.tools(),tool_use_behavior=d.finish_tools)
     asyncio.run(Runner.run(agent,'Submit',run_config=RunConfig(tracing_disabled=True)))
-    assert d.submitted and model.calls==1
+    assert d.submitted and model.calls==2
 
 
 def test_inspect_keeps_actual_location_heading_and_fov(tmp_path,monkeypatch):
@@ -118,3 +120,65 @@ def test_compaction_preserves_tool_call_correlations():
     result=compact_model_input(SimpleNamespace(model_data=SimpleNamespace(input=items,instructions='rules')))
     assert [r.get('call_id') for r in result.input]==[r.get('call_id') for r in items]
     assert len(result.input[1]['output'])==1 and len(result.input[-1]['output'])==2
+
+
+def invoke(d,name,params):
+    tool=next(t for t in d.tools() if t.name==name)
+    return asyncio.run(tool.on_invoke_tool(ToolContext(None,tool_name=name,tool_call_id='trace-call',tool_arguments=json.dumps(params)),json.dumps(params)))
+
+
+def test_rejected_submit_is_logged_and_does_not_stop_agent(tmp_path):
+    d=state(tmp_path)
+    result=invoke(d,'submit_candidates',{'explanation':'Two views are enough'})
+    assert 'ready review' in result and not d.submitted
+    assert not d.finish_tools(None,[]).is_final_output
+    event=state(tmp_path).audit[-1]
+    assert event['outcome']=='failed' and event['errorType']=='ValueError'
+    assert event['parameters']['explanation']=='Two views are enough'
+    assert event['durationSeconds']>=0 and event['callId']=='trace-call'
+
+
+def test_review_requires_decisions_and_specific_sparse_coverage_reason(tmp_path):
+    d=state(tmp_path);d.views['one']={'id':'one','lat':40,'lon':-96};d.inspected={'one'}
+    p={'comparison':'A promising lake view was inspected, but alternative positions remain unchecked.', 'unexplored_places':['Other shoreline'], 'coverage_limitations':''}
+    assert not invoke(d,'review_exploration',p)['ready']
+    invoke(d,'record_view_decisions',{'view_ids':['one'],'decision':'reject','reason':'Only a road is visible, with no lake.'})
+    assert not invoke(d,'review_exploration',p)['ready']
+    p['coverage_limitations']='Repeated imagery lookups around the shoreline found no other panoramas; alternative sources returned no photos.'
+    assert invoke(d,'review_exploration',p)['ready']
+    invoke(d,'submit_candidates',{'explanation':'Partial coverage'})
+    assert d.submitted and state(tmp_path).decisions['one']['decision']=='reject'
+
+
+def test_batch_views_preserve_ids_and_partial_failure_evidence(tmp_path,monkeypatch):
+    d=state(tmp_path)
+    d.views['original']={'id':'original','provider':'google-street-view','lat':40,'lon':-96,'imageUrl':'google-streetview://pano/0','title':'View'}
+    async def load(ref):
+        if '/90/' in ref:raise RuntimeError('credential-bearing URL must not leak')
+        return 'data:image/jpeg;base64,pixels'
+    monkeypatch.setattr(discovery_agent.sources,'image_data',load)
+    output=invoke(d,'inspect_views',{'view_id':'original','headings':[0,90,180],'fov':80})
+    assert len(d.inspected)==2 and len(output)==5
+    assert d.images==3 and d.calls==1
+    event=state(tmp_path).audit[-1]
+    assert event['parameters']['headings']==[0,90,180]
+    assert 'RuntimeError' in str(event['result']) and 'credential-bearing' not in str(event)
+    assert 'base64' not in str(event) and 'pixels' not in str(event)
+    assert event['counts']['inspectedViews']==2
+
+
+def test_further_discovery_invalidates_coverage_review(tmp_path):
+    d=state(tmp_path);d.review={'ready':True};d.tick('inspect_views')
+    assert d.review is None
+
+
+def test_per_turn_usage_survives_restart(tmp_path):
+    d=state(tmp_path);hooks=discovery_agent.ExplorationHooks(d)
+    agent=SimpleNamespace(model=SimpleNamespace(model='explorer'))
+    async def run():
+        await hooks.on_llm_start(None,agent,None,[])
+        await hooks.on_llm_end(None,agent,ModelResponse(output=[],usage=Usage(input_tokens=123,output_tokens=8),response_id='response'))
+    asyncio.run(run())
+    event=state(tmp_path).audit[-1]
+    assert event['event']=='model_turn' and event['inputTokens']==123 and event['outputTokens']==8
+    assert event['durationSeconds']>=0
