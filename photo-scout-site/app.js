@@ -407,12 +407,14 @@ function renderHistory(){
   if(entry.kind==='portrait'){
    const item=node('button',null,'photo-history-entry');item.append(node('strong',entry.label),node('small',`${new Date(entry.created).toLocaleString()} · Selfie · ${entry.state}`));item.type='button';item.dataset.state=entry.state;item.title=['queued','checking','running'].includes(entry.state)?'Selfie in progress':'View saved photo';item.addEventListener('click',()=>viewSavedTask(entry.task));const row=node('div',null,'photo-history-row');row.append(item,removeHistoryButton(entry));photosRoot.append(row);continue;
   }
-  const h=entry.history,row=node('div',null,'history-item'),label=node(h?'label':'span',null,'history-copy');
+  const h=entry.history,row=node('div',null,'history-item'),label=node('span',null,'history-copy');
   if(h){const check=node('input');check.type='checkbox';check.checked=h.checked;check.setAttribute('aria-label','Show search: '+entry.label);check.addEventListener('change',()=>{h.checked=check.checked;persistHistory();renderHistory();drawHistoryMap({fit:true});});label.append(check);}
   const text=node('span'),detail=h?`${h.radius/1000} km · ${allPoiViews(h.result).length} places`:(entry.kind==='portrait'?'Selfie · ':'')+(entry.state==='running'&&entry.kind==='search'?({sources:'Finding photos',scoring:'Checking photos'}[entry.task?.context?.stage]||'Resolving location'):entry.state);
+  const openEntry=()=>h?showHistorySearch(h.result,h.result.searchContext,h):viewSavedTask(entry.task);
+  text.setAttribute('role','button');text.tabIndex=0;text.className='history-open';text.addEventListener('click',openEntry);text.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();openEntry();}});
   text.append(node('strong',entry.label),node('small',`${new Date(entry.created).toLocaleString()} · ${detail}`));label.append(text);
   const pending=['queued','running','checking'].includes(entry.state),view=node('button',pending?'Progress':entry.state==='failed'?'Details':entry.kind==='portrait'?'View photo':'View');view.type='button';
-  view.addEventListener('click',()=>{if(entry.task)viewSavedTask(entry.task);else{showHistorySearch(h.result,h.result.searchContext,h);}});
+  view.addEventListener('click',openEntry);
   const actions=node('div',null,'history-entry-actions');actions.append(view,removeHistoryButton(entry));row.append(label,actions);(entry.kind==='portrait'?photosRoot:root).append(row);
  }
 }
@@ -508,10 +510,11 @@ async function submitDurableSearch(query){
  catch(error){message(error.message);setProgress(0,'Search could not be started',error.message,'error');}
  finally{searchBusy=false;updateSubmitState();}
 }
-function fitSearchRange(){
- syncMapSelection();
+function fitSearchRange(context){
+ if(!context)syncMapSelection();
+ const bounds=context?L.circle([context.lat,context.lon],{radius:context.radius||1000}).getBounds():searchArea.getBounds();
  const dockHeight=document.querySelector('.scout-dock').getBoundingClientRect?.().height||120;
- map.fitBounds(searchArea.getBounds(),{paddingTopLeft:[24,80],paddingBottomRight:[24,Math.ceil(dockHeight)+24],maxZoom:18});
+ map.fitBounds(bounds,{paddingTopLeft:[24,80],paddingBottomRight:[24,Math.ceil(dockHeight)+24],maxZoom:18});
 }
 function applyTaskContext(context){
  if(!Number.isFinite(context.lat)||!Number.isFinite(context.lon))return;
@@ -662,7 +665,7 @@ async function restoreTasks(){
    const follow=!activeSearch.draft||activeSearch.draft===searchDraft();activeSearch.context=focus.context;
    if(follow){applyTaskContext(focus.context);activeSearch.draft=searchDraft();}
    if(focus.state==='complete'){
-    const h=searchHistory.find(h=>h.id===focus.id);if(h&&follow){focusedSearchId=h.id;drawHistoryMap();render(h.result,{save:false,mapUpdate:false});el('results').hidden=false;fitSearchRange();setProgress(2,'Your shortlist is ready','Results are shown in Shortlist and saved in Search history.','complete');}activeSearch=null;stopPoiScan();
+    const h=searchHistory.find(h=>h.id===focus.id);if(h){focusedSearchId=h.id;drawHistoryMap();render(h.result,{save:false,mapUpdate:false});el('results').hidden=false;fitSearchRange(focus.context);setProgress(2,'Your shortlist is ready','Results are shown in Shortlist and saved in Search history.','complete');}activeSearch=null;stopPoiScan();
    }else if(focus.state==='failed'){if(follow)setProgress(2,'Search could not be completed',focus.error||'View details in History.','error');activeSearch=null;stopPoiScan();}
    else if(follow){const stage=focus.context?.stage;setProgress(stage==='scoring'?2:stage==='sources'?1:0,focus.state==='queued'?'Your search is queued…':stage==='scoring'?'Reviewing & ranking photos…':stage==='sources'?'Finding nearby places & photos…':'Understanding your request…','Progress is saved in History. You can start another search.','running',true);if(stage==='scoring')startPoiScan();}
   }

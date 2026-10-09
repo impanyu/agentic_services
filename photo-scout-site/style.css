@@ -193,3 +193,5 @@ html:has(body.photo-app),body.photo-app{height:100%;overflow:hidden}.photo-app m
 .map-overlay-controls:has(>details[open]){z-index:900}
 .map-overlay-controls>details[open]{z-index:900}
 .map-overlay-controls .history-menu{background:#fffdf8}
+
+.history-open{cursor:pointer}.history-open:focus-visible{outline:2px solid #795397;outline-offset:3px;border-radius:4px}

@@ -259,6 +259,14 @@ test('finishing the selected search automatically opens its shortlist',async()=>
  assert.equal(f.element('results').hidden,false);assert.equal(f.element('toggle-results').disabled,false);
 });
 
+test('completed search opens Shortlist even after editing the next query',async()=>{
+ const f=pageFixture(),context={lat:41.88,lon:-87.62,radius:500,query:'Current search'},task={id:'edited',kind:'search',state:'queued',created:100,context};
+ await f.restoreWith([task],{});
+ f.element('prompt-query').value='Next search';f.element('results').hidden=true;
+ await f.restoreWith([{...task,state:'complete'}],{edited:{state:'complete',context,result:{spots:[],summary:'Done'}}});
+ assert.equal(f.element('results').hidden,false);assert.equal(f.element('prompt-query').value,'Next search');
+});
+
 test('Google popup refreshes expired previews, bounds retries and recovers on reopening',async()=>{
  const source=readFileSync('photo-scout-site/app.js','utf8');
  const handlers={},image={dataset:{},addEventListener(type,fn){handlers[type]=fn;},replaceWith(){throw Error('Preview image must remain retryable');}};
