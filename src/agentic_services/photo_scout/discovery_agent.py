@@ -56,8 +56,8 @@ Map coordinates and geometry are factual evidence; do not guess camera coordinat
 from map pixels. Water polygons include shorelines, not suitable standing points.
 Choose points on land near mapped paths; access and safety remain unverified.
 Discover imagery near points of interest, move the lookup point, and inspect actual
-images with inspect_view. Start Street View at fov=60 degrees and pitch=0 for a
-natural camera perspective; try fov=45 for tighter framing. Avoid 120-degree views
+images with inspect_view. Start Street View at fov=90 degrees and pitch=0 for a
+natural camera perspective; try fov=60 or 45 for tighter framing. Avoid 120-degree views
 for final candidates unless the wider composition is genuinely needed and visually
 verified. Change Street View heading/fov to compare compositions.
 You may search Commons/Panoramax independently; geotags may identify the subject,

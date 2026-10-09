@@ -270,16 +270,16 @@ async def google_streetview(client, lat, lon, radius, targets=None, area_samplin
         # Eight compass headings cover 360 degrees with overlapping views.
         views=[(heading,0) for heading in range(0,360,45)]
         for heading,pitch in views:
-            rows.append({'id':f'google:{pano}:{heading}:f60','provider':'google-street-view',
+            rows.append({'id':f'google:{pano}:{heading}:f90','provider':'google-street-view',
                 'title':f'Street View facing {heading} degrees, pitch {pitch} degrees','lat':lat2,'lon':lon2,
-                'locationType':'camera_geotag','imageUrl':f'google-streetview://{pano}/{heading}/0/60',
+                'locationType':'camera_geotag','imageUrl':f'google-streetview://{pano}/{heading}/0/90',
                 'sourceUrl':'https://www.google.com/maps/@?'+urlencode({'api':1,'map_action':'pano','pano':pano,
-                    'viewpoint':f'{lat2},{lon2}','heading':heading,'pitch':pitch,'fov':60}),
+                    'viewpoint':f'{lat2},{lon2}','heading':heading,'pitch':pitch,'fov':90}),
                 'author':text(data.get('copyright')) or 'Google Street View',
                 'license':'Google Maps Platform terms; not an open license',
                 'licenseUrl':'https://cloud.google.com/maps-platform/terms',
                 'sourceDate':data.get('date'),'capturedAt':data.get('date'),
-                'viewHeadingDegrees':heading,'viewPitchDegrees':pitch,'viewFovDegrees':60,
+                'viewHeadingDegrees':heading,'viewPitchDegrees':pitch,'viewFovDegrees':90,
                 'description':'Street View camera position; access and safe standing point unverified.',
                 **({'poi':poi,'poiCandidates':[poi],'poiDistanceMeters':round(distance((lat2,lon2),(poi['lat'],poi['lon'])))} if poi else {})})
     if not successful: raise ValueError('Google Street View metadata unavailable')
