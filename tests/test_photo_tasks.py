@@ -181,3 +181,53 @@ def test_account_limit_spans_sessions_and_concurrent_admission_is_atomic(tmp_pat
         return browser.post('/photo-scout/v1/jobs',headers={'X-Request-Token':str(i)*32},json={'lat':40,'lon':-96}).status_code
     with ThreadPoolExecutor(max_workers=2) as executor:assert sorted(executor.map(submit,[5,6]))==[202,429]
     with sqlite3.connect(settings.database_path) as db:assert db.execute('SELECT count(*) FROM photo_task_owners WHERE user_id=?',('alice',)).fetchone()[0]==5
+
+
+def test_retention_keeps_all_account_records_but_deletes_seven_day_guest_data(tmp_path,monkeypatch):
+    settings,app,guest=setup(tmp_path,monkeypatch)
+    guest.get('/photo-scout/v1/tasks')
+    guest_hash=hashlib.sha256(guest.cookies.get(GUEST_COOKIE).encode()).hexdigest()
+    now=time.time();old=now-365*86400
+    with sqlite3.connect(settings.database_path) as db:
+        db.execute('INSERT INTO photo_sessions VALUES(?,?,?,?,?)',(hashlib.sha256(b'alice').hexdigest(),'alice','{}','csrf',now+3600))
+        for i in range(70):
+            job='account-'+str(i)
+            db.execute("INSERT INTO photo_scout_jobs(id,token_hash,payload,created,price,state,result) VALUES(?,?,?, ?,0,'complete',?)",(job,'hash','{}',old,json.dumps({'spots':[],'summary':'Saved'})))
+            db.execute('INSERT INTO photo_task_owners VALUES(?,?,?,?,?,?)',('search',job,None,'alice',old,'{}'))
+        for kind,job,user,created in [('search','guest-old',None,now-8*86400),('portrait','guest-photo',None,now-8*86400),('portrait','account-photo','alice',old)]:
+            if kind=='search':db.execute("INSERT INTO photo_scout_jobs(id,token_hash,payload,created,price,state) VALUES(?,?,?, ?,0,'complete')",(job,'hash','{}',created))
+            else:db.execute('INSERT INTO photo_portraits VALUES(?,?,?,?,?,?,?,?,?)',(job,'hash',created,created+7*86400,'complete',None,None,b'saved image',None))
+            db.execute('INSERT INTO photo_task_owners VALUES(?,?,?,?,?,?)',(kind,job,guest_hash,user,created,'{}'))
+    # Startup migrates existing signed-in photos before any worker pruning.
+    restarted=create_app(settings=settings)
+    account=TestClient(restarted,base_url='https://api.test',headers={'Authorization':'Bearer private'});account.cookies.set(COOKIE,'alice')
+    data=account.get('/photo-scout/v1/tasks').json()
+    assert data['retention']=='permanent' and data['searchRetentionDays'] is None and data['photoRetentionDays'] is None
+    assert len(data['items'])==71 and all(t['expiresAt'] is None for t in data['items'])
+    assert account.get('/photo-scout/v1/portraits/account-photo/image').content==b'saved image'
+    assert account.get('/photo-scout/v1/report/account-0').status_code==200
+    assert guest.get('/photo-scout/v1/tasks').json()['items']==[]
+    with sqlite3.connect(settings.database_path) as db:
+        assert db.execute("SELECT count(*) FROM photo_task_owners WHERE user_id='alice'").fetchone()[0]==71
+        assert not db.execute("SELECT 1 FROM photo_scout_jobs WHERE id='guest-old'").fetchone()
+        assert not db.execute("SELECT 1 FROM photo_portraits WHERE id='guest-photo'").fetchone()
+
+
+def test_signin_promotes_guest_photo_and_search_to_permanent_storage(tmp_path,monkeypatch):
+    from starlette.requests import Request
+    settings,app,client=setup(tmp_path,monkeypatch);client.get('/photo-scout/v1/tasks')
+    job=client.post('/photo-scout/v1/jobs',headers={'X-Request-Token':'p'*32},json={'lat':40,'lon':-96}).json()['jobId']
+    token=client.cookies.get(GUEST_COOKIE);now=time.time()
+    with sqlite3.connect(settings.database_path) as db:
+        db.execute('INSERT INTO photo_portraits VALUES(?,?,?,?,?,?,?,?,?)',('photo','hash',now,now+7*86400,'complete',None,None,b'kept',None))
+        db.execute('INSERT INTO photo_task_owners VALUES(?,?,?,?,?,?)',('portrait','photo',hashlib.sha256(token.encode()).hexdigest(),None,now,'{}'))
+    request=Request({'type':'http','headers':[(b'cookie',(GUEST_COOKIE+'='+token).encode())]})
+    TaskStore(settings.database_path).attach_user(request,'alice')
+    with sqlite3.connect(settings.database_path) as db:
+        db.execute('INSERT INTO photo_sessions VALUES(?,?,?,?,?)',(hashlib.sha256(b'alice').hexdigest(),'alice','{}','csrf',now+3600))
+        db.execute('UPDATE photo_scout_jobs SET created=? WHERE id=?',(now-365*86400,job))
+        db.execute('UPDATE photo_portraits SET created=? WHERE id=?',(now-365*86400,'photo'))
+        assert db.execute("SELECT expires FROM photo_portraits WHERE id='photo'").fetchone()[0]>now+365*86400
+    client.cookies.set(COOKIE,'alice')
+    assert len(client.get('/photo-scout/v1/tasks').json()['items'])==2
+    assert client.get('/photo-scout/v1/portraits/photo/image').content==b'kept'

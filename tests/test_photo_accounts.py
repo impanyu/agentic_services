@@ -60,13 +60,13 @@ def test_oauth_state_pkce_and_replay_rejection(tmp_path,monkeypatch):
     assert client.get('/photo-scout/v1/auth/callback',params={'state':state,'error':'denied'},follow_redirects=False).status_code==400
 
 
-def test_history_retains_latest_30_and_validates_views(tmp_path,monkeypatch):
+def test_history_retains_all_account_records_and_validates_views(tmp_path,monkeypatch):
     client,path=fixture(tmp_path,monkeypatch);headers=seed(client,path,'alice')
     for i in range(32):
         record={**item(),'id':f'record-{i}','created':i}
         assert client.post('/photo-scout/v1/history',headers=headers,json=record).status_code==200
     records=client.get('/photo-scout/v1/history').json()['items']
-    assert len(records)==30 and records[0]['id']=='record-31'
+    assert len(records)==32 and records[0]['id']=='record-31' and records[-1]['id']=='record-0'
     assert client.post('/photo-scout/v1/history',headers=headers,json={**item(),'result':{'spots':'invalid'}}).status_code==422
 
 

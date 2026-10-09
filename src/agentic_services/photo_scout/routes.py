@@ -19,7 +19,7 @@ import httpx
 from fastapi import APIRouter, Header, HTTPException, Request, Response
 from pydantic import BaseModel, Field, model_validator
 
-from .tasks import TaskStore, SEARCH_RETENTION
+from .tasks import TaskStore, SEARCH_RETENTION, prune_records
 from .styles import PHOTO_STYLES, mapped_categories, style_briefs
 from .scoring import explore
 from .intent import IntentRequest, resolve_intent
@@ -70,7 +70,7 @@ class PhotoStore:
                 if name not in columns: db.execute(f'ALTER TABLE photo_scout_jobs ADD COLUMN {name} {definition}')
     def prune(self):
         with self.connect() as db:
-            db.execute('DELETE FROM photo_scout_jobs WHERE created<?',(time.time()-SEARCH_RETENTION,))
+            prune_records(db)
     def enqueue_preview(self,payload,token,on_admit=None):
         self.prune()
         job='ps_'+hashlib.sha256(token.encode()).hexdigest()[:32]
@@ -103,8 +103,8 @@ class PhotoStore:
     def create(self,payload,price):
         job='ps_'+secrets.token_hex(16); token=secrets.token_urlsafe(32)
         with self.connect() as db:
-            # Delete expired query/results; keep no indefinite location history.
-            db.execute('DELETE FROM photo_scout_jobs WHERE created<?',(time.time()-30*86400,))
+            # Account searches persist; guests and paid delivery have bounded retention.
+            prune_records(db)
             db.execute('INSERT INTO photo_scout_jobs(id,token_hash,payload,created,price) VALUES(?,?,?,?,?)',
                 (job,hashlib.sha256(token.encode()).hexdigest(),payload.model_dump_json(),time.time(),price))
         return job,token
@@ -129,7 +129,8 @@ class PhotoStore:
             db.execute("UPDATE photo_scout_budget SET runs=runs+1 WHERE day=?",(day,))
     def get(self,job):
         with self.connect() as db:
-            row=db.execute('SELECT * FROM photo_scout_jobs WHERE id=? AND created>?',(job,time.time()-30*86400)).fetchone()
+            prune_records(db)
+            row=db.execute('SELECT * FROM photo_scout_jobs WHERE id=?',(job,)).fetchone()
         return dict(row) if row else None
     def update(self,job,**values):
         with self.connect() as db:
@@ -380,7 +381,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
         identity=tasks.identity(request,response)
         job=store.enqueue_preview(payload,x_request_token,lambda db,job:tasks.bind_in(db,'search',job,identity,payload.model_dump()))
         response.headers['Cache-Control']='private, no-store'
-        return {'jobId':job,'reportToken':x_request_token,'state':store.get(job)['state'],'expiresAt':store.get(job)['created']+SEARCH_RETENTION,'context':tasks.context('search',job)}
+        return {'jobId':job,'reportToken':x_request_token,'state':store.get(job)['state'],'expiresAt':None if identity[1] else store.get(job)['created']+SEARCH_RETENTION,'context':tasks.context('search',job)}
 
     async def process_preview():
         if lock.locked(): return False

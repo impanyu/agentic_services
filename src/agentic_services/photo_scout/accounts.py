@@ -113,7 +113,7 @@ def create_accounts_router(settings,require_api):
     @router.get('/photo-scout/v1/history')
     def history(request:Request):
         row=user_session(request)
-        with db() as d:items=[json.loads(r['record']) for r in d.execute('SELECT record FROM photo_account_history WHERE user_id=? ORDER BY created DESC LIMIT 30',(row['user_id'],))]
+        with db() as d:items=[json.loads(r['record']) for r in d.execute('SELECT record FROM photo_account_history WHERE user_id=? ORDER BY created DESC',(row['user_id'],))]
         return JSONResponse({'items':items},headers={'Cache-Control':'private, no-store'})
     @router.post('/photo-scout/v1/history')
     def save_history(item:HistoryItem,request:Request):
@@ -131,6 +131,5 @@ def create_accounts_router(settings,require_api):
         if len(encoded.encode())>150000:raise HTTPException(413,'History record is too large')
         with db() as d:
             d.execute('INSERT OR REPLACE INTO photo_account_history VALUES(?,?,?,?)',(row['user_id'],item.id,item.created,encoded))
-            d.execute('DELETE FROM photo_account_history WHERE user_id=? AND id NOT IN (SELECT id FROM photo_account_history WHERE user_id=? ORDER BY created DESC LIMIT 30)',(row['user_id'],row['user_id']))
         return {'ok':True}
     return router
