@@ -294,7 +294,7 @@ function renderHistory(){
  if(!searches.length)root.append(node('p','Your searches will appear here.','small'));if(!photos.length)photosRoot.append(node('p','Your selfies will appear here.','small'));
  for(const entry of entries){
   if(entry.kind==='portrait'){
-   const item=node('button',entry.label,'photo-history-entry');item.type='button';item.dataset.state=entry.state;item.title=['queued','checking','running'].includes(entry.state)?'Selfie in progress':'View saved photo';item.addEventListener('click',()=>viewSavedTask(entry.task));photosRoot.append(item);continue;
+   const item=node('button',null,'photo-history-entry');item.append(node('strong',entry.label),node('small',`${new Date(entry.created).toLocaleString()} · Selfie · ${entry.state}`));item.type='button';item.dataset.state=entry.state;item.title=['queued','checking','running'].includes(entry.state)?'Selfie in progress':'View saved photo';item.addEventListener('click',()=>viewSavedTask(entry.task));photosRoot.append(item);continue;
   }
   const h=entry.history,row=node('div',null,'history-item'),label=node(h?'label':'span',null,'history-copy');
   if(h){const check=node('input');check.type='checkbox';check.checked=h.checked;check.setAttribute('aria-label','Show search: '+entry.label);check.addEventListener('change',()=>{h.checked=check.checked;persistHistory();renderHistory();drawHistoryMap({fit:true});});label.append(check);}
