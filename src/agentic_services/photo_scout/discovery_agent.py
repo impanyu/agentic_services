@@ -343,7 +343,8 @@ async def discover(settings,payload,job_id=None,progress=None,initial_pois=None,
             model=os.getenv('PHOTO_SCOUT_EXPLORER_MODEL','gpt-6.1-sol')
             def instructions(ctx,agent):
                 remaining=max(0,state.max_calls-state.calls)
-                return INSTRUCTIONS+f'\nRemaining tools: {remaining}; images: {state.max_images-state.images}; candidates: {len(state.selected)}. '+('Submit now.' if remaining<5 or time.monotonic()-state.started>230 else '')
+                turns_left=max(0,36-ctx.usage.requests)
+                return INSTRUCTIONS+f'\nModel turns remaining: {turns_left}. Remaining tools: {remaining}; images: {state.max_images-state.images}; candidates: {len(state.selected)}. '+('Submit now.' if remaining<5 or turns_left<=5 or time.monotonic()-state.started>230 else '')
             agent=Agent(name='Photo Scout Explorer',instructions=instructions,
                 model=OpenAIResponsesModel(model,client),tools=state.tools(),
                 tool_use_behavior={'stop_at_tool_names':['submit_candidates']},

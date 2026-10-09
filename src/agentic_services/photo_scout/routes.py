@@ -329,7 +329,11 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
                 for p in pois if p['id'] not in assessed)
             result['nearbyPois']=pois
             result['discoveryMethod']='agent-exploration' if agent_mode else 'visual-area-and-poi' if visual_exploration(payload) else 'poi-first'
-            if exploration:result['exploration']=exploration
+            if exploration:
+                result['exploration']=exploration
+                if not rows:
+                    result['summary']=exploration['submissionNote'] or 'The explorer found no viewpoints matching your request.'
+                    result['coverage']=f"Explorer inspected {exploration['inspectedViews']} views; no candidates were submitted for batch scoring. Coverage depends on available imagery."
             result['photoLocationCount']=sum(p.get('poi',{}).get('category')=='photo-location' for p in result.get('poiResults',[]))
             result['candidatePoiCount']=len(pois)
             result['poiProvider']='google-places' if os.getenv('PHOTO_SCOUT_POI_PROVIDER')=='google-places' else 'openstreetmap'
