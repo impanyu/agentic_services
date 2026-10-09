@@ -4,7 +4,7 @@ from fastapi.testclient import TestClient
 from PIL import Image
 from agentic_services.config import Settings
 from agentic_services.main import create_app
-from agentic_services.photo_scout.tasks import TaskStore,GUEST_COOKIE
+from agentic_services.photo_scout.tasks import TaskStore,GUEST_COOKIE,prune_records
 from agentic_services.photo_scout.accounts import COOKIE
 import agentic_services.photo_scout.routes as routes
 import agentic_services.photo_scout.portraits as portraits
@@ -68,7 +68,7 @@ def test_guest_portrait_recovery_owns_image_without_exposing_tokens_or_upload(tm
     assert stranger.get(path).status_code==404 and stranger.get(path+'/image').status_code==404
     with sqlite3.connect(settings.database_path) as db:
         assert db.execute('SELECT photo,payload FROM photo_portraits').fetchone()==(None,None)
-        db.execute('UPDATE photo_portraits SET expires=0')
+        db.execute('UPDATE photo_guests SET expires=0')
     assert restored.get(path+'/image').status_code==404;assert restored.get('/photo-scout/v1/tasks').json()['items']==[]
 
 
@@ -198,6 +198,7 @@ def test_retention_keeps_all_account_records_but_deletes_seven_day_guest_data(tm
             if kind=='search':db.execute("INSERT INTO photo_scout_jobs(id,token_hash,payload,created,price,state) VALUES(?,?,?, ?,0,'complete')",(job,'hash','{}',created))
             else:db.execute('INSERT INTO photo_portraits VALUES(?,?,?,?,?,?,?,?,?)',(job,'hash',created,created+7*86400,'complete',None,None,b'saved image',None))
             db.execute('INSERT INTO photo_task_owners VALUES(?,?,?,?,?,?)',(kind,job,guest_hash,user,created,'{}'))
+            db.execute('UPDATE photo_guests SET expires=? WHERE hash=?',(now-1,guest_hash))
     # Startup migrates existing signed-in photos before any worker pruning.
     restarted=create_app(settings=settings)
     account=TestClient(restarted,base_url='https://api.test',headers={'Authorization':'Bearer private'});account.cookies.set(COOKIE,'alice')
@@ -231,3 +232,39 @@ def test_signin_promotes_guest_photo_and_search_to_permanent_storage(tmp_path,mo
     client.cookies.set(COOKIE,'alice')
     assert len(client.get('/photo-scout/v1/tasks').json()['items'])==2
     assert client.get('/photo-scout/v1/portraits/photo/image').content==b'kept'
+
+
+def test_guest_retention_uses_last_visit_not_record_age_and_polling_does_not_renew(tmp_path,monkeypatch):
+    settings,app,client=setup(tmp_path,monkeypatch)
+    client.get('/photo-scout/v1/tasks')
+    guest_hash=hashlib.sha256(client.cookies.get(GUEST_COOKIE).encode()).hexdigest()
+    now=time.time();old=now-365*86400;expiry=now+86400
+    with sqlite3.connect(settings.database_path) as db:
+        db.execute('UPDATE photo_guests SET expires=? WHERE hash=?',(expiry,guest_hash))
+        db.execute("INSERT INTO photo_scout_jobs(id,token_hash,payload,created,price,state,result) VALUES(?,?,?, ?,0,'complete',?)",('old-search','hash','{}',old,json.dumps({'spots':[]})))
+        db.execute('INSERT INTO photo_portraits VALUES(?,?,?,?,?,?,?,?,?)',('old-photo','hash',old,old+7*86400,'complete',None,None,b'kept',None))
+        for kind,job in [('search','old-search'),('portrait','old-photo')]:
+            db.execute('INSERT INTO photo_task_owners VALUES(?,?,?,?,?,?)',(kind,job,guest_hash,None,old,'{}'))
+    # Worker pruning and background polling preserve old records but do not touch the clock.
+    with sqlite3.connect(settings.database_path) as db:prune_records(db)
+    data=client.get('/photo-scout/v1/tasks').json()
+    assert data['retention']=='seven_days_inactive'
+    assert len(data['items'])==2 and all(t['expiresAt']==expiry for t in data['items'])
+    assert client.get('/photo-scout/v1/portraits/old-photo/image').content==b'kept'
+    with sqlite3.connect(settings.database_path) as db:
+        assert db.execute('SELECT expires FROM photo_guests WHERE hash=?',(guest_hash,)).fetchone()[0]==expiry
+    # Visiting renews the cookie and the shared deadline for every existing record.
+    visit=client.get('/photo-scout/v1/tasks?visit=true')
+    assert 'Max-Age=604800' in visit.headers['set-cookie']
+    deadlines={t['expiresAt'] for t in visit.json()['items']}
+    assert len(deadlines)==1 and next(iter(deadlines))>=now+7*86400
+    assert client.get('/photo-scout/v1/report/old-search').status_code==200
+    # Seven days of inactivity deletes the complete guest data set, regardless of creation time.
+    with sqlite3.connect(settings.database_path) as db:
+        db.execute('UPDATE photo_guests SET expires=? WHERE hash=?',(now-1,guest_hash))
+    assert client.get('/photo-scout/v1/tasks?visit=true').json()['items']==[]
+    with sqlite3.connect(settings.database_path) as db:
+        assert not db.execute('SELECT 1 FROM photo_guests WHERE hash=?',(guest_hash,)).fetchone()
+        assert not db.execute('SELECT 1 FROM photo_task_owners WHERE guest=?',(guest_hash,)).fetchone()
+        assert not db.execute("SELECT 1 FROM photo_scout_jobs WHERE id='old-search'").fetchone()
+        assert not db.execute("SELECT 1 FROM photo_portraits WHERE id='old-photo'").fetchone()

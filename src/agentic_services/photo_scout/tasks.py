@@ -16,20 +16,25 @@ ACTIVE_TASK_LIMIT=5
 def digest(token):return hashlib.sha256(token.encode()).hexdigest()
 
 def prune_records(db):
-    """Account ownership protects both records and generated image bytes."""
+    """Account data is permanent; guest data expires as one unit after inactivity."""
     now=time.time()
     tables={r[0] for r in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
     owners='photo_task_owners' in tables
-    if 'photo_scout_jobs' in tables:
+    for table,kind in [('photo_scout_jobs','search'),('photo_portraits','portrait')]:
+        if table not in tables:continue
+        legacy='created<?' if kind=='search' else 'expires<=?'
+        cutoff=now-PAID_SEARCH_RETENTION if kind=='search' else now
         if owners:
-            db.execute("""DELETE FROM photo_scout_jobs WHERE
-                NOT EXISTS (SELECT 1 FROM photo_task_owners o WHERE o.kind='search' AND o.job=photo_scout_jobs.id AND o.user_id IS NOT NULL)
-                AND created < ? - CASE WHEN EXISTS (SELECT 1 FROM photo_task_owners o WHERE o.kind='search' AND o.job=photo_scout_jobs.id) THEN ? ELSE ? END""",(now,SEARCH_RETENTION,PAID_SEARCH_RETENTION))
-        else:db.execute('DELETE FROM photo_scout_jobs WHERE created<?',(now-PAID_SEARCH_RETENTION,))
-    if 'photo_portraits' in tables:
-        guard="AND NOT EXISTS (SELECT 1 FROM photo_task_owners o WHERE o.kind='portrait' AND o.job=photo_portraits.id AND o.user_id IS NOT NULL)" if owners else ''
-        db.execute('DELETE FROM photo_portraits WHERE (expires<? OR created<?) '+guard,(now,now-SEARCH_RETENTION))
-    if owners:db.execute('DELETE FROM photo_task_owners WHERE user_id IS NULL AND created<?',(now-SEARCH_RETENTION,))
+            db.execute(f"""DELETE FROM {table} WHERE
+                (EXISTS (SELECT 1 FROM photo_task_owners o WHERE o.kind=? AND o.job={table}.id)
+                 AND NOT EXISTS (SELECT 1 FROM photo_task_owners o LEFT JOIN photo_guests g ON g.hash=o.guest
+                     WHERE o.kind=? AND o.job={table}.id AND (o.user_id IS NOT NULL OR g.expires>?)))
+                OR (NOT EXISTS (SELECT 1 FROM photo_task_owners o WHERE o.kind=? AND o.job={table}.id) AND {legacy})""",
+                (kind,kind,now,kind,cutoff))
+        else:db.execute(f'DELETE FROM {table} WHERE {legacy}',(cutoff,))
+    if owners:
+        db.execute('DELETE FROM photo_task_owners WHERE user_id IS NULL AND NOT EXISTS (SELECT 1 FROM photo_guests g WHERE g.hash=guest AND g.expires>?)',(now,))
+        db.execute('DELETE FROM photo_guests WHERE expires<=?',(now,))
 
 class TaskStore:
     def __init__(self,path):
@@ -43,7 +48,7 @@ class TaskStore:
                 db.execute("UPDATE photo_portraits SET expires=? WHERE expires<? AND EXISTS (SELECT 1 FROM photo_task_owners o WHERE o.kind='portrait' AND o.job=photo_portraits.id AND o.user_id IS NOT NULL)",(ACCOUNT_EXPIRY,ACCOUNT_EXPIRY))
     def db(self):
         db=sqlite3.connect(self.path,timeout=15);db.row_factory=sqlite3.Row;return db
-    def identity(self,request,response=None):
+    def identity(self,request,response=None,*,touch=True):
         now=time.time();guest=None;user=None
         with self.db() as db:
             token=request.cookies.get(GUEST_COOKIE,'')
@@ -51,9 +56,11 @@ class TaskStore:
                 row=db.execute('SELECT hash FROM photo_guests WHERE hash=? AND expires>?',(digest(token),now)).fetchone()
                 if row:
                     guest=row['hash']
-                    if response is not None:
+                    if response is not None and touch:
                         db.execute('UPDATE photo_guests SET expires=? WHERE hash=?',(now+SEARCH_RETENTION,guest))
                         response.set_cookie(GUEST_COOKIE,token,max_age=SEARCH_RETENTION,httponly=True,secure=True,samesite='lax',path='/photo-scout/')
+                        if db.execute("SELECT 1 FROM sqlite_master WHERE name='photo_portraits'").fetchone():
+                            db.execute("UPDATE photo_portraits SET expires=? WHERE EXISTS (SELECT 1 FROM photo_task_owners o WHERE o.kind='portrait' AND o.job=photo_portraits.id AND o.guest=? AND o.user_id IS NULL)",(now+SEARCH_RETENTION,guest))
             account=request.cookies.get(ACCOUNT_COOKIE,'')
             if account and len(account)<=200 and db.execute("SELECT 1 FROM sqlite_master WHERE name='photo_sessions'").fetchone():
                 row=db.execute('SELECT user_id FROM photo_sessions WHERE hash=? AND expires>?',(digest(account),now)).fetchone()
@@ -63,6 +70,12 @@ class TaskStore:
                 db.execute('INSERT INTO photo_guests VALUES(?,?)',(guest,now+SEARCH_RETENTION))
                 response.set_cookie(GUEST_COOKIE,token,max_age=SEARCH_RETENTION,httponly=True,secure=True,samesite='lax',path='/photo-scout/')
         return guest,user
+    def expiry(self,identity):
+        guest,user=identity
+        if user:return None
+        with self.db() as db:
+            row=db.execute('SELECT expires FROM photo_guests WHERE hash=?',(guest,)).fetchone()
+        return row['expires'] if row else time.time()
     def bind_in(self,db,kind,job,identity,context):
         guest,user=identity
         # Ownership and admission commit together. Retries never transfer ownership.
@@ -96,8 +109,8 @@ class TaskStore:
                 prune_records(db)
                 db.execute('UPDATE photo_task_owners SET user_id=? WHERE guest=? AND user_id IS NULL',(user,guest))
                 db.execute("UPDATE photo_portraits SET expires=? WHERE EXISTS (SELECT 1 FROM photo_task_owners o WHERE o.kind='portrait' AND o.job=photo_portraits.id AND o.user_id=?)",(ACCOUNT_EXPIRY,user))
-    def recent(self,request,response):
-        guest,user=self.identity(request,response);now=time.time();items=[]
+    def recent(self,request,response,*,touch=False):
+        guest,user=self.identity(request,response,touch=touch);now=time.time();items=[]
         with self.db() as db:
             prune_records(db)
             db.execute('DELETE FROM photo_guests WHERE expires<?',(now,))
@@ -107,7 +120,7 @@ class TaskStore:
                 columns='id,created,state,error'+(',expires' if row['kind']=='portrait' else '')
                 task=db.execute('SELECT '+columns+' FROM '+table+' WHERE id=?',(row['job'],)).fetchone()
                 if not task:continue
-                expiry=None if row['user_id'] else (task['created']+SEARCH_RETENTION if row['kind']=='search' else min(task['expires'],task['created']+SEARCH_RETENTION))
+                expiry=None if row['user_id'] else db.execute('SELECT expires FROM photo_guests WHERE hash=?',(row['guest'],)).fetchone()[0]
                 if expiry is not None and expiry<=now:continue
                 items.append({'id':row['job'],'kind':row['kind'],'created':task['created'],'expiresAt':expiry,'state':task['state'],'error':task['error'],'context':json.loads(row['context'])})
         return items
@@ -115,8 +128,8 @@ class TaskStore:
 def create_tasks_router(settings,require_api):
     router=APIRouter(tags=['Photo Scout']);store=TaskStore(settings.database_path)
     @router.get('/photo-scout/v1/tasks')
-    def tasks(request:Request,response:Response):
+    def tasks(request:Request,response:Response,visit:bool=False):
         require_api(request.headers.get('authorization'));response.headers['Cache-Control']='private, no-store'
-        items=store.recent(request,response);_,user=store.identity(request)
-        return {'items':items,'searchRetentionDays':None if user else 7,'photoRetentionDays':None if user else 7,'retention':'permanent' if user else 'seven_days'}
+        items=store.recent(request,response,touch=visit);_,user=store.identity(request)
+        return {'items':items,'searchRetentionDays':None if user else 7,'photoRetentionDays':None if user else 7,'retention':'permanent' if user else 'seven_days_inactive'}
     return router

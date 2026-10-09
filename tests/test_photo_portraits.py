@@ -66,7 +66,7 @@ def test_private_job_edits_both_images_and_removes_upload(tmp_path,monkeypatch,i
     image=client.get(path+'/image',headers=owned);assert image.content==raw;assert image.headers['cache-control']=='private, no-store'
     with sqlite3.connect(settings.database_path) as db:
         assert db.execute('SELECT photo,payload FROM photo_portraits').fetchone()==(None,None)
-        db.execute('UPDATE photo_portraits SET expires=0')
+        db.execute('UPDATE photo_guests SET expires=0')
     assert client.get(path,headers=owned).status_code==404
 
 

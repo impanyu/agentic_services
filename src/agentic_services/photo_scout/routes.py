@@ -381,7 +381,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
         identity=tasks.identity(request,response)
         job=store.enqueue_preview(payload,x_request_token,lambda db,job:tasks.bind_in(db,'search',job,identity,payload.model_dump()))
         response.headers['Cache-Control']='private, no-store'
-        return {'jobId':job,'reportToken':x_request_token,'state':store.get(job)['state'],'expiresAt':None if identity[1] else store.get(job)['created']+SEARCH_RETENTION,'context':tasks.context('search',job)}
+        return {'jobId':job,'reportToken':x_request_token,'state':store.get(job)['state'],'expiresAt':tasks.expiry(identity),'context':tasks.context('search',job)}
 
     async def process_preview():
         if lock.locked(): return False
