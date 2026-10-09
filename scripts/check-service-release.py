@@ -15,8 +15,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def request(url: str, *, method: str = "GET", body: bytes | None = None, content_type: str | None = None, accept: str | None = None):
+def request(url: str, *, method: str = "GET", body: bytes | None = None, content_type: str | None = None, accept: str | None = None, auth: str | None = None):
     headers = {"User-Agent": "AgenticServices-ReleaseCheck/1.0"}
+    if auth:
+        headers["Authorization"]=auth
     if content_type:
         headers["Content-Type"] = content_type
     if accept:
@@ -51,6 +53,10 @@ def check_photo_release(release,live):
             check((release['paidTool'].encode() in data and release['freeTool'].encode() in data) if method=='tools/list' else b'Payment required to access this tool' in data if label=='Unpaid MCP challenge' else release['agentPriceUsd'].encode() in data,label+' contents')
         status,headers,_=request('https://api.aisoup.net'+release['paidHttpPath'],method='POST',body=b'{"lat":41.8827,"lon":-87.6233,"radius":500}',content_type='application/json')
         check(status==402 and bool(headers.get('WWW-Authenticate') or headers.get('Payment-Required')),'Unpaid HTTP payment challenge')
+        status,headers,_=request('https://api.aisoup.net'+release['paidHttpPath'],method='POST',body=b'{}',content_type='application/json')
+        check(status==402 and bool(headers.get('Payment-Required')) and bool(headers.get('WWW-Authenticate')),'Body-free directory probe receives x402 and MPP offers')
+        status,_,_=request('https://api.aisoup.net'+release['paidHttpPath'],method='POST',body=b'{}',content_type='application/json',auth='Payment invalid')
+        check(status==422,'Paid requests validate input before settlement')
         for name,url in release.get('directories',{}).items():
             if not url:continue
             status,_,data=request(url)

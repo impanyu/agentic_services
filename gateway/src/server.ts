@@ -599,6 +599,13 @@ function paymentOptions(tier: VerificationTier) {
 function mountPhotoRoute(handler: PaymentHandler): void {
   app.post(photoOperation.path, async (c, next) => {
     if (process.env.PHOTO_SCOUT_ENABLED !== '1' || photoPriceCents < 50) return c.text('Photo Scout paid exploration is not enabled', 503)
+    // Directory probes carry no body. Quote first without consuming provider
+    // quota; paid requests still validate input and imagery before settlement.
+    if(!c.req.header('Authorization')&&!c.req.header('Payment-Signature')&&!c.req.header('X-Payment')){
+      const offer=await handler(withPublicUrl(c.req.raw.clone()))
+      if(offer.status===402)return offer.challenge
+      return c.text('Payment required',402)
+    }
     const input = await c.req.raw.clone().json().catch(() => null)
     if (!input || !Number.isFinite(input.lat) || !Number.isFinite(input.lon)
         || Math.abs(input.lat) > 85 || Math.abs(input.lon) > 180
@@ -952,7 +959,7 @@ function mountPaidRoutes(
     operationId:'discoverPhotoSpots',tags:['Photo Scout'],summary:'Discover nearby photo spots from inspected imagery',
     description:`Photo Scout: compare street-level images and return ranked POIs, camera headings, scores and reasons. Costs $${photoOperation.price} per search.`,
     requestBody:{required:true,content:{'application/json':{schema:photoInputSchema,example:{lat:41.8827,lon:-87.6233,radius:500,limit:3}}}},
-    responses:{'200':{description:'Ranked photo spots with source links and a signed order receipt'},'402':{description:'x402 or MPP payment required'},'422':{description:'Invalid input or no eligible imagery in the sampled area'}},
+    responses:{'200':{description:'Ranked photo spots with source links and a signed order receipt',content:{'application/json':{schema:{type:'object',properties:{summary:{type:'string'},spots:{type:'array',items:{type:'object'}},poiResults:{type:'array',items:{type:'object'}},commerce:{type:'object'}}}}}},'402':{description:'x402 or MPP payment required'},'422':{description:'Invalid input or no eligible imagery in the sampled area'}},
     'x-payment-info':{price:{mode:'fixed',currency:'USD',amount:photoOperation.price},protocols:[{x402:{}},{mpp:{method:'evm',intent:'charge',currency:evm.assets.base.USDC.address}}]},
   }}
   app.get('/openapi.json', (c) => jsonDocumentResponse(discoveryDocument, 'public, max-age=300'))
