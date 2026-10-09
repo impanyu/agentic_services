@@ -31,8 +31,10 @@ keywords, scoring intent and mood. It can repeat searches, pan/zoom a schematic
 map of queried OSM geometry, inspect real source images, and adjust horizontal
 Street View heading (0–359) and fov (30–120). Map images show queried geometry,
 not satellite imagery; missing geometry is not evidence of empty terrain.
-Multipolygon member parts/roles remain separate. Full geometry is retained by
-the tool, simplified coordinate parts are returned to the model.
+Multipolygon member parts/roles remain separate. Geometry is cropped to a local bounding box and retained by the tool; missing
+coordinate gaps stay separate. Simplified parts are returned to the model. Old
+large tool bodies and previews are compacted between turns to avoid repeated
+input cost; the server-owned evidence remains available through tools.
 
 Only server-discovered, in-radius, actually inspected images can enter the list.
 Submission freezes it and stops the SDK immediately; the existing batch scorer

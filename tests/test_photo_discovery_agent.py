@@ -96,3 +96,25 @@ def test_exploration_reason_does_not_invalidate_score_cache():
     payload=ExploreRequest(lat=40,lon=-96)
     row={'id':'view','lat':40,'lon':-96,'imageUrl':'google-streetview://pano/90'}
     assert ScoreCache.key({**row,'explorationReason':'Nice view'},payload,'model','rules')==ScoreCache.key({**row,'explorationReason':'Water visible'},payload,'model','rules')
+
+
+def test_usage_audit_checkpoint_does_not_break_submission(tmp_path):
+    d=state(tmp_path);d.submit('Done');d.audit.append({'model':'model','inputTokens':10})
+    d.checkpoint('scoring');assert state(tmp_path).submitted
+
+
+def test_cropped_geometry_does_not_invent_connecting_segments():
+    from agentic_services.photo_scout.discovery_agent import geometry_parts
+    parts,roles=geometry_parts({'type':'relation','members':[{'role':'outer','geometry':[{'lon':1,'lat':2},{'lon':2,'lat':2},{},{'lon':5,'lat':6}]}]})
+    assert parts==[[[1,2],[2,2]],[[5,6]]] and roles==['outer','outer']
+
+
+def test_compaction_preserves_tool_call_correlations():
+    from agentic_services.photo_scout.discovery_agent import compact_model_input
+    items=[]
+    for i in range(5):
+        items.extend([{'type':'function_call','call_id':str(i),'name':'inspect_view'},
+                      {'type':'function_call_output','call_id':str(i),'output':[{'type':'input_text','text':'view-id'},{'type':'input_image','image_url':'data:image/png;base64,huge'}]}])
+    result=compact_model_input(SimpleNamespace(model_data=SimpleNamespace(input=items,instructions='rules')))
+    assert [r.get('call_id') for r in result.input]==[r.get('call_id') for r in items]
+    assert len(result.input[1]['output'])==1 and len(result.input[-1]['output'])==2

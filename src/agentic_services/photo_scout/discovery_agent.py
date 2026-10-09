@@ -15,6 +15,7 @@ import httpx
 from PIL import Image, ImageDraw
 from agents import Agent, Runner, ModelSettings, OpenAIResponsesModel, RunConfig, function_tool
 from agents import ToolOutputImage, ToolOutputText, MaxTurnsExceeded
+from agents.run_config import ModelInputData, ToolExecutionConfig
 from openai import AsyncOpenAI
 from openai.types.shared import Reasoning
 
@@ -50,6 +51,50 @@ Return concise English explanations. No invented sources, IDs or imagery.
 '''
 
 
+def compact_model_input(data):
+    """Keep call/result pairs, but do not resend old large read bodies each turn."""
+    items=data.model_data.input
+    names={i.get('call_id'):i.get('name') for i in items if isinstance(i,dict) and i.get('type')=='function_call'}
+    reads=[n for n,i in enumerate(items) if isinstance(i,dict) and i.get('type')=='function_call_output' and names.get(i.get('call_id')) in {'query_geography','view_map','search_places','search_photos','find_streetview','inspect_view'}]
+    archive=set(reads[:-3]);output=[]
+    for index,item in enumerate(items):
+        if index in archive:
+            body=item.get('output','')
+            if isinstance(body,list):
+                # Retain image metadata and IDs, omit old pixel payloads. Tools can
+                # re-open any view ID; server-owned evidence/candidates are intact.
+                texts=[v for v in body if isinstance(v,dict) and v.get('type') in {'input_text','text'}]
+                body=texts or 'Earlier preview is archived; inspect the view again if needed.'
+            if len(str(body))>4000:
+                try:
+                    parsed=json.loads(body) if isinstance(body,str) else {}
+                    rows=parsed.get('places',parsed.get('views',parsed.get('features',[])))
+                    body=json.dumps({'archived':True,'references':[{k:r.get(k) for k in ('id','name','title','lat','lon','kind')} for r in rows],
+                        'note':'Full geography and views remain in tools. Use view_map/analyze_position or inspect_view.'})
+                except (ValueError,TypeError):body='Earlier large read archived; revisit with tools as needed.'
+            item={**item,'output':body}
+        output.append(item)
+    return ModelInputData(input=output,instructions=data.model_data.instructions)
+
+
+def geometry_parts(element):
+    """Split cropped OSM geometry at missing coordinates; never connect across gaps."""
+    lines=[]
+    if element.get('geometry'):lines.append((element['geometry'],''))
+    lines.extend((m['geometry'],m.get('role','')) for m in element.get('members',[]) if m.get('geometry'))
+    if element.get('type')=='node':lines=[([element],'')]
+    parts=[];roles=[]
+    for line,role in lines:
+        part=[]
+        for point in line:
+            if 'lon' in point and 'lat' in point:
+                part.append([point['lon'],point['lat']])
+            elif part:
+                parts.append(part);roles.append(role);part=[]
+        if part:parts.append(part);roles.append(role)
+    return parts,roles
+
+
 async def tool_error(context,error):
     # HTTP exceptions can contain credential-bearing source URLs.
     return str(error) if isinstance(error,ValueError) else "Tool unavailable ("+type(error).__name__+"). Try another source or submit current candidates."
@@ -82,7 +127,7 @@ class Discovery:
         if self.progress:
             self.progress({'stage':stage,'nearbyPois':list(self.pois.values()),
                 'sampledViewLocations':[{'lat':r['lat'],'lon':r['lon'],'name':r['title']} for r in self.views.values()],
-                'exploration':{'toolCalls':self.calls,'inspectedViews':self.images,'candidates':len(self.selected),'lastAction':self.audit[-1]['tool'] if self.audit else None}})
+                'exploration':{'toolCalls':self.calls,'inspectedViews':self.images,'candidates':len(self.selected),'lastAction':self.audit[-1].get('tool','submit_candidates') if self.audit else None}})
 
     def point(self, lat, lon):
         if not all(math.isfinite(v) for v in (lat,lon)) or abs(lat)>85 or abs(lon)>180:
@@ -118,7 +163,9 @@ class Discovery:
             'viewpoints':'["tourism"="viewpoint"]','coast':'["natural"="coastline"]'}
         if kind not in filters:raise ValueError('Unknown feature kind')
         radius=max(50,min(int(radius),self.payload.radius,5000))
-        query=f'[out:json][timeout:15][maxsize:16777216];nwr(around:{radius},{lat},{lon}){filters[kind]};out geom 60;'
+        dy=radius*1.2/111320;dx=dy/max(.01,math.cos(math.radians(lat)))
+        bbox=f'{max(-85,lat-dy)},{max(-180,lon-dx)},{min(85,lat+dy)},{min(180,lon+dx)}'
+        query=f'[out:json][timeout:15][maxsize:16777216];nwr(around:{radius},{lat},{lon}){filters[kind]};out geom({bbox}) 60;'
         async with httpx.AsyncClient(timeout=20,headers=sources.HEADERS) as client:
             for endpoint in ('https://overpass-api.de/api/interpreter','https://overpass.private.coffee/api/interpreter'):
                 try:
@@ -131,25 +178,18 @@ class Discovery:
             self.statuses['openstreetmap']={'status':'unavailable'};return {'status':'unavailable','features':[]}
         features=[]
         for e in data.get('elements',[]):
-            lines=[]
-            if e.get('geometry'):lines.append(e['geometry'])
-            for m in e.get('members',[]):
-                if m.get('geometry'):lines.append(m['geometry'])
-            if e.get('type')=='node':lines=[[e]]
-            geometry=[[[p['lon'],p['lat']] for p in line if 'lon' in p and 'lat' in p] for line in lines]
+            geometry,roles=geometry_parts(e)
             feature={'id':f"osm:{e['type']}:{e['id']}",'tags':e.get('tags',{}),'kind':kind,
-                'geometryParts':geometry,'sourceUrl':f"https://www.openstreetmap.org/{e['type']}/{e['id']}",
+                'geometryParts':geometry,'memberRoles':roles,'sourceUrl':f"https://www.openstreetmap.org/{e['type']}/{e['id']}",
                 'attribution':'OpenStreetMap contributors; ODbL 1.0'}
             features.append(feature)
         self.features.extend(features);self.statuses['openstreetmap']={'status':'ok','features':len(self.features)}
         # Return each ring/line separately, including relation roles below; never
         # flatten multipolygons into an invented shoreline or polygon.
-        for feature,e in zip(features,data.get('elements',[])):
-            feature['memberRoles']=[m.get('role','') for m in e.get('members',[]) if m.get('geometry')]
         def compact(f):
-            return {**f,'geometryParts':[line[::max(1,len(line)//100)]+([line[-1]] if line else []) for line in f['geometryParts']]}
+            return {**f,'geometryParts':[[[round(v,6) for v in p] for p in line[::max(1,len(line)//32)]]+([line[-1]] if line else []) for line in f['geometryParts'][:8]]}
         self.checkpoint()
-        return {'status':'ok','features':[compact(f) for f in features],'geometryFormat':'parts of lon,lat coordinates; closed rings or open lines, with relation roles','access':'unverified'}
+        return {'status':'ok','features':[compact(f) for f in features[:20]],'availableFeatures':len(features),'returnedFeatures':min(20,len(features)),'geometryFormat':'simplified parts of lon,lat coordinates; closed rings or open lines, with relation roles','access':'unverified'}
 
     def spatial_context(self, lat, lon):
         """Compute nearest geometry segments instead of asking the model to guess distances."""
@@ -314,7 +354,7 @@ async def discover(settings,payload,job_id=None,progress=None,initial_pois=None,
                 'bounds':{'center':[payload.lat,payload.lon],'radiusMeters':payload.radius},'mission':'Explore, inspect, collect, submit.'})
             try:
                 result=await asyncio.wait_for(Runner.run(agent,prompt,max_turns=36,
-                    run_config=RunConfig(tracing_disabled=True)),timeout=300)
+                    run_config=RunConfig(tracing_disabled=True,call_model_input_filter=compact_model_input,tool_execution=ToolExecutionConfig(max_function_tool_concurrency=1))),timeout=300)
             except (asyncio.TimeoutError,MaxTurnsExceeded):
                 # Hard deadline preserves already inspected/selected evidence. No
                 # invented automatic candidates or return to agent after scoring.
