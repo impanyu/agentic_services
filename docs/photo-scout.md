@@ -493,7 +493,7 @@ Published photos have comments, likes and private saves. Published places and se
 - `DELETE .../{id}/comments/{commentId}`: soft deletion, author or publisher only.
 - `GET .../{id}/social`: root and place thread like counts and the current viewer's reaction state. One request serves all place cards in a published search.
 - `POST .../{id}/reactions`: `{kind: "like" | "favorite", active: boolean, poiId?}`. Explicit state makes retries idempotent. A unique account/thread/kind constraint prevents double likes.
-- `GET /photo-scout/v1/favorites?before=`: the signed-in viewer's private saved list, 50 per page. The Saved menu opens photos in the existing viewer and saved places on the map. Removed/withdrawn targets are omitted. Maximum 1,000 saves per account.
+- `GET /photo-scout/v1/favorites?before=`: the signed-in viewer's private saved list, 50 per page. Photo saves appear in My Photos → Saved; saved searches and places appear inside Search history and open on the map. Removed/withdrawn targets are omitted. Maximum 1,000 saves per account.
 
 Unpublished private histories are not made public by comments, likes or saves. Publish first to enable social features; comments are available only for photos. Database migrations add social tables and indexes without modifying existing search/image-score caches.
 
