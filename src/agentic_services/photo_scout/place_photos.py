@@ -8,6 +8,7 @@ import asyncio
 import hashlib
 import os
 import re
+import json
 from urllib.parse import urlsplit
 
 from .sources import get_json, text
@@ -33,6 +34,14 @@ def attribution_url(url):
         return None
 
 
+def photo_selector(photo):
+    # Resource names are short-lived request tokens, not persistent image IDs.
+    metadata={'width':photo.get('widthPx'),'height':photo.get('heightPx'),
+        'authors':sorted((str(a.get('displayName','')),str(attribution_url(a.get('uri')) or ''))
+                         for a in photo.get('authorAttributions',[]) if isinstance(a,dict))}
+    return hashlib.sha256(json.dumps(metadata,sort_keys=True).encode()).hexdigest()
+
+
 async def place_photos(client, place_id, *, limit=3, width=800, selector=None):
     """Fetch a fresh, bounded photo selection with attribution. No API key in output."""
     place_id=place_id.removeprefix('google:')
@@ -54,13 +63,17 @@ async def place_photos(client, place_id, *, limit=3, width=800, selector=None):
         if not photo_media_host(url):return None
         authors=[{'displayName':text(a.get('displayName','')),'uri':attribution_url(a.get('uri'))}
                  for a in photo.get('authorAttributions',[]) if isinstance(a,dict)]
-        return {'id':'google-place-photo:'+hashlib.sha256(name.encode()).hexdigest()[:24],
-            'photoReference':'google-place-photo://'+place_id+'/'+hashlib.sha256(name.encode()).hexdigest(),
+        return {'id':'google-place-photo:'+photo_selector(photo)[:24],
+            'photoReference':'google-place-photo://'+place_id+'/'+photo_selector(photo),
             'provider':'google-places-photos','imageUrl':url,'authorAttributions':authors,
             'originalWidth':photo.get('widthPx'),'originalHeight':photo.get('heightPx'),
             'locationType':'place_association_not_verified_camera_position',
             'capabilities':{'viewable':True,'scorable':True,'selfieBackground':True,'adjustableView':False}}
-    selected=[p for p in data.get('photos',[]) if isinstance(p,dict) and (selector is None or hashlib.sha256(str(p.get('name','')).encode()).hexdigest()==selector)][:limit]
+    selected=[p for p in data.get('photos',[]) if isinstance(p,dict) and (selector is None or photo_selector(p)==selector)]
+    if selector is not None and len(selected)!=1:selected=[]
+    # Ambiguous metadata cannot safely identify a photo across refreshed requests.
+    counts={photo_selector(p):sum(photo_selector(x)==photo_selector(p) for x in selected) for p in selected}
+    selected=[p for p in selected if counts[photo_selector(p)]==1][:limit]
     photos=await asyncio.gather(*(media(p) for p in selected),return_exceptions=True)
     return {'placeId':place_id,'title':text(data.get('displayName',{}).get('text')),
         'sourceUrl':attribution_url(data.get('googleMapsUri')),

@@ -141,3 +141,24 @@ def test_place_photo_signed_preview_and_portrait_submission(tmp_path,monkeypatch
     job=client.post('/photo-scout/v1/portraits',headers=auth,json={
         'portrait':data,'background':reference,'provider':'google-places-photos','place':'Cafe'})
     assert job.status_code==202
+
+
+def test_photo_selector_survives_resource_rotation_but_rejects_ambiguity(monkeypatch):
+    monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_API_KEY','fixture')
+    photo={'name':'places/abc/photos/old','widthPx':800,'heightPx':600,
+           'authorAttributions':[{'displayName':'Photographer','uri':'https://maps.google.com/contrib/1'}]}
+    selector=place_photos.photo_selector(photo)
+    changed={**photo,'name':'places/abc/photos/new'}
+    assert place_photos.photo_selector(changed)==selector
+    def handle(req):
+        if req.url.path.endswith('/media'):return httpx.Response(200,json={'photoUri':'https://lh3.googleusercontent.com/photo'})
+        return httpx.Response(200,json={'id':'abc','photos':[changed]})
+    async def run():
+        async with httpx.AsyncClient(transport=httpx.MockTransport(handle)) as c:
+            return await place_photos.place_photos(c,'abc',selector=selector)
+    assert len(asyncio.run(run())['photos'])==1
+    def ambiguous(req):return httpx.Response(200,json={'id':'abc','photos':[changed,{**changed,'name':'places/abc/photos/another'}]})
+    async def run_ambiguous():
+        async with httpx.AsyncClient(transport=httpx.MockTransport(ambiguous)) as c:
+            return await place_photos.place_photos(c,'abc',selector=selector)
+    assert asyncio.run(run_ambiguous())['photos']==[]

@@ -119,9 +119,9 @@ do not disable the existing providers.
 Place-associated photos enter the same visual relevance check/scoring as other
 sources. Their POI association is retained, but camera coordinates and direction
 are unknown; no synthetic heading or interactive panorama is claimed. Signed
-previews and portrait input resolve a hashed photo selector from freshly retrieved
+previews and portrait input resolve a unique author/dimensions metadata selector from freshly retrieved
 Places metadata. Expired media URLs and raw Google photo resource names are not
-saved in reports. If a photo disappears, fail that preview instead of silently
+saved in reports. If a photo disappears or metadata is ambiguous, fail that preview instead of silently
 substituting another. These photos do not reuse persistent visual-score caches.
 
 Technical capabilities (`scorable`, `selfieBackground`) describe implemented
