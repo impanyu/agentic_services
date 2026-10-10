@@ -308,27 +308,26 @@ tokens are excluded from the model prompt.
 
 ## Fixed scoring pipeline (current)
 
-POI lookup and mood-to-category mapping stay deterministic. Source discovery selects
-at most 24 candidate images. The server attempts to load every selected image,
-then scores all successfully loaded images directly with the multimodal Responses
-API using structured output. No agent runner, tool calling, autonomous image
-selection, or model-turn limit remains in Photo Scout. Other services are unchanged.
+The interpretation model emits a validated tool program; the server executes its
+retrieval and collect -> score -> rank steps. Up to 50 candidate locations and 424
+images can be assessed. Image review is an independent multimodal module, not an
+autonomous tool loop.
 
-Images are processed in batches of six, at most two batches in parallel, with
-four concurrent downloads. Each batch requires exactly one score and suitability
-judgment for every supplied image ID. Missing, duplicated or invented IDs invalidate
-that batch. Scores use a shared rubric with mood fit, visual evidence, composition,
-photo tips and uncertainty. The server then filters unsuitable/unverified POIs,
-sorts all eligible scores globally, deduplicates POIs and nearby camera positions,
-and returns Top 3/5. The summary is generated deterministically from that shortlist.
+By default, eight images are processed per request, with up to 12 model requests
+and 32 downloads in parallel. Every result must name a supplied short image ID;
+unknown/duplicate IDs are rejected. Only missing assessments are retried once in
+smaller groups without downloading again. Original provider IDs are restored before
+caching and ranking. Every image is checked for relevance and then scored if it
+matches; quality concerns lower scores but do not impose a score threshold. All
+matching locations are returned after POI/panorama deduplication, without a Top 3/5
+result cap.
 
-The API includes `analysisMethod: fixed-batch-scoring`, all `imageAssessments` and
-`scoring` counts for sampled, downloaded, scored and failed images. The results page
-shows all scores in an expandable section. A failed download or batch is explicitly
-reported; if no image can be scored, the request fails instead of returning a false
-no-recommendation result. Processing remains bounded to 240 seconds for download
-and scoring, 270 seconds for the overall request. Model retries are disabled.
-Images remain transient, credentials and signed catalog tokens never enter prompts.
+The API includes `analysisMethod: fixed-batch-scoring`, `imageAssessments` with
+observations and exclusion reasons, and stage counts for sampled, downloaded,
+matched and failed images. Image review has a 600-second outer deadline and
+180-second model-request timeout. Credentials and signed catalog tokens never enter
+prompts. Model failure and image coverage remain explicit; this deadline is a safety
+bound, not a product latency target.
 
 ## Single-page website layout
 
@@ -415,3 +414,18 @@ an automatic permission dialog; the location button remains available. Browser
 and OS settings control whether permission persists between visits. Shared
 publication links keep their own map view, and a late automatic fix never
 replaces a point or search history the visitor has selected in the meantime.
+
+
+### Source coverage and image review safeguards
+
+The interpretation model records `sourceCoverage`: each retrieval subject, useful
+source tools, implementing step IDs and a rationale. The planner rejects missing
+source rationales and declared tools without implementing branches, repairing once
+within the existing timeout. Named and mapped artwork use complementary Places and
+OSM candidates; pure addresses and OSM-only facilities remain appropriately scoped.
+Image review defaults to eight images per parallel request. Short numeric image IDs
+map back to original provider IDs before validation, ranking and caching. Rejections
+retain a concise pixel observation. Distant, cropped or secondary identifiable
+subjects remain eligible; composition affects scores rather than adding requirements.
+The changed review instructions invalidate previous assessments through the existing
+cache key. This reduces known failure modes; it does not guarantee visual accuracy.

@@ -73,6 +73,19 @@ evidence supporting that specific request; a generic category match alone is not
 enough. Reject an unsupported specific identity as matches_request=false.
 Do not infer a match merely from title, provider or proximity. Accept plausible
 matches with uncertainty for details that cannot be verified visually.
+IMAGE BINDING AND SUBJECT VISIBILITY
+Each image has a short numeric id in the text immediately BEFORE its pixels. Return
+that exact id and evaluate only those pixels. Never transfer a subject, observation,
+POI identity or judgment from a neighboring image or another direction. First record
+one concrete visible_evidence sentence for this image, then judge its match.
+A required subject may be distant, small, partly cropped or off-center if genuinely
+identifiable. Unless explicitly required, it need not be the main or sole focal point.
+Poor framing, subject size, clutter, low light and uncertainty affect score/confidence,
+not subject eligibility. Reject when the required subject cannot be identified, not
+because its composition is weak. Never call a visible subject absent merely because
+it is small. Do not confuse a living person with a statue or infer sculpture from
+an ordinary sign/railing. Artistic objects include statues, reliefs and installations;
+for boundary cases explain uncertainty instead of inventing a narrower definition.
 For broad scenic requests, accept ordinary matching views. Do not reject because of
 low photographic quality, low potential score or an unremarkable composition.
 THEN score ONLY matching images. For rejected images return score=null,
@@ -117,7 +130,8 @@ images. Lighting advice must be conditional. Return English and explicit uncerta
 
 # Presentation-only guidance; keep the evaluation criteria/cache identity stable.
 OUTPUT_FORMAT='''For matches_request=false, use a short match_reason (one brief sentence,
-about 8-16 words) and set name, visible_evidence, photo_tip and uncertainty to empty
+about 8-16 words). Keep one short visible_evidence sentence describing the actual
+image even when rejected. Set name, photo_tip and uncertainty to empty
 strings, poi_id=null, score=null, recommend=false, confidence="low". Do not spend
 output explaining composition or photography tips for a rejected image. Preserve
 one complete schema object for EVERY image. For matching images, retain the full
@@ -185,7 +199,8 @@ async def assess_images(settings,payload,rows,statuses=None):
             cached.append(assessment)
         else:
             missing.append(row)
-    batch_size=max(1,min(32,int(os.getenv('PHOTO_SCOUT_SCORING_BATCH_SIZE','24'))))
+    batch_size=max(1,min(32,int(os.getenv('PHOTO_SCOUT_SCORING_BATCH_SIZE','8'))))
+    aliases={row['id']:str(i) for i,row in enumerate(missing)}
     batches=[missing[i:i+batch_size] for i in range(0,len(missing),batch_size)]
     batch_slots=asyncio.Semaphore(max(1,min(16,int(os.getenv('PHOTO_SCOUT_SCORING_CONCURRENCY','12')))));download_slots=asyncio.Semaphore(max(1,min(64,int(os.getenv('PHOTO_SCOUT_IMAGE_DOWNLOAD_CONCURRENCY','32')))))
     async def download(row):
@@ -202,7 +217,7 @@ async def assess_images(settings,payload,rows,statuses=None):
                 'request':{'requirements':[r.model_dump() for r in getattr(payload,'requirements',[])],'scoringIntent':payload.scoringIntent.strip(),'poiQueries':payload.poiQueries,'geographicKinds':payload.geographicKinds,'geographicCombination':getattr(payload,'geographicCombination','all'),'featureCombination':getattr(payload,'featureCombination','all'),'searchProgram':payload.searchProgram.model_dump() if getattr(payload,'searchProgram',None) else None,'searchBranches':[b.model_dump() for b in getattr(payload,'searchBranches',[])],'osmFeatures':[q.model_dump() for q in payload.osmFeatures],'preferences':payload.preferences.strip(),'photoStyles':sorted(payload.photoStyles or [])},
                 'photoStyleBriefs':style_briefs(payload.photoStyles)})}]
             for row,data in usable:
-                content.extend([{'type':'input_text','text':json.dumps({'image':{k:v for k,v in row.items() if k not in ('imageUrl','author','distanceMeters','poiDistanceMeters','explorationReason')}})},
+                content.extend([{'type':'input_text','text':json.dumps({'image':{**{k:v for k,v in row.items() if k not in ('id','imageUrl','author','distanceMeters','poiDistanceMeters','explorationReason')},'id':aliases[row['id']]}})},
                     {'type':'input_image','image_url':data,'detail':'high'}])
             response=None;valid=[];usages=[];requests=1
             try:
@@ -211,8 +226,8 @@ async def assess_images(settings,payload,rows,statuses=None):
                         input=[{'role':'user','content':content}],text_format=VisualBatch,
                         max_output_tokens=max(12000,len(usable)*900),store=False)
                 output=response.output_parsed
-                expected={r['id'] for r,_ in usable};counts=Counter(a.image_id for a in output.assessments) if output else {}
-                valid=[a for a in output.assessments if a.image_id in expected and counts[a.image_id]==1] if output else []
+                expected={aliases[r['id']]:r['id'] for r,_ in usable};counts=Counter(a.image_id for a in output.assessments) if output else {}
+                valid=[a.model_copy(update={'image_id':expected[a.image_id]}) for a in output.assessments if a.image_id in expected and counts[a.image_id]==1] if output else []
                 cache.put([(keys[a.image_id],a.model_dump()) for a in valid])
             except Exception as error:
                 logging.getLogger(__name__).warning('Photo Scout batch scoring failed: %s; images=%s',type(error).__name__,len(usable))

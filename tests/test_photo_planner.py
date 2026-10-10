@@ -9,6 +9,7 @@ from agentic_services.photo_scout.score_cache import ScoreCache
 
 def output():
     return dict(locationQuery=None,useMapCenter=True,radiusMeters=5000,photoStyles=[],
+        sourceCoverage=[{'subject':'motels','usefulTools':['search_places'],'stepIds':['p'],'reason':'Named businesses; map tagging adds little to this category search.'}],
         requirements=[],scoringIntent='Motels with red roofs',preferences='Red roofs',explanation='Nearby motels',
         searchProgram={'steps':[{'id':'p','tool':'search_places','queries':['motels']},
             {'id':'i','tool':'collect_images','inputs':['p']},
@@ -119,3 +120,24 @@ def test_optional_geometry_provider_failure_keeps_unfiltered_named_candidates():
         requirements=[Requirement(expression='Optional forest viewpoints',strength='preferred',route='geography',stepIds=['g','s'])])
     result=asyncio.run(search_locations(p,database_path=Path('/unused'),providers=SearchProviders(ps.places,None,unavailable)))
     assert result.places and result.status['executionTrace'][1]['source']['status']=='unavailable'
+
+
+def test_source_coverage_requires_all_declared_sources_and_real_references():
+    data=output();data['sourceCoverage'][0]['usefulTools'].append('search_features')
+    with pytest.raises(ValidationError,match='omits a declared useful'):PlannerIntent.model_validate(data)
+    data=output();data['sourceCoverage']=[]
+    with pytest.raises(ValidationError,match='sourceCoverage rationale'):PlannerIntent.model_validate(data)
+    data=output();data['sourceCoverage'][0]['stepIds'].append('invented')
+    with pytest.raises(ValidationError,match='unknown step'):PlannerIntent.model_validate(data)
+
+
+def test_dual_source_artwork_union_keeps_both_routes():
+    data=output();data['searchProgram']['steps'][:1]=[
+        {'id':'p','tool':'search_places','queries':['sculptures','雕塑']},
+        {'id':'f','tool':'search_features','osmFeatures':[{'label':'sculptures','kind':'tagged','filters':[{'key':'tourism','value':'artwork','required':True},{'key':'artwork_type','value':'sculpture','required':True}]}]},
+        {'id':'fp','tool':'feature_points','inputs':['f']},
+        {'id':'u','tool':'union','inputs':['p','fp']}]
+    data['searchProgram']['steps'][4]['inputs']=['u']
+    data['sourceCoverage']=[{'subject':'sculptures','usefulTools':['search_places','search_features'],'stepIds':['p','f'],'reason':'Named artworks and unlisted mapped sculptures complement each other.'}]
+    result=PlannerIntent.model_validate(data)
+    assert result.searchProgram.compile().steps[3].inputs==['p','fp']

@@ -65,11 +65,26 @@ an approximate discovery hint, not proof of height. Supported tags are not a whi
 unsupported fine attributes remain visual. Missing map attributes are not visual proof.
 
 SOURCE COVERAGE
+Before emitting steps, independently assess which retrieval tools can meaningfully
+find EACH requested subject. Record sourceCoverage entries with subject, usefulTools,
+implementing stepIds and reason. Every declared useful tool must have an executable
+retrieval step referenced by that entry. Single-source plans are appropriate only
+when the alternatives cannot meaningfully retrieve the target: explain why in reason.
+Pure address point_imagery needs no sourceCoverage entry. For regional mood/scenic
+searches assess named-place discovery and geometry independently, keeping their
+spatial restrictions and logical relationships. Do not classify all physical objects
+as OSM-only: OSM tagging is incomplete and Google Places can retrieve named objects,
+parks, landmarks and museums containing them. Places keyword matching is imperfect;
+search essential nouns/identities, leave fine visual semantics for image review.
 For a subject discoverable both as a named place and a mapped object (sculptures,
 murals, public art, monuments, towers), use independent search_places and search_features
 + feature_points branches, then union their candidates before collect_images. OSM may
 miss untagged objects and Places may miss unnamed ones. Do not require a Places result
 also to have OSM tags; image review must verify the requested object is visible.
+For broad public-art subjects in non-English locations, query both a common English
+term and the relevant local-language term when known (e.g. sculptures / 雕塑).
+Do not substitute sculpture studios, hair salons or suppliers for visible artwork;
+the final shared visual requirement must enforce the user's actual subject.
 Use essential subject/category words for Places, optionally local-language synonyms;
 keep appearance details in visual review. Do not add a Places branch for features it
 cannot meaningfully retrieve (e.g. individual traffic signals or road intersections).

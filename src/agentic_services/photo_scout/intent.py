@@ -4,7 +4,7 @@ import json
 import math
 import asyncio
 from pydantic import ValidationError
-from .planner import PlannerIntent, Requirement
+from .planner import PlannerIntent, Requirement, SourceCoverage
 from typing import Literal, Annotated
 import httpx
 from openai import AsyncOpenAI
@@ -33,6 +33,7 @@ class IntentRequest(BaseModel):
     scoringIntent: str = Field(default='',max_length=1000)
 class PhotoIntent(BaseModel):
     requirements: list[Requirement] = Field(default_factory=list,max_length=16)
+    sourceCoverage: list[SourceCoverage] = Field(default_factory=list,max_length=8)
     searchProgram: SearchProgram | None = None
     searchBranches: list[SearchBranch] = Field(default_factory=list,max_length=6)
 

@@ -74,6 +74,13 @@ class PlannerProgram(BaseModel):
         if not self.compile().complete:raise ValueError('Complete collect -> score -> rank delivery required')
         return self
 
+class SourceCoverage(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    subject: str = Field(min_length=1,max_length=200)
+    usefulTools: list[Literal['search_places','search_features','search_geography']] = Field(min_length=1,max_length=3)
+    stepIds: list[str] = Field(min_length=1,max_length=8)
+    reason: str = Field(min_length=1,max_length=400)
+
 class PlannerIntent(BaseModel):
     model_config = ConfigDict(extra='forbid')
     locationQuery: str | None = Field(max_length=200)
@@ -85,10 +92,18 @@ class PlannerIntent(BaseModel):
     preferences: str = Field(max_length=500)
     explanation: str = Field(max_length=400)
     searchProgram: PlannerProgram
+    sourceCoverage: list[SourceCoverage] = Field(default_factory=list,max_length=8)
 
     @model_validator(mode='after')
     def validate_requirements(self):
         steps={s.id:s for s in self.searchProgram.steps}
+        retrieval={s.id for s in steps.values() if s.tool in ('search_places','search_features','search_geography')}
+        covered={ref for c in self.sourceCoverage for ref in c.stepIds}
+        if retrieval-covered:raise ValueError('Every retrieval source requires a sourceCoverage rationale and implementing step IDs')
+        for coverage in self.sourceCoverage:
+            if any(ref not in steps for ref in coverage.stepIds):raise ValueError('Source coverage references unknown step')
+            selected={steps[ref].tool for ref in coverage.stepIds}
+            if not set(coverage.usefulTools)<=selected:raise ValueError('Source coverage omits a declared useful retrieval tool; add its branch and combine candidates with the correct scope')
         for r in self.requirements:
             if any(ref not in steps for ref in r.stepIds):raise ValueError('Requirement references unknown step')
             if any(steps[ref].tool in ('collect_images','score_images','rank_results') for ref in r.stepIds):raise ValueError('Requirements reference retrieval steps, not delivery')
