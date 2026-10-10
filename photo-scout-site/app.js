@@ -728,6 +728,10 @@ const savedPhotoPublish=node('div',null,'publication-actions');savedPhoto.append
 const savedPhotoSharing=node('button','Share','studio-save photo-share-trigger');savedPhotoSharing.type='button';savedPhotoSharing.hidden=true;savedPhoto.append(savedPhotoSharing);
 const photoShareDialog=node('dialog',null,'photo-studio photo-share-dialog');photoShareDialog.setAttribute('aria-label','Share photo');document.body.append(photoShareDialog);
 photoShareDialog.addEventListener('click',event=>{if(event.target===photoShareDialog){const r=photoShareDialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)photoShareDialog.close();}});
+function socialShareIcon(kind){
+ const paths={wechat:'<path d="M13 4C6.9 4 2 7.8 2 12.5c0 2.6 1.5 4.9 4 6.5l-1 3 4-2c1.2.4 2.6.6 4 .6 6.1 0 11-3.8 11-8.1S19.1 4 13 4Z"/><path d="M23 14c-4.4 0-8 2.9-8 6.5s3.6 6.5 8 6.5c1 0 2-.2 3-.5l3 1.5-.8-2.4c1.8-1.2 2.8-3 2.8-5.1S27.4 14 23 14Z"/><circle cx="9" cy="11" r="1" fill="currentColor" stroke="none"/><circle cx="17" cy="11" r="1" fill="currentColor" stroke="none"/>',facebook:'<path d="M20 5h-4c-4 0-6 2-6 6v4H6v5h4v12h6V20h4l1-5h-5v-4c0-1.4.6-2 2-2h2Z" fill="currentColor" stroke="none"/>',x:'<path d="M6 5h6l16 24h-6ZM27 5 5 29"/>',more:'<path d="M16 23V4m-6 6 6-6 6 6M8 16H5v14h22V16h-3"/>',copy:'<rect x="11" y="11" width="16" height="18" rx="3"/><path d="M21 7V4H5v19h3"/>',download:'<path d="M16 4v18m-6-6 6 6 6-6M5 24v6h22v-6"/>'};
+ const icon=node('span',null,'social-icon social-'+kind);icon.setAttribute('aria-hidden','true');icon.innerHTML='<svg viewBox="0 0 34 34" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+paths[kind]+'</svg>';return icon;
+}
 function photoSocialLinks(url,text){
  return [['Facebook','https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(url)],['X','https://x.com/intent/tweet?url='+encodeURIComponent(url)+'&text='+encodeURIComponent(text)]];
 }
@@ -735,7 +739,7 @@ function renderPhotoSharing(context){
  const generation=savedPhotoGeneration,photoId=savedPhoto.dataset.photoId,publicId=savedPhoto.dataset.publication;
  const text='My AI-generated selfie at '+(context?.name||'a photo spot')+' · Photo Scout';
  const heading=node('div',null,'studio-heading'),close=node('button','Close ×'),body=node('div',null,'photo-share-body'),status=node('p',null,'small');close.type='button';close.onclick=()=>photoShareDialog.close();heading.append(node('h2','Share photo'),close);status.setAttribute('role','status');
- const native=node('button',null,'social-tile'),wechat=node('button',null,'social-tile');native.type=wechat.type='button';native.append(node('span','↗','social-icon social-more'),node('strong','More apps'),node('small','Image'));wechat.append(node('span','💬','social-icon social-wechat'),node('strong','WeChat / 微信'),node('small','Choose WeChat in Send to'));
+ const native=node('button',null,'social-tile'),wechat=node('button',null,'social-tile');native.type=wechat.type='button';native.append(socialShareIcon('more'),node('strong','More apps'),node('small','Image'));wechat.append(socialShareIcon('wechat'),node('strong','WeChat / 微信'),node('small','Via device menu'));
  const sharePhoto=async(weChat=false)=>{
   if(generation!==savedPhotoGeneration)return;
   const file=savedPhotoFile;
@@ -749,13 +753,13 @@ function renderPhotoSharing(context){
   }catch(error){if(generation===savedPhotoGeneration&&error.name!=='AbortError')status.textContent='Could not open the share menu. Download the photo and share it from your social app.';}
  };
  native.onclick=()=>sharePhoto();wechat.onclick=()=>sharePhoto(true);
- const links=node('div',null,'photo-social-links'),copy=node('button',null,'social-tile'),publish=node('button','Publish a shareable link','studio-save');copy.type=publish.type='button';copy.append(node('span','↗','social-icon social-copy'),node('strong','Copy link'),node('small','Public link'));
+ const links=node('div',null,'photo-social-links'),copy=node('button',null,'social-tile'),publish=node('button','Publish a shareable link','studio-save');copy.type=publish.type='button';copy.append(socialShareIcon('copy'),node('strong','Copy link'),node('small','Public link'));
  const note=node('p','Share the image directly with installed apps. For WeChat, choose WeChat in the share menu, or save the image and send it from WeChat.','small');
  function refresh(){
   const item=publicId?{url:location.origin+'/photo-scout/?published='+encodeURIComponent(publicId)}:ownPublications.get(publicationKey('photo',photoId));
   links.replaceChildren();copy.hidden=!item;publish.hidden=!!item||!photoId;
-  if(item){for(const [label,url] of photoSocialLinks(item.url,text)){const a=link('Share on '+label+' ↗',url);a.className='social-tile';a.replaceChildren(node('span',label==='X'?'𝕏':'f','social-icon '+(label==='X'?'social-x':'social-facebook')),node('strong',label),node('small','Public link'));links.append(a);}note.textContent='Facebook and X share your public photo link. To attach the image itself, use More apps or download it. WeChat: choose WeChat in the share menu, or save and send the image.';}
-  else {for(const label of ['Facebook','X']){const b=node('button',null,'social-tile');b.type='button';b.append(node('span',label==='X'?'𝕏':'f','social-icon '+(label==='X'?'social-x':'social-facebook')),node('strong',label),node('small','Publish & share'));b.onclick=async()=>{
+  if(item){for(const [label,url] of photoSocialLinks(item.url,text)){const a=link('Share on '+label+' ↗',url);a.className='social-tile';a.replaceChildren(socialShareIcon(label==='X'?'x':'facebook'),node('strong',label),node('small','Public link'));links.append(a);}note.textContent='Facebook and X open a post with your public link. For an image attachment, use More apps or download. Choose WeChat in the device menu.';}
+  else {for(const label of ['Facebook','X']){const b=node('button',null,'social-tile');b.type='button';b.append(socialShareIcon(label==='X'?'x':'facebook'),node('strong',label),node('small','Publish & share'));b.onclick=async()=>{
    if(generation!==savedPhotoGeneration||b.disabled)return;
    const target=window.open('about:blank','_blank');if(target)target.opener=null;
    b.disabled=true;status.textContent='Preparing your public photo link for '+label+'…';
@@ -765,7 +769,8 @@ function renderPhotoSharing(context){
     if(target&&!target.closed)target.location.replace(url);else window.location.assign(url);
     if(generation===savedPhotoGeneration){status.textContent=label+' opened. Finish posting there.';photoShareDialog.close();}
    }catch(error){if(target&&!target.closed)target.close();if(generation===savedPhotoGeneration)status.textContent=error.message;}finally{b.disabled=false;}
-  };links.append(b);}note.textContent='Facebook / X: clicking Publish & share makes this photo and background info public on Photo Scout, then opens the platform composer. WeChat uses the system menu; choose WeChat there.';}
+  };links.append(b);}note.textContent='Publish & share makes this photo and background info public on Photo Scout, then opens your post. WeChat: choose it in the device menu.';}
+  links.append(copy);
   copy.onclick=async()=>{try{await navigator.clipboard.writeText(item.url);if(generation===savedPhotoGeneration)status.textContent='Link copied. Paste it into WeChat or any social app.';}catch{if(generation===savedPhotoGeneration){status.replaceChildren(node('span','Copy this public link: '),link(item.url,item.url));}}};
  }
  publish.onclick=async()=>{publish.disabled=true;status.textContent='Creating your public photo link…';try{
@@ -773,7 +778,9 @@ function renderPhotoSharing(context){
   ownPublications.set(publicationKey('photo',photoId),item);syncPublishButtons();
   if(generation===savedPhotoGeneration){refresh();status.textContent='Public link ready. Choose Facebook, X, or Copy share link.';}
  }catch(error){if(generation===savedPhotoGeneration)status.textContent=error.message;}finally{publish.disabled=false;}};
- const images=node('div',null,'photo-social-links');images.append(wechat,native);body.append(images,links,copy,publish,note,status);photoShareDialog.replaceChildren(heading,body);savedPhotoSharing.hidden=false;
+ const preview=node('div',null,'share-photo-preview'),thumb=node('img'),description=node('div');thumb.src=savedPhotoImage.src;thumb.alt='Photo to share';description.append(node('strong',context?.name||'Your photo'),node('span','AI-generated travel photo'));preview.append(thumb,description);
+ const download=link('',savedPhotoDownload.href);download.className='social-tile';download.download='photo-scout-ai-photo.png';download.append(socialShareIcon('download'),node('strong','Download'),node('small','PNG image'));
+ const images=node('div',null,'photo-social-links');images.dataset.label='Send the photo';images.setAttribute('aria-label','Send the photo');links.dataset.label='Share a public link';links.setAttribute('aria-label','Share a public link');images.append(wechat,native,download);body.append(images,links,publish,note,status);photoShareDialog.replaceChildren(heading,preview,body);savedPhotoSharing.hidden=false;
  savedPhotoSharing.refresh=refresh;savedPhotoSharing.onclick=()=>{if(generation!==savedPhotoGeneration)return;refresh();if(!photoShareDialog.open)photoShareDialog.showModal();wechat.focus();};refresh();
 }
 
