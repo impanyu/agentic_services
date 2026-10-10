@@ -283,3 +283,36 @@ def test_terminal_program_steps_do_not_invalidate_existing_visual_cache():
     old=ExploreRequest(lat=0,lon=0,searchProgram=program)
     full=old.model_copy(update={'searchProgram':program.with_delivery()})
     assert ScoreCache.key({'id':'image'},old,'model','prompt')==ScoreCache.key({'id':'image'},full,'model','prompt')
+
+
+def test_visual_requirements_on_delivery_tools_reach_image_matching():
+    from agentic_services.photo_scout.program import PipelineHooks
+    from agentic_services.photo_scout.scoring import ScoringOutput
+    program=SearchProgram.model_validate(mixed()).with_delivery()
+    steps=[s.model_copy(update={'visualIntent':{'collect_images':'Visible lake water','score_images':'Clear unobstructed lake views','rank_results':'Visible lake water'}.get(s.tool,s.visualIntent)}) for s in program.steps]
+    program=SearchProgram(steps=steps,output=program.output)
+    p=SearchParameters(lat=0,lon=0,radius=3000,searchProgram=program,scoringIntent='Photogenic lakeside views')
+    async def collect(*args,**kwargs):return [],{}
+    async def before(images):pass
+    async def score(payload,rows,statuses):
+        assert payload.scoringIntent=='(Photogenic lakeside views) AND (Visible lake water) AND (Clear unobstructed lake views)'
+        assert p.scoringIntent=='Photogenic lakeside views'
+        return ScoringOutput([],[],[],[],[],'test')
+    execution=asyncio.run(execute_program(program,p,providers(),Path('/unused'),'google-places',
+        PipelineHooks(p,collect,score,lambda *args:{'spots':[]},before)))
+    assert execution.output.result=={'spots':[]}
+
+
+def test_image_geographic_checks_prepare_each_region_once(monkeypatch):
+    from agentic_services.photo_scout import geography
+    counts=[];original=geography.areas
+    def areas(*args,**kwargs):counts.append(1);return original(*args,**kwargs)
+    monkeypatch.setattr(geography,'areas',areas)
+    result=run(mixed())
+    rows=[{'id':str(i),'lat':0,'lon':-.005 if i%2==0 else .015,
+           'poi':{'id':'cafe-lake' if i%2==0 else 'restaurant-forest'}} for i in range(400)]
+    assert len(result.program_execution.filter_images(rows))==400
+    first=len(counts)
+    assert first<=4  # named place filters plus two prepared image constraints
+    assert len(result.program_execution.filter_images(rows))==400
+    assert len(counts)==first

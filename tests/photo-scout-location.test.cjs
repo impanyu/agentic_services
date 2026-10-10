@@ -324,3 +324,16 @@ test('immutable backend search query repairs a stale cached history title',()=>{
  const f=pageFixture();const entries=f.historyWith([{id:'search',label:'Selected map location',created:1000,checked:true,result:{spots:[]}}],[{id:'search',kind:'search',created:1,state:'complete',context:{query:'caffe among high rise buildings',lat:41,lon:-87}}]);
  assert.equal(entries[0].label,'caffe among high rise buildings');
 });
+
+test('a failed search clears progress even after the user edits the next query',async()=>{
+ const f=pageFixture(),context={lat:41.8827,lon:-87.6233,radius:1000,query:'lake view'};
+ const task={id:'failed-job',kind:'search',state:'running',created:100,context};
+ await f.restoreWith([task],{});
+ f.element('prompt-query').value='a different search';
+ const state=await f.restoreWith([{...task,state:'failed',error:'Could not interpret the search.'}],{});
+ assert.equal(state.active,null);
+ assert.equal(f.element('progress-title').textContent,'Search could not be completed');
+ assert.equal(f.element('progress-detail').textContent,'Could not interpret the search.');
+ assert.equal(f.element('prompt-query').value,'a different search');
+ assert.equal(state.busy,false);
+});

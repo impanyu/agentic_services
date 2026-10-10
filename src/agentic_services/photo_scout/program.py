@@ -12,7 +12,7 @@ from dataclasses import dataclass, field
 from itertools import product
 from typing import Literal
 from pydantic import BaseModel,ConfigDict,Field,model_validator
-from .geography import GeographicKind,filter_places,geographic_places
+from .geography import GeographicKind,filter_places,geographic_places,GeographicMatcher
 from .osm_features import OSMFeatureQuery,matches_features
 
 Tool=Literal['search_places','search_geography','search_features','sample_geography',
@@ -39,8 +39,6 @@ class SearchStep(BaseModel):
         if bool(self.queries)!=(self.tool=='search_places'):raise ValueError('Only search_places accepts nonempty queries')
         if bool(self.geographicKinds)!=(self.tool=='search_geography'):raise ValueError('Only search_geography accepts nonempty geographicKinds')
         if bool(self.osmFeatures)!=(self.tool=='search_features'):raise ValueError('Only search_features accepts nonempty osmFeatures')
-        if self.visualIntent and self.tool in ('collect_images','score_images','rank_results'):
-            raise ValueError('Visual requirements belong to retrieval paths or global scoringIntent')
         if self.exclude and self.tool not in ('filter_geography','filter_features'):raise ValueError('Exclusion requires a spatial filter')
         if self.discoveryHints and self.tool!='search_places':raise ValueError('Hints apply only to search_places')
         if self.combination!='all' and self.tool not in ('search_geography','search_features','sample_geography','feature_points','filter_geography','filter_features'):raise ValueError('This tool has no combination argument')
@@ -165,6 +163,7 @@ class Tools:
     def __init__(self,parameters,providers,database_path,poi_provider,pipeline=None):
         self.p=parameters;self.providers=providers;self.database=database_path;self.poi_provider=poi_provider
         self.memo={};self.statuses={}
+        self.geographic_matchers={};self.position_matches={}
         self.pipeline=pipeline;self.execution=None
 
     async def provider(self,fn,*args,**kwargs):
@@ -212,7 +211,14 @@ class Tools:
 
     def matches(self,row,s,source):
         if isinstance(source,Geography):
-            fit=bool(filter_places([row],source.features,source.kinds,self.p.lat,self.p.lon,combination="any" if source.combination=="any" else s.combination))
+            combination="any" if source.combination=="any" else s.combination
+            key=(id(source),combination)
+            if key not in self.geographic_matchers:
+                self.geographic_matchers[key]=GeographicMatcher(source.features,source.kinds,self.p.lat,self.p.lon,combination)
+            position=(key,row['lat'],row['lon'])
+            if position not in self.position_matches:
+                self.position_matches[position]=self.geographic_matchers[key].matches(row['lat'],row['lon'])
+            fit=self.position_matches[position]
         else:fit=matches_features(row,source.groups,source.queries,combination="any" if source.combination=="any" else s.combination)
         return not fit if s.exclude else fit
 
@@ -271,7 +277,13 @@ class Tools:
     async def score_images(self,s,inputs):
         images=inputs[0]
         await self.pipeline.before_score(images)
-        output=await self.pipeline.score(self.pipeline.payload,images.rows,images.statuses)
+        payload=self.pipeline.payload
+        hints=list(dict.fromkeys(step.visualIntent.strip() for step in self.execution.program.steps
+            if step.tool in ('collect_images','score_images','rank_results') and step.visualIntent.strip()))
+        if hints:
+            requirements=list(dict.fromkeys([payload.scoringIntent or payload.preferences,*hints]))
+            payload=payload.model_copy(update={'scoringIntent':' AND '.join('('+r+')' for r in requirements if r)})
+        output=await self.pipeline.score(payload,images.rows,images.statuses)
         return Assessments(output,images)
 
     async def rank_results(self,s,inputs):

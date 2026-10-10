@@ -674,7 +674,7 @@ async function restoreTasks(){
    if(follow){applyTaskContext(focus.context);activeSearch.draft=searchDraft();}
    if(focus.state==='complete'){
     const h=searchHistory.find(h=>h.id===focus.id);if(h){focusedSearchId=h.id;drawHistoryMap();render(h.result,{save:false,mapUpdate:false});el('results').hidden=false;fitSearchRange(focus.context);setProgress(2,'Your shortlist is ready','Results are shown in Shortlist and saved in Search history.','complete');}activeSearch=null;stopPoiScan();
-   }else if(focus.state==='failed'){if(follow)setProgress(2,'Search could not be completed',focus.error||'View details in History.','error');activeSearch=null;stopPoiScan();}
+   }else if(focus.state==='failed'){setProgress(2,'Search could not be completed',focus.error||'View details in History.','error');activeSearch=null;stopPoiScan();}
    else if(follow){const stage=focus.context?.stage;setProgress(stage==='scoring'?2:(stage==='sources'||stage==='exploring')?1:0,focus.state==='queued'?'Your search is queued…':stage==='scoring'?'Reviewing & ranking photos…':stage==='exploring'?'Exploring viewpoints…':stage==='sources'?'Finding nearby places & photos…':'Understanding your request…','Progress is saved in History. You can start another search.','running',true);if(stage==='scoring')startPoiScan();}
   }
  }catch{if(!tasksReady)el('history-note').textContent='Could not reconnect to saved tasks. Retrying shortly.';}

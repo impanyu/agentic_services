@@ -158,9 +158,21 @@ def matches_position(lat,lon,features,kinds,region=None,combination="all"):
     p=region.project(Point(lon,lat))
     return (any if combination=="any" else all)(g.covers(p) for g in areas(features,kinds,region).values())
 
+class GeographicMatcher:
+    """Prepare the projected geographic constraints once for many positions."""
+    def __init__(self,features,kinds,lat,lon,combination="all"):
+        from shapely.prepared import prep
+        self.region=Region(lat,lon)
+        self.constraints=[prep(g) for g in areas(features,kinds,self.region).values()]
+        self.combine=any if combination=="any" else all
+    def matches(self,lat,lon):
+        point=self.region.project(Point(lon,lat))
+        return self.combine(g.covers(point) for g in self.constraints)
+
+
 def filter_places(pois,features,kinds,lat,lon,combination="all"):
-    region=Region(lat,lon);constraints=areas(features,kinds,region)
-    return [p for p in pois if (any if combination=="any" else all)(g.covers(region.project(Point(p['lon'],p['lat']))) for g in constraints.values())]
+    matcher=GeographicMatcher(features,kinds,lat,lon,combination)
+    return [p for p in pois if matcher.matches(p['lat'],p['lon'])]
 
 def geographic_places(lat,lon,radius,features,paths,kinds,limit=MAX_PLACES,combination="all"):
     """Sample feature-adjacent paths, then distribute candidates spatially."""
@@ -193,9 +205,10 @@ def geographic_places(lat,lon,radius,features,paths,kinds,limit=MAX_PLACES,combi
         item=min(choices,key=lambda x:x[2]**2+x[3]**2) if not selected else max(choices,key=lambda x:min((x[2]-s[2])**2+(x[3]-s[3])**2 for s in selected))
         choices.remove(item);selected.append(item)
     result=[]
+    projected_features=[(f,region.project(shape(f['geometry']))) for f in features]
     for point,path,_,_ in selected:
         position=region.unproject(point);lon2,lat2=position.x,position.y
-        feature=min(features,key=lambda f:region.project(shape(f['geometry'])).distance(point))
+        feature=min(projected_features,key=lambda item:item[1].distance(point))[0]
         name=feature['name'] or {'lake':'Lakeside','sea':'Seaside','river':'Riverside','peak':'Near summit','forest':'Forest','waterside':'Waterside'}[kinds[0]]
         result.append({'id':f"geo:{feature['id']}:{lat2:.5f}:{lon2:.5f}",'name':name+(f" · {path['name']}" if path['name'] else ' viewpoint'),
             'lat':lat2,'lon':lon2,'provider':'openstreetmap-geography','category':'photo-location','categoryGroups':[],

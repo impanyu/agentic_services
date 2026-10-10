@@ -17,7 +17,7 @@ from typing import Literal
 
 import httpx
 from fastapi import APIRouter, Header, HTTPException, Request, Response
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, model_validator, ValidationError
 
 from .tasks import TaskStore, SEARCH_RETENTION, prune_records
 from .styles import PHOTO_STYLES, mapped_categories, style_briefs
@@ -591,7 +591,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
             result=await run(payload,allow_expired=True,task_id=job['id'],parsed=True)
             store.update(job['id'],state='complete',result=json.dumps(result),error=None,lease_until=0)
         except Exception as error:
-            logging.getLogger(__name__).warning('Photo Scout background search failed: %s',type(error).__name__)
+            logging.getLogger(__name__).warning('Photo Scout background search failed: %s fields=%s',type(error).__name__,[(e['loc'],e['type']) for e in error.errors(include_input=False,include_url=False)] if isinstance(error,ValidationError) else [])
             store.update(job['id'],state='failed',lease_until=0,error=str(error.detail) if isinstance(error,HTTPException) else 'Search could not be completed. Please try again later.')
         return True
 
