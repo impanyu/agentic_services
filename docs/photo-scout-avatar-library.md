@@ -1,6 +1,6 @@
 # Photo Scout Avatar Library
 
-The right map toolbar contains Avatar Library, with Characters (the default tab) and My uploads tabs. Take a selfie includes Choose from Avatar Library, which explicitly fills only the current POI's upload preview. Selecting an avatar does not submit an image-generation job or carry it into another POI.
+The right map toolbar contains Avatar Library, with Characters (the default tab) and My uploads tabs. Every Take a selfie entry point (map popup and Shortlist) opens the shared library picker on Characters after preparing the selected background. Choosing a character or a private upload fills only that POI's upload preview and returns to its selfie studio. Closing the picker leaves the studio available for direct upload or camera capture. The studio also includes Choose from Avatar Library to change the selection. Selecting an avatar does not submit an image-generation job or carry it into another POI.
 
 Personal images are stored in the Photo Scout SQLite database, scoped to the existing account or anonymous cookie identity. Login adopts an active guest library. Account uploads remain private and permanent; guest uploads expire after seven days without a visit. Each library admits up to 50 visible images. Removed images are hidden from lists and inaccessible through the image endpoint.
 
