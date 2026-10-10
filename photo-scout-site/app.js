@@ -692,6 +692,12 @@ function showHistorySearch(result,context,history){
  focusHistorySearch(context,result,history);
 }
 const savedPhoto=node('dialog',null,'photo-studio saved-photo');savedPhoto.setAttribute('aria-label','Saved photo');
+let savedPhotoBackdropPressed=false;
+function outsideSavedPhoto(event){const r=savedPhoto.getBoundingClientRect();return event.target===savedPhoto&&(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom);}
+savedPhoto.addEventListener('pointerdown',event=>{savedPhotoBackdropPressed=event.isPrimary&&event.button===0&&outsideSavedPhoto(event);});
+savedPhoto.addEventListener('pointercancel',()=>{savedPhotoBackdropPressed=false;});
+savedPhoto.addEventListener('click',event=>{const dismiss=savedPhotoBackdropPressed&&outsideSavedPhoto(event);savedPhotoBackdropPressed=false;if(dismiss){event.preventDefault();event.stopPropagation();savedPhoto.close();}});
+savedPhoto.addEventListener('close',()=>{savedPhotoBackdropPressed=false;});
 const savedPhotoTop=node('div',null,'studio-heading'),savedPhotoTitle=node('h2','Your saved selfie'),savedPhotoClose=node('button','Close ×');savedPhotoClose.type='button';savedPhotoTop.append(savedPhotoTitle,savedPhotoClose);
 const savedPhotoPlace=node('p',null,'small'),savedPhotoImage=node('img',null,'studio-result'),savedPhotoStatus=node('p',null,'studio-status'),savedPhotoParams=node('div',null,'saved-photo-params'),savedPhotoSave=node('button','Share','studio-save'),savedPhotoDownload=node('a','Download PNG','studio-save studio-download'),savedPhotoHint=node('p',null,'small');savedPhotoImage.alt='Saved AI-generated travel photo';savedPhotoStatus.setAttribute('role','status');savedPhotoDownload.download='photo-scout-ai-photo.png';savedPhotoDownload.addEventListener('click',event=>{if(!savedPhotoFile)event.preventDefault();});
 const savedPhotoComments=node('div',null,'saved-photo-comments');
