@@ -317,6 +317,7 @@ def diverse_sample(rows,limit=12):
 async def candidates(lat,lon,radius,pois=None,visual_exploration=False,point_only=False):
     import asyncio
     statuses={}; rows=[]
+    requested_radius=radius
     if point_only:
         # Resolve one nearest panorama at the address, not a grid of nearby spots.
         radius=50
@@ -360,6 +361,13 @@ async def candidates(lat,lon,radius,pois=None,visual_exploration=False,point_onl
     sampled=(google_rows+diverse_sample(other_rows,24))[:MAX_SCORED_IMAGES]
     for name,status in statuses.items():
         if status['status']=='ok': status['sampledImages']=sum(r['provider']==name for r in sampled)
+    if point_only and not sampled:
+        # Same regional retrieval as a blank input, centered on the resolved address.
+        point_status=statuses.get('google-street-view',{'status':'disabled'})
+        sampled,statuses=await candidates(lat,lon,requested_radius,[],visual_exploration=True)
+        for status in statuses.values():
+            status.update(addressFallback=True,pointLookupStatus=point_status['status'],
+                pointLookupRadiusMeters=50)
     return sampled,statuses
 
 

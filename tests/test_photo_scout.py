@@ -1043,3 +1043,32 @@ def test_address_point_queries_only_nearest_google_panorama(monkeypatch):
     assert set(statuses)=={'google-street-view'}
     assert statuses['google-street-view']['queriedLocations']==1
     assert statuses['google-street-view']['samplingMode']=='point'
+
+
+@pytest.mark.parametrize('missing',['ZERO_RESULTS','error','outside'])
+def test_address_without_street_view_falls_back_to_blank_regional_search(monkeypatch,missing):
+    from agentic_services.photo_scout import sources
+    monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_ENABLED','1')
+    monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_API_KEY','secret-fixture')
+    calls=[];other=[]
+    async def google(client,lat,lon,radius,targets=None,area_sampling=False):
+        calls.append((lat,lon,radius,targets,area_sampling))
+        if not area_sampling:
+            if missing=='error':raise ValueError('Provider unavailable')
+            if missing=='ZERO_RESULTS':return []
+            return [{'id':'outside','provider':'google-street-view','lat':1,'lon':1}]
+        return [{'id':'area','provider':'google-street-view','lat':lat,'lon':lon,
+                 'imageUrl':'google-streetview://regional/0/0/120'}]
+    async def regional(client,lat,lon,radius):
+        other.append((lat,lon,radius));return []
+    monkeypatch.setattr(sources,'google_streetview',google)
+    monkeypatch.setattr(sources,'commons',regional)
+    monkeypatch.setattr(sources,'panoramax',regional)
+    rows,statuses=asyncio.run(sources.candidates(0,0,5000,[],visual_exploration=True,point_only=True))
+    assert calls[0][:3]==(0,0,50) and not calls[0][4]
+    assert calls[1]==(0,0,5000,[],True)
+    assert other and all(x==(0,0,5000) for x in other)
+    assert [r['id'] for r in rows]==['area']
+    assert rows[0]['allowUnlistedPlace']
+    assert statuses['google-street-view']['addressFallback']
+    assert statuses['google-street-view']['pointLookupRadiusMeters']==50
