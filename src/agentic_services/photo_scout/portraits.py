@@ -1,6 +1,6 @@
 """Private, short-lived image composition jobs for Photo Scout."""
 from __future__ import annotations
-import asyncio, base64, hashlib, hmac, io, json, os, re, secrets, sqlite3, time
+import asyncio, base64, hashlib, hmac, io, json, logging, os, re, secrets, sqlite3, time
 from urllib.parse import urlsplit,parse_qs,urlencode
 from typing import Literal
 from fastapi import APIRouter, Header, HTTPException, Request, Response
@@ -12,6 +12,23 @@ from pillow_heif import register_heif_opener
 register_heif_opener(thumbnails=False,decode_threads=2)
 from .sources import image_data,image_host
 from .tasks import TaskStore, SEARCH_RETENTION, ACCOUNT_EXPIRY, prune_records
+
+logger=logging.getLogger(__name__)
+
+def log_portrait_failure(job,stage,error,started):
+    """Log diagnostic identifiers, never uploaded photos, prompts or raw API bodies."""
+    body=getattr(error,'body',None)
+    details=body.get('error',body) if isinstance(body,dict) else {}
+    details=details if isinstance(details,dict) else {}
+    def identifier(value):
+        return value if isinstance(value,(int,float)) or isinstance(value,str) and re.fullmatch(r'[A-Za-z0-9_.:-]{1,160}',value) else None
+    logger.error('photo_portrait_failure %s',json.dumps({
+        'job':job,'stage':stage,'elapsedSeconds':round(time.monotonic()-started,2),
+        'exceptionType':type(error).__name__,
+        'statusCode':identifier(getattr(error,'status_code',None)),
+        'code':identifier(getattr(error,'code',None) or details.get('code')),
+        'requestId':identifier(getattr(error,'request_id',None)),
+    }))
 
 class PortraitRequest(BaseModel):
     portrait: str = Field(max_length=27000000)
@@ -245,20 +262,24 @@ def create_portrait_router(settings,require_api):
             row=c.execute("SELECT * FROM photo_portraits WHERE state='queued' ORDER BY created LIMIT 1").fetchone()
             if not row:return False
             c.execute("UPDATE photo_portraits SET state='checking' WHERE id=?",(row['id'],))
+        started=time.monotonic();stage='load_request'
         try:
             payload=json.loads(row['payload'])
             async with asyncio.timeout(600):
                 async with AsyncOpenAI(api_key=settings.openai_api_key,timeout=550,max_retries=0) as client:
+                    stage='subject_check'
                     try:
                         async with asyncio.timeout(90):
                             subjects=await check_subjects(client,bytes(row['photo']),os.getenv('PHOTO_SCOUT_PERSON_MODEL','gpt-6-astra'))
-                    except Exception:
+                    except Exception as error:
+                        log_portrait_failure(row['id'],stage,error,started)
                         with db() as c:c.execute("UPDATE photo_portraits SET state='failed',photo=NULL,payload=NULL,error='Could not check your photo. Please try again; no composite was created.' WHERE id=?",(row['id'],))
                         return True
                     if subjects<1:
                         with db() as c:c.execute("UPDATE photo_portraits SET state='failed',photo=NULL,payload=NULL,error='Please upload an image containing a person, cartoon character or animal. Groups are welcome.' WHERE id=?",(row['id'],))
                         return True
                     with db() as c:c.execute("UPDATE photo_portraits SET state='running' WHERE id=?",(row['id'],))
+                    stage='background_preparation'
                     async with asyncio.timeout(45):
                         raw,prepared_reference,preparation=await prepare_background(client,payload['reference'],os.getenv('PHOTO_SCOUT_BACKGROUND_MODEL','gpt-6-luna'),payload.get('framing','auto'))
                     if preparation:
@@ -278,11 +299,14 @@ def create_portrait_router(settings,require_api):
                     # New image models always preserve inputs at high fidelity.
                     legacy=image_model.startswith('gpt-image-1')
                     edit_options={'input_fidelity':'high','quality':'high'} if legacy else {'quality':'max' if image_model.startswith('gpt-image-2.5') else 'high'}
+                    stage='image_generation'
                     result=await client.images.edit(model=image_model,image=[('person.png',bytes(row['photo']),'image/png'),('scene.'+ext,raw,'image/'+('jpeg' if ext=='jpg' else ext))],prompt=portrait_prompt(payload.get('style','natural'),payload['pose'],payload.get('posture','auto'),payload.get('weather','original'),payload.get('expression','auto'),place=payload['place'],scene=preparation['scene']),**edit_options,size='1024x1024',output_format='png',n=1)
+                stage='decode_result'
                 generated=base64.b64decode(result.data[0].b64_json,validate=True)
                 if not generated.startswith(b'\x89PNG') or len(generated)>25000000:raise ValueError()
             with db() as c:c.execute("UPDATE photo_portraits SET state='complete',photo=NULL,payload=NULL,output=? WHERE id=?",(generated,row['id']))
         except Exception as error:
+            log_portrait_failure(row['id'],stage,error,started)
             message=error.detail if isinstance(error,HTTPException) else 'Could not compose this photo. Please try another photo or view.'
             with db() as c:c.execute("UPDATE photo_portraits SET state='failed',photo=NULL,payload=NULL,error=? WHERE id=?",(message,row['id']))
         return True

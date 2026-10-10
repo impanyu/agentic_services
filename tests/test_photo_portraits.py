@@ -8,6 +8,19 @@ from agentic_services.main import create_app
 import agentic_services.photo_scout.portraits as portraits
 
 
+def test_failure_diagnostics_preserve_codes_without_private_content(caplog):
+    import json,time
+    error=RuntimeError('private prompt and uploaded image')
+    error.body={'error':{'code':'moderation_blocked','message':'private provider response'}}
+    error.status_code=400
+    error.request_id='req_test123'
+    portraits.log_portrait_failure('job_test','image_generation',error,time.monotonic())
+    record=json.loads(caplog.records[-1].message.split('photo_portrait_failure ',1)[1])
+    assert record['stage']=='image_generation' and record['code']=='moderation_blocked'
+    assert record['statusCode']==400 and record['requestId']=='req_test123'
+    assert 'private' not in caplog.text and 'provider response' not in caplog.text
+
+
 def photo():
     out=io.BytesIO();Image.new('RGB',(32,48),'green').save(out,format='PNG');return out.getvalue()
 
