@@ -302,7 +302,7 @@ function activateNativeStreetView(surface,getSpot,searchId,options={}){
 function fitPoiPopup(popup){
  if(!popup?.isOpen())return;
  const bounds=el('map').getBoundingClientRect(),dock=document.querySelector('.scout-dock').getBoundingClientRect();
- const top=72,bottom=Math.max(16,bounds.bottom-dock.top+16);
+ const top=bounds.width>760?96:72,bottom=Math.max(16,bounds.bottom-dock.top+16);
  const shortlist=el('results'),listBounds=shortlist.getBoundingClientRect();
  let left=16;
  if(bounds.width>760&&!shortlist.hidden&&listBounds.right>bounds.left)left=Math.ceil(listBounds.right-bounds.left)+16;
