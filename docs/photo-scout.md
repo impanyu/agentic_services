@@ -452,7 +452,7 @@ Adjusting the selfie preview selects `framing=current`, preserving the submitted
 
 The selfie framing selector previews 90°, 60° or 45° immediately using the same panorama, heading and pitch. The default is Auto (a 90° preview, followed by model selection from 90°, 60°, 45° at generation); Use adjusted view restores the last manually adjusted camera (or the view that opened the studio). Manual drag/zoom selects Use adjusted view. The submitted background URL carries the displayed FOV; manual modes retain that exact camera at generation. Auto explicitly shows that the preview is provisional and the model will select the final framing at generation.
 
-Search history rows include a lightweight raster basemap thumbnail with the saved search center and radius overlay. City metadata is reverse-geocoded from the resolved center using Photon only when the history menu opens, with serialized requests, in-flight deduplication and bounded session caching. It does not change search coordinates or require another LLM call; unavailable locality data falls back to the saved location label or coordinates.
+Search history rows include a 96 × 72 detailed OpenStreetMap thumbnail, zoomed out to show surrounding roads, water and land use, with the saved search center and radius overlay. City metadata is reverse-geocoded from the resolved center using Photon only when the history menu opens, with serialized requests, in-flight deduplication and bounded seven-day locality caching across visits and retryable failures. It does not change search coordinates or require another LLM call; unavailable locality data falls back to the saved location label or coordinates.
 
 ### Native interactive Street View
 
