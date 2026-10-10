@@ -61,7 +61,12 @@ const searchProgramSchema={type:['object','null'],additionalProperties:false,req
  }}}}}
 const requirement=z.object({expression:z.string().min(1).max(400),strength:z.enum(['required','preferred','forbidden']),route:z.enum(['places','geography','features','visual']),stepIds:z.array(z.string()).max(8)}).strict()
 const requirementSchema={type:'object',additionalProperties:false,required:['expression','strength','route','stepIds'],properties:{expression:{type:'string',minLength:1,maxLength:400},strength:{enum:['required','preferred','forbidden']},route:{enum:['places','geography','features','visual']},stepIds:{type:'array',maxItems:8,items:{type:'string'}}}}
+const routeEndpoint=z.object({query:z.string().min(1).max(200).nullable().optional(),lat:z.number().min(-85).max(85).nullable().optional(),lon:z.number().min(-180).max(180).nullable().optional(),label:z.string().max(350).nullable().optional()}).strict().refine(p=>(p.lat===undefined||p.lat===null)===(p.lon===undefined||p.lon===null)&&Boolean(p.query?.trim()||p.lat!==undefined&&p.lat!==null),'Provide an address or both coordinates')
+const routeRequest=z.object({origin:routeEndpoint.nullable().optional(),destination:routeEndpoint,travelMode:z.enum(['walk','drive']).optional(),corridorMeters:z.number().int().min(100).max(2000).optional()}).strict()
+const routeEndpointSchema={type:'object',additionalProperties:false,properties:{query:{type:['string','null'],minLength:1,maxLength:200},lat:{type:['number','null'],minimum:-85,maximum:85},lon:{type:['number','null'],minimum:-180,maximum:180},label:{type:['string','null'],maxLength:350}},anyOf:[{required:['query'],properties:{query:{type:'string',minLength:1}}},{required:['lat','lon'],properties:{lat:{type:'number'},lon:{type:'number'}}}]}
+const routeRequestSchema={type:['object','null'],additionalProperties:false,required:['destination'],properties:{origin:{anyOf:[routeEndpointSchema,{type:'null'}]},destination:routeEndpointSchema,travelMode:{enum:['walk','drive'],default:'walk'},corridorMeters:{type:'integer',minimum:100,maximum:2000,default:300}}}
 const photoArguments={
+  route:routeRequest.nullable().optional().describe('Optional real road route. Default walking, 300 m corridor; up to 200 km. Origin omitted uses lat/lon. Destination accepts address or coordinates. Up to 50 photographic locations along the route.'),
   requirements:z.array(requirement).max(16).optional().describe('Condition ledger for compiled programs: required, preferred or forbidden; retrieval step IDs scope conditions to each logical branch.'),
   searchProgram:searchProgram.nullable().optional().describe('Validated data-flow program over search/spatial/set, collect_images, score_images and rank_results tools. Leave all other target/spatial fields empty; global center/radius/styles are shared. Up to 24 steps and 8 source queries.'),
   searchBranches:z.array(searchBranch).max(6).optional().describe('OR across independently constrained target groups; AND between target, geography and features inside a group. When set, leave top-level poiQueries/geographicKinds/osmFeatures empty.'),
@@ -80,6 +85,7 @@ const photoArguments={
   preferences:z.string().max(500).optional().describe('Additional photography preferences.'),
 }
 export const photoInputSchema={type:'object',additionalProperties:false,required:['lat','lon'],properties:{
+ route:routeRequestSchema,
  requirements:{type:'array',maxItems:16,items:requirementSchema},
  searchProgram:searchProgramSchema,
  searchBranches:{type:'array',maxItems:6,items:searchBranchSchema},
@@ -132,12 +138,12 @@ export async function createPhotoMcpHandler(options: PhotoMcpOptions): Promise<(
       outputSchema: z.object({ priceUsd: z.string(), network: z.string(), scope: z.string() }),
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     }, async () => {
-      const details = { priceUsd: options.price, network: 'Base USDC', scope: 'One nearby photo search; up to 24 candidate locations, eight horizontal directions per panorama; results depend on coverage.' }
+      const details = { priceUsd: options.price, network: 'Base USDC', scope: 'One nearby or along-route photo search; up to 50 candidate locations, eight horizontal directions per panorama; results depend on coverage.' }
       return { content: [{ type: 'text', text: JSON.stringify(details) }], structuredContent: details }
     })
     server.registerTool('discover_photo_spots', {
-      title: 'Discover nearby photo spots',
-      description: `Find nearby POIs, compare available images, and return ranked photo spots with scores, camera headings, reasons and source links. Costs $${options.price} USDC on Base per call.`,
+      title: 'Discover photo spots nearby or along a route',
+      description: `Find POIs nearby or along a walking/driving route, compare available images, and return ranked photo spots with scores, camera headings, reasons and source links. Costs $${options.price} USDC on Base per call.`,
       inputSchema: photoArguments,
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
     }, wrapper(async (args) => {

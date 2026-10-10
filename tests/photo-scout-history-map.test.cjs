@@ -11,3 +11,4 @@ test('failed city lookup releases the row so reopening history can retry',async(
  const item={dataset:{lat:'41.8',lon:'-87.6'},isConnected:true,textContent:'Chicago'},root={querySelectorAll(){return [item];}};
  scope.PhotoScoutHistoryMap.hydrate(root);assert.equal(item.dataset.loading,'true');await new Promise(resolve=>setImmediate(resolve));assert.equal(item.dataset.loading,undefined);assert.equal(item.textContent,'Chicago');
 });
+test('route history preview fits the real winding route instead of a circle',()=>{const route={geometry:{type:'LineString',coordinates:[[-122.42,37.77],[-122.46,37.81],[-122.49,37.8]]}};const a=maps.area({task:{context:{lat:37.77,lon:-122.42,routeGeometry:route}}});assert.equal(a.route,route);const g=maps.geometry(a);assert.equal(g.radius,undefined);assert.equal(g.points.length,3);assert.ok(g.points.every(([x,y])=>x>=12&&x<=84&&y>=12&&y<=60));});

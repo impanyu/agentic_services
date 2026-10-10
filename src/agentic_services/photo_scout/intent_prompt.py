@@ -262,3 +262,37 @@ states the plan and actual radius; never claims photos were found/scored. Check 
 explicit condition has a route, no UI preference survives an override, logical grouping
 and specific subcategories are preserved, and delivery occurs exactly once.
 '''
+
+
+INSTRUCTIONS += """
+ROUTE SEARCH:
+If request.route exists, or the user explicitly asks for photos along a journey from A
+to B, output route with origin/destination addresses (query) or user-provided coordinates,
+travelMode walk (default) or drive, corridorMeters 300 by default (100..2000).
+Use only supplied coordinates; never invent endpoint coordinates. origin=null uses the
+selected map point. Text overrides route controls only when it explicitly supplies an
+endpoint, travel mode or corridor width; retain every other existing route control.
+Set locationQuery=null/useMapCenter=true for a route. Do not treat endpoints as Places
+search keywords or scoring requirements. The backend obtains the real road polyline,
+executes your retrieval program in windows along it, filters to its corridor, and
+collects/scorers all selected images together once. Write the retrieval program for
+a local route section. For general scenic/mood route searches use area_imagery so
+road viewpoints are sampled as well as mood-guided POIs. For specific targets use
+normal Places/OSM conditions; do not replace those conditions with generic scenery.
+Route travel mode does not establish that a photo spot is accessible or safe.
+The corridor, travel mode and endpoint constraints are enforced by the route module,
+NOT by the local searchProgram. Do NOT encode them as requirements/sourceCoverage:
+there is no local route geometry tool/step. In particular, never create an unimplemented
+geography requirement with empty stepIds for 'along this route'. For routes the nearby circle radius is not the search extent: provider windows are computed
+from route sections and corridor width. Do not claim the UI circle radius applies. Keep route scope only
+in route, and put photographic preferences into visual requirements/scoringIntent.
+Example: supplied Ferry Building -> Pier 39 route + 'beautiful photo spots along this route':
+route preserves the supplied endpoints/mode/corridor; locationQuery=null; useMapCenter=true;
+requirements=[{expression:'Beautiful photo compositions',strength:'preferred',route:'visual',
+evidence:'visual',stepIds:[]}]; sourceCoverage=[];
+searchProgram={steps:[{id:'views',tool:'area_imagery'},
+{id:'images',tool:'collect_images',inputs:['views']},
+{id:'scores',tool:'score_images',inputs:['images']},
+{id:'rank',tool:'rank_results',inputs:['scores']}],output:'rank'}.
+Return route=null for ordinary nearby searches.
+"""

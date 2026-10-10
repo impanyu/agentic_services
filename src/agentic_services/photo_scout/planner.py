@@ -82,7 +82,10 @@ class SourceCoverage(BaseModel):
     stepIds: list[str] = Field(min_length=1,max_length=8)
     reason: str = Field(min_length=1,max_length=400)
 
+from .route_search import RouteRequest
+
 class PlannerIntent(BaseModel):
+    route: RouteRequest | None = None
     model_config = ConfigDict(extra='forbid')
     action: Literal['search','help','unsupported','uninterpretable'] = 'search'
     normalizedQuery: str = Field(default='',max_length=1000)

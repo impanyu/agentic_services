@@ -13,10 +13,12 @@ from .program import SearchProgram
 from .conditions import SearchBranch, validate_branch_scope
 from .geography import GeographicKind
 from .osm_features import OSMFeatureQuery
+from .route_search import RouteRequest, resolve_endpoints
 
 Mood=Literal['nature','urban','vintage','iconic','artistic','waterside','minimal','adventure']
 PoiQuery=Annotated[str,Field(min_length=1,max_length=200)]
 class IntentRequest(BaseModel):
+    route: RouteRequest | None = None
     subjectRole: Literal['scene','portrait-background','existing-subject'] = 'scene'
     query: str=Field(default="",max_length=1000)
     lat: float=Field(ge=-85,le=85,allow_inf_nan=False)
@@ -33,6 +35,7 @@ class IntentRequest(BaseModel):
     featureCombination: Literal['all','any'] = 'all'
     scoringIntent: str = Field(default='',max_length=1000)
 class PhotoIntent(BaseModel):
+    route: RouteRequest | None = None
     action: Literal['search','help','unsupported','uninterpretable'] = 'search'
     normalizedQuery: str = Field(default='',max_length=1000)
     intentSummary: str = Field(default='',max_length=500)
@@ -127,11 +130,16 @@ async def resolve_intent(settings,payload):
     if not payload.query.strip():
         # UI-only searches never relocate the user's pin or rewrite controls.
         intent=intent.model_copy(update={'locationQuery':None,'useMapCenter':True,
-            'radiusMeters':payload.radius,'photoStyles':list(payload.photoStyles)})
+            'radiusMeters':payload.radius,'photoStyles':list(payload.photoStyles),'route':payload.route})
     out=intent.model_dump()
     out.update({'locations':[],'visuallyAnalyzed':False})
     out['clarification']=None
-    if intent.locationQuery:
+    route=intent.route or payload.route
+    if route:
+        route=await resolve_endpoints(route,payload.lat,payload.lon,geocode)
+        out['route']=route.model_dump()
+        out['locations']=[{'lat':route.origin.lat,'lon':route.origin.lon,'label':route.origin.label+' → '+route.destination.label,'source':'route-endpoints'}]
+    elif intent.locationQuery:
         out['locations']=await geocode(intent.locationQuery)
         if out['locations']:out['locations']=out['locations'][:1]
         else:

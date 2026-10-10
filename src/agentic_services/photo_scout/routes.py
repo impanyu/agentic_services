@@ -1,5 +1,6 @@
 from __future__ import annotations
 from .planner import Requirement
+from .route_search import RouteRequest, compute_route, discover_route, along_route, route_points, resolve_endpoints
 
 import asyncio
 from openai import APITimeoutError
@@ -30,7 +31,7 @@ from .search import branch_contexts, filter_branch_images, branch_parameters
 from .program import SearchProgram, CONTRACTS, PipelineHooks, execute_program
 from .conditions import SearchBranch,validate_branch_scope
 from .osm_features import OSMFeatureQuery,fetch_features
-from .intent import IntentRequest, PoiQuery, resolve_intent, intent_feedback
+from .intent import IntentRequest, PoiQuery, resolve_intent, intent_feedback, geocode
 from .places import nearby_places
 from .search import SearchParameters, SearchProviders, SearchUnavailable, compile_search, search_locations
 from .sources import candidates, nearby_pois, google_enabled, google_image_data, MAX_SCORED_IMAGES
@@ -44,6 +45,7 @@ DEFAULT_PHOTO_PREFERENCES = 'Scenic, distinctive public places for photography'
 
 
 class ExploreRequest(BaseModel):
+    route: RouteRequest | None = None
     searchProgram: SearchProgram | None = None
     searchBranches: list[SearchBranch] = Field(default_factory=list,max_length=6)
     query: str = Field(default="",max_length=1000)
@@ -291,6 +293,14 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
         return compile_search(search_parameters(payload)).mergeStrategy=='area-imagery' and payload.selectedPoiIds is None
 
     async def catalog(payload,allow_expired=False):
+        if payload.route:
+            if payload.selectedPoiIds is not None or payload.poiCatalogToken:
+                raise HTTPException(422,'Route searches use automatic candidate selection.')
+            route=await resolve_endpoints(payload.route,payload.lat,payload.lon,geocode)
+            geometry=await compute_route(route)
+            rows,statuses,pois=await discover_route(payload.model_copy(update={'route':route}),geometry,lookup_pois,candidates)
+            statuses['google-routes']['route']=geometry
+            return rows,statuses,pois
         visual=visual_exploration(payload)
         try:pois,poi_status=await chosen_pois(payload,allow_expired,include_geometry=True)
         except HTTPException as error:
@@ -362,6 +372,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
     @router.post('/photo-scout/v1/pois')
     async def list_pois(payload: ExploreRequest,authorization: str | None=Header(None)):
         require_api(authorization); source_limit()
+        if payload.route:raise HTTPException(422,'Use candidates or discover for route searches; manual catalogs support nearby searches.')
         pois,status=await lookup_pois(payload)
         return Response(json.dumps({'nearbyPois':pois,'source':status,'poiCatalogToken':sign_catalog(payload,pois,status),
             'selectionExpiresInSeconds':3600,'photoStyles':style_briefs(payload.photoStyles),'visuallyAnalyzed':False}),media_type='application/json',headers={'Cache-Control':'private, no-store'})
@@ -419,7 +430,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
         if plan.get('action','search')!='search':return None,plan
         location=plan['locations'][0]
         parsed=ExploreRequest.model_validate({**payload.model_dump(),'query':'',
-            'lat':location['lat'],'lon':location['lon'],'radius':plan['radiusMeters'],
+            'lat':location['lat'],'lon':location['lon'],'radius':plan['radiusMeters'],'route':plan.get('route'),
             'photoStyles':plan['photoStyles'] or None,'preferences':plan['preferences'],
             'searchProgram':plan.get('searchProgram'),'searchBranches':plan.get('searchBranches') or [],
             'subjectRole':plan.get('subjectRole','scene'),'requirements':plan.get('requirements') or [],'poiQueries':plan.get('poiQueries') or [],'scoringIntent':plan.get('scoringIntent') or plan['preferences'],
@@ -457,7 +468,27 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
                 store.reserve_run()
                 scoring_started=time.monotonic()
             retrieval_seconds=0;scoring_started=retrieval_started
-            if payload.searchProgram is not None and payload.searchProgram.complete:
+            route_result=None
+            if payload.route:
+                if payload.selectedPoiIds is not None or payload.poiCatalogToken:
+                    raise HTTPException(422,'Route searches use automatic candidate selection.')
+                payload=payload.model_copy(update={"route":await resolve_endpoints(payload.route,payload.lat,payload.lon,geocode)})
+                route_result=await compute_route(payload.route)
+                if task_id:
+                    context=tasks.context('search',task_id) or payload.model_dump()
+                    context['routeGeometry']=route_result;context['stage']='sources'
+                    tasks.update_context('search',task_id,context)
+                from .program import Images
+                rows,statuses,pois=await discover_route(payload,route_result,lookup_pois,candidates)
+                await before_score(Images(rows,statuses,pois,True))
+                result=await explore(settings,payload,rows,statuses)
+                for item in result.get('poiResults',[])+result.get('spots',[]):
+                    place=item.get('poi') or item
+                    if isinstance(place.get('lat'),(int,float)) and isinstance(place.get('lon'),(int,float)):
+                        offset,progress=along_route((place['lat'],place['lon']),route_points(route_result))
+                        item.update(routeOffsetMeters=round(offset),routeProgressMeters=round(progress))
+                result['route']=route_result
+            elif payload.searchProgram is not None and payload.searchProgram.complete:
                 # A signed selection must be verified before any image/model work.
                 if payload.selectedPoiIds is not None:await chosen_pois(payload,allow_expired)
                 async def score(p,rows,statuses):return await assess_images(settings,p,rows,statuses)
@@ -489,7 +520,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
             source=statuses.get('google-places') or statuses.get('openstreetmap') or statuses.get('openstreetmap-features') or {}
             result['searchPlan']=source.get('searchPlan') or compile_search(search_parameters(payload)).model_dump()
             result['searchCounts']=source.get('searchCounts',{})
-            result['discoveryMethod']='fixed-geographic-and-poi'
+            result['discoveryMethod']='route-corridor' if route_result else 'fixed-geographic-and-poi'
             result['geographicKinds']=geographic_kinds(payload)
             result['photoLocationCount']=sum(p.get('poi',{}).get('category')=='photo-location' for p in result.get('poiResults',[]))
             result['candidatePoiCount']=len(pois)
@@ -513,6 +544,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
             'googleStreetView':{'credentialConfigured':bool(os.getenv('PHOTO_SCOUT_GOOGLE_API_KEY')),
                 'imageAnalysisEnabled':google_enabled(),
                 'dailyImageRequestLimit':max(0,int(os.getenv('PHOTO_SCOUT_GOOGLE_DAILY_IMAGE_LIMIT','0'))) or None},
+            'routeSearch':{'enabled':True,'travelModes':['walk','drive'],'defaultTravelMode':'walk','maxDistanceMeters':200000,'maxCandidateLocations':50,'corridorMeters':{'min':100,'max':2000,'default':300}},
             'limits':{'radiusMeters':20000,'candidatePlaces':50,'sampledImages':MAX_SCORED_IMAGES,'inspectedImages':MAX_SCORED_IMAGES,'imagesPerBatch':max(1,min(32,int(os.getenv('PHOTO_SCOUT_SCORING_BATCH_SIZE','8')))),'parallelBatches':max(1,min(16,int(os.getenv('PHOTO_SCOUT_SCORING_CONCURRENCY','12')))),'viewsPerPanorama':8,'googleQueryLocations':50,'timeoutSeconds':660},
             'analysisMethod':'fixed-batch-scoring','discoveryMethod':'fixed-geographic-and-poi','discoveryMethods':['fixed-geographic-and-poi'],'geographicProvider':'openstreetmap','poiProviders':{'openstreetmap':'standby' if os.getenv('PHOTO_SCOUT_POI_PROVIDER')=='google-places' else 'enabled','google-places':'enabled' if os.getenv('PHOTO_SCOUT_POI_PROVIDER')=='google-places' else 'not_connected'},
             'privacy':'Coordinates/preferences are sent to imagery providers/OpenAI; paid reports retained for 30 days.'}
@@ -522,7 +554,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
         require_api(authorization)
         source_limit()
         rows,statuses,pois=await catalog(payload)
-        return {'candidates':rows,'sources':statuses,'nearbyPois':pois,'discoveryMethod':'fixed-geographic-and-poi','visuallyAnalyzed':False}
+        return {'candidates':rows,'sources':statuses,'nearbyPois':pois,'route':statuses.get('google-routes',{}).get('route'),'discoveryMethod':'route-corridor' if payload.route else 'fixed-geographic-and-poi','visuallyAnalyzed':False}
 
     @router.post('/photo-scout/v1/discover')
     async def discover(payload: ExploreRequest,request: Request,response: Response,authorization: str | None=Header(None)):
@@ -709,5 +741,5 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
             'openapiUrl':settings.base_url+'/photo-scout/openapi.json',
             'mcpUrl':settings.base_url+'/photo-scout/mcp','tools':['list_photo_scout_prices','discover_photo_spots'],
             'payment':{'protocol':'mpp','mcpProtocol':'x402','network':'eip155:8453','currency':'USDC','perCallUsd':f'{price()/100:.2f}' if price()>0 else None},
-            'description':'Image-grounded nearby photography locations from a bounded provider image sample.'}
+            'description':'Image-grounded photography locations nearby or along walking/driving routes from bounded provider image samples.'}
     return router,retrieve_paid,fulfill

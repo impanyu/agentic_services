@@ -240,3 +240,10 @@ html:has(body.photo-app),body.photo-app{height:100%;overflow:hidden}.photo-app m
 .leaflet-popup-pane{z-index:850}
 .leaflet-popup-scrolled{overscroll-behavior:contain;scrollbar-width:thin}
 @media(max-width:760px){.map-stage:has(.leaflet-popup) #results{visibility:hidden;pointer-events:none}}
+
+/* Route controls share the compact map-overlay search dock. */
+.search-mode-picker label,.route-settings label{display:flex;flex-direction:column;gap:.35rem;font-size:.85rem;font-weight:600}
+.search-mode-picker{margin-bottom:.65rem}.route-settings{display:grid;grid-template-columns:1fr 1fr;gap:.65rem;margin-bottom:.75rem}.route-settings[hidden]{display:none}
+.route-settings input,.route-settings select,.search-mode-picker select{width:100%;min-width:0;border:1px solid #ddd7e4;border-radius:12px;background:#fff;padding:.65rem;font:inherit;color:#36313d}
+.route-options{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:.65rem}.route-settings p{grid-column:1/-1;margin:0;font-weight:400}
+@media(max-width:600px){.route-settings{grid-template-columns:1fr;gap:.5rem}.route-settings input{padding:.55rem}.route-settings p{font-size:.75rem}.map-controls[open]{max-height:55dvh;overflow-y:auto}}
