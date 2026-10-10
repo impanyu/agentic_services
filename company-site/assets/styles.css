@@ -234,3 +234,21 @@ footer p { margin: 0; font: 9px var(--mono); color: #8d938e; text-transform: upp
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
   .reveal { opacity: 1; transform: none; }
 }
+
+/* AI Soup's two complementary product directions. */
+.hero h1{font-size:clamp(60px,6.8vw,108px);line-height:.98;letter-spacing:-.065em}
+.node--core b{font:600 24px/1 var(--sans);letter-spacing:-.06em}.node--core small{letter-spacing:.06em;font-size:7px}
+.direction-heading{display:grid;grid-template-columns:1.2fr .8fr;gap:8vw;align-items:end;margin:56px 0}
+.direction-heading>p{color:#a9afa9;font-size:20px;line-height:1.5;max-width:400px;margin:0}
+.direction-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
+.direction-card{display:flex;flex-direction:column;padding:36px;border:1px solid #454b45;border-radius:18px;background:#181d19}
+.direction-number{font:11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:#a9afa9}
+.direction-card h3{font-size:clamp(32px,4vw,58px);letter-spacing:-.05em;line-height:1.1;margin:32px 0 20px}
+.direction-card--people h3{color:var(--lime)}.direction-card--agents h3{color:var(--coral)}
+.direction-card p{font-size:18px;line-height:1.6;color:#c3c9c3;margin:0 0 24px}
+.direction-card ul{display:flex;flex-wrap:wrap;gap:8px;list-style:none;padding:0;margin:0 0 32px}
+.direction-card li{border:1px solid #454b45;padding:8px 10px;border-radius:999px;font:10px var(--mono);color:#c3c9c3}
+.direction-card a{margin-top:auto;padding-top:20px;border-top:1px solid #454b45;display:flex;justify-content:space-between;font:12px var(--mono)}
+.direction-card a:hover{color:var(--lime)}
+@media(max-width:900px){.direction-heading,.direction-grid{grid-template-columns:1fr}.direction-heading{gap:28px}.direction-card{padding:28px}.hero h1{font-size:clamp(52px,10vw,88px)}}
+@media(max-width:540px){.hero h1{font-size:clamp(42px,11.5vw,62px)}.direction-heading{margin:36px 0}.direction-heading>p{font-size:18px}.direction-grid{gap:16px}.direction-card{padding:24px}.direction-card h3{margin-top:24px}.direction-card p{font-size:16px}}

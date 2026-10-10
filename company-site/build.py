@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the Dream Workshop static site from the product catalog."""
+"""Build the AI Soup static site from the product catalog."""
 
 from __future__ import annotations
 
@@ -54,9 +54,10 @@ def main() -> None:
     website_json_ld = {
         "@context": "https://schema.org",
         "@type": "Organization",
-        "name": "Dream Workshop LLC",
+        "name": "AI Soup",
+        "legalName": "Dream Workshop LLC",
         "url": "https://aisoup.net",
-        "description": "AI agents and infrastructure for an agent-native internet.",
+        "description": "AI-powered apps for people and apps, tools, and services for AI agents.",
         "hasOfferCatalog": {
             "@type": "OfferCatalog",
             "name": "Products",
