@@ -65,7 +65,7 @@ html:has(body.photo-app),body.photo-app{height:100%;overflow:hidden}.photo-app m
  .card img{height:auto;aspect-ratio:16/10}.body{padding:14px}.body p,.body a{font-size:12px}.compose-photo{min-height:44px;font-size:13px}
  .photo-studio{width:calc(100vw - 20px);max-height:calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom));margin:auto;padding:16px;border-radius:21px;overscroll-behavior:contain}
  .studio-heading{position:sticky;top:-16px;z-index:3;margin:-16px -16px 0;padding:12px 16px;background:#fffdf8;border-bottom:1px solid #eee7ef;gap:8px}.studio-heading h2{font-size:18px;line-height:1.25;min-width:0}.studio-heading button{min-height:40px;flex-shrink:0;font-size:13px}
- .studio-inputs{gap:8px;margin:12px 0}.studio-inputs img{width:calc(50% - 4px);height:130px;min-width:0}.studio-inputs:has(img[hidden]) img:not([hidden]){width:100%;height:145px}
+ .studio-inputs{gap:8px;margin:12px 0}.studio-inputs img{width:calc(50% - 4px);height:130px;min-width:0}
  .studio-upload{font-size:12px;gap:7px;margin:12px 0;overflow-wrap:anywhere}.studio-upload input,.studio-upload textarea{min-width:0;max-width:100%;font-size:16px;padding:10px}.studio-upload input::file-selector-button{font-size:12px;margin-right:7px}.studio-upload textarea{min-height:64px}
  .photo-studio .small{font-size:11px;line-height:1.5}.studio-status{font-size:12px;margin:12px 0;overflow-wrap:anywhere}.studio-generate,.studio-download{min-height:44px;padding:12px;font-size:14px}
  .progress-steps{flex-wrap:wrap}
@@ -76,7 +76,7 @@ html:has(body.photo-app),body.photo-app{height:100%;overflow:hidden}.photo-app m
  .map-overlay-controls{top:12px;right:12px;gap:4px}.map-brand{top:12px;left:12px;font-size:14px}.brand-mark{width:28px;height:28px}
  .map-overlay-controls .map-tools,.map-overlay-controls .map-detail-menu,.map-overlay-controls .history-menu{max-height:calc(100dvh - 85px);overflow:auto}
  #results{top:60px;bottom:calc(var(--scout-dock-height,110px) + 30px + env(safe-area-inset-bottom));height:auto;max-height:calc(100dvh - var(--scout-dock-height,110px) - 90px - env(safe-area-inset-bottom));left:12px;width:min(560px,calc(100% - 160px))}
- .photo-studio{max-height:calc(100dvh - 20px);padding:14px;width:min(600px,calc(100vw - 24px))}.studio-inputs img,.studio-inputs:has(img[hidden]) img:not([hidden]){height:100px}
+ .photo-studio{max-height:calc(100dvh - 20px);padding:14px;width:min(600px,calc(100vw - 24px))}.studio-inputs img{height:100px}
 }
 @media(max-width:760px){
  .dock-toolbar{display:block;position:relative}.dock-actions{position:absolute;right:0;top:0}
