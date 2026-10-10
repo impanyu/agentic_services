@@ -4,9 +4,11 @@ The public site at `https://aisoup.net` is generated from a small product catalo
 
 To add a future agent or service:
 
-1. Add one object to `catalog.json`.
+1. Add one object to `catalog.json` with a `direction` of `agent-for-app` or `app-for-agent`.
 2. Run `python3 company-site/build.py` from the repository root.
 3. Commit the source. Rebuild `dist` on the host; Caddy serves the rebuilt files without a reload.
+
+The A4A direction controls which product directory displays the item; `audience` independently describes who can use it.
 
 Each catalog item has a canonical human URL at `https://aisoup.net/<slug>/` and an `audience` of `human`, `agent`, or `both`. Agent API and MCP links belong on `https://api.aisoup.net/<slug>/`. AgenticWiKi uses `https://aisoup.net/wiki/` as its catalog entry, which redirects to the existing `https://wiki.aisoup.net/` application.
 

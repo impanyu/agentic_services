@@ -14,7 +14,8 @@
         "Research",
         "Knowledge",
         "Workspace"
-      ]
+      ],
+      "direction": "agent-for-app"
     },
     {
       "name": "Web Evidence",
@@ -30,7 +31,8 @@
         "Stripe Checkout",
         "API",
         "MCP"
-      ]
+      ],
+      "direction": "app-for-agent"
     },
     {
       "name": "California C-10 Contractor Check",
@@ -46,7 +48,8 @@
         "Stripe Checkout",
         "API",
         "CSLB source"
-      ]
+      ],
+      "direction": "app-for-agent"
     },
     {
       "name": "Niche Discovery",
@@ -63,7 +66,8 @@
         "$9.99/month",
         "Agent API",
         "Per-call"
-      ]
+      ],
+      "direction": "app-for-agent"
     },
     {
       "name": "Photo Scout",
@@ -78,10 +82,11 @@
       "status": "Preview",
       "capabilities": [
         "Map UI",
-        "Multimodal agent",
-        "API",
-        "Stripe"
-      ]
+        "Photo discovery",
+        "AI selfies",
+        "API"
+      ],
+      "direction": "agent-for-app"
     }
   ]
 }

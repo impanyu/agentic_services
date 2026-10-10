@@ -48,7 +48,10 @@ def product_card(product: dict[str, object]) -> str:
 def main() -> None:
     catalog = json.loads((ROOT / "catalog.json").read_text())
     products = catalog["products"]
-    cards = "\n".join(product_card(product) for product in products)
+    directions = {"agent-for-app", "app-for-agent"}
+    if any(product.get("direction") not in directions for product in products):
+        raise ValueError("Every product must specify an A4A direction")
+    cards = {direction: "\n".join(product_card(product) for product in products if product["direction"] == direction) for direction in directions}
 
     template = (ROOT / "index.template.html").read_text()
     website_json_ld = {
@@ -76,7 +79,9 @@ def main() -> None:
         },
     }
     page = (
-        template.replace("{{ALL_PRODUCT_CARDS}}", cards)
+        template.replace("{{AGENT_FOR_APP_CARDS}}", cards["agent-for-app"])
+        .replace("{{APP_FOR_AGENT_CARDS}}", cards["app-for-agent"])
+        .replace("{{PRODUCT_COUNT}}", str(len(products)))
         .replace("{{JSON_LD}}", json.dumps(website_json_ld, ensure_ascii=False))
     )
 

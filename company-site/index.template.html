@@ -12,7 +12,7 @@
     <meta property="og:url" content="https://aisoup.net">
     <link rel="canonical" href="https://aisoup.net">
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="/assets/styles.css?v=20261010a4avision">
+    <link rel="stylesheet" href="/assets/styles.css?v=20261010a4acatalog">
     <script type="application/ld+json">{{JSON_LD}}</script>
   </head>
   <body>
@@ -26,7 +26,8 @@
         <span>AI Soup</span>
       </a>
       <nav aria-label="Main navigation">
-        <a href="#work">Services</a>
+        <a href="#agent-for-app">Agent for App</a>
+        <a href="#app-for-agent">App for Agent</a>
         <a href="https://api.aisoup.net/">Agent API</a>
         <a class="nav-cta" href="#contact">Contact <span>↓</span></a>
       </nav>
@@ -37,10 +38,10 @@
         <div class="hero-copy reveal">
           <p class="kicker"><span></span> A4A / Agent-native apps + agent infrastructure</p>
           <h1>Agent for App.<br><em>App for Agent.</em></h1>
-          <p class="hero-intro">We build AI agent-native apps whose workflows are led by agents, and the apps, tools, and services agents use to get work done.</p>
+          <p class="hero-intro">A4A is our focus: Agent for App and App for Agent. We build agent-native applications, and the infrastructure agents use.</p>
           <div class="hero-actions">
-            <a class="button" href="#work">Explore services <span>↓</span></a>
-            <a class="text-link" href="#principles">Our two directions <span>↘</span></a>
+            <a class="button" href="#agent-for-app">Agent for App <span>↓</span></a>
+            <a class="button button--outline" href="#app-for-agent">App for Agent <span>↓</span></a>
           </div>
         </div>
 
@@ -77,7 +78,7 @@
             <p>The agent is the core of the app. It understands the user’s goal, plans actions, chooses tools, and directs the workflow as the task unfolds.</p>
             <p>We design around agent-led control and decisions. Software provides the interfaces, tools, and execution boundaries that let the agent act reliably.</p>
             <ul><li>Agent-led control</li><li>Adaptive workflows</li><li>Goal-driven experiences</li></ul>
-            <a href="#work">Explore our apps <span aria-hidden="true">↗</span></a>
+            <a href="#agent-for-app">Explore these apps <span aria-hidden="true">↓</span></a>
           </article>
           <article class="direction-card direction-card--agents reveal">
             <span class="direction-number">02 / Infrastructure for the agent era</span>
@@ -85,24 +86,34 @@
             <p>We build applications for agents to use: tools, data sources, and services they can discover, understand, and call as part of their own work.</p>
             <p>This is infrastructure for the agent era. Clear interfaces, reliable execution, and usable results help agents research, create, transact, and complete tasks.</p>
             <ul><li>APIs &amp; MCP tools</li><li>Data &amp; evidence</li><li>Services for agents</li></ul>
-            <a href="https://api.aisoup.net/">Explore agent services <span aria-hidden="true">↗</span></a>
+            <a href="#app-for-agent">Explore these services <span aria-hidden="true">↓</span></a>
           </article>
         </div>
       </section>
 
       <section class="work" id="work">
         <div class="section-heading reveal">
-          <p class="section-label">02 / Products</p>
-          <p class="section-count">Our apps, tools, and services.</p>
+          <p class="section-label">02 / A4A in practice</p>
+          <p class="section-count">Two directions. {{PRODUCT_COUNT}} applications.</p>
         </div>
-        <section class="product-family product-family--human" id="services">
+        <section class="product-family product-family--apps" id="agent-for-app" aria-labelledby="agent-for-app-title">
           <div class="product-family__intro reveal">
-            <p class="family-number">Services / People + Agents</p>
-            <h2>One catalog.<br>Many ways to use it.</h2>
-            <p>Each service has a clear home. Explore every service in one catalog, with clear access for people and agents.</p>
+            <div><p class="family-number">A4A / Agent-native applications</p>
+            <h2 id="agent-for-app-title">Agent for App</h2></div>
+            <p>Applications built around agent capabilities, with agents at the heart of the experience. Explore knowledge with AgenticWiKi, or discover photo spots and create travel selfies with Photo Scout.</p>
           </div>
           <div class="product-grid">
-{{ALL_PRODUCT_CARDS}}
+{{AGENT_FOR_APP_CARDS}}
+          </div>
+        </section>
+        <section class="product-family product-family--infrastructure" id="app-for-agent" aria-labelledby="app-for-agent-title">
+          <div class="product-family__intro reveal">
+            <div><p class="family-number">A4A / Infrastructure for the agent era</p>
+            <h2 id="app-for-agent-title">App for Agent</h2></div>
+            <p>Applications and services that agents can use to gather evidence, check records, and discover market opportunities. These services also offer interfaces for people.</p>
+          </div>
+          <div class="product-grid">
+{{APP_FOR_AGENT_CARDS}}
           </div>
         </section>
       </section>
