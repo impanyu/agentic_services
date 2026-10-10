@@ -33,7 +33,7 @@ def test_private_job_edits_both_images_and_removes_upload(tmp_path,monkeypatch,i
         def __init__(self,**kwargs):self.images=self;self.responses=self
         async def __aenter__(self):return self
         async def __aexit__(self,*args):pass
-        async def parse(self,**kwargs):return SimpleNamespace(output_parsed=portraits.BackgroundChoice(index=0,distortion='minimal',reason='Natural perspective with open foreground') if kwargs['text_format'] is portraits.BackgroundChoice else portraits.SubjectCheck(human_count=1))
+        async def parse(self,**kwargs):return SimpleNamespace(output_parsed=portraits.BackgroundChoice(index=0,distortion='minimal',reason='Natural perspective with open foreground',scene=portraits.SceneInventory(core_landmarks=['fixed statue at left'],transient_elements=['walking bystanders'])) if kwargs['text_format'] is portraits.BackgroundChoice else portraits.SubjectCheck(human_count=1))
         async def edit(self,**kwargs):
             calls.append(kwargs);return SimpleNamespace(data=[SimpleNamespace(b64_json=base64.b64encode(raw).decode())])
     async def background(ref):return 'data:image/png;base64,'+base64.b64encode(raw).decode()
@@ -56,6 +56,8 @@ def test_private_job_edits_both_images_and_removes_upload(tmp_path,monkeypatch,i
         assert calls[0]['input_fidelity']=='high';assert calls[0]['quality']=='high'
     else:
         assert 'input_fidelity' not in calls[0];assert calls[0]['quality']=='max'
+    assert 'fixed statue at left' in calls[0]['prompt']
+    assert 'Test park' in calls[0]['prompt']
     assert 'keep the original clothing' in calls[0]['prompt']
     assert 'mid-step walking' in calls[0]['prompt']
     assert lighting_phrase in calls[0]['prompt']
@@ -65,6 +67,7 @@ def test_private_job_edits_both_images_and_removes_upload(tmp_path,monkeypatch,i
     assert completed['context']['viewHeadingDegrees']==90 and completed['context']['viewPitchDegrees']==-20
     assert completed['context']['viewFovDegrees']==90
     assert completed['context']['backgroundPreparation']['comparedFovDegrees']==[90,60,45]
+    assert completed['context']['backgroundPreparation']['scene']['core_landmarks']==['fixed statue at left']
     assert completed['context']['generation']=={'style':'natural','posture':'walking','weather':weather,'expression':'big_smile','framing':'auto','directions':''}
     history=client.get('/photo-scout/v1/tasks',headers=auth).json()
     assert history['items'][0]['context']['generation']==completed['context']['generation']
@@ -208,3 +211,32 @@ def test_current_background_framing_preserves_user_heading_pitch_and_zoom(monkey
     assert ref==refs[0]
     assert meta['headingDegrees']==285 and meta['pitchDegrees']==30 and meta['fovDegrees']==70
     assert meta['requestedFraming']=='current'
+
+
+@pytest.mark.parametrize('reference',['google-streetview://pano/245/0/85','https://upload.wikimedia.org/example.jpg'])
+def test_scene_inventory_is_selected_view_specific_and_reaches_composition(monkeypatch,reference):
+    raw=photo();calls=[]
+    scene=portraits.SceneInventory(
+        fixed_elements=['glass railing across foreground','building at right'],
+        core_landmarks=['large seated panda sculpture at left'],
+        transient_elements=['walking pedestrians in foreground'],
+        uncertain_elements=['parked cart near railing'])
+    async def background(ref):return 'data:image/png;base64,'+base64.b64encode(raw).decode()
+    monkeypatch.setattr(portraits,'image_data',background)
+    class Client:
+        def __init__(self):self.responses=self
+        async def parse(self,**kwargs):
+            calls.append(kwargs)
+            return SimpleNamespace(output_parsed=portraits.BackgroundChoice(index=0,distortion='minimal',reason='Scene intact',scene=scene))
+    _,_,meta=asyncio.run(portraits.prepare_background(Client(),reference,'vision','current'))
+    assert len(calls)==1
+    assert 'statue is NEVER a removable passerby' in calls[0]['instructions']
+    assert meta['scene']==scene.model_dump()
+    prompt=portraits.portrait_prompt('vacation','Make room for four characters',place='Panda plaza',scene=meta['scene'])
+    assert 'large seated panda sculpture at left' in prompt
+    assert 'parked cart near railing' in prompt
+    assert '"Panda plaza"' in prompt
+    assert 'adjust subject scale, placement or pose instead' in prompt
+    assert 'source-subject extraction/removal rules apply ONLY to image 1' in prompt
+    assert 'Preserve uncertain objects by default' in prompt
+    assert 'never the fixed scene geometry' in prompt
