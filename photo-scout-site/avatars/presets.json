@@ -1,6 +1,130 @@
 {
   "items": [
     {
+      "id": "preset:einstein-documentary",
+      "name": "Albert Einstein · Documentary",
+      "category": "Public figures",
+      "visualStyle": "Photorealistic",
+      "aliases": [
+        "爱因斯坦"
+      ],
+      "imageUrl": "./avatars/characters/einstein-documentary.png",
+      "thumbnailUrl": "./avatars/thumbnails/einstein-documentary.webp"
+    },
+    {
+      "id": "preset:chaplin-silent-film",
+      "name": "Charlie Chaplin · Silent film",
+      "category": "Screen icons",
+      "visualStyle": "Black & white",
+      "aliases": [
+        "卓别林"
+      ],
+      "imageUrl": "./avatars/characters/chaplin-silent-film.png",
+      "thumbnailUrl": "./avatars/thumbnails/chaplin-silent-film.webp"
+    },
+    {
+      "id": "preset:hepburn-editorial",
+      "name": "Audrey Hepburn · Fashion",
+      "category": "Screen icons",
+      "visualStyle": "Fashion editorial",
+      "aliases": [
+        "奥黛丽赫本"
+      ],
+      "imageUrl": "./avatars/characters/hepburn-editorial.png",
+      "thumbnailUrl": "./avatars/thumbnails/hepburn-editorial.webp"
+    },
+    {
+      "id": "preset:doraemon-cel",
+      "name": "Doraemon · Cel animation",
+      "category": "Cartoons",
+      "visualStyle": "Cel animation",
+      "aliases": [
+        "哆啦A梦",
+        "小叮当"
+      ],
+      "imageUrl": "./avatars/characters/doraemon-cel.png",
+      "thumbnailUrl": "./avatars/thumbnails/doraemon-cel.webp"
+    },
+    {
+      "id": "preset:monkey-king-3d",
+      "name": "Monkey King · 3D",
+      "category": "Chinese classics",
+      "visualStyle": "3D animation",
+      "aliases": [
+        "孙悟空",
+        "齐天大圣"
+      ],
+      "imageUrl": "./avatars/characters/monkey-king-3d.png",
+      "thumbnailUrl": "./avatars/thumbnails/monkey-king-3d.webp"
+    },
+    {
+      "id": "preset:sherlock-clay",
+      "name": "Sherlock Holmes · Clay",
+      "category": "Storybook",
+      "visualStyle": "Clay stop-motion",
+      "aliases": [
+        "福尔摩斯"
+      ],
+      "imageUrl": "./avatars/characters/sherlock-clay.png",
+      "thumbnailUrl": "./avatars/thumbnails/sherlock-clay.webp"
+    },
+    {
+      "id": "preset:totoro-plush",
+      "name": "Totoro · Plush",
+      "category": "Cartoons",
+      "visualStyle": "Plush & felt",
+      "aliases": [
+        "龙猫"
+      ],
+      "imageUrl": "./avatars/characters/totoro-plush.png",
+      "thumbnailUrl": "./avatars/thumbnails/totoro-plush.webp"
+    },
+    {
+      "id": "preset:little-prince-watercolor",
+      "name": "The Little Prince · Watercolor",
+      "imageUrl": "./avatars/characters/little-prince-watercolor.png",
+      "thumbnailUrl": "./avatars/thumbnails/little-prince-watercolor.webp",
+      "aliases": [
+        "小王子"
+      ],
+      "visualStyle": "Watercolor",
+      "category": "Storybook"
+    },
+    {
+      "id": "preset:monkey-king-ink",
+      "name": "Monkey King · Ink",
+      "category": "Chinese classics",
+      "visualStyle": "Chinese ink",
+      "aliases": [
+        "孙悟空",
+        "齐天大圣"
+      ],
+      "imageUrl": "./avatars/characters/monkey-king-ink.png",
+      "thumbnailUrl": "./avatars/thumbnails/monkey-king-ink.webp"
+    },
+    {
+      "id": "preset:athena-oil",
+      "name": "Athena · Oil painting",
+      "category": "Mythology",
+      "visualStyle": "Oil painting",
+      "aliases": [
+        "雅典娜"
+      ],
+      "imageUrl": "./avatars/characters/athena-oil.png",
+      "thumbnailUrl": "./avatars/thumbnails/athena-oil.webp"
+    },
+    {
+      "id": "preset:astro-boy-pixel",
+      "name": "Astro Boy · Pixel art",
+      "category": "Anime",
+      "visualStyle": "Pixel art",
+      "aliases": [
+        "铁臂阿童木"
+      ],
+      "imageUrl": "./avatars/characters/astro-boy-pixel.png",
+      "thumbnailUrl": "./avatars/thumbnails/astro-boy-pixel.webp"
+    },
+    {
       "id": "preset:spongebob",
       "name": "SpongeBob",
       "imageUrl": "./avatars/characters/spongebob.png",

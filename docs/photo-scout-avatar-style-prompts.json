@@ -1,0 +1,107 @@
+{
+  "mode": "built-in imagegen",
+  "items": [
+    {
+      "id": "einstein-documentary",
+      "name": "Albert Einstein · Documentary",
+      "visualStyle": "Photorealistic",
+      "description": "Albert Einstein, candid color documentary photography, realistic elderly face and messy white hair, casual wool cardigan, natural unretouched skin, asymmetric relaxed posture, daylight not polished studio CGI.",
+      "prompt": "Create a single avatar cutout for a travel selfie character library. Subject and exact medium: Albert Einstein, candid color documentary photography, realistic elderly face and messy white hair, casual wool cardigan, natural unretouched skin, asymmetric relaxed posture, daylight not polished studio CGI. Preserve the very distinct specified medium; do not turn all styles into a generic softly shaded digital illustration. Entire body including feet and accessories fully visible, single character centered with generous transparent margins. Transparent background, no landscape, floor, frame, typography, watermark, extra characters. This is one individual selectable avatar asset.",
+      "hint": "Generated images are saved to /Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d as /Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-c57fffe7-4603-4955-b730-555d7bcb5b0c.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link.",
+      "path": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-c57fffe7-4603-4955-b730-555d7bcb5b0c.png"
+    },
+    {
+      "id": "chaplin-silent-film",
+      "name": "Charlie Chaplin · Silent film",
+      "visualStyle": "Black & white",
+      "description": "Charlie Chaplin as the Tramp, authentic black and white silent-era photographic still, silver gelatin grain, bowler hat cane oversize trousers, animated off-balance walking pose, no color, no cartoon.",
+      "prompt": "Create a single avatar cutout for a travel selfie character library. Subject and exact medium: Charlie Chaplin as the Tramp, authentic black and white silent-era photographic still, silver gelatin grain, bowler hat cane oversize trousers, animated off-balance walking pose, no color, no cartoon. Preserve the very distinct specified medium; do not turn all styles into a generic softly shaded digital illustration. Entire body including feet and accessories fully visible, single character centered with generous transparent margins. Transparent background, no landscape, floor, frame, typography, watermark, extra characters. This is one individual selectable avatar asset.",
+      "hint": "Generated images are saved to /Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d as /Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-6398c448-f3ed-4149-ba69-6fa4a16312ad.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link.",
+      "path": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-6398c448-f3ed-4149-ba69-6fa4a16312ad.png"
+    },
+    {
+      "id": "hepburn-editorial",
+      "name": "Audrey Hepburn · Fashion",
+      "visualStyle": "Fashion editorial",
+      "description": "Audrey Hepburn imagined classic fashion editorial photograph, chic modest black dress, silk scarf, elegant three-quarter pose, crisp fashion lighting, analog color film, realistic fine fabric and face.",
+      "prompt": "Create a single avatar cutout for a travel selfie character library. Subject and exact medium: Audrey Hepburn imagined classic fashion editorial photograph, chic modest black dress, silk scarf, elegant three-quarter pose, crisp fashion lighting, analog color film, realistic fine fabric and face. Preserve the very distinct specified medium; do not turn all styles into a generic softly shaded digital illustration. Entire body including feet and accessories fully visible, single character centered with generous transparent margins. Transparent background, no landscape, floor, frame, typography, watermark, extra characters. This is one individual selectable avatar asset.",
+      "hint": "Generated images are saved to /Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d as /Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-58b4a192-4525-4bba-ad17-d67285892f21.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link.",
+      "path": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-58b4a192-4525-4bba-ad17-d67285892f21.png"
+    },
+    {
+      "id": "doraemon-cel",
+      "name": "Doraemon · Cel animation",
+      "visualStyle": "Cel animation",
+      "description": "Doraemon the familiar blue robot cat, classic flat Japanese cel animation, bold black ink contours and limited flat color fills, no gradients, no 3D, laughing lively wave.",
+      "prompt": "Create a single avatar cutout for a travel selfie character library. Subject and exact medium: Doraemon the familiar blue robot cat, classic flat Japanese cel animation, bold black ink contours and limited flat color fills, no gradients, no 3D, laughing lively wave. Preserve the very distinct specified medium; do not turn all styles into a generic softly shaded digital illustration. Entire body including feet and accessories fully visible, single character centered with generous transparent margins. Transparent background, no landscape, floor, frame, typography, watermark, extra characters. This is one individual selectable avatar asset.",
+      "hint": "Generated images are saved to /Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d as /Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-0029cffe-6860-443e-a1bd-97d82e767855.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link.",
+      "path": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-0029cffe-6860-443e-a1bd-97d82e767855.png"
+    },
+    {
+      "id": "monkey-king-3d",
+      "name": "Monkey King · 3D",
+      "visualStyle": "3D animation",
+      "description": "Sun Wukong Monkey King, cinematic stylized 3D animated character, sculpted exaggerated expressive face, glossy gold circlet and armor, silky red cloth, dynamic heroic lean with staff, physically rendered materials, not photoreal human.",
+      "prompt": "Create a single avatar cutout for a travel selfie character library. Subject and exact medium: Sun Wukong Monkey King, cinematic stylized 3D animated character, sculpted exaggerated expressive face, glossy gold circlet and armor, silky red cloth, dynamic heroic lean with staff, physically rendered materials, not photoreal human. Preserve the very distinct specified medium; do not turn all styles into a generic softly shaded digital illustration. Entire body including feet and accessories fully visible, single character centered with generous transparent margins. Transparent background, no landscape, floor, frame, typography, watermark, extra characters. This is one individual selectable avatar asset.",
+      "hint": "Generated images are saved to /Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d as /Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-55a5da14-563c-4b12-afb3-140e4dd95032.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link.",
+      "path": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-55a5da14-563c-4b12-afb3-140e4dd95032.png"
+    },
+    {
+      "id": "sherlock-clay",
+      "name": "Sherlock Holmes · Clay",
+      "visualStyle": "Clay stop-motion",
+      "description": "Sherlock Holmes classic literary detective, handcrafted clay stop motion puppet, unmistakable matte clay textures and fingerprints, tweed sculpted coat deerstalker magnifier, charming exaggerated long head, not realistic human.",
+      "prompt": "Create a single avatar cutout for a travel selfie character library. Subject and exact medium: Sherlock Holmes classic literary detective, handcrafted clay stop motion puppet, unmistakable matte clay textures and fingerprints, tweed sculpted coat deerstalker magnifier, charming exaggerated long head, not realistic human. Preserve the very distinct specified medium; do not turn all styles into a generic softly shaded digital illustration. Entire body including feet and accessories fully visible, single character centered with generous transparent margins. Transparent background, no landscape, floor, frame, typography, watermark, extra characters. This is one individual selectable avatar asset.",
+      "hint": "Generated images are saved to /Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d as /Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-c23a4887-4673-42ce-806f-ee5efd6d47ee.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link.",
+      "path": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-cc6213a9-10df-4ffc-ab0e-408aecff6c5e.png"
+    },
+    {
+      "id": "totoro-plush",
+      "name": "Totoro · Plush",
+      "visualStyle": "Plush & felt",
+      "description": "Totoro gray forest spirit as a handmade wool felt and plush collectible, visible dense fuzzy fibers and stitched small facial details, soft white tummy chevrons, rounded comforting shape, not flat drawing.",
+      "prompt": "Create a single avatar cutout for a travel selfie character library. Subject and exact medium: Totoro gray forest spirit as a handmade wool felt and plush collectible, visible dense fuzzy fibers and stitched small facial details, soft white tummy chevrons, rounded comforting shape, not flat drawing. Preserve the very distinct specified medium; do not turn all styles into a generic softly shaded digital illustration. Entire body including feet and accessories fully visible, single character centered with generous transparent margins. Transparent background, no landscape, floor, frame, typography, watermark, extra characters. This is one individual selectable avatar asset.",
+      "hint": "Generated images are saved to /Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d as /Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-4aa1e1b8-78b0-41c0-83dd-60633e07deb4.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link.",
+      "path": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-4aa1e1b8-78b0-41c0-83dd-60633e07deb4.png"
+    },
+    {
+      "id": "monkey-king-ink",
+      "name": "Monkey King · Ink",
+      "visualStyle": "Chinese ink",
+      "description": "Sun Wukong Monkey King, traditional Chinese ink brush character painting with flowing black calligraphy-like strokes, vermilion and gold accents, visible dry brush textures, expressive sweeping staff pose, no text, no paper background.",
+      "prompt": "Create a single avatar cutout for a travel selfie character library. Subject and exact medium: Sun Wukong Monkey King, traditional Chinese ink brush character painting with flowing black calligraphy-like strokes, vermilion and gold accents, visible dry brush textures, expressive sweeping staff pose, no text, no paper background. Preserve the very distinct specified medium; do not turn all styles into a generic softly shaded digital illustration. Entire body including feet and accessories fully visible, single character centered with generous transparent margins. Transparent background, no landscape, floor, frame, typography, watermark, extra characters. This is one individual selectable avatar asset.",
+      "hint": "Generated images are saved to /Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d as /Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-96602108-0bc0-4faf-8f09-e38e6652540e.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link.",
+      "path": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-96602108-0bc0-4faf-8f09-e38e6652540e.png"
+    },
+    {
+      "id": "athena-oil",
+      "name": "Athena · Oil painting",
+      "visualStyle": "Oil painting",
+      "description": "Athena Greek goddess, classical oil-painted figure wearing modest flowing ivory robe bronze helmet holding round shield, rich visible impasto brushwork and chiaroscuro, dignified contrapposto, painterly edges, not CGI or photograph.",
+      "prompt": "Create a single avatar cutout for a travel selfie character library. Subject and exact medium: Athena Greek goddess, classical oil-painted figure wearing modest flowing ivory robe bronze helmet holding round shield, rich visible impasto brushwork and chiaroscuro, dignified contrapposto, painterly edges, not CGI or photograph. Preserve the very distinct specified medium; do not turn all styles into a generic softly shaded digital illustration. Entire body including feet and accessories fully visible, single character centered with generous transparent margins. Transparent background, no landscape, floor, frame, typography, watermark, extra characters. This is one individual selectable avatar asset.",
+      "hint": "Generated images are saved to /Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d as /Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-058f5f25-6586-4827-b59d-6b2756547020.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link.",
+      "path": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-058f5f25-6586-4827-b59d-6b2756547020.png"
+    },
+    {
+      "id": "astro-boy-pixel",
+      "name": "Astro Boy · Pixel art",
+      "visualStyle": "Pixel art",
+      "description": "Astro Boy recognizable robot cartoon boy wearing his familiar black shorts and red boots, authentic retro video game pixel sprite aesthetic, sharp square pixels, restricted 16 color palette, no smooth gradients no vector contours, upbeat standing pose.",
+      "prompt": "Create a single avatar cutout for a travel selfie character library. Subject and exact medium: Astro Boy recognizable robot cartoon boy wearing his familiar black shorts and red boots, authentic retro video game pixel sprite aesthetic, sharp square pixels, restricted 16 color palette, no smooth gradients no vector contours, upbeat standing pose. Preserve the very distinct specified medium; do not turn all styles into a generic softly shaded digital illustration. Entire body including feet and accessories fully visible, single character centered with generous transparent margins. Transparent background, no landscape, floor, frame, typography, watermark, extra characters. This is one individual selectable avatar asset.",
+      "hint": "Generated images are saved to /Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d as /Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-b428ef90-fd56-4036-8cbb-b35ccf4c0abb.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link.",
+      "path": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-b428ef90-fd56-4036-8cbb-b35ccf4c0abb.png"
+    },
+    {
+      "id": "little-prince-watercolor",
+      "name": "The Little Prince · Watercolor",
+      "visualStyle": "Watercolor",
+      "description": "The Little Prince, beloved storybook young space traveler, modest green coat gold buttons blond hair long yellow scarf, hand painted storybook watercolor washes with expressive thin ink outlines, translucent pigment blooms and dry brush texture. Whole body, shoes visible. Keep loose handmade watercolor rather than polished 3D.",
+      "prompt": "One single transparent avatar cutout for a travel selfie library. The Little Prince, beloved storybook young space traveler, modest green coat gold buttons blond hair long yellow scarf, hand painted storybook watercolor washes with expressive thin ink outlines, translucent pigment blooms and dry brush texture. Whole body, shoes visible. Keep loose handmade watercolor rather than polished 3D. Single recognizable figure centered with generous transparent margin. No text, backdrop, ground, shadow, watermark or additional figures.",
+      "path": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-0e38cc9d-7c57-4b01-8a6d-f54895e46f91.png"
+    }
+  ],
+  "backgroundRepair": {
+    "id": "sherlock-clay",
+    "instruction": "Remove only the brown backdrop and glow; preserve the puppet and its held magnifying glass unchanged."
+  }
+}
