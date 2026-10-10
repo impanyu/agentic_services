@@ -24,6 +24,8 @@ aisoup.net, www.aisoup.net {
 
 	handle_path /photo-scout/* {
 		root * /mnt/disks/agentic-services/app/photo-scout-site
+		@photo_scout_html path / /index.html /*.html
+		header @photo_scout_html Cache-Control "no-cache, must-revalidate"
 		encode zstd gzip
 		header {
 			Strict-Transport-Security "max-age=31536000; includeSubDomains"
