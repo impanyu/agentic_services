@@ -1,6 +1,6 @@
 """Typed, deterministic location search tool shared by all Photo Scout callers.
 
-The text model extracts parameters; it never chooses merge semantics. Spatial
+The text model extracts parameters and condition operators; deterministic code chooses provider merge semantics. Spatial
 constraints filter locations, while photographic requirements remain available
 to the downstream image evaluator.
 """
@@ -28,6 +28,8 @@ class SearchParameters(BaseModel):
     radius: int = Field(default=5000, ge=100, le=20000)
     poiQueries: list[str] = Field(default_factory=list, max_length=4)
     geographicKinds: list[GeographicKind] = Field(default_factory=list, max_length=6)
+    geographicCombination: Literal['all','any'] = 'all'
+    featureCombination: Literal['all','any'] = 'all'
     osmFeatures: list[OSMFeatureQuery] = Field(default_factory=list,max_length=6)
     photoStyles: list[str] | None = Field(default=None, max_length=8)
     categories: list[str] | None = Field(default=None, max_length=8)
@@ -57,7 +59,8 @@ class SearchPlan(BaseModel):
     candidateLimit: int = 50
     dedupDistanceMeters: int = 50
     geographicProximityMeters: dict[str, int]
-    geographicCombination: Literal['all'] = 'all'
+    geographicCombination: Literal['all','any'] = 'all'
+    featureCombination: Literal['all','any'] = 'all'
     geographicSamplingSpacingMeters: int | None = None
     spatialSampleShare: float = 0
 
@@ -86,6 +89,7 @@ def compile_search(parameters: SearchParameters) -> SearchPlan:
     return SearchPlan(parameters=parameters,placesQueries=queries,placesRole='not-requested' if not queries else 'target' if explicit else 'discovery-hints',
         geographicKinds=kinds,mergeStrategy=strategy,rawPlacesLimit=60 if kinds or parameters.osmFeatures else 50,
         geographicProximityMeters={k:PROXIMITY[k] for k in kinds},
+        geographicCombination=parameters.geographicCombination,featureCombination=parameters.featureCombination,
         geographicSamplingSpacingMeters=75 if kinds else None,spatialSampleShare=.8 if strategy=='spatial-union' else 0)
 
 
@@ -168,15 +172,15 @@ async def search_locations(parameters: SearchParameters, *, database_path: Path,
     if plan.geographicKinds:
         if geo_status['status']!='ok':
             raise SearchUnavailable('Geographic search is temporarily unavailable; please try again later')
-        named_places=filter_places(named_places,features,plan.geographicKinds,parameters.lat,parameters.lon)
+        named_places=filter_places(named_places,features,plan.geographicKinds,parameters.lat,parameters.lon,combination=parameters.geographicCombination)
     if parameters.osmFeatures:
         if feature_status['status']!='ok':raise SearchUnavailable('OSM feature search is temporarily unavailable; please try again later')
-        named_places=[p for p in named_places if matches_features(p,feature_groups,parameters.osmFeatures)]
-    generated=geographic_places(parameters.lat,parameters.lon,parameters.radius,features,paths,plan.geographicKinds,limit=plan.candidateLimit) if plan.mergeStrategy=='spatial-union' else []
+        named_places=[p for p in named_places if matches_features(p,feature_groups,parameters.osmFeatures,combination=parameters.featureCombination)]
+    generated=geographic_places(parameters.lat,parameters.lon,parameters.radius,features,paths,plan.geographicKinds,limit=plan.candidateLimit,combination=parameters.geographicCombination) if plan.mergeStrategy=='spatial-union' else []
     geographic_generated=len(generated)
     if parameters.osmFeatures and not (parameters.poiQueries or parameters.categories):
-        generated=[p for group in feature_groups for p in group if matches_features(p,feature_groups,parameters.osmFeatures)]
-        if plan.geographicKinds:generated=filter_places(generated,features,plan.geographicKinds,parameters.lat,parameters.lon)
+        generated=[p for group in feature_groups for p in group if matches_features(p,feature_groups,parameters.osmFeatures,combination=parameters.featureCombination)]
+        if plan.geographicKinds:generated=filter_places(generated,features,plan.geographicKinds,parameters.lat,parameters.lon,combination=parameters.geographicCombination)
     if named_status['status'] not in ('ok','not_requested') and not generated:
         raise SearchUnavailable('Nearby place search is temporarily unavailable; please try again later')
     places=merge_candidates(named_places,generated,plan)

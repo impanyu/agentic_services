@@ -107,3 +107,16 @@ def test_legacy_count_does_not_reach_interpretation_model(monkeypatch):
     payload=intent.IntentRequest(query='architecture',lat=40,lon=-96,radius=20000,limit=3)
     result=asyncio.run(intent.resolve_intent(SimpleNamespace(openai_api_key='fixture',openai_model='test'),payload))
     assert seen and 'limit' not in result and result['radiusMeters']==1000
+
+
+def test_logic_is_preserved_from_parser_to_shared_search_plan(monkeypatch):
+    async def parsed(settings,payload):
+        return plan(photoStyles=[],poiQueries=['coffee shops'],geographicKinds=['lake','sea'],
+                    geographicCombination='any',featureCombination='any',
+                    scoringIntent='Coffee shops beside either a lake or the sea, without crowds')
+    monkeypatch.setattr(intent,'parse_intent',parsed)
+    result=asyncio.run(intent.resolve_intent(None,intent.IntentRequest(query='cafes by lake or sea',lat=0,lon=0)))
+    assert result['searchParameters']['geographicCombination']=='any'
+    assert result['searchPlan']['geographicCombination']=='any'
+    assert result['searchPlan']['mergeStrategy']=='spatial-intersection'
+    assert 'without crowds' in result['scoringIntent']

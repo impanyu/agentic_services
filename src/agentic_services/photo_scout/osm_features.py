@@ -128,6 +128,6 @@ async def fetch_features(lat,lon,radius,queries,database_path):
     except (httpx.HTTPError,ValueError,TimeoutError):
         return [],{'status':'unavailable','provider':'openstreetmap-features'}
 
-def matches_features(place,groups,queries):
+def matches_features(place,groups,queries,combination="all"):
     # Multiple feature requirements are AND, while matches within each group are OR.
-    return all(any(distance((place['lat'],place['lon']),(p['lat'],p['lon']))<=q.proximityMeters for p in group) for group,q in zip(groups,queries)) and len(groups)==len(queries)
+    return (any if combination=="any" else all)(any(distance((place['lat'],place['lon']),(p['lat'],p['lon']))<=q.proximityMeters for p in group) for group,q in zip(groups,queries)) and len(groups)==len(queries)

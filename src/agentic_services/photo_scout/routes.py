@@ -46,6 +46,8 @@ class ExploreRequest(BaseModel):
     photoStyles: list[Literal['nature','urban','vintage','iconic','artistic','waterside','minimal','adventure']] | None = Field(default=None,min_length=1,max_length=8)
     categories: list[Literal['viewpoint','park','attraction','museum','artwork','historic','nature','recreation','cafe','restaurant','bar','shop']] | None = Field(default=None,min_length=1,max_length=8)
     poiQueries: list[PoiQuery] = Field(default_factory=list,max_length=4)
+    geographicCombination: Literal['all','any'] = 'all'
+    featureCombination: Literal['all','any'] = 'all'
     osmFeatures: list[OSMFeatureQuery] = Field(default_factory=list,max_length=6)
     geographicKinds: list[GeographicKind] = Field(default_factory=list,max_length=6)
     scoringIntent: str = Field(default="",max_length=1000)
@@ -212,7 +214,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
 
     def sign_catalog(payload,pois,status):
         if not settings.service_api_key: raise HTTPException(503,'Private gateway credential is required')
-        data={'lat':payload.lat,'lon':payload.lon,'radius':payload.radius,'categories':sorted(set(payload.poi_categories())) if payload.poi_categories() is not None else None,'photoStyles':sorted(set(payload.photoStyles)) if payload.photoStyles is not None else None,'poiQueries':payload.poiQueries,'osmFeatures':[q.model_dump() for q in payload.osmFeatures],'geographicKinds':geographic_kinds(payload),'expires':int(time.time())+3600,'pois':pois,'status':status}
+        data={'lat':payload.lat,'lon':payload.lon,'radius':payload.radius,'categories':sorted(set(payload.poi_categories())) if payload.poi_categories() is not None else None,'photoStyles':sorted(set(payload.photoStyles)) if payload.photoStyles is not None else None,'poiQueries':payload.poiQueries,'osmFeatures':[q.model_dump() for q in payload.osmFeatures],'geographicKinds':geographic_kinds(payload),'geographicCombination':payload.geographicCombination,'featureCombination':payload.featureCombination,'expires':int(time.time())+3600,'pois':pois,'status':status}
         encoded=base64.urlsafe_b64encode(json.dumps(data,separators=(',',':')).encode()).decode().rstrip('=')
         signature=hmac.new(settings.service_api_key.encode(),('poi-catalog:'+encoded).encode(),hashlib.sha256).hexdigest()
         return encoded+'.'+signature
@@ -235,6 +237,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
             if data.get('poiQueries',[])!=payload.poiQueries:raise ValueError()
             if data.get('osmFeatures',[])!=[q.model_dump() for q in payload.osmFeatures]:raise ValueError()
             if data.get('geographicKinds',[])!=geographic_kinds(payload):raise ValueError()
+            if any(data.get(k,'all')!=getattr(payload,k) for k in ('geographicCombination','featureCombination')):raise ValueError()
             wanted=set(payload.selectedPoiIds)
             pois=[p for p in data['pois'] if p['id'] in wanted]
             if len(pois)!=len(wanted): raise ValueError()
@@ -259,7 +262,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
         rows,statuses=await candidates(payload.lat,payload.lon,payload.radius,pois,**({'visual_exploration':True} if visual else {}))
         features=poi_status.pop('_features',[])
         if geographic_kinds(payload):
-            eligible=filter_places(rows,features,geographic_kinds(payload),payload.lat,payload.lon)
+            eligible=filter_places(rows,features,geographic_kinds(payload),payload.lat,payload.lon,combination=payload.geographicCombination)
             for name,status in statuses.items():
                 status['geographicallyExcludedImages']=sum(r['provider']==name for r in rows)-sum(r['provider']==name for r in eligible)
                 status['sampledImages']=sum(r['provider']==name for r in eligible)
@@ -354,7 +357,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
                 payload=ExploreRequest.model_validate({**payload.model_dump(), 'query':'', 'lat':location['lat'], 'lon':location['lon'],
                     'radius':plan['radiusMeters'], 'photoStyles':plan['photoStyles'] or None, 'preferences':plan['preferences'],
                     'poiQueries':plan.get('poiQueries') or [], 'scoringIntent':plan.get('scoringIntent') or plan['preferences'],
-                    'geographicKinds':plan.get('geographicKinds') or [], 'osmFeatures':plan.get('osmFeatures') or [], 'categories':None,'selectedPoiIds':None,'poiCatalogToken':None})
+                    'geographicKinds':plan.get('geographicKinds') or [], 'osmFeatures':plan.get('osmFeatures') or [], 'geographicCombination':plan.get('geographicCombination','all'),'featureCombination':plan.get('featureCombination','all'), 'categories':None,'selectedPoiIds':None,'poiCatalogToken':None})
             retrieval_started=time.monotonic()
             rows,statuses,pois=await catalog(payload,allow_expired)
             retrieval_seconds=time.monotonic()-retrieval_started
@@ -495,7 +498,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
                 # only this query plus the visible current controls are defaults.
                 plan=await resolve_intent(settings,IntentRequest(query=submitted.query,lat=submitted.lat,lon=submitted.lon,radius=submitted.radius,photoStyles=submitted.photoStyles or [],preferences=''))
                 place=plan['locations'][0]
-                values.update(lat=place['lat'],lon=place['lon'],radius=plan['radiusMeters'],photoStyles=plan['photoStyles'] or None,preferences=plan['preferences'],scoringIntent=plan.get('scoringIntent') or plan['preferences'],categories=None,poiQueries=plan.get('poiQueries') or [],geographicKinds=plan.get('geographicKinds') or [],osmFeatures=plan.get('osmFeatures') or [],selectedPoiIds=None,poiCatalogToken=None)
+                values.update(lat=place['lat'],lon=place['lon'],radius=plan['radiusMeters'],photoStyles=plan['photoStyles'] or None,preferences=plan['preferences'],scoringIntent=plan.get('scoringIntent') or plan['preferences'],categories=None,poiQueries=plan.get('poiQueries') or [],geographicKinds=plan.get('geographicKinds') or [],osmFeatures=plan.get('osmFeatures') or [],geographicCombination=plan.get('geographicCombination','all'),featureCombination=plan.get('featureCombination','all'),selectedPoiIds=None,poiCatalogToken=None)
                 context['locationLabel']=place['label'];context['explanation']=plan['explanation']
             payload=ExploreRequest.model_validate(values)
             context.update(payload.model_dump(exclude={'query'}));context['query']=submitted.query

@@ -153,21 +153,24 @@ def areas(features,kinds,region):
             by_kind[kind].append(target.buffer(PROXIMITY[kind]) if PROXIMITY[kind] else target)
     return {k:unary_union(v) for k,v in by_kind.items()}
 
-def matches_position(lat,lon,features,kinds,region=None):
+def matches_position(lat,lon,features,kinds,region=None,combination="all"):
     region=region or Region(lat,lon)
     p=region.project(Point(lon,lat))
-    return all(g.covers(p) for g in areas(features,kinds,region).values())
+    return (any if combination=="any" else all)(g.covers(p) for g in areas(features,kinds,region).values())
 
-def filter_places(pois,features,kinds,lat,lon):
+def filter_places(pois,features,kinds,lat,lon,combination="all"):
     region=Region(lat,lon);constraints=areas(features,kinds,region)
-    return [p for p in pois if all(g.covers(region.project(Point(p['lon'],p['lat']))) for g in constraints.values())]
+    return [p for p in pois if (any if combination=="any" else all)(g.covers(region.project(Point(p['lon'],p['lat']))) for g in constraints.values())]
 
-def geographic_places(lat,lon,radius,features,paths,kinds,limit=MAX_PLACES):
+def geographic_places(lat,lon,radius,features,paths,kinds,limit=MAX_PLACES,combination="all"):
     """Sample feature-adjacent paths, then distribute candidates spatially."""
     region=Region(lat,lon);constraints=areas(features,kinds,region)
-    if not constraints or any(g.is_empty for g in constraints.values()):return []
+    if not constraints:return []
+    if combination=="all" and any(g.is_empty for g in constraints.values()):return []
     allowed=Point(0,0).buffer(radius)
-    for g in constraints.values():allowed=allowed.intersection(g)
+    if combination=="any":allowed=allowed.intersection(unary_union(list(constraints.values())))
+    else:
+        for g in constraints.values():allowed=allowed.intersection(g)
     choices=[];cells=set()
     def collect(line,path):
         if line.is_empty:return

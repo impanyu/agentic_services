@@ -77,3 +77,13 @@ Intersection discovery derives junctions from shared OSM road-node IDs with at l
 OSM features, Places and natural geometry are fetched concurrently. Multiple feature groups are AND proximity constraints; matches within a group are OR. With an explicit POI request, nearby feature matches filter those POIs. Otherwise mapped features themselves become imagery targets. Natural geographic constraints still apply. Required OSM failures are reported explicitly. Street View/scoring remains the visual confirmation, not a guarantee of visibility, access or a safe standing point.
 
 Successful OSM queries are cached for 24 hours. Overpass output is bounded to 1,200 tagged objects or 1,800 road ways per selector, then 120 nearest candidates per feature group and 50 final locations. Large/poorly mapped areas are not exhaustively covered. Returned `osmFeatureSearch`, `osmFeatureCandidates`, `searchPlan`, tags and unknown attributes expose this distinction. The website and HTTP/MCP Agent interfaces carry the same field; it is included in scoring and cache identity.
+
+### Logical relationships
+
+`poiQueries` are alternative complete target descriptions (OR). Attributes of one target stay in the same query, e.g. `vegan coffee shops`. Explicit targets remain constrained by their environments; provider union is not permission to return unrelated shoreline points for a cafe query.
+
+`geographicCombination` and `featureCombination` accept `all` (AND, default for existing callers) or `any` (OR). Geographic constraints and mapped-feature constraints are applied to the target with AND. The same geographic operator filters retrieved panorama locations, and both operators are sent to pixel matching and included in score-cache keys. Signed POI catalogs bind the operators, too.
+
+Examples: cafes near a lake OR the sea => coffee-shop target, lake/sea, geographicCombination=any; lake AND forest => both geographic constraints, all; benches OR fountains => two feature queries, featureCombination=any. Negations and visual predicates remain explicitly grouped in scoringIntent for image verification, not positive geometry queries.
+
+This is a flat grouped predicate model, not an arbitrary Boolean AST. Mixed nested expressions should retrieve a broad superset and retain their exact grouping for visual verification. Exclusions are checked visually rather than guaranteed by geometry subtraction.

@@ -32,8 +32,10 @@ const osmFeatureSchema={type:'object',additionalProperties:false,required:['labe
 const photoArguments={
   query:z.string().max(1000).optional().describe('Natural-language request. Explicit text overrides conflicting structured parameters.'),
   poiQueries:z.array(z.string().min(1).max(200)).max(4).optional().describe('Arbitrary POI categories or business names, e.g. coffee shops.'),
-  osmFeatures:z.array(osmFeature).max(6).optional().describe('OSM physical features and attributes; simultaneous nearby requirements. Tagged features use exact/existence filters; intersections use road topology.'),
-  geographicKinds:z.array(z.enum(geographicKinds)).max(6).optional().describe('Spatial requirements; multiple entries must all hold.'),
+  osmFeatures:z.array(osmFeature).max(6).optional().describe('OSM physical features and attributes; combined using featureCombination. Tagged features use exact/existence filters; intersections use road topology.'),
+  geographicCombination:z.enum(['all','any']).optional().describe('AND/all or OR/any across geographic requirements; default all.'),
+  featureCombination:z.enum(['all','any']).optional().describe('AND/all or OR/any across OSM feature requirements; default all.'),
+  geographicKinds:z.array(z.enum(geographicKinds)).max(6).optional().describe('Spatial requirements; combination is controlled by geographicCombination.'),
   scoringIntent:z.string().max(1000).optional().describe('Visual subject, style and requirements for matching and scoring.'),
   lat:z.number().min(-85).max(85).describe('Latitude of the search center.'),
   lon:z.number().min(-180).max(180).describe('Longitude of the search center.'),
@@ -45,6 +47,7 @@ const photoArguments={
 export const photoInputSchema={type:'object',additionalProperties:false,required:['lat','lon'],properties:{
  query:{type:'string',maxLength:1000},poiQueries:{type:'array',maxItems:4,items:{type:'string',minLength:1,maxLength:200}},
  osmFeatures:{type:'array',maxItems:6,items:osmFeatureSchema},
+ geographicCombination:{enum:['all','any'],default:'all'},featureCombination:{enum:['all','any'],default:'all'},
  geographicKinds:{type:'array',maxItems:6,items:{enum:geographicKinds}},scoringIntent:{type:'string',maxLength:1000},
  lat:{type:'number',minimum:-85,maximum:85},lon:{type:'number',minimum:-180,maximum:180},
  radius:{type:'integer',minimum:100,maximum:20000,default:1000},limit:{type:'integer',minimum:1,maximum:5,default:3},

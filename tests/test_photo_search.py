@@ -147,3 +147,40 @@ def test_fifty_candidates_prioritize_spatial_coverage_for_geography_only():
     generated=[{'id':f'g{i}','lat':0,'lon':i*.001} for i in range(50)]
     rows=merge_candidates(named,generated,plan)
     assert len(rows)==50 and sum(p['id'].startswith('g') for p in rows)==40
+
+@pytest.mark.parametrize('combination,expected',[('all',[]),('any',['shore'])])
+def test_cafes_near_lake_or_sea_preserve_subject_and_spatial_logic(combination,expected):
+    async def places(*args,**kwargs):
+        return [{'id':'shore','lat':0,'lon':-.005},{'id':'inland','lat':0,'lon':-.02}],{'status':'ok'}
+    async def geography(*args):return [lake()],[],{'status':'ok'}
+    result=asyncio.run(search_locations(SearchParameters(lat=0,lon=0,radius=3000,
+        poiQueries=['coffee shops'],geographicKinds=['lake','sea'],geographicCombination=combination),
+        database_path=Path('/unused'),providers=SearchProviders(places,None,geography)))
+    assert [p['id'] for p in result.places]==expected
+    assert result.plan.mergeStrategy=='spatial-intersection'
+    assert result.plan.geographicCombination==combination
+    assert result.status['searchCounts']['generatedGeographicPlaces']==0
+
+
+def test_alternative_geographic_scenery_samples_available_shore_even_if_other_kind_absent():
+    from agentic_services.photo_scout.geography import geographic_places,filter_places
+    paths=[{'id':'trail','name':'Trail','geometry':{'type':'LineString','coordinates':[[-.005,-.003],[-.005,.003]]}}]
+    assert not geographic_places(0,0,2000,[lake()],paths,['lake','sea'])
+    rows=geographic_places(0,0,2000,[lake()],paths,['lake','sea'],combination='any')
+    assert len(rows)>1
+    assert filter_places(rows,[lake()],['lake','sea'],0,0,combination='any')==rows
+    assert not filter_places(rows,[lake()],['lake','sea'],0,0,combination='all')
+
+
+def test_alternative_mapped_features_and_score_cache_do_not_collapse_to_and(tmp_path):
+    from agentic_services.photo_scout.osm_features import OSMFeatureQuery,matches_features
+    from agentic_services.photo_scout.score_cache import ScoreCache
+    from agentic_services.photo_scout.routes import ExploreRequest
+    qs=[OSMFeatureQuery(label=x,filters=[{'key':'amenity','value':x}]) for x in ['bench','fountain']]
+    place={'id':'bench','lat':0,'lon':0}
+    assert matches_features(place,[[place],[]],qs,combination='any')
+    assert not matches_features(place,[[place],[]],qs,combination='all')
+    assert not matches_features(place,[[place]],qs,combination='any')
+    a=ExploreRequest(lat=0,lon=0,osmFeatures=qs,featureCombination='all')
+    b=a.model_copy(update={'featureCombination':'any'})
+    assert ScoreCache.key(place,a,'model','prompt')!=ScoreCache.key(place,b,'model','prompt')
