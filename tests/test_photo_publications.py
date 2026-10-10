@@ -194,3 +194,23 @@ def test_signed_in_camera_edit_requires_csrf_and_preserves_account_history(publi
         # Pre-task account histories can also save their owned view.
         db.execute("DELETE FROM photo_task_owners WHERE job='search'")
     assert client.post('/photo-scout/v1/poi-view',json={**payload,'fov':60},headers={'X-CSRF-Token':'csrf'}).status_code==200
+
+
+def test_selfie_framing_is_saved_separately_from_place_and_public_snapshots(publication_env):
+    settings,app,client=publication_env
+    public_id=client.post('/photo-scout/v1/publications',json={'kind':'search','id':'search'}).json()['id']
+    payload={'searchId':'search','poiId':'poi1','heading':210,'pitch':10,'fov':45,'scope':'selfie','framing':'45'}
+    assert client.post('/photo-scout/v1/poi-view',json=payload).status_code==200
+    restarted=TestClient(create_app(settings=settings),base_url='https://api.test',headers={'Authorization':'Bearer private'})
+    restarted.cookies.set(GUEST_COOKIE,client.cookies.get(GUEST_COOKIE))
+    result=restarted.get('/photo-scout/v1/report/search').json()['result']
+    assert result['spots'][0]['viewHeadingDegrees']==90
+    draft=result['selfieViews']['poi1']
+    assert (draft['viewHeadingDegrees'],draft['viewPitchDegrees'],draft['viewFovDegrees'],draft['framing'])==(210,10,45,'45')
+    snapshot=TestClient(app).get('/photo-scout/v1/publications/'+public_id).json()['result']
+    assert snapshot['spots'][0]['viewHeadingDegrees']==90 and 'selfieViews' not in snapshot
+    # Later parent edits must not overwrite the independent selfie draft.
+    assert client.post('/photo-scout/v1/poi-view',json={**payload,'scope':'place','heading':180,'fov':90}).status_code==200
+    result=restarted.get('/photo-scout/v1/report/search').json()['result']
+    assert result['spots'][0]['viewHeadingDegrees']==180
+    assert result['selfieViews']['poi1']['viewHeadingDegrees']==210

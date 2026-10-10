@@ -52,6 +52,8 @@ class HiddenPoiRequest(BaseModel):
     hidden: bool = True
 
 class PoiViewRequest(BaseModel):
+    scope: Literal['place','selfie'] = 'place'
+    framing: Literal['auto','current','90','60','45'] = 'current'
     searchId: str = Field(min_length=1,max_length=80)
     poiId: str = Field(min_length=1,max_length=500)
     heading: float = Field(ge=0,lt=360,allow_inf_nan=False)
@@ -200,6 +202,8 @@ def create_tasks_router(settings,require_api):
             if user:
                 session=db.execute('SELECT csrf FROM photo_sessions WHERE hash=? AND expires>?',(digest(request.cookies.get(ACCOUNT_COOKIE,'')),time.time())).fetchone()
                 if not session or not hmac.compare_digest(request.headers.get('x-csrf-token',''),session['csrf']):raise HTTPException(403,'Invalid account request')
+            # Serialize result read-modify-write across places and the independent selfie scope.
+            db.execute('BEGIN IMMEDIATE')
             allowed=store.allowed('search',payload.searchId,request)
             legacy=db.execute('SELECT record FROM photo_account_history WHERE user_id=? AND id=?',(user,payload.searchId)).fetchone() if user else None
             if not allowed and not legacy:raise HTTPException(404,'Search history unavailable')
@@ -219,11 +223,16 @@ def create_tasks_router(settings,require_api):
                 for field in ('poiResults','spots'):
                     for spot in result.get(field,[]):
                         if poi_key(spot)==payload.poiId and spot.get('provider')=='google-street-view':spot.update(override)
-            update(result)
+            if payload.scope=='selfie':
+                override['framing']=payload.framing
+                result.setdefault('selfieViews',{})[payload.poiId]=override
+            else:update(result)
             if row:db.execute('UPDATE photo_scout_jobs SET result=? WHERE id=?',(json.dumps(result),payload.searchId))
             if record:
-                update(record['result']);db.execute('UPDATE photo_account_history SET record=? WHERE user_id=? AND id=?',(json.dumps(record),user,payload.searchId))
-            if db.execute("SELECT 1 FROM sqlite_master WHERE name='photo_publications'").fetchone():
+                if payload.scope=='selfie':record['result'].setdefault('selfieViews',{})[payload.poiId]=override
+                else:update(record['result'])
+                db.execute('UPDATE photo_account_history SET record=? WHERE user_id=? AND id=?',(json.dumps(record),user,payload.searchId))
+            if payload.scope=='place' and db.execute("SELECT 1 FROM sqlite_master WHERE name='photo_publications'").fetchone():
                 for published in db.execute("SELECT id,snapshot FROM photo_publications WHERE owner=? AND source=? AND kind IN ('search','place')",(owner,payload.searchId)).fetchall():
                     snapshot=json.loads(published['snapshot']);update(snapshot.get('result',{}))
                     db.execute('UPDATE photo_publications SET snapshot=? WHERE id=?',(json.dumps(snapshot),published['id']))

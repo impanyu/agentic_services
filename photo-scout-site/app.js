@@ -216,16 +216,16 @@ function popupViewControls(spot){
  caption.title='Use arrow keys to choose a view. Score refers to the original reviewed angle.';
  box.append(caption,node('p','Drag to look · ← → turn · ↑ ↓ tilt · + / − zoom','poi-view-hint'));return box;
 }
-const cameraSaves=new Map(),cameraRefreshes=new Map();
+const cameraSaves=new Map(),cameraRefreshes=new Map(),selfieViewOverrides=new Map();
 function ownedViewSearchId(searchId){
  if(!searchId)return null;if(!searchId.startsWith('public:'))return searchId;
  return [...ownPublications.values()].find(p=>p.id===searchId.slice(7))?.sourceId||null;
 }
-function queueCameraSave(searchId,spot,view){
+function queueCameraSave(searchId,spot,view,scope='place',framing='current'){
  const ownerId=ownedViewSearchId(searchId);if(!ownerId)return;
- const key=ownerId+':'+poiHistoryKey(spot);let state=cameraSaves.get(key);
+ const key=ownerId+':'+scope+':'+poiHistoryKey(spot);let state=cameraSaves.get(key);
  if(!state){state={running:false,timer:null,payload:null};cameraSaves.set(key,state);}
- state.payload={searchId:ownerId,poiId:poiHistoryKey(spot),...view};clearTimeout(state.timer);
+ state.payload={searchId:ownerId,poiId:poiHistoryKey(spot),scope,framing,...view};clearTimeout(state.timer);
  state.timer=setTimeout(()=>flushCameraSave(state),650);
 }
 async function flushCameraSave(state){
@@ -235,6 +235,17 @@ async function flushCameraSave(state){
  finally{state.running=false;}
 }
 window.addEventListener('pagehide',()=>{for(const state of cameraSaves.values()){clearTimeout(state.timer);flushCameraSave(state);}});
+function savedSelfieView(searchId,spot){
+ const id=ownedViewSearchId(searchId)||searchId,key=poiHistoryKey(spot);
+ return selfieViewOverrides.get(id+':'+key)||searchHistory.find(h=>h.id===id)?.result.selfieViews?.[key];
+}
+function applyStudioView(view,framing='current'){
+ applyStreetView(studioSpot,view,null);
+ const id=ownedViewSearchId(studioSearchId)||studioSearchId;
+ const override={sourceUrl:studioSpot.sourceUrl,viewHeadingDegrees:view.heading,viewPitchDegrees:view.pitch,viewFovDegrees:view.fov,viewAdjusted:true,imageUrl:null,streetViewReference:null,framing};
+ if(id){const key=poiHistoryKey(studioSpot);selfieViewOverrides.set(id+':'+key,override);const h=searchHistory.find(h=>h.id===id);if(h){h.result.selfieViews??={};h.result.selfieViews[key]=override;}}
+ queueCameraSave(studioSearchId,studioSpot,view,'selfie',framing);
+}
 function applyStreetView(spot,view,searchId){
  const url=new URL(spot.sourceUrl);for(const [key,value] of Object.entries(view))url.searchParams.set(key,value);
  const override={sourceUrl:url.toString(),viewHeadingDegrees:view.heading,viewPitchDegrees:view.pitch,viewFovDegrees:view.fov,viewAdjusted:true,imageUrl:null,streetViewReference:null};Object.assign(spot,override);
@@ -554,14 +565,14 @@ function resetStudioInputForPlace(spot){
  studioInputPlaceKey=key;studioUploadGeneration++;studioFile=null;studioPrepared=null;studioUpload.value='';personPreview.hidden=true;personPreview.removeAttribute('src');studioGenerate.disabled=true;
  if(studioPreviewUrl){URL.revokeObjectURL(studioPreviewUrl);studioPreviewUrl=null;}
 }
-function openPhotoStudio(spot,searchId=null){if(!studioBusy){studioSearchId=searchId;spot={...spot,...poiViewOverrides.get(searchId+':'+poiHistoryKey(spot))};}focusMapSpot(spot,{openPopup:false});if(savedPhoto.open)savedPhoto.close();if(portraitProgress.open)portraitProgress.close();if(studioBusy){studio.showModal();return;}if(!studioBusy){if(!taskRecords.some(t=>t.kind==='portrait'&&['queued','checking','running'].includes(t.state)))studioTask.hidden=true;resetStudioInputForPlace(spot);studioSpot={...spot};studioFraming.value=spot.viewAdjusted?'current':'auto';studioAdjustedView=spot.provider==='google-street-view'?window.PhotoScoutStreetView.view(studioSpot):null;if(studioAdjustedView&&!spot.viewAdjusted)applyStreetView(studioSpot,{...studioAdjustedView,fov:90},null);studioSceneView.streetViewSearchId=studioSearchId;studioSceneView.streetViewController?.reset();studioFraming.disabled=spot.provider!=='google-street-view';studioFraming.parentElement.hidden=spot.provider!=='google-street-view';updateStudioFramingHint();studioPlace.textContent=spot.name+(photoBearing(spot).heading!=null?' · '+photoBearing(spot).label:'');scenePreview.removeAttribute('src');if(spot.provider==='google-street-view')refreshThumbnail(scenePreview,studioSpot);else if(spot.imageUrl)scenePreview.src=spot.imageUrl;studioStatus.textContent='Upload a clear image of a person, cartoon character or animal. Groups are welcome; a clearly visible subject works best.';clearStudioOutput();studioGenerate.disabled=!studioPrepared;}syncStudioProgress();studio.showModal();if(window.PhotoScoutNativeStreetView)activateNativeStreetView(studioSceneView,()=>studioSpot,null,{isDisabled:()=>studioBusy,onChange:view=>{studioAdjustedView={...view};applyStreetView(studioSpot,view,studioSearchId);studioFraming.value='current';updateStudioFramingHint();studioPlace.textContent=studioSpot.name+' · '+photoBearing(studioSpot).label;}});}
+function openPhotoStudio(spot,searchId=null){if(!studioBusy){studioSearchId=searchId;spot={...spot,...poiViewOverrides.get(searchId+':'+poiHistoryKey(spot))};}focusMapSpot(spot,{openPopup:false});if(savedPhoto.open)savedPhoto.close();if(portraitProgress.open)portraitProgress.close();if(studioBusy){studio.showModal();return;}if(!studioBusy){if(!taskRecords.some(t=>t.kind==='portrait'&&['queued','checking','running'].includes(t.state)))studioTask.hidden=true;resetStudioInputForPlace(spot);const savedView=savedSelfieView(studioSearchId,spot);studioSpot={...spot,...savedView};studioFraming.value=savedView?.framing||(spot.viewAdjusted?'current':'auto');studioAdjustedView=spot.provider==='google-street-view'?window.PhotoScoutStreetView.view(studioSpot):null;if(studioAdjustedView&&!studioSpot.viewAdjusted)applyStreetView(studioSpot,{...studioAdjustedView,fov:90},null);studioSceneView.streetViewSearchId=null;studioSceneView.streetViewController?.reset();studioFraming.disabled=spot.provider!=='google-street-view';studioFraming.parentElement.hidden=spot.provider!=='google-street-view';updateStudioFramingHint();studioPlace.textContent=studioSpot.name+(photoBearing(studioSpot).heading!=null?' · '+photoBearing(studioSpot).label:'');scenePreview.removeAttribute('src');if(spot.provider==='google-street-view')refreshThumbnail(scenePreview,studioSpot);else if(spot.imageUrl)scenePreview.src=spot.imageUrl;studioStatus.textContent='Upload a clear image of a person, cartoon character or animal. Groups are welcome; a clearly visible subject works best.';clearStudioOutput();studioGenerate.disabled=!studioPrepared;}syncStudioProgress();studio.showModal();if(window.PhotoScoutNativeStreetView)activateNativeStreetView(studioSceneView,()=>studioSpot,null,{isDisabled:()=>studioBusy,onChange:view=>{studioAdjustedView={...view};applyStudioView(view);studioFraming.value='current';updateStudioFramingHint();studioPlace.textContent=studioSpot.name+' · '+photoBearing(studioSpot).label;}});}
 studioClose.addEventListener('click',()=>studio.close());studio.addEventListener('close',()=>{if(!studio.open)window.PhotoScoutNativeStreetView?.detach(studioSceneView);});
-bindStreetViewPreview(studioSceneView,()=>studioSpot,null,{isDisabled:()=>studioBusy,onChange:view=>{studioAdjustedView={...view};applyStreetView(studioSpot,view,studioSearchId);studioFraming.value='current';updateStudioFramingHint();studioPlace.textContent=studioSpot.name+' · '+photoBearing(studioSpot).label;},onCommit:()=>refreshThumbnail(scenePreview,studioSpot)});
+bindStreetViewPreview(studioSceneView,()=>studioSpot,null,{isDisabled:()=>studioBusy,onChange:view=>{studioAdjustedView={...view};applyStudioView(view);studioFraming.value='current';updateStudioFramingHint();studioPlace.textContent=studioSpot.name+' · '+photoBearing(studioSpot).label;},onCommit:()=>refreshThumbnail(scenePreview,studioSpot)});
 studioFraming.addEventListener('change',()=>{
  if(studioBusy||studioSpot?.provider!=='google-street-view')return;
  studioSceneView.streetViewController?.reset();
  const current=window.PhotoScoutStreetView.view(studioSpot),view=studioFraming.value==='current'?(studioAdjustedView||current):{...current,fov:studioFraming.value==='auto'?90:Number(studioFraming.value)};
- applyStreetView(studioSpot,view,studioSearchId);updateStudioFramingHint();studioSceneView.streetViewController?.refresh();if(!window.PhotoScoutNativeStreetView?.refresh(studioSceneView))refreshThumbnail(scenePreview,studioSpot);
+ applyStudioView(view,studioFraming.value);updateStudioFramingHint();studioSceneView.streetViewController?.refresh();if(!window.PhotoScoutNativeStreetView?.refresh(studioSceneView))refreshThumbnail(scenePreview,studioSpot);
 });
 studioUpload.addEventListener('change',()=>{const file=studioUpload.files[0];if(file)acceptStudioPhoto(file);});
 async function acceptStudioPhoto(file){const generation=++studioUploadGeneration;studioFile=file||null;studioPrepared=null;personPreview.hidden=true;personPreview.removeAttribute('src');studioGenerate.disabled=true;if(studioPreviewUrl)URL.revokeObjectURL(studioPreviewUrl);if(!studioFile)return;if(studioFile.size>20000000){studioStatus.textContent='Choose a photo up to 20 MB.';studioFile=null;return;}if(!['image/jpeg','image/png','image/webp','image/heic','image/heif',''].includes(studioFile.type)&&!/\.(jpe?g|png|webp|heic|heif)$/i.test(studioFile.name)){studioStatus.textContent='Choose a JPG, PNG, WebP or HEIC photo.';studioFile=null;return;}studioStatus.textContent='Preparing your photo…';try{const prepared=await prepareStudioPhoto(studioFile);if(generation!==studioUploadGeneration)return;studioPrepared=prepared.data;personPreview.src=prepared.data;personPreview.hidden=!prepared.preview;studioGenerate.disabled=studioBusy;studioStatus.textContent=prepared.preview?'Your photo is ready. It has been resized for upload.':'Your phone photo will be converted securely when you submit. This browser cannot display its original format.';}catch(error){if(generation!==studioUploadGeneration)return;studioFile=null;studioStatus.textContent=error.message;}}
@@ -763,7 +774,7 @@ function syncPortraitActivities(){
 function resetTaskRecovery(){
  if(studioCamera?.dialog.open)studioCamera.dialog.close();studioCamera?.stop();
  if(savedPhoto.open)savedPhoto.close();if(portraitProgress.open)portraitProgress.close();
- focusedSearchId=null;selectedPoiView=null;lastRemovedPoi=null;lastRemovedHistory=null;removedHistoryItems.clear();poiViewOverrides.clear();for(const save of cameraSaves.values()){clearTimeout(save.timer);save.payload=null;}cameraSaves.clear();for(const timer of cameraRefreshes.values())clearTimeout(timer);cameraRefreshes.clear();studioSearchId=null;taskRecoveryGeneration++;hydratedSearches.clear();clearTimeout(taskRefreshTimer);taskRecords=[];hiddenPoisBySearch.clear();displayedResult=null;displayedSearchId=null;tasksReady=false;activeSearch=null;pollGeneration++;searchBusy=false;studioBusy=false;studioJob=null;clearTimeout(studioTimer);clearStudioOutput();studioPrepared=null;studioFile=null;studioInputPlaceKey=null;studioUploadGeneration++;studioUpload.value='';studioCameraButton.disabled=studioPersonFrame.disabled=studioUpload.disabled=false;studioPose.disabled=false;studioStyles.disabled=false;studioOptions.disabled=false;studioGenerate.disabled=true;personPreview.hidden=true;personPreview.removeAttribute('src');studioTask.hidden=true;selfieActivityLayer.clearLayers();renderHistory();updateSubmitState();
+ focusedSearchId=null;selectedPoiView=null;lastRemovedPoi=null;lastRemovedHistory=null;removedHistoryItems.clear();poiViewOverrides.clear();selfieViewOverrides.clear();for(const save of cameraSaves.values()){clearTimeout(save.timer);save.payload=null;}cameraSaves.clear();for(const timer of cameraRefreshes.values())clearTimeout(timer);cameraRefreshes.clear();studioSearchId=null;taskRecoveryGeneration++;hydratedSearches.clear();clearTimeout(taskRefreshTimer);taskRecords=[];hiddenPoisBySearch.clear();displayedResult=null;displayedSearchId=null;tasksReady=false;activeSearch=null;pollGeneration++;searchBusy=false;studioBusy=false;studioJob=null;clearTimeout(studioTimer);clearStudioOutput();studioPrepared=null;studioFile=null;studioInputPlaceKey=null;studioUploadGeneration++;studioUpload.value='';studioCameraButton.disabled=studioPersonFrame.disabled=studioUpload.disabled=false;studioPose.disabled=false;studioStyles.disabled=false;studioOptions.disabled=false;studioGenerate.disabled=true;personPreview.hidden=true;personPreview.removeAttribute('src');studioTask.hidden=true;selfieActivityLayer.clearLayers();renderHistory();updateSubmitState();
 }
 async function restoreTasks(){
  if(taskRefreshBusy)return;taskRefreshBusy=true;const generation=taskRecoveryGeneration,initial=!tasksReady;let changed=false;
