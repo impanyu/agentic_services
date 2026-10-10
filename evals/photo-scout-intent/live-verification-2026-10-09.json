@@ -1,0 +1,133 @@
+{
+  "runtimeCommit": "a339190",
+  "cases": [
+    {
+      "plannerModel": "gpt-6-astra",
+      "reasoning": "low"
+    },
+    {
+      "case": "red-roof",
+      "http": 200,
+      "seconds": 8.11,
+      "moods": [],
+      "tools": [
+        "search_places",
+        "collect_images",
+        "score_images",
+        "rank_results"
+      ],
+      "conditions": [
+        {
+          "expression": "Motels",
+          "strength": "required",
+          "route": "places",
+          "stepIds": [
+            "motels"
+          ]
+        },
+        {
+          "expression": "A visibly red roof on the motel",
+          "strength": "required",
+          "route": "visual",
+          "stepIds": []
+        }
+      ]
+    },
+    {
+      "case": "ui-waterside",
+      "http": 200,
+      "seconds": 11.59,
+      "moods": [
+        "waterside"
+      ],
+      "tools": [
+        "search_places",
+        "search_geography",
+        "filter_geography",
+        "sample_geography",
+        "union",
+        "collect_images",
+        "score_images",
+        "rank_results"
+      ],
+      "conditions": [
+        {
+          "expression": "Waterside setting with visible water or shoreline",
+          "strength": "required",
+          "route": "geography",
+          "stepIds": [
+            "water",
+            "waterfront_places",
+            "shore_points"
+          ]
+        },
+        {
+          "expression": "Water or shoreline is visible in the scored camera direction",
+          "strength": "required",
+          "route": "visual",
+          "stepIds": []
+        },
+        {
+          "expression": "Waterfront parks, promenades, or viewpoints as optional discovery hints",
+          "strength": "preferred",
+          "route": "places",
+          "stepIds": [
+            "named_places"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "bare-address",
+      "http": 200,
+      "seconds": 14.77,
+      "moods": [],
+      "tools": [
+        "point_imagery",
+        "collect_images",
+        "score_images",
+        "rank_results"
+      ],
+      "conditions": []
+    },
+    {
+      "case": "places-retrieval",
+      "http": 200,
+      "poiCount": 4,
+      "counts": {
+        "returnedCandidates": 4,
+        "programSteps": 1,
+        "sourceSearches": 1
+      }
+    },
+    {
+      "case": "address-full-pipeline",
+      "http": 200,
+      "seconds": 25.0,
+      "spots": 1,
+      "poiResults": 1,
+      "counts": {
+        "returnedCandidates": 0,
+        "programSteps": 4,
+        "sourceSearches": 0
+      },
+      "timings": {
+        "retrievalSeconds": 0.191,
+        "scoringSeconds": 24.799,
+        "totalSeconds": 24.995
+      },
+      "steps": [
+        "point_imagery",
+        "collect_images",
+        "score_images",
+        "rank_results"
+      ]
+    }
+  ],
+  "publicChecks": {
+    "pageHttp": 200,
+    "apiStatusHttp": 200,
+    "mcpListToolsHttp": 200,
+    "mcpConditionLedgerExposed": true
+  }
+}

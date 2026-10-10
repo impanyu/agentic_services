@@ -27,6 +27,8 @@ Astra 完整批次中 38 个返回方案均通过有限检查，另外 3 个是 
 
 319 项 Python 测试、59 项前端 Node 测试及 TypeScript 编译通过，覆盖兼容路径、分支隔离、工具参数、有限修复、提供商错误不重试、条件强弱与缓存隔离、可选来源降级。
 
-线上验证记录在部署后补充。未运行真实付款流程，不修改收费、OAuth 或用户历史。
+超时复测：人行桥重新调用通过（另两条补充重复案例也通过）；咖啡馆靠交通灯重新调用通过；单独交通灯仍出现一次 API 超时。原始完整批次仍为 38/41，复测不覆盖原始失败，也不能算作原批次全通过。
+
+生产运行代码 a339190，实测配置 gpt-6-astra / low。网页、API status、公开 MCP tools/list 均 HTTP 200；MCP 可见条件清单 schema。红屋顶 motel 解析 8.11s，Places 返回 4 个候选（不是 4 个已证明红屋顶的结果）；空输入 Waterside 解析 11.59s，生成水边命名候选过滤+岸边采样并集；纯地址解析 14.77s，执行 point_imagery → collect_images → score_images → rank_results，另用 25.0s 返回 1 个结果，其中检索 0.19s、评分 24.80s。该完整地址流程解析+执行约 39.8s，明确未达到十秒目标。后两项分别验证方案和单地址完整链路，不代表所有环境检索都已实地验证。详情见 live-verification-2026-10-09.json。未运行真实付款流程，不修改收费、OAuth 或用户历史。
 
 方法依据：[Structured Outputs](https://developers.openai.com/api/docs/guides/structured-outputs)、[GPT-6 Astra](https://developers.openai.com/api/docs/models/gpt-6-astra)。结构约束不等于语义准确，模型选择需要任务评测。

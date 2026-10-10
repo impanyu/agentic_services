@@ -1,0 +1,232 @@
+{
+  "summary": {
+    "model": "gpt-6-astra",
+    "reasoningEffort": "low",
+    "promptSha256": "0c2eae3004016316b930cff10da9c90e7f6ecd93c34f29cd44f2e503afa6e2da",
+    "generatedAt": "2026-10-10T04:14:08.094670+00:00",
+    "cases": 2,
+    "runs": 2,
+    "passed": 1,
+    "failed": 1,
+    "medianSeconds": 25.202,
+    "p95Seconds": 40.079,
+    "wallSeconds": 50.405,
+    "failureTypes": {
+      "runtime:APITimeoutError": 1
+    },
+    "scope": "Synthetic planner-only checks plus saved plans for human review; not provider execution, geocoding or visual scoring."
+  },
+  "results": [
+    {
+      "case": "near-signals",
+      "repeat": 1,
+      "input": {
+        "query": "cafes near traffic lights",
+        "lat": 41.8827,
+        "lon": -87.6233,
+        "radius": 5000,
+        "photoStyles": [
+          "waterside"
+        ]
+      },
+      "expected": {
+        "queryRequired": [],
+        "toolsRequired": [
+          "search_features",
+          "filter_features"
+        ],
+        "queryAny": [
+          [
+            "coffee",
+            "cafe",
+            "café"
+          ]
+        ],
+        "tagsRequired": [
+          [
+            "highway",
+            "traffic_signals"
+          ]
+        ]
+      },
+      "plan": {
+        "requirements": [
+          {
+            "expression": "Coffee shops",
+            "strength": "required",
+            "route": "places",
+            "stepIds": [
+              "cafes"
+            ]
+          },
+          {
+            "expression": "Coffee shops near traffic lights",
+            "strength": "required",
+            "route": "features",
+            "stepIds": [
+              "traffic_lights",
+              "nearby_cafes"
+            ]
+          }
+        ],
+        "searchProgram": {
+          "steps": [
+            {
+              "id": "cafes",
+              "tool": "search_places",
+              "inputs": [],
+              "queries": [
+                "coffee shops"
+              ],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Find coffee shops."
+            },
+            {
+              "id": "traffic_lights",
+              "tool": "search_features",
+              "inputs": [],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [
+                {
+                  "label": "Traffic lights",
+                  "kind": "tagged",
+                  "filters": [
+                    {
+                      "key": "highway",
+                      "value": "traffic_signals",
+                      "required": true
+                    }
+                  ],
+                  "numericFilters": [],
+                  "proximityMeters": 150
+                }
+              ],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Locate mapped traffic lights near candidate coffee shops."
+            },
+            {
+              "id": "nearby_cafes",
+              "tool": "filter_features",
+              "inputs": [
+                "cafes",
+                "traffic_lights"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Keep coffee shops within 150 meters of mapped traffic lights."
+            },
+            {
+              "id": "images",
+              "tool": "collect_images",
+              "inputs": [
+                "nearby_cafes"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Collect directional images for the matching coffee shops."
+            },
+            {
+              "id": "assessments",
+              "tool": "score_images",
+              "inputs": [
+                "images"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Evaluate cafe identity and nearby traffic-light context, favoring views showing both."
+            },
+            {
+              "id": "ranked",
+              "tool": "rank_results",
+              "inputs": [
+                "assessments"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Rank all matching coffee shops by their best photographic view."
+            }
+          ],
+          "output": "ranked"
+        },
+        "searchBranches": [],
+        "geographicCombination": "all",
+        "featureCombination": "all",
+        "osmFeatures": [],
+        "geographicKinds": [],
+        "scoringIntent": "Find coffee shops near traffic lights and select photographic views that show the cafe and nearby traffic lights together where possible.",
+        "poiQueries": [],
+        "locationQuery": null,
+        "useMapCenter": true,
+        "photoStyles": [],
+        "radiusMeters": 5000,
+        "preferences": "",
+        "explanation": "Search for coffee shops within 5000 meters of the map center, then retain those within 150 meters of mapped traffic lights. Review and rank their images. The explicit subject replaces the Waterside mood, so no water condition is applied.",
+        "clarification": null
+      },
+      "failures": [],
+      "seconds": 10.325
+    },
+    {
+      "case": "signals",
+      "repeat": 1,
+      "input": {
+        "query": "traffic lights",
+        "lat": 41.8827,
+        "lon": -87.6233,
+        "radius": 5000,
+        "photoStyles": [
+          "waterside"
+        ]
+      },
+      "expected": {
+        "toolsRequired": [
+          "search_features",
+          "feature_points"
+        ],
+        "toolsForbidden": [
+          "search_places"
+        ],
+        "geo": [],
+        "tagsRequired": [
+          [
+            "highway",
+            "traffic_signals"
+          ]
+        ]
+      },
+      "failures": [
+        "runtime:APITimeoutError"
+      ],
+      "seconds": 40.079
+    }
+  ]
+}

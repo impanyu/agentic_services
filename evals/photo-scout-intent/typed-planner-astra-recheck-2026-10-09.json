@@ -1,0 +1,568 @@
+{
+  "summary": {
+    "model": "gpt-6-astra",
+    "reasoningEffort": "low",
+    "promptSha256": "0c2eae3004016316b930cff10da9c90e7f6ecd93c34f29cd44f2e503afa6e2da",
+    "generatedAt": "2026-10-10T04:13:23.418012+00:00",
+    "cases": 3,
+    "runs": 3,
+    "passed": 3,
+    "failed": 0,
+    "medianSeconds": 10.557,
+    "p95Seconds": 14.784,
+    "wallSeconds": 32.998,
+    "failureTypes": {},
+    "scope": "Synthetic planner-only checks plus saved plans for human review; not provider execution, geocoding or visual scoring."
+  },
+  "results": [
+    {
+      "case": "courtyard-bridge",
+      "repeat": 1,
+      "input": {
+        "query": "a rustic courtyard with a turquoise gate near a footbridge",
+        "lat": 41.8827,
+        "lon": -87.6233,
+        "radius": 5000,
+        "photoStyles": [
+          "waterside"
+        ]
+      },
+      "expected": {
+        "toolsRequired": [
+          "search_places",
+          "search_features",
+          "filter_features"
+        ],
+        "queryForbidden": [
+          "turquoise",
+          "rustic"
+        ],
+        "visualRequired": [
+          [
+            "rustic"
+          ],
+          [
+            "turquoise"
+          ],
+          [
+            "gate"
+          ]
+        ],
+        "pedestrianBridge": true
+      },
+      "plan": {
+        "requirements": [
+          {
+            "expression": "Courtyard",
+            "strength": "required",
+            "route": "places",
+            "stepIds": [
+              "courtyards"
+            ]
+          },
+          {
+            "expression": "Courtyard near a footbridge",
+            "strength": "required",
+            "route": "features",
+            "stepIds": [
+              "footbridges",
+              "near_footbridge"
+            ]
+          },
+          {
+            "expression": "Rustic courtyard with a turquoise gate",
+            "strength": "required",
+            "route": "visual",
+            "stepIds": []
+          }
+        ],
+        "searchProgram": {
+          "steps": [
+            {
+              "id": "courtyards",
+              "tool": "search_places",
+              "inputs": [],
+              "queries": [
+                "courtyards"
+              ],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Discover courtyards; assess rustic character and turquoise gates visually rather than through place names."
+            },
+            {
+              "id": "footbridges",
+              "tool": "search_features",
+              "inputs": [],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [
+                {
+                  "label": "Footway bridge",
+                  "kind": "tagged",
+                  "filters": [
+                    {
+                      "key": "bridge",
+                      "value": "yes",
+                      "required": true
+                    },
+                    {
+                      "key": "highway",
+                      "value": "footway",
+                      "required": true
+                    }
+                  ],
+                  "numericFilters": [],
+                  "proximityMeters": 150
+                },
+                {
+                  "label": "Path bridge",
+                  "kind": "tagged",
+                  "filters": [
+                    {
+                      "key": "bridge",
+                      "value": "yes",
+                      "required": true
+                    },
+                    {
+                      "key": "highway",
+                      "value": "path",
+                      "required": true
+                    }
+                  ],
+                  "numericFilters": [],
+                  "proximityMeters": 150
+                },
+                {
+                  "label": "Pedestrian bridge",
+                  "kind": "tagged",
+                  "filters": [
+                    {
+                      "key": "bridge",
+                      "value": "yes",
+                      "required": true
+                    },
+                    {
+                      "key": "highway",
+                      "value": "pedestrian",
+                      "required": true
+                    }
+                  ],
+                  "numericFilters": [],
+                  "proximityMeters": 150
+                }
+              ],
+              "combination": "any",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Find pedestrian footbridges, not generic road bridges."
+            },
+            {
+              "id": "near_footbridge",
+              "tool": "filter_features",
+              "inputs": [
+                "courtyards",
+                "footbridges"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "any",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Keep courtyards within 150 m of any mapped footbridge alternative."
+            },
+            {
+              "id": "images",
+              "tool": "collect_images",
+              "inputs": [
+                "near_footbridge"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Collect directional imagery of courtyards near footbridges."
+            },
+            {
+              "id": "assessments",
+              "tool": "score_images",
+              "inputs": [
+                "images"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Require a rustic courtyard with a turquoise gate visible in the scored view, while retaining the mapped footbridge proximity constraint."
+            },
+            {
+              "id": "ranked",
+              "tool": "rank_results",
+              "inputs": [
+                "assessments"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Rank all matching courtyards by photographic quality and clarity of the rustic courtyard and turquoise gate."
+            }
+          ],
+          "output": "ranked"
+        },
+        "searchBranches": [],
+        "geographicCombination": "all",
+        "featureCombination": "all",
+        "osmFeatures": [],
+        "geographicKinds": [],
+        "scoringIntent": "Find a rustic courtyard with a visibly turquoise gate near a footbridge. Confirm the rustic appearance and gate color in imagery; a generic road bridge does not satisfy the footbridge condition.",
+        "poiQueries": [],
+        "locationQuery": null,
+        "useMapCenter": true,
+        "photoStyles": [],
+        "radiusMeters": 5000,
+        "preferences": "Rustic courtyard appearance with a turquoise gate.",
+        "explanation": "Search for courtyards within 5,000 m of the map center, filter for proximity to mapped footbridges, and review imagery for rustic character and a turquoise gate. The explicit subject replaces the selected Waterside mood; water is not required.",
+        "clarification": null
+      },
+      "failures": [],
+      "seconds": 14.784
+    },
+    {
+      "case": "soft-preference",
+      "repeat": 1,
+      "input": {
+        "query": "motels, preferably with red roofs but other roof colors are fine",
+        "lat": 41.8827,
+        "lon": -87.6233,
+        "radius": 5000,
+        "photoStyles": [
+          "waterside"
+        ]
+      },
+      "expected": {
+        "queryRequired": [
+          "motel"
+        ],
+        "queryForbidden": [
+          "red",
+          "roof"
+        ],
+        "visualRequired": [
+          [
+            "prefer"
+          ],
+          [
+            "other",
+            "optional",
+            "not required",
+            "fine",
+            "acceptable"
+          ]
+        ]
+      },
+      "plan": {
+        "requirements": [
+          {
+            "expression": "Motels",
+            "strength": "required",
+            "route": "places",
+            "stepIds": [
+              "motels"
+            ]
+          },
+          {
+            "expression": "Red roofs; other roof colors are also acceptable",
+            "strength": "preferred",
+            "route": "visual",
+            "stepIds": []
+          }
+        ],
+        "searchProgram": {
+          "steps": [
+            {
+              "id": "motels",
+              "tool": "search_places",
+              "inputs": [],
+              "queries": [
+                "motels"
+              ],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Discover motels regardless of roof color."
+            },
+            {
+              "id": "images",
+              "tool": "collect_images",
+              "inputs": [
+                "motels"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Collect motel images for visual roof-color evaluation."
+            },
+            {
+              "id": "assessments",
+              "tool": "score_images",
+              "inputs": [
+                "images"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Evaluate motel views, favoring visible red roofs while accepting all other roof colors."
+            },
+            {
+              "id": "results",
+              "tool": "rank_results",
+              "inputs": [
+                "assessments"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Rank all matching motels with a preference for red-roof views, without a roof-color exclusion."
+            }
+          ],
+          "output": "results"
+        },
+        "searchBranches": [],
+        "geographicCombination": "all",
+        "featureCombination": "all",
+        "osmFeatures": [],
+        "geographicKinds": [],
+        "scoringIntent": "Find motels, preferring views showing red roofs without excluding motels with other roof colors.",
+        "poiQueries": [],
+        "locationQuery": null,
+        "useMapCenter": true,
+        "photoStyles": [],
+        "radiusMeters": 5000,
+        "preferences": "Prefer red roofs; other roof colors are fine.",
+        "explanation": "Search for motels within 5000 meters of the map center and evaluate roof color visually as a preference, not a requirement. The explicit motel request replaces the Waterside mood, so no water constraint is applied.",
+        "clarification": null
+      },
+      "failures": [],
+      "seconds": 7.657
+    },
+    {
+      "case": "ui-adventure",
+      "repeat": 1,
+      "input": {
+        "query": "",
+        "lat": 41.8827,
+        "lon": -87.6233,
+        "radius": 5000,
+        "photoStyles": [
+          "adventure"
+        ]
+      },
+      "expected": {
+        "moods": [
+          "adventure"
+        ],
+        "toolsRequired": [
+          "search_places",
+          "search_geography",
+          "sample_geography",
+          "union"
+        ],
+        "toolsForbidden": [
+          "filter_geography"
+        ]
+      },
+      "plan": {
+        "requirements": [
+          {
+            "expression": "Adventure-oriented trails or viewpoints, with peak or forest viewpoints as optional discovery alternatives",
+            "strength": "preferred",
+            "route": "places",
+            "stepIds": [
+              "adventure_places"
+            ]
+          },
+          {
+            "expression": "Peak OR forest surroundings as optional adventure discovery alternatives",
+            "strength": "preferred",
+            "route": "geography",
+            "stepIds": [
+              "adventure_geography",
+              "adventure_samples"
+            ]
+          },
+          {
+            "expression": "An adventurous outdoor atmosphere",
+            "strength": "preferred",
+            "route": "visual",
+            "stepIds": []
+          }
+        ],
+        "searchProgram": {
+          "steps": [
+            {
+              "id": "adventure_places",
+              "tool": "search_places",
+              "inputs": [],
+              "queries": [
+                "trails",
+                "viewpoints"
+              ],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": true,
+              "weights": [],
+              "visualIntent": "Discover trails and viewpoints as optional Adventure candidates."
+            },
+            {
+              "id": "adventure_geography",
+              "tool": "search_geography",
+              "inputs": [],
+              "queries": [],
+              "geographicKinds": [
+                "peak",
+                "forest"
+              ],
+              "osmFeatures": [],
+              "combination": "any",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Discover peaks or forests as alternative Adventure settings."
+            },
+            {
+              "id": "adventure_samples",
+              "tool": "sample_geography",
+              "inputs": [
+                "adventure_geography"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "any",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Sample road or path viewpoints for peak or forest scenery."
+            },
+            {
+              "id": "adventure_candidates",
+              "tool": "union",
+              "inputs": [
+                "adventure_places",
+                "adventure_samples"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [
+                1,
+                1
+              ],
+              "visualIntent": "Combine named and mapped Adventure candidates without imposing a shared geographic constraint."
+            },
+            {
+              "id": "images",
+              "tool": "collect_images",
+              "inputs": [
+                "adventure_candidates"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Collect candidate imagery and directional views once."
+            },
+            {
+              "id": "assessments",
+              "tool": "score_images",
+              "inputs": [
+                "images"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Assess photographic quality and adventurous outdoor atmosphere, treating the mood as a preference rather than an exclusion."
+            },
+            {
+              "id": "ranked_results",
+              "tool": "rank_results",
+              "inputs": [
+                "assessments"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Rank all matching candidates using their best photographic view."
+            }
+          ],
+          "output": "ranked_results"
+        },
+        "searchBranches": [],
+        "geographicCombination": "all",
+        "featureCombination": "all",
+        "osmFeatures": [],
+        "geographicKinds": [],
+        "scoringIntent": "Prefer photographs with an adventurous outdoor atmosphere, including trails, viewpoints, and peak or forest scenery. These are optional alternatives rather than mandatory environmental constraints.",
+        "poiQueries": [],
+        "locationQuery": null,
+        "useMapCenter": true,
+        "photoStyles": [
+          "adventure"
+        ],
+        "radiusMeters": 5000,
+        "preferences": "Prefer an adventurous outdoor atmosphere.",
+        "explanation": "Preserve the current map center, 5000 m radius, and Adventure mood. Combine named trails and viewpoints with mapped peak or forest viewpoints, then collect and rank imagery without requiring every candidate to be in a forest or on a peak.",
+        "clarification": null
+      },
+      "failures": [],
+      "seconds": 10.557
+    }
+  ]
+}
