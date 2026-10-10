@@ -247,3 +247,5 @@ html:has(body.photo-app),body.photo-app{height:100%;overflow:hidden}.photo-app m
 .route-settings input,.route-settings select,.search-mode-picker select{width:100%;min-width:0;border:1px solid #ddd7e4;border-radius:12px;background:#fff;padding:.65rem;font:inherit;color:#36313d}
 .route-options{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:.65rem}.route-settings p{grid-column:1/-1;margin:0;font-weight:400}
 @media(max-width:600px){.route-settings{grid-template-columns:1fr;gap:.5rem}.route-settings input{padding:.55rem}.route-settings p{font-size:.75rem}.map-controls[open]{max-height:55dvh;overflow-y:auto}}
+
+.route-result-sort{display:flex;align-items:center;gap:12px;margin:14px 0;color:#675572;font-size:13px}.route-result-sort select{flex:1;min-width:0;border:1px solid #ddcfe8;border-radius:12px;padding:10px;background:#f6f0fa;color:#543968}
