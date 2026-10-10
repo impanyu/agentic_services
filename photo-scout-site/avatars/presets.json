@@ -3,27 +3,591 @@
     {
       "id": "preset:spongebob",
       "name": "SpongeBob",
-      "imageUrl": "./avatars/characters/spongebob.png"
+      "imageUrl": "./avatars/characters/spongebob.png",
+      "aliases": [
+        "海绵宝宝"
+      ],
+      "category": "Cartoons"
     },
     {
       "id": "preset:doraemon",
       "name": "Doraemon",
-      "imageUrl": "./avatars/characters/doraemon.png"
+      "imageUrl": "./avatars/characters/doraemon.png",
+      "aliases": [
+        "哆啦A梦",
+        "哆啦a梦",
+        "小叮当"
+      ],
+      "category": "Cartoons"
     },
     {
       "id": "preset:totoro",
       "name": "Totoro",
-      "imageUrl": "./avatars/characters/totoro.png"
+      "imageUrl": "./avatars/characters/totoro.png",
+      "aliases": [
+        "龙猫"
+      ],
+      "category": "Cartoons"
     },
     {
       "id": "preset:sun-wukong",
       "name": "Monkey King",
-      "imageUrl": "./avatars/characters/sun-wukong.png"
+      "imageUrl": "./avatars/characters/sun-wukong.png",
+      "aliases": [
+        "孙悟空",
+        "齐天大圣"
+      ],
+      "category": "Chinese classics"
     },
     {
       "id": "preset:sherlock",
       "name": "Sherlock Holmes",
-      "imageUrl": "./avatars/characters/sherlock.png"
+      "imageUrl": "./avatars/characters/sherlock.png",
+      "aliases": [
+        "福尔摩斯"
+      ],
+      "category": "Storybook"
+    },
+    {
+      "id": "preset:tom-cat",
+      "name": "Tom",
+      "imageUrl": "./avatars/characters/tom-cat.png",
+      "category": "Cartoons",
+      "aliases": [
+        "汤姆",
+        "猫和老鼠"
+      ]
+    },
+    {
+      "id": "preset:jerry-mouse",
+      "name": "Jerry",
+      "imageUrl": "./avatars/characters/jerry-mouse.png",
+      "category": "Cartoons",
+      "aliases": [
+        "杰瑞",
+        "猫和老鼠"
+      ]
+    },
+    {
+      "id": "preset:snoopy",
+      "name": "Snoopy",
+      "imageUrl": "./avatars/characters/snoopy.png",
+      "category": "Cartoons",
+      "aliases": [
+        "史努比"
+      ]
+    },
+    {
+      "id": "preset:charlie-brown",
+      "name": "Charlie Brown",
+      "imageUrl": "./avatars/characters/charlie-brown.png",
+      "category": "Cartoons",
+      "aliases": [
+        "查理布朗"
+      ]
+    },
+    {
+      "id": "preset:woodstock",
+      "name": "Woodstock",
+      "imageUrl": "./avatars/characters/woodstock.png",
+      "category": "Cartoons",
+      "aliases": [
+        "伍德斯托克"
+      ]
+    },
+    {
+      "id": "preset:hello-kitty",
+      "name": "Hello Kitty",
+      "imageUrl": "./avatars/characters/hello-kitty.png",
+      "category": "Cartoons",
+      "aliases": [
+        "凯蒂猫"
+      ]
+    },
+    {
+      "id": "preset:my-melody",
+      "name": "My Melody",
+      "imageUrl": "./avatars/characters/my-melody.png",
+      "category": "Cartoons",
+      "aliases": [
+        "美乐蒂"
+      ]
+    },
+    {
+      "id": "preset:kuromi",
+      "name": "Kuromi",
+      "imageUrl": "./avatars/characters/kuromi.png",
+      "category": "Cartoons",
+      "aliases": [
+        "库洛米"
+      ]
+    },
+    {
+      "id": "preset:cinnamoroll",
+      "name": "Cinnamoroll",
+      "imageUrl": "./avatars/characters/cinnamoroll.png",
+      "category": "Cartoons",
+      "aliases": [
+        "大耳狗",
+        "玉桂狗"
+      ]
+    },
+    {
+      "id": "preset:dr-watson",
+      "name": "Dr. Watson",
+      "imageUrl": "./avatars/characters/dr-watson.png",
+      "category": "Storybook",
+      "aliases": [
+        "华生"
+      ]
+    },
+    {
+      "id": "preset:robin-hood",
+      "name": "Robin Hood",
+      "imageUrl": "./avatars/characters/robin-hood.png",
+      "category": "Storybook",
+      "aliases": [
+        "罗宾汉"
+      ]
+    },
+    {
+      "id": "preset:merlin",
+      "name": "Merlin",
+      "imageUrl": "./avatars/characters/merlin.png",
+      "category": "Storybook",
+      "aliases": [
+        "梅林"
+      ]
+    },
+    {
+      "id": "preset:king-arthur",
+      "name": "King Arthur",
+      "imageUrl": "./avatars/characters/king-arthur.png",
+      "category": "Storybook",
+      "aliases": [
+        "亚瑟王"
+      ]
+    },
+    {
+      "id": "preset:don-quixote",
+      "name": "Don Quixote",
+      "imageUrl": "./avatars/characters/don-quixote.png",
+      "category": "Storybook",
+      "aliases": [
+        "堂吉诃德"
+      ]
+    },
+    {
+      "id": "preset:sinbad",
+      "name": "Sinbad the Sailor",
+      "imageUrl": "./avatars/characters/sinbad.png",
+      "category": "Storybook",
+      "aliases": [
+        "辛巴达"
+      ]
+    },
+    {
+      "id": "preset:scheherazade",
+      "name": "Scheherazade",
+      "imageUrl": "./avatars/characters/scheherazade.png",
+      "category": "Storybook",
+      "aliases": [
+        "山鲁佐德"
+      ]
+    },
+    {
+      "id": "preset:medusa",
+      "name": "Medusa",
+      "imageUrl": "./avatars/characters/medusa.png",
+      "category": "Mythology",
+      "aliases": [
+        "美杜莎"
+      ]
+    },
+    {
+      "id": "preset:athena",
+      "name": "Athena",
+      "imageUrl": "./avatars/characters/athena.png",
+      "category": "Mythology",
+      "aliases": [
+        "雅典娜"
+      ]
+    },
+    {
+      "id": "preset:mad-hatter",
+      "name": "Mad Hatter",
+      "imageUrl": "./avatars/characters/mad-hatter.png",
+      "category": "Fairy tales",
+      "aliases": [
+        "疯帽子"
+      ]
+    },
+    {
+      "id": "preset:red-riding-hood",
+      "name": "Little Red Riding Hood",
+      "imageUrl": "./avatars/characters/red-riding-hood.png",
+      "category": "Fairy tales",
+      "aliases": [
+        "小红帽"
+      ]
+    },
+    {
+      "id": "preset:sha-wujing",
+      "name": "Sha Wujing",
+      "imageUrl": "./avatars/characters/sha-wujing.png",
+      "category": "Chinese classics",
+      "aliases": [
+        "沙悟净",
+        "沙僧"
+      ]
+    },
+    {
+      "id": "preset:tang-sanzang",
+      "name": "Tang Sanzang",
+      "imageUrl": "./avatars/characters/tang-sanzang.png",
+      "category": "Chinese classics",
+      "aliases": [
+        "唐三藏",
+        "唐僧"
+      ]
+    },
+    {
+      "id": "preset:nezha",
+      "name": "Nezha",
+      "imageUrl": "./avatars/characters/nezha.png",
+      "category": "Chinese classics",
+      "aliases": [
+        "哪吒"
+      ]
+    },
+    {
+      "id": "preset:hua-mulan",
+      "name": "Hua Mulan",
+      "imageUrl": "./avatars/characters/hua-mulan.png",
+      "category": "Chinese classics",
+      "aliases": [
+        "花木兰"
+      ]
+    },
+    {
+      "id": "preset:guan-yu",
+      "name": "Guan Yu",
+      "imageUrl": "./avatars/characters/guan-yu.png",
+      "category": "Chinese classics",
+      "aliases": [
+        "关羽",
+        "关公"
+      ]
+    },
+    {
+      "id": "preset:dorothy",
+      "name": "Dorothy Gale",
+      "imageUrl": "./avatars/characters/dorothy.png",
+      "category": "Storybook",
+      "aliases": [
+        "多萝西"
+      ]
+    },
+    {
+      "id": "preset:scarecrow",
+      "name": "Scarecrow",
+      "imageUrl": "./avatars/characters/scarecrow.png",
+      "category": "Storybook",
+      "aliases": [
+        "稻草人"
+      ]
+    },
+    {
+      "id": "preset:cowardly-lion",
+      "name": "Cowardly Lion",
+      "imageUrl": "./avatars/characters/cowardly-lion.png",
+      "category": "Storybook",
+      "aliases": [
+        "胆小狮"
+      ]
+    },
+    {
+      "id": "preset:pippi",
+      "name": "Pippi Longstocking",
+      "imageUrl": "./avatars/characters/pippi.png",
+      "category": "Storybook",
+      "aliases": [
+        "长袜子皮皮"
+      ]
+    },
+    {
+      "id": "preset:little-prince",
+      "name": "The Little Prince",
+      "imageUrl": "./avatars/characters/little-prince.png",
+      "category": "Storybook",
+      "aliases": [
+        "小王子"
+      ]
+    },
+    {
+      "id": "preset:frankenstein",
+      "name": "Frankenstein's Monster",
+      "imageUrl": "./avatars/characters/frankenstein.png",
+      "category": "Storybook",
+      "aliases": [
+        "科学怪人",
+        "弗兰肯斯坦"
+      ]
+    },
+    {
+      "id": "preset:dracula",
+      "name": "Count Dracula",
+      "imageUrl": "./avatars/characters/dracula.png",
+      "category": "Storybook",
+      "aliases": [
+        "德古拉"
+      ]
+    },
+    {
+      "id": "preset:arsene-lupin",
+      "name": "Arsène Lupin",
+      "imageUrl": "./avatars/characters/arsene-lupin.png",
+      "category": "Storybook",
+      "aliases": [
+        "亚森罗宾"
+      ]
+    },
+    {
+      "id": "preset:odysseus",
+      "name": "Odysseus",
+      "imageUrl": "./avatars/characters/odysseus.png",
+      "category": "Mythology",
+      "aliases": [
+        "奥德修斯"
+      ]
+    },
+    {
+      "id": "preset:perseus",
+      "name": "Perseus",
+      "imageUrl": "./avatars/characters/perseus.png",
+      "category": "Mythology",
+      "aliases": [
+        "珀尔修斯"
+      ]
+    },
+    {
+      "id": "preset:romeo",
+      "name": "Romeo",
+      "imageUrl": "./avatars/characters/romeo.png",
+      "category": "Storybook",
+      "aliases": [
+        "罗密欧"
+      ]
+    },
+    {
+      "id": "preset:juliet",
+      "name": "Juliet",
+      "imageUrl": "./avatars/characters/juliet.png",
+      "category": "Storybook",
+      "aliases": [
+        "朱丽叶"
+      ]
+    },
+    {
+      "id": "preset:joan-of-arc",
+      "name": "Joan of Arc",
+      "imageUrl": "./avatars/characters/joan-of-arc.png",
+      "category": "Historical",
+      "aliases": [
+        "圣女贞德"
+      ]
+    },
+    {
+      "id": "preset:confucius",
+      "name": "Confucius",
+      "imageUrl": "./avatars/characters/confucius.png",
+      "category": "Chinese classics",
+      "aliases": [
+        "孔子"
+      ]
+    },
+    {
+      "id": "preset:cleopatra",
+      "name": "Cleopatra",
+      "imageUrl": "./avatars/characters/cleopatra.png",
+      "category": "Historical",
+      "aliases": [
+        "克娄巴特拉",
+        "埃及艳后"
+      ]
+    },
+    {
+      "id": "preset:zeus",
+      "name": "Zeus",
+      "imageUrl": "./avatars/characters/zeus.png",
+      "category": "Mythology",
+      "aliases": [
+        "宙斯"
+      ]
+    },
+    {
+      "id": "preset:poseidon",
+      "name": "Poseidon",
+      "imageUrl": "./avatars/characters/poseidon.png",
+      "category": "Mythology",
+      "aliases": [
+        "波塞冬"
+      ]
+    },
+    {
+      "id": "preset:hercules",
+      "name": "Hercules",
+      "imageUrl": "./avatars/characters/hercules.png",
+      "category": "Mythology",
+      "aliases": [
+        "赫拉克勒斯"
+      ]
+    },
+    {
+      "id": "preset:anubis",
+      "name": "Anubis",
+      "imageUrl": "./avatars/characters/anubis.png",
+      "category": "Mythology",
+      "aliases": [
+        "阿努比斯"
+      ]
+    },
+    {
+      "id": "preset:norse-thor",
+      "name": "Thor (Norse myth)",
+      "imageUrl": "./avatars/characters/norse-thor.png",
+      "category": "Mythology",
+      "aliases": [
+        "雷神",
+        "索尔"
+      ]
+    },
+    {
+      "id": "preset:norse-loki",
+      "name": "Loki (Norse myth)",
+      "imageUrl": "./avatars/characters/norse-loki.png",
+      "category": "Mythology",
+      "aliases": [
+        "洛基"
+      ]
+    },
+    {
+      "id": "preset:chang-e",
+      "name": "Chang'e",
+      "imageUrl": "./avatars/characters/chang-e.png",
+      "category": "Chinese classics",
+      "aliases": [
+        "嫦娥"
+      ]
+    },
+    {
+      "id": "preset:hou-yi",
+      "name": "Hou Yi",
+      "imageUrl": "./avatars/characters/hou-yi.png",
+      "category": "Chinese classics",
+      "aliases": [
+        "后羿"
+      ]
+    },
+    {
+      "id": "preset:nuwa",
+      "name": "Nuwa",
+      "imageUrl": "./avatars/characters/nuwa.png",
+      "category": "Chinese classics",
+      "aliases": [
+        "女娲"
+      ]
+    },
+    {
+      "id": "preset:zhong-kui",
+      "name": "Zhong Kui",
+      "imageUrl": "./avatars/characters/zhong-kui.png",
+      "category": "Chinese classics",
+      "aliases": [
+        "钟馗"
+      ]
+    },
+    {
+      "id": "preset:ji-gong",
+      "name": "Ji Gong",
+      "imageUrl": "./avatars/characters/ji-gong.png",
+      "category": "Chinese classics",
+      "aliases": [
+        "济公"
+      ]
+    },
+    {
+      "id": "preset:jiang-ziya",
+      "name": "Jiang Ziya",
+      "imageUrl": "./avatars/characters/jiang-ziya.png",
+      "category": "Chinese classics",
+      "aliases": [
+        "姜子牙"
+      ]
+    },
+    {
+      "id": "preset:bao-zheng",
+      "name": "Bao Zheng",
+      "imageUrl": "./avatars/characters/bao-zheng.png",
+      "category": "Chinese classics",
+      "aliases": [
+        "包拯",
+        "包青天"
+      ]
+    },
+    {
+      "id": "preset:li-bai",
+      "name": "Li Bai",
+      "imageUrl": "./avatars/characters/li-bai.png",
+      "category": "Chinese classics",
+      "aliases": [
+        "李白"
+      ]
+    },
+    {
+      "id": "preset:momotaro",
+      "name": "Momotaro",
+      "imageUrl": "./avatars/characters/momotaro.png",
+      "category": "Fairy tales",
+      "aliases": [
+        "桃太郎"
+      ]
+    },
+    {
+      "id": "preset:kintaro",
+      "name": "Kintaro",
+      "imageUrl": "./avatars/characters/kintaro.png",
+      "category": "Fairy tales",
+      "aliases": [
+        "金太郎"
+      ]
+    },
+    {
+      "id": "preset:goldilocks",
+      "name": "Goldilocks",
+      "imageUrl": "./avatars/characters/goldilocks.png",
+      "category": "Fairy tales",
+      "aliases": [
+        "金发姑娘"
+      ]
+    },
+    {
+      "id": "preset:pied-piper",
+      "name": "Pied Piper",
+      "imageUrl": "./avatars/characters/pied-piper.png",
+      "category": "Fairy tales",
+      "aliases": [
+        "花衣魔笛手"
+      ]
+    },
+    {
+      "id": "preset:captain-nemo",
+      "name": "Captain Nemo",
+      "imageUrl": "./avatars/characters/captain-nemo.png",
+      "category": "Storybook",
+      "aliases": [
+        "尼摩船长"
+      ]
     }
   ]
 }

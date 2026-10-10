@@ -1,0 +1,337 @@
+{
+  "mode": "built-in imagegen",
+  "transparentBackground": true,
+  "promptTemplate": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create a polished recognizable full-body character cutout of {name}. Subject details: {details}. Faithful familiar character appearance, appealing detailed illustration with natural dimensional shading, clean edges. Entire body and important accessories visible, upright friendly pose, centered with generous clear margins. Single character only. Actual transparent background. No landscape, other characters, printed names, text, border, watermark or contact sheet.",
+  "characters": [
+    {
+      "id": "winnie-pooh",
+      "name": "Winnie the Pooh",
+      "category": "Cartoons",
+      "details": "a friendly yellow bear in his familiar red short shirt, round ears, smiling"
+    },
+    {
+      "id": "tigger",
+      "name": "Tigger",
+      "category": "Cartoons",
+      "details": "the exuberant orange tiger with black stripes, cream muzzle and springy long tail, cheerful stance"
+    },
+    {
+      "id": "eeyore",
+      "name": "Eeyore",
+      "category": "Cartoons",
+      "details": "the blue-gray donkey with black mane and a pink bow on his tail, gently melancholy smile"
+    },
+    {
+      "id": "piglet",
+      "name": "Piglet",
+      "category": "Cartoons",
+      "details": "the small pink pig in his familiar dark pink striped sleeveless outfit, shy friendly smile"
+    },
+    {
+      "id": "mickey-mouse",
+      "name": "Mickey Mouse",
+      "category": "Cartoons",
+      "details": "the classic black mouse with round black ears, red shorts, white gloves and yellow shoes"
+    },
+    {
+      "id": "minnie-mouse",
+      "name": "Minnie Mouse",
+      "category": "Cartoons",
+      "details": "the classic mouse with round black ears, red polka-dot bow and matching dress, white gloves and yellow heels"
+    },
+    {
+      "id": "donald-duck",
+      "name": "Donald Duck",
+      "category": "Cartoons",
+      "details": "the familiar white duck with blue sailor shirt and cap, red bow tie and orange webbed feet"
+    },
+    {
+      "id": "daisy-duck",
+      "name": "Daisy Duck",
+      "category": "Cartoons",
+      "details": "the familiar white duck with lavender bow and blouse, bracelet and heeled shoes"
+    },
+    {
+      "id": "goofy",
+      "name": "Goofy",
+      "category": "Cartoons",
+      "details": "the lanky cheerful classic dog character with long ears, green hat, orange shirt, blue trousers and brown shoes"
+    },
+    {
+      "id": "pluto",
+      "name": "Pluto",
+      "category": "Cartoons",
+      "details": "the friendly golden-yellow dog with long black ears and green collar, standing on all four paws"
+    },
+    {
+      "id": "bugs-bunny",
+      "name": "Bugs Bunny",
+      "category": "Cartoons",
+      "details": "the familiar tall gray rabbit with white muzzle and belly, long upright ears, relaxed smile holding a carrot"
+    },
+    {
+      "id": "daffy-duck",
+      "name": "Daffy Duck",
+      "category": "Cartoons",
+      "details": "the familiar black duck with white neck ring, orange bill and feet, comical proud pose"
+    },
+    {
+      "id": "tweety",
+      "name": "Tweety",
+      "category": "Cartoons",
+      "details": "the tiny familiar yellow canary with oversized round head, huge blue eyes and orange feet"
+    },
+    {
+      "id": "sylvester",
+      "name": "Sylvester",
+      "category": "Cartoons",
+      "details": "the familiar black and white cat with large red nose and white cheeks, upright friendly pose"
+    },
+    {
+      "id": "tom-cat",
+      "name": "Tom",
+      "category": "Cartoons",
+      "details": "the familiar blue-gray cat with white muzzle, belly and paws, yellow green eyes, standing smiling"
+    },
+    {
+      "id": "jerry-mouse",
+      "name": "Jerry",
+      "category": "Cartoons",
+      "details": "the familiar small brown mouse with large rounded ears and lighter belly, standing with a playful smile"
+    },
+    {
+      "id": "snoopy",
+      "name": "Snoopy",
+      "category": "Cartoons",
+      "details": "the familiar white beagle with black ears and black oval nose, standing upright with a happy smile"
+    },
+    {
+      "id": "charlie-brown",
+      "name": "Charlie Brown",
+      "category": "Cartoons",
+      "details": "the familiar round-headed boy with sparse hair, yellow shirt with black zigzag stripe, black shorts and brown shoes"
+    },
+    {
+      "id": "woodstock",
+      "name": "Woodstock",
+      "category": "Cartoons",
+      "details": "the familiar tiny yellow bird with a tuft of spiky yellow feathers and small black dot eyes"
+    },
+    {
+      "id": "hello-kitty",
+      "name": "Hello Kitty",
+      "category": "Cartoons",
+      "details": "the familiar white cat with black oval eyes, yellow oval nose, whiskers, no mouth, red bow and blue overalls"
+    },
+    {
+      "id": "my-melody",
+      "name": "My Melody",
+      "category": "Cartoons",
+      "details": "the familiar white rabbit with a pink hood and flower beside one long ear, friendly round eyes"
+    },
+    {
+      "id": "kuromi",
+      "name": "Kuromi",
+      "category": "Cartoons",
+      "details": "the familiar white rabbit wearing her black jester hood with pink skull on forehead, mischievous happy expression"
+    },
+    {
+      "id": "cinnamoroll",
+      "name": "Cinnamoroll",
+      "category": "Cartoons",
+      "details": "the familiar fluffy white puppy with extremely long floppy ears, blue eyes, pink cheeks and curled cinnamon-roll tail"
+    },
+    {
+      "id": "stitch",
+      "name": "Stitch",
+      "category": "Cartoons",
+      "details": "the familiar blue alien with oversized ears, dark blue patches, round nose, smiling with four visible limbs"
+    },
+    {
+      "id": "lilo",
+      "name": "Lilo",
+      "category": "Cartoons",
+      "details": "the familiar Hawaiian girl with long black hair, wearing her red dress patterned with white leaves and sandals"
+    },
+    {
+      "id": "elsa",
+      "name": "Elsa",
+      "category": "Animation",
+      "details": "the familiar animated snow queen with platinum-blonde side braid, elegant ice-blue gown and translucent cape, full body, friendly adult appearance"
+    },
+    {
+      "id": "anna",
+      "name": "Anna",
+      "category": "Animation",
+      "details": "the familiar animated young adult princess with auburn braided hair, blue skirt, black embroidered bodice and magenta cape"
+    },
+    {
+      "id": "olaf",
+      "name": "Olaf",
+      "category": "Animation",
+      "details": "the familiar cheerful snowman with carrot nose, twig arms, three snowball body and black coal buttons"
+    },
+    {
+      "id": "woody",
+      "name": "Woody",
+      "category": "Animation",
+      "details": "the familiar friendly cowboy toy with brown hat, yellow plaid shirt, cow-print vest, jeans, boots and sheriff badge"
+    },
+    {
+      "id": "buzz-lightyear",
+      "name": "Buzz Lightyear",
+      "category": "Animation",
+      "details": "the familiar friendly space ranger toy in white green purple suit with clear helmet, full body standing"
+    },
+    {
+      "id": "shrek",
+      "name": "Shrek",
+      "category": "Animation",
+      "details": "the familiar friendly green ogre with trumpet-shaped ears, white tunic, brown vest and brown boots"
+    },
+    {
+      "id": "donkey",
+      "name": "Donkey",
+      "category": "Animation",
+      "details": "the familiar talkative gray donkey with big teeth, bright eyes, large upright ears and shaggy mane"
+    },
+    {
+      "id": "puss-in-boots",
+      "name": "Puss in Boots",
+      "category": "Animation",
+      "details": "the familiar orange tabby cat with huge expressive green eyes, black feathered hat, belt, cape and tall boots"
+    },
+    {
+      "id": "alice",
+      "name": "Alice",
+      "category": "Fairy tales",
+      "details": "Alice from Alice in Wonderland, long blonde hair, blue dress with white apron, white stockings and black shoes"
+    },
+    {
+      "id": "mad-hatter",
+      "name": "Mad Hatter",
+      "category": "Fairy tales",
+      "details": "the whimsical Mad Hatter from Alice in Wonderland, extravagant tall green top hat, colorful Victorian jacket, bow tie, holding a teacup"
+    },
+    {
+      "id": "cheshire-cat",
+      "name": "Cheshire Cat",
+      "category": "Fairy tales",
+      "details": "the grinning Cheshire Cat from Alice in Wonderland, purple and pink striped fur, broad smile and curling tail"
+    },
+    {
+      "id": "white-rabbit",
+      "name": "White Rabbit",
+      "category": "Fairy tales",
+      "details": "the White Rabbit from Alice in Wonderland, white fur, spectacles, red waistcoat and gold pocket watch"
+    },
+    {
+      "id": "red-riding-hood",
+      "name": "Little Red Riding Hood",
+      "category": "Fairy tales",
+      "details": "classic Little Red Riding Hood wearing a red hooded cape and simple dress, holding a wicker basket"
+    },
+    {
+      "id": "snow-white",
+      "name": "Snow White",
+      "category": "Fairy tales",
+      "details": "the recognizable fairy tale princess with short black bob, red bow, blue bodice, puff sleeves and yellow skirt"
+    },
+    {
+      "id": "cinderella",
+      "name": "Cinderella",
+      "category": "Fairy tales",
+      "details": "the recognizable fairy tale princess with blonde updo, elegant pale blue ball gown and glass slippers"
+    },
+    {
+      "id": "pinocchio",
+      "name": "Pinocchio",
+      "category": "Fairy tales",
+      "details": "the recognizable wooden puppet boy with yellow feathered hat, red shorts, yellow shirt, blue bow and a natural wooden nose"
+    },
+    {
+      "id": "peter-pan",
+      "name": "Peter Pan",
+      "category": "Fairy tales",
+      "details": "the recognizable storybook boy with reddish brown hair, green pointed hat with red feather, green tunic and brown shoes"
+    },
+    {
+      "id": "tinker-bell",
+      "name": "Tinker Bell",
+      "category": "Fairy tales",
+      "details": "the recognizable tiny fairy with blonde hair bun, leaf-green dress, translucent wings and green pompom shoes"
+    },
+    {
+      "id": "zhu-bajie",
+      "name": "Zhu Bajie",
+      "category": "Chinese classics",
+      "details": "Zhu Bajie from Journey to the West, friendly rotund pig-faced pilgrim wearing traditional loose robe and dark cap, holding his nine-toothed rake"
+    },
+    {
+      "id": "sha-wujing",
+      "name": "Sha Wujing",
+      "category": "Chinese classics",
+      "details": "Sha Wujing from Journey to the West, tall strong bearded pilgrim with red beard, monk robe, large prayer beads and crescent-shaped monk spade"
+    },
+    {
+      "id": "tang-sanzang",
+      "name": "Tang Sanzang",
+      "category": "Chinese classics",
+      "details": "Tang Sanzang from Journey to the West, gentle monk wearing red and gold Buddhist robes and ornate crown, holding a pilgrim staff"
+    },
+    {
+      "id": "nezha",
+      "name": "Nezha",
+      "category": "Chinese classics",
+      "details": "Nezha from Chinese mythology, youthful deity with two hair buns, red sash, lotus-patterned traditional outfit and a golden universe ring, standing heroically"
+    },
+    {
+      "id": "hua-mulan",
+      "name": "Hua Mulan",
+      "category": "Chinese classics",
+      "details": "Hua Mulan the legendary Chinese heroine, adult woman wearing handsome traditional Chinese lamellar armor with red accents and holding a sheathed sword, long black hair tied up"
+    },
+    {
+      "id": "guan-yu",
+      "name": "Guan Yu",
+      "category": "Chinese classics",
+      "details": "Guan Yu from Romance of the Three Kingdoms, stately red-faced warrior with long flowing black beard, green robe and gold armor, holding the iconic green dragon crescent blade"
+    },
+    {
+      "id": "dorothy",
+      "name": "Dorothy Gale",
+      "category": "Storybook",
+      "details": "Dorothy Gale from The Wonderful Wizard of Oz, brown braids, blue gingham dress, red shoes, carrying a wicker basket"
+    },
+    {
+      "id": "scarecrow",
+      "name": "Scarecrow",
+      "category": "Storybook",
+      "details": "the friendly Scarecrow from The Wonderful Wizard of Oz, soft burlap face, floppy pointed hat, patched green clothes and straw hands"
+    },
+    {
+      "id": "tin-man",
+      "name": "Tin Man",
+      "category": "Storybook",
+      "details": "the friendly Tin Woodman from The Wonderful Wizard of Oz, shiny silver tin body, funnel hat, gentle face and small heart emblem"
+    },
+    {
+      "id": "cowardly-lion",
+      "name": "Cowardly Lion",
+      "category": "Storybook",
+      "details": "the friendly Cowardly Lion from The Wonderful Wizard of Oz, golden fur, large curly mane and brave gentle smile, upright pose"
+    },
+    {
+      "id": "pippi",
+      "name": "Pippi Longstocking",
+      "category": "Storybook",
+      "details": "Pippi Longstocking with red pigtails sticking sideways, freckles, patched tunic, mismatched long stockings and oversized shoes"
+    },
+    {
+      "id": "little-prince",
+      "name": "The Little Prince",
+      "category": "Storybook",
+      "details": "the recognizable little prince with tousled blond hair, green outfit, long golden scarf and a red rose held carefully"
+    }
+  ]
+}

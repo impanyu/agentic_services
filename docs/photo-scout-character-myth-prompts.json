@@ -1,0 +1,126 @@
+{
+  "mode": "built-in imagegen",
+  "promptTemplate": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create a polished recognizable full-body character cutout of {name}. Subject details: {details}. Faithful familiar character appearance, appealing detailed illustration with natural dimensional shading, clean edges. Entire body and important accessories visible, upright friendly pose, centered with generous clear margins. Single character only. Actual transparent background. No landscape, other characters, printed names, text, border, watermark or contact sheet.",
+  "characters": [
+    {
+      "id": "zeus",
+      "name": "Zeus",
+      "category": "Mythology",
+      "details": "Zeus the ancient Greek god, mature adult with flowing white hair and beard, white gold robe, holding a stylized golden lightning bolt"
+    },
+    {
+      "id": "poseidon",
+      "name": "Poseidon",
+      "category": "Mythology",
+      "details": "Poseidon the ancient Greek sea god, dignified adult with long blue-gray beard, sea-green classical robe and golden trident"
+    },
+    {
+      "id": "hercules",
+      "name": "Hercules",
+      "category": "Mythology",
+      "details": "Hercules from Greek mythology, strong adult hero with lion-skin shoulder cape, classical sandals and a wooden club"
+    },
+    {
+      "id": "anubis",
+      "name": "Anubis",
+      "category": "Mythology",
+      "details": "Anubis the ancient Egyptian deity, elegant black jackal head, gold blue collar, white kilt and golden staff"
+    },
+    {
+      "id": "norse-thor",
+      "name": "Thor (Norse myth)",
+      "category": "Mythology",
+      "details": "Thor from original Norse mythology, adult red-haired bearded Viking in historical leather and chainmail, fur cape and short-handled hammer; original mythological depiction"
+    },
+    {
+      "id": "norse-loki",
+      "name": "Loki (Norse myth)",
+      "category": "Mythology",
+      "details": "Loki from original Norse mythology, adult clever red-haired trickster in green historical Norse robes and a leather cloak; original mythological depiction"
+    },
+    {
+      "id": "chang-e",
+      "name": "Chang'e",
+      "category": "Chinese classics",
+      "details": "Chang'e the adult Chinese moon goddess with graceful black hair updo, flowing white lavender hanfu, jade hair ornaments, holding a small jade rabbit"
+    },
+    {
+      "id": "hou-yi",
+      "name": "Hou Yi",
+      "category": "Chinese classics",
+      "details": "Hou Yi the adult legendary Chinese archer in traditional dark blue and gold warrior robes, long black hair tied up, holding a great bow and quiver"
+    },
+    {
+      "id": "nuwa",
+      "name": "Nuwa",
+      "category": "Chinese classics",
+      "details": "Nuwa the adult mother goddess of Chinese mythology, elegant Chinese woman with flowing hanfu upper garment and long curled emerald serpent lower body, holding a five-colored stone"
+    },
+    {
+      "id": "zhong-kui",
+      "name": "Zhong Kui",
+      "category": "Chinese classics",
+      "details": "Zhong Kui the famous Chinese guardian, imposing adult with bushy black beard, traditional red official robe and black winged hat, holding a ceremonial sword"
+    },
+    {
+      "id": "ji-gong",
+      "name": "Ji Gong",
+      "category": "Chinese classics",
+      "details": "Ji Gong the beloved eccentric adult Chinese monk, friendly smiling face, worn patched monk robe, crooked cap and a palm-leaf fan"
+    },
+    {
+      "id": "jiang-ziya",
+      "name": "Jiang Ziya",
+      "category": "Chinese classics",
+      "details": "Jiang Ziya the wise elderly Chinese sage with white hair and beard, long traditional ivory robes and wooden fishing rod"
+    },
+    {
+      "id": "bao-zheng",
+      "name": "Bao Zheng",
+      "category": "Chinese classics",
+      "details": "Bao Zheng the legendary Chinese upright magistrate with dark face and crescent forehead mark, long beard, black official hat and richly patterned official robe"
+    },
+    {
+      "id": "li-bai",
+      "name": "Li Bai",
+      "category": "Chinese classics",
+      "details": "Li Bai the famous adult Tang dynasty poet, elegant white scholar robe, long black hair, moustache and small beard, holding a scroll"
+    },
+    {
+      "id": "momotaro",
+      "name": "Momotaro",
+      "category": "Fairy tales",
+      "details": "Momotaro the Japanese peach-boy folk hero, youthful traveler wearing traditional patterned blue hakama, white headband and red vest, holding a peach and small pouch"
+    },
+    {
+      "id": "kintaro",
+      "name": "Kintaro",
+      "category": "Fairy tales",
+      "details": "Kintaro the recognizable strong Japanese folk child, black bob hair, bright red traditional apron with golden motif, barefoot, holding a small wooden-handled axe"
+    },
+    {
+      "id": "rapunzel",
+      "name": "Rapunzel",
+      "category": "Fairy tales",
+      "details": "Rapunzel from the original Grimm fairy tale, young adult woman with exceptionally long golden braid, simple green and violet medieval dress, holding a hair ribbon; original storybook depiction"
+    },
+    {
+      "id": "goldilocks",
+      "name": "Goldilocks",
+      "category": "Fairy tales",
+      "details": "Goldilocks from the traditional fairy tale, cheerful child with golden ringlets wearing a blue pinafore dress and brown boots, holding a wooden spoon"
+    },
+    {
+      "id": "pied-piper",
+      "name": "Pied Piper",
+      "category": "Fairy tales",
+      "details": "the Pied Piper of Hamelin, adult musician wearing a colorful patchwork medieval tunic, feathered hat and boots, holding a wooden flute"
+    },
+    {
+      "id": "captain-nemo",
+      "name": "Captain Nemo",
+      "category": "Storybook",
+      "details": "Captain Nemo from Jules Verne, dignified adult bearded submarine explorer with dark naval coat, gold trim and a nautical compass; no actor likeness"
+    }
+  ]
+}

@@ -190,3 +190,10 @@
 /* Character cutouts need space to remain recognizable in the library. */
 .avatar-library .avatar-pick img,.avatar-picker .avatar-pick img{height:140px;object-fit:contain}.avatar-pick span{font-weight:600}.avatar-pick:hover{border-color:#aa8acb;background:#f2eafa}
 @media(max-width:600px){.avatar-library .avatar-grid,.avatar-picker .avatar-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.avatar-library .avatar-pick img,.avatar-picker .avatar-pick img{height:130px}}
+
+/* Browse the expanded catalog without filling the mobile viewport. */
+.avatar-filters{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:8px;margin:10px 0}
+.avatar-filters input,.avatar-filters select{min-width:0;width:100%;min-height:40px;border:1px solid #ded2ec;border-radius:10px;padding:8px 10px;background:#fff;color:#64467f;font:inherit;font-size:13px}
+.avatar-count{margin:6px 0 12px;color:#82738d}
+.avatar-card[hidden]{display:none}
+@media(max-width:600px){.avatar-filters input,.avatar-filters select{font-size:16px}.avatar-filters{grid-template-columns:1fr}.avatar-library .avatar-pick img,.avatar-picker .avatar-pick img{height:115px}}

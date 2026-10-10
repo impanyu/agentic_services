@@ -1,0 +1,66 @@
+{
+  "mode": "built-in imagegen",
+  "promptTemplate": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create a polished recognizable full-body character cutout of {name}. Subject details: {details}. Faithful familiar character appearance, appealing detailed illustration with natural dimensional shading, clean edges. Entire body and important accessories visible, upright friendly pose, centered with generous clear margins. Single character only. Actual transparent background. No landscape, other characters, printed names, text, border, watermark or contact sheet.",
+  "characters": [
+    {
+      "id": "frankenstein",
+      "name": "Frankenstein's Monster",
+      "category": "Storybook",
+      "details": "the recognizable friendly fictional monster with a broad forehead, dark hair, neck bolts, patched dark coat and large boots, gentle welcoming smile"
+    },
+    {
+      "id": "dracula",
+      "name": "Count Dracula",
+      "category": "Storybook",
+      "details": "the classic fictional Victorian vampire gentleman with slicked black hair, pale face, black suit, white shirt and black cape with red lining, friendly theatrical expression"
+    },
+    {
+      "id": "arsene-lupin",
+      "name": "Arsène Lupin",
+      "category": "Storybook",
+      "details": "the classic fictional French gentleman thief, stylish adult with black top hat, monocle, moustache, formal suit and cane; no actor likeness"
+    },
+    {
+      "id": "odysseus",
+      "name": "Odysseus",
+      "category": "Mythology",
+      "details": "Odysseus the legendary adult Greek traveler, short dark curly hair and beard, ancient Greek travel cloak, sandals and bow"
+    },
+    {
+      "id": "perseus",
+      "name": "Perseus",
+      "category": "Mythology",
+      "details": "Perseus the adult Greek mythological hero wearing classical bronze armor, winged sandals and a polished round shield, friendly heroic stance"
+    },
+    {
+      "id": "romeo",
+      "name": "Romeo",
+      "category": "Storybook",
+      "details": "Romeo from Shakespeare, handsome adult Renaissance Italian gentleman with wavy dark hair, burgundy doublet, dark hose and leather boots, holding a single red rose"
+    },
+    {
+      "id": "juliet",
+      "name": "Juliet",
+      "category": "Storybook",
+      "details": "Juliet from Shakespeare, adult Renaissance Italian woman with long dark hair, elegant rose-colored floor-length gown and pearl hair ornaments, warm smile"
+    },
+    {
+      "id": "joan-of-arc",
+      "name": "Joan of Arc",
+      "category": "Historical",
+      "details": "Joan of Arc the famous adult historical heroine with short dark hair, medieval polished armor and white banner bearing a small golden fleur-de-lis; no modern actor likeness"
+    },
+    {
+      "id": "confucius",
+      "name": "Confucius",
+      "category": "Chinese classics",
+      "details": "Confucius the elderly Chinese philosopher with long gray beard, traditional plain scholarly robes and cap, holding a bamboo scroll, wise kindly face"
+    },
+    {
+      "id": "cleopatra",
+      "name": "Cleopatra",
+      "category": "Historical",
+      "details": "Cleopatra the famous adult Egyptian queen with black bob hair, gold and lapis jewelry, elegant fully covered ivory and gold royal gown, dignified friendly pose"
+    }
+  ]
+}

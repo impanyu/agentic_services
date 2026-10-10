@@ -1,0 +1,66 @@
+{
+  "mode": "built-in imagegen",
+  "promptTemplate": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create a polished recognizable full-body character cutout of {name}. Subject details: {details}. Faithful familiar character appearance, appealing detailed illustration with natural dimensional shading, clean edges. Entire body and important accessories visible, upright friendly pose, centered with generous clear margins. Single character only. Actual transparent background. No landscape, other characters, printed names, text, border, watermark or contact sheet.",
+  "characters": [
+    {
+      "id": "dr-watson",
+      "name": "Dr. Watson",
+      "category": "Storybook",
+      "details": "the classic fictional Victorian doctor and detective companion, moustache, brown three-piece suit, bowler hat and doctor's bag; no actor likeness"
+    },
+    {
+      "id": "robin-hood",
+      "name": "Robin Hood",
+      "category": "Storybook",
+      "details": "the legendary friendly English outlaw archer, green hood and tunic, leather boots, wooden longbow and quiver"
+    },
+    {
+      "id": "merlin",
+      "name": "Merlin",
+      "category": "Storybook",
+      "details": "the legendary elderly wizard with long white beard, blue star-patterned robe and pointed hat, wooden staff"
+    },
+    {
+      "id": "king-arthur",
+      "name": "King Arthur",
+      "category": "Storybook",
+      "details": "the legendary adult medieval king with golden crown, polished knight armor, blue cape and Excalibur sword"
+    },
+    {
+      "id": "don-quixote",
+      "name": "Don Quixote",
+      "category": "Storybook",
+      "details": "the famous thin elderly Spanish knight with moustache and pointed beard, improvised armor and lance"
+    },
+    {
+      "id": "sinbad",
+      "name": "Sinbad the Sailor",
+      "category": "Storybook",
+      "details": "the classic Arabian Nights adventurous adult sailor, white turban, colorful traditional garments, sash and boots"
+    },
+    {
+      "id": "aladdin",
+      "name": "Aladdin",
+      "category": "Fairy tales",
+      "details": "Aladdin from the classic Arabian Nights story, friendly young adult in Persian silk vest, loose trousers, turban and slippers holding a brass lamp; original storybook interpretation"
+    },
+    {
+      "id": "scheherazade",
+      "name": "Scheherazade",
+      "category": "Storybook",
+      "details": "the wise adult storyteller from Arabian Nights, richly patterned Persian dress, golden jewelry, holding a small storybook"
+    },
+    {
+      "id": "medusa",
+      "name": "Medusa",
+      "category": "Mythology",
+      "details": "the legendary Greek adult gorgon with elegant coiling green snake hair, emerald classical robe and gold jewelry, friendly confident face"
+    },
+    {
+      "id": "athena",
+      "name": "Athena",
+      "category": "Mythology",
+      "details": "the adult Greek goddess of wisdom with crested golden helmet, white and gold classical drapery, round shield and spear, dignified pose"
+    }
+  ]
+}
