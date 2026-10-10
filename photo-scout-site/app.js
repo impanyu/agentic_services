@@ -468,7 +468,7 @@ const studioNote=node('p','Your photo and this view will be sent to OpenAI to cr
 const studioGenerate=node('button','Create my photo · Free test','studio-generate');studioGenerate.type='button';studioGenerate.disabled=true;
 const studioStatus=node('p',null,'studio-status');studioStatus.setAttribute('role','status');studioStatus.setAttribute('aria-live','polite');
 const studioResult=node('img',null,'studio-result');studioResult.alt='AI-generated travel photo';studioResult.hidden=true;
-const studioSave=node('button','Save to Photos','studio-save');studioSave.type='button';studioSave.hidden=true;
+const studioSave=node('button','Send to','studio-save');studioSave.type='button';studioSave.hidden=true;
 const studioSaveHint=node('p',null,'studio-save-hint small');studioSaveHint.setAttribute('role','status');studioSaveHint.hidden=true;
 const studioDownload=node('a','Download PNG','studio-download');studioDownload.hidden=true;studioDownload.download='photo-scout-ai-photo.png';
 const studioPending=node('div',null,'studio-job-progress');studioPending.hidden=true;studioPending.setAttribute('role','status');studioPending.setAttribute('aria-live','polite');
@@ -513,7 +513,7 @@ async function showStudioOutput(blob){
  studioOutputFile=new File([blob],'photo-scout-ai-photo.png',{type:'image/png'});
  // Data URLs are allowed by the page image policy and support long-press saving.
  const preview=await readPhoto(blob);if(generation!==studioOutputGeneration)return;studioResult.src=preview;studioResult.hidden=false;studioDownload.href=studioUrl;studioDownload.hidden=false;studioSave.hidden=false;studioSaveHint.hidden=false;
- studioSaveHint.textContent='On iPhone, tap Save to Photos, then choose Save Image. You can also press and hold the photo to save it. Downloads may go to Files on your device.';
+ studioSaveHint.textContent='Tap Send to to choose an app or Save Image in the system menu. You can also press and hold the photo to save it. Downloads may go to Files on your device.';
 }
 studioSave.addEventListener('click',async()=>{
  if(!studioOutputFile)return;
@@ -581,7 +581,7 @@ function showHistorySearch(result,context,history){
 }
 const savedPhoto=node('dialog',null,'photo-studio saved-photo');savedPhoto.setAttribute('aria-label','Saved photo');
 const savedPhotoTop=node('div',null,'studio-heading'),savedPhotoTitle=node('h2','Your saved selfie'),savedPhotoClose=node('button','Close ×');savedPhotoClose.type='button';savedPhotoTop.append(savedPhotoTitle,savedPhotoClose);
-const savedPhotoPlace=node('p',null,'small'),savedPhotoImage=node('img',null,'studio-result'),savedPhotoStatus=node('p',null,'studio-status'),savedPhotoParams=node('div',null,'saved-photo-params'),savedPhotoSave=node('button','Save to Photos','studio-save'),savedPhotoDownload=node('a','Download PNG','studio-save studio-download'),savedPhotoHint=node('p',null,'small');savedPhotoImage.alt='Saved AI-generated travel photo';savedPhotoStatus.setAttribute('role','status');savedPhotoDownload.download='photo-scout-ai-photo.png';
+const savedPhotoPlace=node('p',null,'small'),savedPhotoImage=node('img',null,'studio-result'),savedPhotoStatus=node('p',null,'studio-status'),savedPhotoParams=node('div',null,'saved-photo-params'),savedPhotoSave=node('button','Send to','studio-save'),savedPhotoDownload=node('a','Download PNG','studio-save studio-download'),savedPhotoHint=node('p',null,'small');savedPhotoImage.alt='Saved AI-generated travel photo';savedPhotoStatus.setAttribute('role','status');savedPhotoDownload.download='photo-scout-ai-photo.png';
 const savedPhotoBackground=node('section',null,'saved-photo-background');
 const savedPhotoNav=node('nav',null,'saved-photo-nav');savedPhotoNav.setAttribute('aria-label','Navigate to this photo location');
 savedPhoto.append(savedPhotoTop,savedPhotoPlace,savedPhotoImage,savedPhotoStatus,savedPhotoBackground,savedPhotoSave,savedPhotoDownload,savedPhotoHint);document.body.append(savedPhoto);
@@ -637,7 +637,7 @@ async function viewSavedPhoto(task){
   renderSavedPhotoParams(report.context||task.context,task.created);
   if(report.state==='complete'){
    const response=await fetch(api+'/photo-scout/v1/portraits/'+encodeURIComponent(task.id)+'/image',{credentials:'include'});if(!response.ok)throw Error('Could not load your saved photo');const blob=await response.blob(),preview=await readPhoto(blob);if(generation!==savedPhotoGeneration)return;
-   savedPhotoFile=new File([blob],'photo-scout-ai-photo.png',{type:'image/png'});savedPhotoUrl=URL.createObjectURL(blob);savedPhotoImage.src=preview;savedPhotoImage.hidden=false;savedPhotoSave.hidden=false;savedPhotoDownload.href=savedPhotoUrl;savedPhotoDownload.hidden=false;savedPhotoStatus.textContent=task.expiresAt===null||authUser?'AI-generated photo · Saved permanently to your account.':'AI-generated photo · Guest photo kept until 7 days after your last visit.';savedPhotoHint.textContent='On iPhone, use Save to Photos or press and hold the photo to save it.';renderPhotoSharing(report.context||task.context);return;
+   savedPhotoFile=new File([blob],'photo-scout-ai-photo.png',{type:'image/png'});savedPhotoUrl=URL.createObjectURL(blob);savedPhotoImage.src=preview;savedPhotoImage.hidden=false;savedPhotoSave.hidden=false;savedPhotoDownload.href=savedPhotoUrl;savedPhotoDownload.hidden=false;savedPhotoStatus.textContent=task.expiresAt===null||authUser?'AI-generated photo · Saved permanently to your account.':'AI-generated photo · Guest photo kept until 7 days after your last visit.';savedPhotoHint.textContent='Use Send to to choose an app or save the image. You can also press and hold the photo to save it.';renderPhotoSharing(report.context||task.context);return;
   }
   if(report.state==='failed'){savedPhotoStatus.textContent=report.error||'This photo could not be created.';return;}
   savedPhotoStatus.textContent=report.state==='queued'?'Your selfie is queued…':'Your selfie is being created…';savedPhotoTimer=setTimeout(refresh,4000);
@@ -727,7 +727,7 @@ function photoSocialLinks(url,text){
 function renderPhotoSharing(context){
  const generation=savedPhotoGeneration,photoId=savedPhoto.dataset.photoId,publicId=savedPhoto.dataset.publication;
  const text='My AI-generated selfie at '+(context?.name||'a photo spot')+' · Photo Scout';
- const summary=node('summary','Share to social media'),body=node('div',null,'photo-share-body'),status=node('p',null,'small');status.setAttribute('role','status');
+ const summary=node('summary','Share'),body=node('div',null,'photo-share-body'),status=node('p',null,'small');status.setAttribute('role','status');
  const native=node('button','Share photo · More apps','studio-save'),wechat=node('button','WeChat / 微信','studio-save');native.type=wechat.type='button';
  const sharePhoto=async(weChat=false)=>{
   if(generation!==savedPhotoGeneration)return;
