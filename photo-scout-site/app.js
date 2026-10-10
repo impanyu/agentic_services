@@ -456,7 +456,7 @@ const studioSave=node('button','Save to Photos','studio-save');studioSave.type='
 const studioSaveHint=node('p',null,'studio-save-hint small');studioSaveHint.setAttribute('role','status');studioSaveHint.hidden=true;
 const studioDownload=node('a','Download PNG','studio-download');studioDownload.hidden=true;studioDownload.download='photo-scout-ai-photo.png';
 const studioPending=node('div',null,'studio-job-progress');studioPending.hidden=true;studioPending.setAttribute('role','status');studioPending.setAttribute('aria-live','polite');
-studio.append(studioTop,studioPlace,studioImages,uploadLabel,studioStyles,studioOptions,poseLabel,studioNote,studioGenerate,studioPending,studioStatus,studioResult,studioSave,studioDownload,studioSaveHint);document.body.append(studio);
+studio.append(studioTop,studioPlace,studioPending,studioImages,uploadLabel,studioStyles,studioOptions,poseLabel,studioNote,studioGenerate,studioStatus,studioResult,studioSave,studioDownload,studioSaveHint);document.body.append(studio);
 // This separate map layer survives shortlist/history redraws and dialog closure.
 const selfieActivityLayer=L.layerGroup().addTo(map);
 const studioTask=node('button',null,'selfie-task');studioTask.type='button';studioTask.hidden=true;studioTask.setAttribute('aria-live','polite');
