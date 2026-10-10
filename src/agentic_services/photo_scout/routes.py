@@ -395,14 +395,10 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
             if re.fullmatch(r'google-place-photo://[A-Za-z0-9_-]{1,200}/[a-f0-9]{64}',url):
                 results.append(image_links({'spots':[{'imageReference':url}]})['spots'][0]['imageUrl']);continue
             if len(url)>4000:raise HTTPException(422,'Invalid Street View URL')
-            u=urlsplit(url);q=parse_qs(u.query)
-            pano=q.get('pano',[''])[0];heading=q.get('heading',[''])[0];pitch=q.get('pitch',['0'])[0]
-            if u.scheme!='https' or u.netloc!='www.google.com' or u.path!='/maps/@' or q.get('map_action')!=['pano'] or not re.fullmatch(r'[A-Za-z0-9_-]{1,200}',pano) or not heading.isdigit() or not 0<=int(heading)<360 or not re.fullmatch(r'-?\d{1,2}',pitch) or not -90<=int(pitch)<=90:
-                raise HTTPException(422,'Invalid Street View URL')
-            try:fov=int(q.get('fov',['120'])[0])
-            except ValueError:raise HTTPException(422,'Invalid field of view')
-            if not 30<=fov<=120:raise HTTPException(422,'Invalid field of view')
-            result=image_links({'spots':[{'streetViewReference':f'google-streetview://{pano}/{int(heading)}'+(f'/{int(pitch)}/{fov}' if fov!=120 else f'/{int(pitch)}' if int(pitch) else '')}]})
+            from .portraits import background_reference
+            try:reference=background_reference('google-street-view',url)
+            except HTTPException:raise HTTPException(422,'Invalid Street View URL')
+            result=image_links({'spots':[{'streetViewReference':reference}]})
             results.append(result['spots'][0].get('imageUrl'))
         return Response(json.dumps({'imageUrls':results}),media_type='application/json',headers={'Cache-Control':'private, no-store'})
 

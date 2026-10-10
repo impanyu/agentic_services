@@ -99,7 +99,7 @@ def test_private_job_edits_both_images_and_removes_upload(tmp_path,monkeypatch,i
     monkeypatch.setattr(portraits,'AsyncOpenAI',Client);monkeypatch.setattr(portraits,'image_data',background)
     settings=Settings(openai_api_key='fixture',openai_model='test',database_path=tmp_path/'db',base_url='https://api.test',service_api_key='private')
     app=create_app(settings=settings);client=TestClient(app,base_url='https://api.test');auth={'Authorization':'Bearer private'}
-    body={'portrait':'data:image/png;base64,'+base64.b64encode(raw).decode(),'background':'https://www.google.com/maps/@?map_action=pano&pano=abc&heading=90&pitch=-20','provider':'google-street-view','place':'Test park'}
+    body={'portrait':'data:image/png;base64,'+base64.b64encode(raw).decode(),'background':'https://www.google.com/maps/@?map_action=pano&pano=abc&heading=90.0&pitch=-20.0','provider':'google-street-view','place':'Test park'}
     assert client.post('/photo-scout/v1/portraits',json=body).status_code==401
     assert client.post('/photo-scout/v1/portraits',json=body|{'style':'unsupported'},headers=auth).status_code==422
     for field in ['posture','weather','expression','framing']:
