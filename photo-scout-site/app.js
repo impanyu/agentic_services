@@ -613,7 +613,7 @@ function savedPhotoNavigation(context){
  const {lat,lon}=context?.poi||{};
  if(!Number.isFinite(lat)||!Number.isFinite(lon)||Math.abs(lat)>90||Math.abs(lon)>180)return [];
  const destination=lat+','+lon;
- return [['Navigate here · Google Maps','https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(destination)],['Apple Maps','https://maps.apple.com/?daddr='+encodeURIComponent(destination)]];
+ return [['Google Maps','https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(destination)],['Apple Maps','https://maps.apple.com/?daddr='+encodeURIComponent(destination)]];
 }
 function renderSavedPhotoParams(context,created){
  const pos=context?.poi,place=node('button','⌖ '+(context?.name||'Show background on map'),'photo-place-link');place.type='button';place.title='Show background location on map';place.disabled=!pos||![pos.lat,pos.lon].every(Number.isFinite);place.addEventListener('click',()=>{savedPhoto.close();focusPhotoPlace({context});});
