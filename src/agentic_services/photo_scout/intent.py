@@ -45,8 +45,8 @@ class PhotoIntent(BaseModel):
 INSTRUCTIONS='''Generate an executable searchProgram by composing the following small tools into an ordered data-flow program. Plan the complete retrieval once; there is no autonomous agent loop. Every step has an ID and may reference only earlier IDs; output names the final step. Independent sources run in parallel. Max 24 steps, max 8 source searches. No unused steps. Each step has tool, inputs, queries, geographicKinds, osmFeatures, combination, exclude, discoveryHints, weights, visualIntent; unused arguments must stay empty/default. All steps share the resolved center and radius. Do not write Python or arbitrary code.
 Tools and input/output contracts:
 - search_places: inputs=[], nonempty queries => place candidates from Google Places. Queries are complete subject descriptions OR alternatives; attributes of one subject stay in the same phrase. discoveryHints=true only for optional scenic discovery categories such as parks/viewpoints, not requested cafes or businesses.
-- search_geography: inputs=[], nonempty geographicKinds => geographic geometry and eligible roads/paths. It does NOT return POIs.
-- search_features: inputs=[], nonempty osmFeatures => mapped feature groups. It does NOT return POIs.
+- search_geography: inputs=[], nonempty geographicKinds => geographic geometry and eligible roads/paths. It does NOT return POIs. combination=any may mark the geometry itself as an OR expression, carried into every downstream filter/sample.
+- search_features: inputs=[], nonempty osmFeatures => mapped feature groups. It does NOT return POIs. combination=any may mark the feature groups themselves as an OR expression, carried downstream.
 - sample_geography: inputs=[geography step], combination=all/any => path viewpoints inside the specified geographic requirements.
 - feature_points: inputs=[features step], combination=all/any => feature locations satisfying the mapped requirements.
 - filter_geography: inputs=[place set, geography step], combination=all/any, exclude=false => spatially filtered places. exclude=true removes places inside those geographic areas.

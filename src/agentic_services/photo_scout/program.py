@@ -41,7 +41,7 @@ class SearchStep(BaseModel):
         if bool(self.osmFeatures)!=(self.tool=='search_features'):raise ValueError('Only search_features accepts nonempty osmFeatures')
         if self.exclude and self.tool not in ('filter_geography','filter_features'):raise ValueError('Exclusion requires a spatial filter')
         if self.discoveryHints and self.tool!='search_places':raise ValueError('Hints apply only to search_places')
-        if self.combination!='all' and self.tool not in ('sample_geography','feature_points','filter_geography','filter_features'):raise ValueError('This tool has no combination argument')
+        if self.combination!='all' and self.tool not in ('search_geography','search_features','sample_geography','feature_points','filter_geography','filter_features'):raise ValueError('This tool has no combination argument')
         if self.weights and (self.tool!='union' or len(self.weights)!=len(self.inputs) or any(w<1 or w>4 for w in self.weights)):
             raise ValueError('Union weights must match inputs and be between one and four')
         return self
@@ -98,11 +98,13 @@ class Geography:
     features:list[dict]
     paths:list[dict]
     kinds:list[str]
+    combination:str="all"
 
 @dataclass
 class Features:
     groups:list[list[dict]]
     queries:list[OSMFeatureQuery]
+    combination:str="all"
 
 @dataclass
 class Area:
@@ -154,30 +156,30 @@ class Tools:
         fs,paths,status=await self.provider(self.providers.geography,p.lat,p.lon,p.radius,s.geographicKinds,self.database)
         self.statuses[s.id]=status
         if status.get('status')!='ok':raise ValueError('Geographic search is temporarily unavailable')
-        return Geography(fs,paths,s.geographicKinds)
+        return Geography(fs,paths,s.geographicKinds,s.combination)
 
     async def search_features(self,s,inputs):
         p=self.p
         groups,status=await self.provider(self.providers.osm_features,p.lat,p.lon,p.radius,s.osmFeatures,self.database)
         self.statuses[s.id]=status
         if status.get('status')!='ok':raise ValueError('Mapped-feature search is temporarily unavailable')
-        return Features(groups,s.osmFeatures)
+        return Features(groups,s.osmFeatures,s.combination)
 
     async def sample_geography(self,s,inputs):
         region=inputs[0];p=self.p
-        rows=geographic_places(p.lat,p.lon,p.radius,region.features,region.paths,region.kinds,limit=50,combination=s.combination)
+        rows=geographic_places(p.lat,p.lon,p.radius,region.features,region.paths,region.kinds,limit=50,combination="any" if region.combination=="any" else s.combination)
         return Places(rows,{r['id']:[self.empty_path(s,filters=[s.id])] for r in rows})
 
     async def feature_points(self,s,inputs):
         features=inputs[0]
         rows=list({p['id']:p for group in features.groups for p in group
-            if matches_features(p,features.groups,features.queries,combination=s.combination)}.values())
+            if matches_features(p,features.groups,features.queries,combination="any" if features.combination=="any" else s.combination)}.values())
         return Places(rows,{r['id']:[self.empty_path(s,filters=[s.id])] for r in rows})
 
     def matches(self,row,s,source):
         if isinstance(source,Geography):
-            fit=bool(filter_places([row],source.features,source.kinds,self.p.lat,self.p.lon,combination=s.combination))
-        else:fit=matches_features(row,source.groups,source.queries,combination=s.combination)
+            fit=bool(filter_places([row],source.features,source.kinds,self.p.lat,self.p.lon,combination="any" if source.combination=="any" else s.combination))
+        else:fit=matches_features(row,source.groups,source.queries,combination="any" if source.combination=="any" else s.combination)
         return not fit if s.exclude else fit
 
     async def filter_geography(self,s,inputs):

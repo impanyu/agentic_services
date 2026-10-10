@@ -213,3 +213,14 @@ def test_resolve_and_human_workflow_execute_generated_program(tmp_path,monkeypat
         assert client.post('/photo-scout/v1/preview',headers=h,json=selected).status_code==200
         selected['searchProgram']['steps'][4]['exclude']=True
         assert client.post('/photo-scout/v1/preview',headers=h,json=selected).status_code==422
+
+
+def test_source_geography_alternative_expression_is_carried_into_filter():
+    plan={'steps':[{'id':'p','tool':'search_places','queries':['cafes']},
+        {'id':'water','tool':'search_geography','geographicKinds':['lake','sea'],'combination':'any'},
+        {'id':'out','tool':'filter_geography','inputs':['p','water']}],'output':'out'}
+    async def geography(*args):return [lake()],[],{'status':'ok'}
+    ps=providers();ps.geography=geography
+    result=run(plan,ps)
+    assert [p['id'] for p in result.places]==['park-lake']
+    assert result.program_execution.filter_images([{'lat':0,'lon':-.005,'poi':{'id':'park-lake'}}])
