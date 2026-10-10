@@ -7,7 +7,8 @@ const hydratedSearches=new Set();
 let tasksReady=false,taskRecords=[],taskRefreshBusy=false,taskRecoveryGeneration=0,taskRefreshTimer=null;
 const api=location.hostname==='localhost'||location.hostname==='127.0.0.1'?'': 'https://api.aisoup.net';
 const el=id=>document.getElementById(id), message=s=>{el('message').textContent=s;if(searchBusy||pipelineBusy||resolving)el('progress-detail').textContent=s};
-const map=L.map('map',{zoomControl:false}).setView([41.8827,-87.6233],15);
+// Keep overlays in the same world copy as the repeating basemap when crossing the date line.
+const map=L.map('map',{zoomControl:false,worldCopyJump:true}).setView([41.8827,-87.6233],15);
 L.control.zoom({position:'bottomright'}).addTo(map);
 const controls=el('map-controls');controls.open=false;L.DomEvent.disableClickPropagation(controls);L.DomEvent.disableScrollPropagation(controls);L.DomEvent.disableClickPropagation(document.querySelector('.map-toolbar'));L.DomEvent.disableClickPropagation(el('prompt-form'));L.DomEvent.disableScrollPropagation(document.querySelector('.prompt-panel'));L.DomEvent.disableClickPropagation(document.querySelector('.scout-dock'));L.DomEvent.disableScrollPropagation(document.querySelector('.scout-dock'));L.DomEvent.disableClickPropagation(el('center-pin'));L.DomEvent.disableClickPropagation(document.querySelector('.map-account'));
 const streetTiles=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'});
