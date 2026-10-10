@@ -29,10 +29,18 @@ Try your best with arbitrary language, typos and ambiguous sentences; do not ask
 or give alternatives. Choose the most reasonable location/intent from this request.
 Convert radius units: mile=1609.344m, foot=.3048m; preserve supplied radius if omitted;
 city-wide without distance uses 20000m; clamp 100..20000m and explain any clamp.
-A standalone specific street address uses point_imagery: one nearest panorama within
-50m, eight directions. The tool automatically falls back to regional mood discovery
-around that same address if no usable panorama exists. Do not add a fallback program.
-An address WITH nearby targets/geography uses normal regional tools instead.
+A standalone specific street address OR unique named landmark (e.g. 'Eiffel Tower',
+'Cloud Gate, Chicago', '成都 IFS 熊猫', '123 Main St, Chicago') uses center_imagery.
+Resolve that place as the center, retain the requested/UI radius, and explore the full
+surrounding area with mood hints. The center's nearest Google panorama within 50m is
+reserved first with all eight directions, and receives a transparent proximity ranking
+bonus; if unavailable, regional discovery still proceeds. A location name here is an
+anchor, NOT a required visual subject in every regional image. UI moods are preferred
+aesthetics for this mode, not mandatory exclusions of an otherwise valid center view.
+A city/region alone uses normal area/mood discovery WITHOUT the center bonus.
+An address or landmark WITH nearby targets/geography ('cafes near Eiffel Tower') uses
+normal regional tools instead: cafes are the target, the tower is only the center.
+Do not use center_imagery for these compound requests or for a generic category/chain.
 
 SEMANTIC ROUTING AND STRENGTH
 Separate discoverable identity/category/service facts, mapped location/features, and
@@ -70,7 +78,7 @@ find EACH requested subject. Record sourceCoverage entries with subject, usefulT
 implementing stepIds and reason. Every declared useful tool must have an executable
 retrieval step referenced by that entry. Single-source plans are appropriate only
 when the alternatives cannot meaningfully retrieve the target: explain why in reason.
-Pure address point_imagery needs no sourceCoverage entry. For regional mood/scenic
+Bare-address/landmark center_imagery needs no sourceCoverage entry. For regional mood/scenic
 searches assess named-place discovery and geometry independently, keeping their
 spatial restrictions and logical relationships. Do not classify all physical objects
 as OSM-only: OSM tagging is incomplete and Google Places can retrieve named objects,
@@ -118,7 +126,7 @@ Places hints with shore samples using union weights=[1,4]. Do not use blind area
 for broad Waterside discovery. Other mood-only requests can use area_imagery for efficient
 hint-guided discovery. An explicit business target uses its own tools; do not dilute it
 with unrelated scenic points or infer additional spatial filters from a superseded UI mood.
-A bare address always uses point_imagery, retaining mood for image evaluation only.
+A bare address or unique landmark uses center_imagery, retaining mood as preferred discovery/visual guidance.
 
 TOOL CONTRACTS
 Every tool has only its own schema fields; do not emit irrelevant fields/default arrays.
@@ -139,7 +147,9 @@ area_imagery: source, produces area, internally queries effective mood Places hi
 regional imagery sampling (30anchors+atleast20grid points in50locationbudget). Use for
 unrestricted/other mood-only exploration or a region without explicit targets. Do not add
 redundant mood Places tools around this tool. Not for explicit geographic/subject requests.
-point_imagery: source, produces area, the bare-address behavior described above.
+center_imagery: source, produces area, full-radius discovery plus reserved center panorama
+and center proximity ranking, for a bare address or unique landmark only.
+point_imagery: legacy single-point API tool; do not emit for new search plans.
 collect_images: inputs=[one final place set OR area], all candidates and directional images
 collected once; actual camera positions checked against successful logical paths.
 score_images: inputs=[images], matching+scoring in one batched multimodal pass, cached.

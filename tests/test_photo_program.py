@@ -216,7 +216,7 @@ def test_resolve_and_human_workflow_execute_generated_program(tmp_path,monkeypat
             assert len(response.json()['sources']['google-places']['executionTrace'])==(10 if complete else 7)
             if complete:assert [s['tool'] for s in response.json()['executionTrace'][-3:]]==['collect_images','score_images','rank_results']
         tool=client.get('/photo-scout/v1/search-tools',headers=h)
-        assert tool.status_code==200 and len(tool.json()['tools'])==14
+        assert tool.status_code==200 and len(tool.json()['tools'])==15
         catalog=client.post('/photo-scout/v1/pois',headers=h,json=parameters).json()
         selected={**parameters,'selectedPoiIds':['cafe-lake'],'poiCatalogToken':catalog['poiCatalogToken']}
         assert client.post('/photo-scout/v1/preview',headers=h,json=selected).status_code==200
@@ -349,4 +349,22 @@ def test_selected_mood_reaches_full_program_collection_and_scoring():
         assert payload.photoStyles==['artistic']
         return ScoringOutput([],[],[],[],[],'test')
     asyncio.run(execute_program(p.searchProgram,p,providers(),Path('/unused'),'google-places',
+        PipelineHooks(p,collect,score,lambda *args:{'spots':[]},before)))
+
+
+def test_center_imagery_keeps_full_radius_and_passes_priority_to_collection():
+    from agentic_services.photo_scout.program import PipelineHooks
+    from agentic_services.photo_scout.scoring import ScoringOutput
+    program=SearchProgram(steps=[{'id':'center','tool':'center_imagery'}],output='center').with_delivery()
+    p=SearchParameters(lat=30.66,lon=104.08,radius=5000,photoStyles=['artistic'],searchProgram=program)
+    result=asyncio.run(search_locations(p,database_path=Path('/unused'),providers=providers()))
+    assert result.program_execution.output.center_priority
+    assert len(result.imagery_targets)>1
+    async def collect(lat,lon,radius,pois,**kwargs):
+        assert (lat,lon,radius)==(30.66,104.08,5000)
+        assert kwargs=={'visual_exploration':True,'center_priority':True,'photo_styles':['artistic']}
+        return [],{}
+    async def before(images):pass
+    async def score(*args):return ScoringOutput([],[],[],[],[],'test')
+    asyncio.run(execute_program(program,p,providers(),Path('/unused'),'google-places',
         PipelineHooks(p,collect,score,lambda *args:{'spots':[]},before)))

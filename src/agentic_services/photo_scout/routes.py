@@ -293,8 +293,9 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
         except HTTPException as error:
             if not visual or error.status_code!=503:raise
             pois=[];poi_status={'status':'unavailable','role':'optional-place-context'}
+        center_priority=bool(payload.searchProgram and payload.searchProgram.retrieval().steps[-1].tool=='center_imagery')
         point=bool(payload.searchProgram and payload.searchProgram.retrieval().steps[-1].tool=='point_imagery')
-        rows,statuses=await candidates(payload.lat,payload.lon,payload.radius,pois,**({'visual_exploration':True, **({'point_only':True} if point else {}),
+        rows,statuses=await candidates(payload.lat,payload.lon,payload.radius,pois,**({'visual_exploration':True, **({'point_only':True} if point else {}), **({'center_priority':True} if center_priority else {}),
             **({'photo_styles':payload.photoStyles} if payload.photoStyles else {})} if visual else {}))
         features=poi_status.pop('_features',[])
         contexts=poi_status.pop('_branchContexts',[])

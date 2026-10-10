@@ -53,7 +53,7 @@ class IntersectionStep(Step):
     inputs: list[str] = Field(min_length=2,max_length=6)
 
 class ImageryStep(Step):
-    tool: Literal['area_imagery','point_imagery']
+    tool: Literal['area_imagery','point_imagery','center_imagery']
 
 class DeliveryStep(Step):
     tool: Literal['collect_images','score_images','rank_results']

@@ -1187,3 +1187,66 @@ def test_short_image_ids_map_reordered_results_back_to_originals_and_cache(tmp_p
     assert result['spots'][0]['image_id']==rows[2]['id']
     again=asyncio.run(visual.explore(settings,ExploreRequest(lat=0,lon=0),rows,{}))
     assert len(calls)==1 and again['scoring']['cachedImages']==3
+
+
+@pytest.mark.parametrize('center_available',[True,False])
+def test_center_priority_reserves_eight_center_views_without_stopping_regional_search(monkeypatch,center_available):
+    from agentic_services.photo_scout import sources
+    calls=[]
+    monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_API_KEY','fixture')
+    anchors=[{'id':f'p{i}','lat':0.01+i*.001,'lon':0,'name':'Park'} for i in range(30)]
+    async def metadata(client,url,params):
+        calls.append(params)
+        lat,lon=map(float,params['location'].split(','))
+        if params['radius']==50 and not center_available:return {'status':'ZERO_RESULTS'}
+        return {'status':'OK','pano_id':'center' if lat==lon==0 else 'other'+str(len(calls)),
+            'location':{'lat':lat,'lng':lon}}
+    monkeypatch.setattr(sources,'get_json',metadata)
+    async def run():
+        async with httpx.AsyncClient() as c:
+            return await sources.google_streetview(c,0,0,5000,anchors,area_sampling=True,center_priority=True)
+    rows=asyncio.run(run())
+    assert len(calls)==50
+    assert calls[0]['location']=='0,0' and calls[0]['radius']==50
+    assert any(c['radius']==200 for c in calls[1:])
+    center=[r for r in rows if r.get('centerPriority')]
+    assert len(center)==(8 if center_available else 0)
+    assert {r['viewHeadingDegrees'] for r in center}==(set(range(0,360,45)) if center_available else set())
+    assert any(r['lat']!=0 for r in rows)
+
+
+def test_center_priority_adjusts_ranking_without_touching_visual_cache_scores():
+    from agentic_services.photo_scout.scoring import apply_center_priority
+    from agentic_services.photo_scout.search import SearchParameters
+    from agentic_services.photo_scout.program import SearchProgram
+    def item(id,lat,score,provider='google-street-view',**extra):
+        return dict(id=id,lat=lat,lon=0,score=score,provider=provider,**extra)
+    program=SearchProgram(steps=[{'id':'c','tool':'center_imagery'}],output='c')
+    p=SearchParameters(lat=0,lon=0,radius=5000,searchProgram=program)
+    items=[item('far',.01,90),item('center',0,75,centerPriority=True),item('commons',0,80,'wikimedia-commons')]
+    ranked=apply_center_priority(p,items)
+    assert ranked[0]['id']=='center' and ranked[0]['score']==95
+    assert ranked[0]['visualScore']==75 and ranked[0]['locationPriorityBonus']==20
+    assert ranked[1]['score']==ranked[1]['visualScore']==90
+    normal=SearchParameters(lat=0,lon=0,radius=5000,searchProgram=SearchProgram(steps=[{'id':'p','tool':'search_places','queries':['cafes']}],output='p'))
+    unboosted=[item('cafe',0,75,centerPriority=True)]
+    assert apply_center_priority(normal,unboosted)==unboosted and 'visualScore' not in unboosted[0]
+
+
+@pytest.mark.parametrize('center_matches',[True,False])
+def test_final_report_boosts_center_only_after_visual_matching(center_matches):
+    from agentic_services.photo_scout.scoring import ImageAssessment,ScoringOutput,rank_assessments
+    from agentic_services.photo_scout.program import SearchProgram
+    program=SearchProgram(steps=[{'id':'c','tool':'center_imagery'}],output='c').with_delivery()
+    payload=ExploreRequest(lat=0,lon=0,radius=5000,searchProgram=program)
+    rows=[{'id':name,'lat':lat,'lon':0,'provider':'google-street-view','imageUrl':f'google-streetview://{name}/90',
+        'allowUnlistedPlace':True,**({'centerPriority':True} if name=='center' else {})} for name,lat in [('center',0),('far',.01)]]
+    checks=[ImageAssessment(image_id=name,name=name,score=score if matches else None,matches_request=matches,
+        match_reason='' if matches else 'View blocked',recommend=True if matches else False,visible_evidence='Street scene',photo_tip='Face east',
+        uncertainty='Access unknown',confidence='medium') for name,score,matches in [('center',75,center_matches),('far',90,True)]]
+    report=rank_assessments(payload,ScoringOutput(rows,checks,[],checks,[],'test'),{})
+    assert report['spots'][0]['name']==('center' if center_matches else 'far')
+    if center_matches:
+        assert report['spots'][0]['score']==95
+        assert report['spots'][0]['visualScore']==checks[0].score==75
+    else:assert len(report['spots'])==1

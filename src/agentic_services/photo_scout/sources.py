@@ -222,7 +222,7 @@ def google_query_points(lat,lon,radius):
     return result
 
 
-async def google_streetview(client, lat, lon, radius, targets=None, area_sampling=False):
+async def google_streetview(client, lat, lon, radius, targets=None, area_sampling=False, center_priority=False):
     """Bounded panorama discovery, including provider-supported indoor views. Never put the credential in candidate URLs."""
     import asyncio
     import re
@@ -230,7 +230,9 @@ async def google_streetview(client, lat, lon, radius, targets=None, area_samplin
     key=os.getenv('PHOTO_SCOUT_GOOGLE_API_KEY','')
     if area_sampling:
         # Mood-guided anchors lead; reserve at least 20 independent regional points.
-        anchors=list(targets or [])[:30]
+        anchors=list(targets or [])[:29 if center_priority else 30]
+        if center_priority:
+            anchors.insert(0,{'id':f'center:{lat:.6f}:{lon:.6f}','name':'Search center','lat':lat,'lon':lon,'centerPriority':True})
         area_points=google_query_points(lat,lon,radius)[:50-len(anchors)]
         points=[(p['lat'],p['lon']) for p in anchors]+area_points
         target_rows=anchors+[None]*len(area_points)
@@ -238,11 +240,11 @@ async def google_streetview(client, lat, lon, radius, targets=None, area_samplin
         points=[(p['lat'],p['lon']) for p in targets] if targets is not None else google_query_points(lat,lon,radius)
         target_rows=list(targets) if targets is not None else [None]*len(points)
     slots=asyncio.Semaphore(max(1,min(32,int(os.getenv('PHOTO_SCOUT_STREETVIEW_CONCURRENCY','24')))))
-    async def search(p):
+    async def search(index,p):
         async with slots:
             return await get_json(client,'https://maps.googleapis.com/maps/api/streetview/metadata',
-                {'location':f'{p[0]},{p[1]}','radius':min(200,max(50,radius//3)),'key':key})
-    responses=await asyncio.gather(*(search(p) for p in points),return_exceptions=True)
+                {'location':f'{p[0]},{p[1]}','radius':50 if center_priority and index==0 else min(200,max(50,radius//3)),'key':key})
+    responses=await asyncio.gather(*(search(index,p) for index,p in enumerate(points)),return_exceptions=True)
     rows=[]; seen=set(); locations=[]; successful=False
     spacing=google_sampling_spacing(radius)
     for index,data in enumerate(responses):
@@ -255,6 +257,7 @@ async def google_streetview(client, lat, lon, radius, targets=None, area_samplin
         except (KeyError,TypeError,ValueError): continue
         if not math.isfinite(lat2) or not math.isfinite(lon2) or abs(lat2)>85 or abs(lon2)>180: continue
         if distance((lat,lon),(lat2,lon2))>radius: continue
+        if center_priority and index==0 and distance((lat,lon),(lat2,lon2))>50:continue
         if pano in seen:
             if target_rows[index] is not None:
                 poi=target_rows[index]
@@ -281,6 +284,7 @@ async def google_streetview(client, lat, lon, radius, targets=None, area_samplin
                 'sourceDate':data.get('date'),'capturedAt':data.get('date'),
                 'viewHeadingDegrees':heading,'viewPitchDegrees':pitch,'viewFovDegrees':120,
                 'description':'Street View camera position; access and safe standing point unverified.',
+                **({'centerPriority':True} if poi and poi.get('centerPriority') else {}),
                 **({'poi':poi,'poiCandidates':[poi],'poiDistanceMeters':round(distance((lat2,lon2),(poi['lat'],poi['lon'])))} if poi else {})})
     if not successful: raise ValueError('Google Street View metadata unavailable')
     return rows
@@ -314,7 +318,7 @@ def diverse_sample(rows,limit=12):
     return selected
 
 
-async def candidates(lat,lon,radius,pois=None,visual_exploration=False,point_only=False,photo_styles=None):
+async def candidates(lat,lon,radius,pois=None,visual_exploration=False,point_only=False,photo_styles=None,center_priority=False):
     import asyncio
     statuses={}; rows=[]
     requested_radius=radius
@@ -338,7 +342,7 @@ async def candidates(lat,lon,radius,pois=None,visual_exploration=False,point_onl
         providers=[] if point_only else [('wikimedia-commons',commons)]
         if google_enabled():
             async def google(client,lat,lon,radius):
-                return await google_streetview(client,lat,lon,radius,targets=pois,**({'area_sampling':True} if visual_exploration and not point_only else {}))
+                return await google_streetview(client,lat,lon,radius,targets=pois,**({'center_priority':True} if center_priority else {}),**({'area_sampling':True} if visual_exploration and not point_only else {}))
             providers.append(('google-street-view',google))
         if not point_only and os.getenv('PHOTO_SCOUT_PANORAMAX_ENABLED','1')=='1':
             providers.append(('panoramax',panoramax))
@@ -352,7 +356,7 @@ async def candidates(lat,lon,radius,pois=None,visual_exploration=False,point_onl
                 statuses[name]={'status':'ok','eligibleImages':len(result)}; rows+=result
                 if name=='google-street-view':
                     statuses[name].update(samplingSpacingMeters=google_sampling_spacing(radius) if (visual_exploration and not point_only) or pois is None else None,maxViewsPerLocation=VIEWS_PER_PANORAMA,
-                        queriedLocations=1 if point_only else (min(50,len(google_query_points(lat,lon,radius))+min(30,len(pois or []))) if visual_exploration else len(pois) if pois is not None else len(google_query_points(lat,lon,radius))),samplingMode='point' if point_only else 'area-and-poi' if visual_exploration else 'poi' if pois is not None else 'area')
+                        queriedLocations=1 if point_only else (min(50,len(google_query_points(lat,lon,radius))+min(30,len(pois or []))) if visual_exploration else len(pois) if pois is not None else len(google_query_points(lat,lon,radius))),centerPriority=center_priority,samplingMode='point' if point_only else 'area-and-poi' if visual_exploration else 'poi' if pois is not None else 'area')
     valid=[]
     for row in rows:
         d=distance((lat,lon),(row['lat'],row['lon']))

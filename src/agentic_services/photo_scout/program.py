@@ -16,7 +16,7 @@ from .geography import GeographicKind,filter_places,geographic_places,Geographic
 from .osm_features import OSMFeatureQuery,matches_features
 
 Tool=Literal['search_places','search_geography','search_features','sample_geography',
-             'feature_points','filter_geography','filter_features','union','intersection','area_imagery','point_imagery','collect_images','score_images','rank_results']
+             'feature_points','filter_geography','filter_features','union','intersection','area_imagery','point_imagery','center_imagery','collect_images','score_images','rank_results']
 
 class SearchStep(BaseModel):
     model_config=ConfigDict(extra='forbid')
@@ -52,7 +52,7 @@ CONTRACTS={
  'search_features':([], 'features'), 'sample_geography':(['geography'],'places'),
  'feature_points':(['features'],'places'), 'filter_geography':(['places','geography'],'places'),
  'filter_features':(['places','features'],'places'), 'union':('places','places'),
- 'intersection':('places','places'), 'area_imagery':([],'area'), 'point_imagery':([],'area'),
+ 'intersection':('places','places'), 'area_imagery':([],'area'), 'point_imagery':([],'area'), 'center_imagery':([],'area'),
  'collect_images':(['locations'],'images'),'score_images':(['images'],'assessments'),
  'rank_results':(['assessments'],'report'),
 }
@@ -140,6 +140,7 @@ class Features:
 @dataclass
 class Area:
     point_only: bool = False
+    center_priority: bool = False
 
 
 def unique_paths(paths):
@@ -268,6 +269,8 @@ class Tools:
 
     async def point_imagery(self,s,inputs):return Area(point_only=True)
 
+    async def center_imagery(self,s,inputs):return Area(center_priority=True)
+
     async def collect_images(self,s,inputs):
         if self.pipeline is None:raise ValueError('Image tools require the full discovery execution context')
         locations=inputs[0]
@@ -278,6 +281,7 @@ class Tools:
         pois=locations.rows[:50] if isinstance(locations,Places) else []
         rows,statuses=await self.pipeline.collect(self.p.lat,self.p.lon,self.p.radius,pois,
             **({'visual_exploration':True, **({'point_only':True} if locations.point_only else {}),
+                **({'center_priority':True} if locations.center_priority else {}),
                 **({'photo_styles':self.p.photoStyles} if self.p.photoStyles else {})} if isinstance(locations,Area) else {}))
         eligible=self.execution.filter_images(rows,locations)
         for provider,status in statuses.items():

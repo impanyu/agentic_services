@@ -254,6 +254,19 @@ async def assess_images(settings,payload,rows,statuses=None):
     return ScoringOutput(rows,assessments,cached,fresh,results,model)
 
 
+def apply_center_priority(payload,items):
+    program=getattr(payload,'searchProgram',None)
+    if not program or program.retrieval().steps[-1].tool!='center_imagery':return items
+    for item in items:
+        d=distance((payload.lat,payload.lon),(item['lat'],item['lon']))
+        # The model's visual assessment/cache stays unchanged. Ranking adds a
+        # bounded, explicit location preference only for this standalone-anchor mode.
+        bonus=20 if item.get('centerPriority') and d<=50 else max(0,round(10*(1-d/150))) if item['provider']=='google-street-view' else 0
+        item.update(visualScore=item['score'],locationPriorityBonus=bonus,centerDistanceMeters=round(d),
+            score=min(100,item['score']+bonus))
+    return sorted(items,key=lambda s:(s['score'],s.get('centerPriority',False),s['visualScore']),reverse=True)
+
+
 def rank_assessments(payload,output,statuses):
     """Deterministic best view per place and panorama; no model calls."""
     rows,assessments,cached,fresh,results,model=(output.rows,output.assessments,output.cached,output.fresh,output.batches,output.model)
@@ -279,6 +292,7 @@ def rank_assessments(payload,output,statuses):
         if panorama is not None:seen_panoramas.add(panorama)
         seen_pois.add(poi_id);item['recommend']=assessment.recommend
         item['assessmentStatus']='rated';poi_results.append(item)
+    poi_results=apply_center_priority(payload,poi_results)
     spots=list(poi_results) if poi_results else validate_result(VisualResult(spots=eligible,summary=''),rows,scored,len(rows))
     mood=', '.join(s['label'] for s in style_briefs(payload.photoStyles))
     summary=(f'Highest-scoring photo opportunities{(" for "+mood) if mood else ""}: '+
