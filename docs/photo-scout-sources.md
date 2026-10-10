@@ -11,6 +11,7 @@ must disclose actual sampled sources; no claim of whole-world street-view covera
 | Mapillary | Crowdsourced street-level imagery | Adapter exists; no token configured; not live-verified | Obtain developer token through secure configuration; verify real imagery and attribution |
 | KartaView | Crowdsourced street imagery | Official public API probed twice; timeouts; not connected | Resolve network/API availability before enabling |
 | Google Street View | Outdoor panorama discovery and agent image inspection | Deployed and enabled; actual Google images inspected in a production multimodal run alongside Panoramax and Commons; dedicated API/IP-restricted key and persistent daily image cap; commercial inference permission unverified | Verify real image/model path; request Google confirmation of commercial inference and downstream output scope |
+| Google Places Photos | Place-associated contributor photos | October 10: real retrieval verified; standalone trial adapter only, not registered in search or selfie generation | Resolve permitted downstream use before enabling scoring/composites; display requires Google Maps and author attribution |
 | Google Maps Grounding Lite | Official LLM place context | Not connected; not an image analysis substitute | Evaluate alongside a Google-compliant display and storage design |
 | Flickr | Geotagged photographer images | Candidate; no adapter/key | Review API commercial use, file licenses and removal rules; do not treat all public photos as reusable |
 | Tourism boards, parks, museums and cities | Open/authorized location-specific photo collections | Candidate | Connect only after confirming collection-level access plus file-level rights |
@@ -61,3 +62,40 @@ The earlier 180-request application cap has been disabled for development.
 a positive value enables an optional operator cap. Usage counters remain for accounting.
 Signed report authorization, per-request sampling and provider validation remain in place.
 This setting does not change Google account quotas or billing.
+
+## Additional-source trial (October 10, 2026)
+
+The rows and sampling descriptions above include earlier implementation snapshots;
+this trial does not revalidate or change the active search workflow.
+
+- **Google Places Photos:** reused the configured production Places credential for
+  Battery Spencer, California. The API returned 10 available photos; the bounded
+  probe fetched and decoded one JPEG at 800 × 600, credited to Vi Lai Vue.
+  `place_photos.py` retrieves fresh photo references and validates the media host.
+  It returns attribution and `cachePolicy: no-store`, with scoring, selfie-background
+  and adjustable-view capabilities disabled. A photo associated with a POI does not
+  establish its camera position. This adapter is not called by production search or UI.
+- **Mapillary:** the user does not yet have a developer application; the production
+  token is absent. Adapter tests now cover bounded pagination, circular geographic
+  filtering, capture heading/date, duplicates and unsafe URLs. Only fixed photographs
+  are accepted; spherical images await directional reprojection. No real retrieval is
+  claimed. Configuration requires `PHOTO_SCOUT_MAPILLARY_TOKEN` in the service
+  environment, never in chat or source control.
+- **KartaView:** a query with radius 5000 returned HTTP 400 stating the maximum is
+  2000. A corrected 2000-metre San Francisco query timed out after 25 seconds.
+  This establishes neither provider-wide unavailability nor usable coverage; no
+  adapter was enabled.
+
+Run `PYTHONPATH=src python scripts/probe-photo-scout-sources.py` in a configured
+service environment. It makes bounded provider requests (which may incur provider
+charges), prints counts/dimensions/authors, never prints credentials or media URLs,
+and makes no model calls or image writes. The production-container trial used the
+new adapter through temporary probe files, without restarting the application.
+
+References:
+- [Places Photos documentation](https://developers.google.com/maps/documentation/places/web-service/place-photos)
+- [Google Maps Platform terms](https://cloud.google.com/maps-platform/terms),
+  sections 3.2.2(b) and 3.2.3(c): preserve attribution and restrictions on creating
+  content from Maps content. Do not enable Places Photos composites without an
+  applicable permission basis.
+- [Mapillary API access](https://help.mapillary.com/hc/en-us/articles/360010234680-Accessing-imagery-and-data-through-the-Mapillary-API)

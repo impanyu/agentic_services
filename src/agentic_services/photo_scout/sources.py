@@ -105,32 +105,51 @@ async def commons(client, lat, lon, radius):
 
 
 async def mapillary(client, lat, lon, radius):
+    """Bounded geographic search; fixed photos retain their actual captured direction."""
+    from datetime import datetime,timezone
     token=os.getenv('PHOTO_SCOUT_MAPILLARY_TOKEN','')
-    if not token:
-        return []
+    if not token:return []
     dy=radius/111320; dx=dy/max(.01,math.cos(math.radians(lat)))
-    # Skip polar/antimeridian bounding boxes rather than misrepresent coverage.
-    if abs(lat)+dy>=90 or abs(lon)+dx>=180:
-        return []
-    data=await get_json(client,'https://graph.mapillary.com/images',{
-        'bbox':f'{lon-dx},{lat-dy},{lon+dx},{lat+dy}','limit':30,
-        'fields':'id,geometry,captured_at,creator,thumb_1024_url'},
-        {'Authorization':f'OAuth {token}'})
-    found=[]
-    for row in data.get('data',[]):
-        coords=row.get('geometry',{}).get('coordinates',[])
-        creator=row.get('creator',{})
-        if len(coords)!=2 or not isinstance(creator,dict) or not creator.get('username'):
-            continue
-        if not image_host(row.get('thumb_1024_url','')):
-            continue
-        found.append({'id':'mapillary:'+row['id'],'provider':'mapillary',
-            'title':'Street-level view','lat':coords[1],'lon':coords[0],
-            'locationType':'camera_geotag','imageUrl':row['thumb_1024_url'],
-            'sourceUrl':'https://www.mapillary.com/app/?pKey='+row['id'],
-            'author':creator['username'],'license':'CC BY-SA 4.0',
-            'licenseUrl':'https://creativecommons.org/licenses/by-sa/4.0/',
-            'capturedAt':row.get('captured_at'),'description':''})
+    if abs(lat)+dy>=90 or abs(lon)+dx>=180:return []
+    params={'bbox':f'{lon-dx},{lat-dy},{lon+dx},{lat+dy}','limit':50,
+        'fields':'id,geometry,captured_at,creator,thumb_1024_url,compass_angle,camera_type,sequence'}
+    found=[];seen=set();seen_cursors=set()
+    for _ in range(3):
+        data=await get_json(client,'https://graph.mapillary.com/images',params,
+            {'Authorization':f'OAuth {token}'})
+        for row in data.get('data',[]):
+            if not isinstance(row,dict):continue
+            try:
+                coords=row.get('geometry',{}).get('coordinates',[])
+                creator=row.get('creator',{})
+                if len(coords)!=2 or not isinstance(creator,dict) or not creator.get('username'):continue
+                lon2,lat2=coords
+                if not all(isinstance(v,(int,float)) and math.isfinite(v) for v in coords):continue
+                if abs(lat2)>85 or abs(lon2)>180 or distance((lat,lon),(lat2,lon2))>radius:continue
+                image=row.get('thumb_1024_url','');identifier=str(row.get('id',''))
+                if not identifier.isdigit() or identifier in seen or not image_host(image):continue
+                # Full equirectangular thumbnails cannot represent a fixed camera heading.
+                # Defer panoramas until directional reprojection is supported.
+                if row.get('camera_type') in ('spherical','equirectangular'):continue
+                heading=row.get('compass_angle');heading=heading%360 if isinstance(heading,(int,float)) and math.isfinite(heading) else None
+                captured=row.get('captured_at')
+                captured=datetime.fromtimestamp(captured/1000,timezone.utc).isoformat() if isinstance(captured,(int,float)) and math.isfinite(captured) else None
+                sequence=row.get('sequence');sequence=sequence.get('id') if isinstance(sequence,dict) else sequence
+                found.append({'id':'mapillary:'+identifier,'provider':'mapillary',
+                    'title':'Street-level view','lat':lat2,'lon':lon2,'locationType':'camera_geotag',
+                    'imageUrl':image,'sourceUrl':'https://www.mapillary.com/app/?pKey='+identifier,
+                    'author':text(creator['username']),'license':'CC BY-SA 4.0',
+                    'licenseUrl':'https://creativecommons.org/licenses/by-sa/4.0/',
+                    'capturedAt':captured,'viewHeadingDegrees':heading,'sequenceId':str(sequence) if sequence else None,
+                    'cameraType':row.get('camera_type','perspective'),
+                    'description':'Fixed street-level photograph. Direction is the capture direction; this image cannot be rotated.'})
+                seen.add(identifier)
+                if len(found)>=50:return found
+            except (AttributeError,ValueError,TypeError,OverflowError,OSError):continue
+        cursor=data.get('paging',{}).get('cursors',{}).get('after')
+        if not data.get('paging',{}).get('next') or not cursor or cursor in seen_cursors:break
+        # Never follow a provider-supplied URL: it can embed access tokens or change hosts.
+        seen_cursors.add(cursor);params={**params,'after':cursor}
     return found
 
 
