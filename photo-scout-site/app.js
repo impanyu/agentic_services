@@ -725,7 +725,7 @@ function renderPublications(){
 function publishedSelfieIcon(item){return L.divIcon({className:'published-selfie-pin',html:'<span><img src="'+api+'/photo-scout/v1/publications/'+encodeURIComponent(item.id)+'/thumbnail" alt=""><b>✦</b></span>',iconSize:[48,58],iconAnchor:[24,55],popupAnchor:[0,-48]});}
 function drawPublications(){
  publicationLayer.clearLayers();for(const item of publicationItems.filter(i=>i.checked!==false)){const spots=item.kind==='photo'?[item.context]:item.result?.spots||[];for(const [index,spot] of spots.entries()){const pos=spot?.poi;if(!pos||![pos.lat,pos.lon].every(Number.isFinite))continue;
- const marker=L.marker([pos.lat,pos.lon],{title:(item.kind==='photo'?'Published AI selfie · ':'Published place · ')+spot.name,icon:item.kind==='photo'?publishedSelfieIcon(item):photographerIcon(spot,index)}).addTo(publicationLayer);
+ const marker=L.marker([pos.lat,pos.lon],{zIndexOffset:item.kind==='photo'?1100:0,title:(item.kind==='photo'?'Published AI selfie · ':'Published place · ')+spot.name,icon:item.kind==='photo'?publishedSelfieIcon(item):photographerIcon(spot,index)}).addTo(publicationLayer);
  if(item.kind==='photo')marker.on('click',()=>openPublication(item));else{const popup=node('div',null,'photo-popup');popup.append(node('strong',spot.name),node('p',spot.score+'/100 · '+photoBearing(spot).label),popupPhotoPreview(spot));const view=node('button','View published place');view.type='button';view.addEventListener('click',()=>openPublication(item));popup.append(view,link('Share ↗',item.url));marker.bindPopup(popup).on('popupopen',()=>loadPopupPhoto(popup));}
  }}
 }
