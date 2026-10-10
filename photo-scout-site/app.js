@@ -698,7 +698,7 @@ const savedPhotoComments=node('div',null,'saved-photo-comments');
 const savedPhotoBackground=node('section',null,'saved-photo-background');
 const savedPhotoActions=node('div',null,'saved-photo-actions');savedPhotoActions.setAttribute('role','group');savedPhotoActions.setAttribute('aria-label','Photo actions');savedPhotoActions.append(savedPhotoSave,savedPhotoDownload);
 const savedPhotoNav=node('nav',null,'saved-photo-nav');savedPhotoNav.setAttribute('aria-label','Navigate to this photo location');
-savedPhoto.append(savedPhotoTop,savedPhotoPlace,savedPhotoImage,savedPhotoStatus,savedPhotoBackground,savedPhotoActions,savedPhotoHint,savedPhotoComments);document.body.append(savedPhoto);
+savedPhoto.append(savedPhotoTop,savedPhotoPlace,savedPhotoImage,savedPhotoStatus,savedPhotoComments,savedPhotoBackground,savedPhotoActions,savedPhotoHint);document.body.append(savedPhoto);
 let savedPhotoGeneration=0,savedPhotoTimer=null,savedPhotoFile=null,savedPhotoUrl=null;
 function savedPhotoNavigation(context){
  const {lat,lon}=context?.poi||{};
@@ -747,7 +747,7 @@ async function viewSavedPhoto(task,publication=null){
  const sourceId=publication?owned?.sourceId:task.id;
  if(publication)savedPhoto.dataset.publication=publication.id;
  if(sourceId)savedPhoto.dataset.photoId=sourceId;
- savedPhotoTitle.textContent='Photo';savedPhotoComments.replaceChildren(commentSection('photo',sourceId,null,publication));
+ savedPhotoTitle.textContent='Photo';savedPhotoComments.replaceChildren(commentSection('photo',sourceId,null,publication,true));
  savedPhotoPublish.replaceChildren(...(sourceId?[publishButton('photo',sourceId)]:[]));
  if(studio.open)studio.close();if(portraitProgress.open)portraitProgress.close();
  const generation=++savedPhotoGeneration;clearTimeout(savedPhotoTimer);if(savedPhotoUrl)URL.revokeObjectURL(savedPhotoUrl);savedPhotoUrl=null;savedPhotoFile=null;

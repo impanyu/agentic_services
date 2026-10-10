@@ -36,3 +36,11 @@ test('place and search widgets keep likes and saves without loading or displayin
  box.open=true;box.events.toggle();await settle();assert.equal(requests.length,1);
  assert.equal(root.children[0].children.length,2);
 });
+
+test('unpublished photos show disabled reactions and explain publishing; publishing enables them',async()=>{
+ let target=null;const {root,requests}=fixture({compact:true,resolve:()=>target});await settle();
+ const actions=root.children[0],hint=root.children.find(c=>c.className==='social-hint');
+ assert.equal(actions.hidden,false);assert.equal(actions.children[0].disabled,true);assert.equal(actions.children[1].disabled,true);assert.equal(hint.hidden,false);assert.match(hint.textContent,/Publish this photo/);assert.equal(requests.length,0);
+ target={id:'pub',poi:'lake'};root.refreshComments(true);await settle();assert.equal(hint.hidden,true);assert.equal(actions.children[0].disabled,false);assert.equal(actions.children[1].disabled,false);
+ target=null;root.refreshComments(true);await settle();assert.equal(actions.hidden,false);assert.equal(actions.children[0].disabled,true);assert.equal(hint.hidden,false);
+});

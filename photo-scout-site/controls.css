@@ -131,3 +131,8 @@
 .photo-library-tabs [role="tab"]:focus-visible{outline:2px solid #9473ad;outline-offset:1px;}
 #photo-library-items .photo-history-entry{margin-bottom:8px;}
 #photo-items[hidden],#photo-library-panel[hidden],#photo-retention-note[hidden]{display:none!important;}
+
+.saved-photo-comments .comments-section{margin:12px 0;padding:0 0 14px;border-top:0;border-bottom:1px solid #e6dfea;}
+.saved-photo-comments .social-actions{margin:0 0 10px;}
+.saved-photo-comments .social-actions button{min-height:46px;font-size:.95rem;font-weight:650;}
+.social-hint{font-size:.8rem;color:#806f89;margin:0 0 12px;}
