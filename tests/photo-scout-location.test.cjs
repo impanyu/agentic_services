@@ -275,7 +275,7 @@ test('Google popup refreshes expired previews, bounds retries and recovers on re
  const handlers={},image={dataset:{},addEventListener(type,fn){handlers[type]=fn;},replaceWith(){throw Error('Preview image must remain retryable');}};
  const box={dataset:{},photoSpot:{provider:'google-street-view',sourceUrl:'https://www.google.com/maps/@?pano=test',imageUrl:'expired'},append(){},querySelector(){return image;}};
  const popup={querySelectorAll(){return [box];}};let calls=0,fail=false;
- const context={node(){return {};},async json(){calls++;if(fail)throw Error('Transient failure');return {imageUrls:['fresh-'+calls]};}};
+ const context={window:{},node(){return {};},async json(){calls++;if(fail)throw Error('Transient failure');return {imageUrls:['fresh-'+calls]};}};
  vm.runInNewContext(source.slice(source.indexOf('function loadPopupPhoto('),source.indexOf('function photoBackgroundInfo'))+
  source.slice(source.indexOf('async function refreshThumbnail('),source.indexOf('async function json('))+';this.open=loadPopupPhoto;',context);
  const settle=async()=>{await Promise.resolve();await Promise.resolve();};

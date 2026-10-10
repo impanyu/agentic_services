@@ -11,3 +11,6 @@ dist/
 data/*.db
 data/*.db-*
 .local/
+
+# Public browser Maps key, provisioned with referrer restrictions on the VM.
+photo-scout-site/google-maps-config.js
