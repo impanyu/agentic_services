@@ -67,3 +67,10 @@
 .publication-badge{display:inline-block;margin:4px 0;padding:3px 8px;border-radius:999px;background:#eee4f7;color:#684793;font-size:10px;font-weight:600;line-height:16px}.publication-badge[hidden]{display:none}
 
 .community-publications{border-top:1px solid var(--control-border);padding-top:12px;margin-top:14px}.community-publications h3{font-size:12px;color:#776882;margin:0 0 8px}
+
+/* Keep photo operations together; help text follows the complete group. */
+.saved-photo-actions{display:grid;gap:10px;margin:14px 0 10px}
+.saved-photo-actions>.studio-save,.saved-photo-actions>.publication-actions,.saved-photo-actions>.publication-actions>.publish-button{margin:0;min-height:44px}
+.saved-photo-actions>.publication-actions:empty{display:none}
+.saved-photo-actions>.publication-actions{min-height:0}
+.saved-photo-actions>.publication-actions>.publish-button{padding:11px 14px;line-height:20px}

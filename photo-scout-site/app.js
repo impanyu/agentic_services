@@ -606,8 +606,9 @@ const savedPhoto=node('dialog',null,'photo-studio saved-photo');savedPhoto.setAt
 const savedPhotoTop=node('div',null,'studio-heading'),savedPhotoTitle=node('h2','Your saved selfie'),savedPhotoClose=node('button','Close ×');savedPhotoClose.type='button';savedPhotoTop.append(savedPhotoTitle,savedPhotoClose);
 const savedPhotoPlace=node('p',null,'small'),savedPhotoImage=node('img',null,'studio-result'),savedPhotoStatus=node('p',null,'studio-status'),savedPhotoParams=node('div',null,'saved-photo-params'),savedPhotoSave=node('button','Send to','studio-save'),savedPhotoDownload=node('a','Download PNG','studio-save studio-download'),savedPhotoHint=node('p',null,'small');savedPhotoImage.alt='Saved AI-generated travel photo';savedPhotoStatus.setAttribute('role','status');savedPhotoDownload.download='photo-scout-ai-photo.png';
 const savedPhotoBackground=node('section',null,'saved-photo-background');
+const savedPhotoActions=node('div',null,'saved-photo-actions');savedPhotoActions.setAttribute('role','group');savedPhotoActions.setAttribute('aria-label','Photo actions');savedPhotoActions.append(savedPhotoSave,savedPhotoDownload);
 const savedPhotoNav=node('nav',null,'saved-photo-nav');savedPhotoNav.setAttribute('aria-label','Navigate to this photo location');
-savedPhoto.append(savedPhotoTop,savedPhotoPlace,savedPhotoImage,savedPhotoStatus,savedPhotoBackground,savedPhotoSave,savedPhotoDownload,savedPhotoHint);document.body.append(savedPhoto);
+savedPhoto.append(savedPhotoTop,savedPhotoPlace,savedPhotoImage,savedPhotoStatus,savedPhotoBackground,savedPhotoActions,savedPhotoHint);document.body.append(savedPhoto);
 let savedPhotoGeneration=0,savedPhotoTimer=null,savedPhotoFile=null,savedPhotoUrl=null;
 function savedPhotoNavigation(context){
  const {lat,lon}=context?.poi||{};
@@ -749,8 +750,8 @@ if(window.ResizeObserver)new window.ResizeObserver(refreshMapViewport).observe(e
 // Explicit publication creates a public snapshot; private histories stay private.
 const publicationLayer=L.layerGroup().addTo(map);
 overlayControl.addOverlay(publicationLayer,'Published places & selfies');
-const savedPhotoPublish=node('div',null,'publication-actions');savedPhoto.append(savedPhotoPublish);
-const savedPhotoSharing=node('button','Share','studio-save photo-share-trigger');savedPhotoSharing.type='button';savedPhotoSharing.hidden=true;savedPhoto.append(savedPhotoSharing);
+const savedPhotoPublish=node('div',null,'publication-actions');savedPhotoActions.append(savedPhotoPublish);
+const savedPhotoSharing=node('button','Share','studio-save photo-share-trigger');savedPhotoSharing.type='button';savedPhotoSharing.hidden=true;savedPhotoActions.append(savedPhotoSharing);
 const photoShareDialog=node('dialog',null,'photo-studio photo-share-dialog');photoShareDialog.setAttribute('aria-label','Share photo');document.body.append(photoShareDialog);
 photoShareDialog.addEventListener('click',event=>{if(event.target===photoShareDialog){const r=photoShareDialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)photoShareDialog.close();}});
 function socialShareIcon(kind){
