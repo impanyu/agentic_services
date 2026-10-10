@@ -222,3 +222,119 @@ def test_published_spots_keep_visual_score_separate_from_location_preference():
     assert result['score']==95 and result['visualScore']==75
     assert result['locationPriorityBonus']==20 and result['centerDistanceMeters']==12
     assert 'internal' not in result
+
+def comment_client(env,user):
+    from agentic_services.photo_scout.tasks import ACCOUNT_COOKIE
+    settings,app,_=env
+    cookie='session-'+user
+    with sqlite3.connect(settings.database_path) as db:
+        db.execute('INSERT OR REPLACE INTO photo_sessions VALUES(?,?,?,?,?)',(hashlib.sha256(cookie.encode()).hexdigest(),user,json.dumps({'name':user.title(),'email':user+'@private.example'}),'csrf-'+user,time.time()+3600))
+    client=TestClient(app,base_url='https://api.test',headers={'Authorization':'Bearer private','Origin':'https://aisoup.net','X-CSRF-Token':'csrf-'+user})
+    client.cookies.set(ACCOUNT_COOKIE,cookie)
+    return client
+
+@pytest.mark.parametrize('kind,source,poi',[('search','search',None),('place','search','poi1'),('photo','photo',None)])
+def test_comments_on_all_publication_types_are_public_but_require_login(publication_env,kind,source,poi):
+    _,app,owner=publication_env
+    item=owner.post('/photo-scout/v1/publications',json={'kind':kind,'id':source,**({'poiId':poi} if poi else {})}).json()
+    path='/photo-scout/v1/publications/'+item['id']+'/comments'
+    public=TestClient(app)
+    assert public.get(path).json()=={'items':[],'nextBefore':None,'canComment':False}
+    assert owner.post(path,json={'text':'Guest'}).status_code==401
+    alice=comment_client(publication_env,'alice')
+    assert alice.post(path,headers={'X-CSRF-Token':''},json={'text':'Missing CSRF'}).status_code==403
+    assert alice.post(path,headers={'Origin':'https://evil.example'},json={'text':'Wrong origin'}).status_code==403
+    assert alice.post(path,json={'text':'  '}).status_code==422
+    assert alice.post(path,json={'text':'x'*2001}).status_code==422
+    posted=alice.post(path,json={'text':'  <script>alert(1)</script> Nice view!  '}).json()
+    assert posted['name']=='Alice' and posted['text']=='<script>alert(1)</script> Nice view!'
+    result=public.get(path).json()['items'][0]
+    assert not result['mine'] and not result['canDelete']
+    assert 'private.example' not in json.dumps(result) and 'author' not in result
+    assert alice.get(path).json()['canComment']
+    bob=comment_client(publication_env,'bob')
+    assert bob.delete(path+'/'+posted['id']).status_code==404
+    assert alice.delete(path+'/'+posted['id']).status_code==200
+    assert public.get(path).json()['items']==[]
+    moderated=alice.post(path,json={'text':'Comment to moderate'}).json()
+    assert owner.get(path).json()['items'][0]['canDelete']
+    assert owner.delete(path+'/'+moderated['id']).status_code==200
+
+
+def test_place_subthreads_are_scoped_to_the_published_search(publication_env):
+    _,app,owner=publication_env
+    ident=owner.post('/photo-scout/v1/publications',json={'kind':'search','id':'search'}).json()['id']
+    path='/photo-scout/v1/publications/'+ident+'/comments'
+    alice=comment_client(publication_env,'alice')
+    alice.post(path,json={'text':'Whole shortlist'})
+    alice.post(path,json={'text':'Only Lake view','poiId':'poi1'})
+    assert [c['text'] for c in alice.get(path).json()['items']]==['Whole shortlist']
+    assert [c['text'] for c in alice.get(path,params={'poiId':'poi1'}).json()['items']]==['Only Lake view']
+    assert alice.get(path,params={'poiId':'poi2'}).json()['items']==[]
+    assert alice.post(path,json={'text':'Invalid place','poiId':'unknown'}).status_code==404
+    with sqlite3.connect(publication_env[0].database_path) as db:
+        db.execute("UPDATE photo_publications SET snapshot=? WHERE id=?",(json.dumps({'result':{'spots':[]}}),ident))
+    assert alice.get(path,params={'poiId':'poi1'}).status_code==404
+    owner.post('/photo-scout/v1/publications/withdraw',json={'id':ident})
+    assert TestClient(app).get(path).status_code==404
+    assert alice.post(path,json={'text':'Withdrawn'}).status_code==404
+
+
+def test_comment_pagination_and_rate_limit(publication_env):
+    settings,_,owner=publication_env
+    ident=owner.post('/photo-scout/v1/publications',json={'kind':'search','id':'search'}).json()['id']
+    path='/photo-scout/v1/publications/'+ident+'/comments'
+    alice=comment_client(publication_env,'alice')
+    for i in range(20):assert alice.post(path,json={'text':str(i)}).status_code==200
+    assert alice.post(path,json={'text':'Too many'}).status_code==429
+    with sqlite3.connect(settings.database_path) as db:
+        for i in range(15):
+            db.execute('INSERT INTO photo_publication_comments VALUES(?,?,?,?,?,?,?,0)',('old'+str(i),ident,'','user:bob','Bob','Old '+str(i),time.time()-4000-i))
+    first=alice.get(path).json()
+    assert len(first['items'])==30 and first['nextBefore']
+    second=alice.get(path,params={'before':first['nextBefore']}).json()
+    assert len(second['items'])==5 and second['nextBefore'] is None
+    assert not set(c['id'] for c in first['items'])&set(c['id'] for c in second['items'])
+
+@pytest.mark.parametrize('kind,source,poi',[('search','search',None),('place','search','poi1'),('photo','photo',None)])
+def test_likes_and_private_favorites_are_idempotent_and_reversible(publication_env,kind,source,poi):
+    _,app,owner=publication_env
+    ident=owner.post('/photo-scout/v1/publications',json={'kind':kind,'id':source,**({'poiId':poi} if poi else {})}).json()['id']
+    path='/photo-scout/v1/publications/'+ident
+    alice=comment_client(publication_env,'alice');bob=comment_client(publication_env,'bob');public=TestClient(app)
+    assert owner.post(path+'/reactions',json={'kind':'like','active':True}).status_code==401
+    assert alice.post(path+'/reactions',headers={'X-CSRF-Token':''},json={'kind':'like','active':True}).status_code==403
+    for _ in range(2):assert alice.post(path+'/reactions',json={'kind':'like','active':True}).json()['threads']['']['likes']==1
+    bob.post(path+'/reactions',json={'kind':'like','active':True})
+    state=public.get(path+'/social').json();assert state['threads']['']=={'likes':2,'liked':False,'favorited':False};assert not state['canReact']
+    alice.post(path+'/reactions',json={'kind':'favorite','active':True})
+    alice.post(path+'/reactions',json={'kind':'favorite','active':True})
+    assert len(alice.get('/photo-scout/v1/favorites').json()['items'])==1
+    assert bob.get('/photo-scout/v1/favorites').json()['items']==[]
+    assert public.get('/photo-scout/v1/favorites').status_code in (401,403)
+    assert not bob.get(path+'/social').json()['threads']['']['favorited']
+    assert alice.get(path+'/social').json()['threads']['']['favorited']
+    alice.post(path+'/reactions',json={'kind':'like','active':False})
+    assert alice.get(path+'/social').json()['threads']['']['likes']==1
+    alice.post(path+'/reactions',json={'kind':'favorite','active':False})
+    assert alice.get('/photo-scout/v1/favorites').json()['items']==[]
+    alice.post(path+'/reactions',json={'kind':'favorite','active':True})
+    owner.post('/photo-scout/v1/publications/withdraw',json={'id':ident})
+    assert alice.get('/photo-scout/v1/favorites').json()['items']==[]
+    assert alice.get(path+'/social').status_code==404
+    assert alice.post(path+'/reactions',json={'kind':'like','active':True}).status_code==404
+
+
+def test_place_reactions_validate_scope_and_favorites_link_to_the_saved_place(publication_env):
+    _,_,owner=publication_env
+    ident=owner.post('/photo-scout/v1/publications',json={'kind':'search','id':'search'}).json()['id']
+    alice=comment_client(publication_env,'alice');path='/photo-scout/v1/publications/'+ident
+    assert alice.post(path+'/reactions',json={'kind':'favorite','active':True,'poiId':'unknown'}).status_code==404
+    alice.post(path+'/reactions',json={'kind':'favorite','active':True,'poiId':'poi1'})
+    alice.post(path+'/reactions',json={'kind':'like','active':True,'poiId':'poi1'})
+    state=alice.get(path+'/social').json()['threads']
+    assert state['']['likes']==0 and state['poi1']['likes']==1 and state['poi2']['likes']==0
+    saved=alice.get('/photo-scout/v1/favorites').json()['items'][0]
+    assert saved['kind']=='place' and saved['title']=='Lake view' and saved['poiId']=='poi1'
+    owner.post('/photo-scout/v1/hidden-pois',json={'searchId':'search','poiId':'poi1'})
+    assert alice.get('/photo-scout/v1/favorites').json()['items']==[]

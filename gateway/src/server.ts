@@ -569,7 +569,7 @@ app.all('*', async (c) => {
     if (!allowed) return c.body(null, 403)
     return new Response(null, { status: 204, headers: {
       'Access-Control-Allow-Origin': origin,
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Methods': path.startsWith('/photo-scout/') ? 'GET, POST, DELETE, OPTIONS' : 'GET, POST, OPTIONS',
       'Access-Control-Allow-Credentials': 'true',
       'Access-Control-Allow-Headers': 'Content-Type, X-CSRF-Token, X-Report-Token, X-Request-Token, X-Usage-Session, X-Usage-Source, X-Usage-Campaign, X-Usage-Test',
       Vary: 'Origin',

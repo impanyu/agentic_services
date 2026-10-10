@@ -284,7 +284,7 @@ def create_app(
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["https://aisoup.net", "https://www.aisoup.net"],
-        allow_methods=["GET", "POST", "OPTIONS"],
+        allow_methods=["GET", "POST", "DELETE", "OPTIONS"],
         allow_headers=["Content-Type", "Authorization"],
     )
     app.state.settings = resolved_settings

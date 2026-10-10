@@ -37,7 +37,7 @@ function pageFixture(statusResponses,permissionOptions={}){
  const layer=()=>({addOverlay(){return this;},addTo(){return this;},on(){return this;},once(){return this;},setLatLng(p){this.position=p;return this;},setRadius(radius){this.radius=radius;return this;},clearLayers(){this.clears=(this.clears||0)+1;},bindPopup(content){this.popup=content;return this;},openPopup(){this.opened=true;return this;},bindTooltip(content){this.tooltip=content;return this;},setTooltipContent(content){this.tooltip=content;return this;},getLayers(){return [];},getBounds(){return this.position;},getContainer(){return {};}});
  const map={setView(position,zoom){this.focus={position,zoom};return this;},on(){},hasLayer(){return true;},removeLayer(){},fitBounds(bounds){moves.push(bounds);}};
  const L={map:()=>map,control:{zoom:()=>layer(),layers:()=>layer()},tileLayer:()=>layer(),marker:(p,options)=>{const m=layer();m.options=options;m.position=p;return m;},layerGroup:()=>layer(),circle:()=>{const c=layer();circles.push(c);return c;},divIcon:options=>options,DomEvent:{disableClickPropagation(){},disableScrollPropagation(){}}};
- const window={isSecureContext:true,addEventListener(){}},navigator={geolocation:{getCurrentPosition(success,error){requests.push({success,error});}}};
+ const window={PhotoScoutComments:{create:()=>element('social'+(++created)),clear(){}},isSecureContext:true,addEventListener(){}},navigator={geolocation:{getCurrentPosition(success,error){requests.push({success,error});}}};
  class FileReader{readAsDataURL(blob){blob.arrayBuffer().then(bytes=>{this.result='data:'+blob.type+';base64,'+Buffer.from(bytes).toString('base64');this.onload();});}}
  navigator.permissions=permissionOptions.permissions;
  vm.runInNewContext(readFileSync('photo-scout-site/street-view.js','utf8'),{window,URL,Math});window.PhotoScoutStreetView.bind=null;
@@ -159,7 +159,7 @@ test('all scored POIs remain ranked even when unsuitable or low scoring, ignorin
 });
 
 test('submitting a search immediately fits its current radius even when coordinates have not changed',()=>{
- const f=pageFixture(),result=f.submitAt(20000);assert.equal(result.moves.length,1);assert.deepEqual(Array.from(result.moves[0]),[41.8827,-87.6233]);assert.equal(result.radius,20000);
+ const f=pageFixture(),result=f.submitAt(20000);assert.equal(result.moves.length,1);assert.deepEqual(Array.from(result.moves[0]),[37.7749,-122.4194]);assert.equal(result.radius,20000);
 });
 test('text-resolved radius changes refit the map without repeatedly moving it on unchanged polls',()=>{
  const f=pageFixture(),area={lat:41.8827,lon:-87.6233,radius:20000};const first=f.applyContext(area);assert.equal(first.moves.length,1);assert.equal(first.radius,20000);assert.equal(f.applyContext(area).moves.length,1);const second=f.applyContext({...area,lat:40.8,lon:-96.7,radius:500});assert.equal(second.moves.length,2);assert.equal(second.radius,500);
@@ -349,17 +349,15 @@ test('automatic location checks current permission and never prompts when unknow
  assert.equal(await f.helper.canAutoLocate({query:async()=>{throw Error('unsupported');}}),false);
  assert.doesNotThrow(()=>f.helper.remember({setItem(){throw Error('storage blocked');}}));
 });
-test('return visits with retained permission locate freshly without submitting or changing text',async()=>{
+test('opening the page keeps the saved/default map view even with location permission',async()=>{
  const f=pageFixture(undefined,{permissions:{query:async()=>({state:'granted'})}});let submissions=0;f.interceptSubmission(()=>submissions++);f.element('prompt-query').value='My next photo';await f.settle();
- assert.equal(f.requests.length,1);f.requests[0].success({coords:{latitude:34.1,longitude:-118.2,accuracy:12}});
- assert.equal(f.element('lat').value,'34.100000');assert.equal(f.moves.length,1);assert.equal(submissions,0);assert.equal(f.element('prompt-query').value,'My next photo');assert.equal(f.stored.get('photo-scout-location-enabled'),'1');
+ assert.equal(f.requests.length,0);assert.equal(submissions,0);assert.equal(f.element('prompt-query').value,'My next photo');
 });
 test('visits without retained permission make no device location request',async()=>{
  for(const state of ['prompt','denied']){const f=pageFixture(undefined,{permissions:{query:async()=>({state})}});await f.settle();assert.equal(f.requests.length,0);}
 });
-test('late automatic location cannot replace a subsequently chosen history location',async()=>{
- const f=pageFixture(undefined,{permissions:{query:async()=>({state:'granted'})}});await f.settle();assert.equal(f.requests.length,1);
- f.focusRecorded({lat:40,lon:-96,radius:1000},{spots:[]});const moves=f.moves.length;
- f.requests[0].success({coords:{latitude:34.1,longitude:-118.2,accuracy:12}});
- assert.equal(f.element('lat').value,'40');assert.equal(f.element('lon').value,'-96');assert.equal(f.moves.length,moves);
+test('history navigation remains selected without an automatic device fix',async()=>{
+ const f=pageFixture(undefined,{permissions:{query:async()=>({state:'granted'})}});await f.settle();assert.equal(f.requests.length,0);
+ f.focusRecorded({lat:40,lon:-96,radius:1000},{spots:[]});
+ assert.equal(f.element('lat').value,'40');assert.equal(f.element('lon').value,'-96');
 });
