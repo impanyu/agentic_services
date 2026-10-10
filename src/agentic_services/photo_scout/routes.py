@@ -143,7 +143,7 @@ class PhotoStore:
             db.execute('BEGIN IMMEDIATE')
             db.execute('INSERT OR IGNORE INTO photo_scout_intent_budget VALUES(?,0)',(day,))
             if db.execute('SELECT runs FROM photo_scout_intent_budget WHERE day=?',(day,)).fetchone()[0]>=int(os.getenv('PHOTO_SCOUT_DAILY_INTENT_LIMIT','100')):
-                raise HTTPException(429,'Daily text search capacity reached. Use the map controls instead.')
+                raise HTTPException(429,'Daily search planning capacity reached. Please try again later.')
             db.execute('UPDATE photo_scout_intent_budget SET runs=runs+1 WHERE day=?',(day,))
     def reserve_run(self):
         from datetime import datetime, timezone
@@ -327,7 +327,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
             async with asyncio.timeout(45): return await resolve_intent(settings,payload)
         except Exception as error:
             logging.getLogger(__name__).warning('Photo Scout text resolution failed: %s',type(error).__name__)
-            raise HTTPException(503,'Text search is temporarily unavailable. You can still choose a location on the map.') from error
+            raise HTTPException(503,'Search planning is temporarily unavailable. Please try again later.') from error
 
     @router.get('/photo-scout/v1/search-tools')
     def search_tools(authorization: str | None=Header(None)):
