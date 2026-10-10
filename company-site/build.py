@@ -57,7 +57,7 @@ def main() -> None:
         "name": "AI Soup",
         "legalName": "Dream Workshop LLC",
         "url": "https://aisoup.net",
-        "description": "Agent for App: agents inside apps for people. App for Agent: apps, tools, and services for agents.",
+        "description": "A4A: AI agent-native apps with agent-led workflows, and applications and infrastructure for agents.",
         "hasOfferCatalog": {
             "@type": "OfferCatalog",
             "name": "Products",
