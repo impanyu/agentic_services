@@ -20,6 +20,6 @@ window.PhotoScoutComments={clear(){photoSocialCache.clear();},create({resolve,re
  root.refreshComments=(force=false)=>{like.disabled=favorite.disabled=true;refreshSocial();box.refreshComments(force);};
  if(compact)box.addEventListener('toggle',()=>{if(box.open)box.refreshComments(true);});else queueMicrotask(()=>box.refreshComments());queueMicrotask(refreshSocial);
  more.onclick=()=>load(true);login.onclick=signIn;
- form.onsubmit=async event=>{event.preventDefault();const text=input.value.trim();if(!text||!target)return;const key=targetKey;submit.disabled=true;status.textContent='Posting…';try{await request(path(),{method:'POST',headers:{'Content-Type':'application/json',...headers()},body:JSON.stringify({text,poiId:target.poi||''})});if(key!==targetKey)return;input.value='';await load();}catch(error){if(key===targetKey)status.textContent=error.message;}finally{submit.disabled=false;}};
+ form.onsubmit=async event=>{event.preventDefault();const text=input.value.trim();if(!text||!target)return;const key=targetKey;submit.disabled=true;status.textContent='Posting…';try{await request(path(),{method:'POST',headers:{'Content-Type':'application/json',...headers()},body:JSON.stringify({text,poiId:target.poi||''})});if(key!==targetKey)return;input.value='';await load();onReaction();}catch(error){if(key===targetKey)status.textContent=error.message;}finally{submit.disabled=false;}};
  return root;
 }};

@@ -344,3 +344,49 @@ def test_place_reactions_validate_scope_and_favorites_link_to_the_saved_place(pu
     assert saved['kind']=='place' and saved['title']=='Lake view' and saved['poiId']=='poi1'
     owner.post('/photo-scout/v1/hidden-pois',json={'searchId':'search','poiId':'poi1'})
     assert alice.get('/photo-scout/v1/favorites').json()['items']==[]
+
+
+def test_photo_library_filters_activity_to_current_users_public_photos(publication_env):
+    _,app,owner=publication_env
+    photo=owner.post('/photo-scout/v1/publications',json={'kind':'photo','id':'photo'}).json()['id']
+    search=owner.post('/photo-scout/v1/publications',json={'kind':'search','id':'search'}).json()['id']
+    alice=comment_client(publication_env,'alice');bob=comment_client(publication_env,'bob')
+    library='/photo-scout/v1/photo-library'
+    assert TestClient(app).get(library).status_code in (401,403)
+    assert owner.get(library).status_code==401
+    assert alice.get(library,params={'tab':'arbitrary'}).status_code==422
+    for ident in (photo,search):
+        for kind in ('like','favorite'):alice.post('/photo-scout/v1/publications/'+ident+'/reactions',json={'kind':kind,'active':True})
+    path='/photo-scout/v1/publications/'+photo+'/comments'
+    comment=alice.post(path,json={'text':'First comment'}).json()['id']
+    newer=alice.post(path,json={'text':'Another comment'}).json()['id']
+    for tab in ('liked','saved','commented'):
+        result=alice.get(library,params={'tab':tab}).json()
+        assert len(result['items'])==1 and result['items'][0]['id']==photo
+        assert result['items'][0]['kind']=='photo' and result['items'][0]['thumbnailUrl'].endswith('/'+photo+'/thumbnail')
+        assert bob.get(library,params={'tab':tab}).json()['items']==[]
+    alice.delete(path+'/'+newer)
+    assert len(alice.get(library,params={'tab':'commented'}).json()['items'])==1
+    alice.delete(path+'/'+comment)
+    assert alice.get(library,params={'tab':'commented'}).json()['items']==[]
+    alice.post('/photo-scout/v1/publications/'+photo+'/reactions',json={'kind':'like','active':False})
+    assert alice.get(library,params={'tab':'liked'}).json()['items']==[]
+    owner.post('/photo-scout/v1/publications/withdraw',json={'id':photo})
+    assert alice.get(library,params={'tab':'saved'}).json()['items']==[]
+
+
+@pytest.mark.parametrize('tab',['liked','saved','commented'])
+def test_photo_library_paginates_by_latest_activity_without_duplicate_photos(publication_env,tab):
+    settings,_,_=publication_env;alice=comment_client(publication_env,'alice');now=time.time()
+    with sqlite3.connect(settings.database_path) as db:
+        for i in range(55):
+            ident='library'+str(i);created=now-i-2
+            db.execute('INSERT INTO photo_publications VALUES(?,?,?,?,?,?,?,?,?,1)',(ident,'user:bob','photo',ident,'','Photo '+str(i),created,'{}',b'image'))
+            if tab=='commented':
+                for suffix,offset in [('a',0),('b',1)]:db.execute('INSERT INTO photo_publication_comments VALUES(?,?,?,?,?,?,?,0)',(ident+suffix,ident,'','user:alice','Alice','A comment',created-offset))
+            else:db.execute('INSERT INTO photo_publication_reactions VALUES(?,?,?,?,?)',(ident,'','user:alice','like' if tab=='liked' else 'favorite',created))
+    first=alice.get('/photo-scout/v1/photo-library',params={'tab':tab}).json()
+    assert len(first['items'])==50 and first['nextBefore']
+    second=alice.get('/photo-scout/v1/photo-library',params={'tab':tab,'before':first['nextBefore']}).json()
+    assert len(second['items'])==5 and second['nextBefore'] is None
+    assert not set(r['id'] for r in first['items'])&set(r['id'] for r in second['items'])

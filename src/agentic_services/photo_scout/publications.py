@@ -124,6 +124,24 @@ def create_publications_router(settings,require_api):
             items.append({**metadata(row),'poiId':row['poi'],'savedAt':row['saved'],**({'title':spot.get('name') or row['title'],'kind':'place'} if spot else {})})
             if len(items)==51:break
         return {'items':items[:50],'nextBefore':items[49]['savedAt'] if len(items)>50 else None}
+    @router.get('/photo-scout/v1/photo-library')
+    def photo_library(request:Request,response:Response,tab:Literal['liked','saved','commented']='liked',before:float|None=None):
+        require_api(request.headers.get('authorization'));identity=owner(request)
+        response.headers['Cache-Control']='private, no-store'
+        if not identity or not identity.startswith('user:'):raise HTTPException(401,'Sign in to view your photo activity')
+        cursor=before if before is not None else time.time()+1
+        with store.db() as db:
+            if tab=='commented':
+                rows=db.execute('''SELECT p.id,p.kind,p.title,p.created,max(c.created) AS activity
+                    FROM photo_publication_comments c JOIN photo_publications p ON p.id=c.publication
+                    WHERE c.author=? AND c.deleted=0 AND p.active=1 AND p.kind='photo' AND c.poi=''
+                    GROUP BY p.id HAVING max(c.created)<? ORDER BY activity DESC,p.id DESC LIMIT 51''',(identity,cursor)).fetchall()
+            else:
+                rows=db.execute('''SELECT p.id,p.kind,p.title,p.created,r.created AS activity
+                    FROM photo_publication_reactions r JOIN photo_publications p ON p.id=r.publication
+                    WHERE r.owner=? AND r.kind=? AND r.poi='' AND p.active=1 AND p.kind='photo' AND r.created<?
+                    ORDER BY r.created DESC,p.id DESC LIMIT 51''',(identity,'like' if tab=='liked' else 'favorite',cursor)).fetchall()
+        return {'items':[{**metadata(r),'activityAt':r['activity'],'thumbnailUrl':settings.base_url.rstrip('/')+'/photo-scout/v1/publications/'+r['id']+'/thumbnail'} for r in rows[:50]],'nextBefore':rows[49]['activity'] if len(rows)>50 else None}
     def photo_comment_publication(db,ident,poi=''):
         publication=comment_publication(db,ident,poi)
         if publication['kind']!='photo' or poi:
