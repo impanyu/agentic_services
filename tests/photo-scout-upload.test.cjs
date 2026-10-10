@@ -19,3 +19,6 @@ test('unsupported browser image codec retains the file for server conversion wit
 test('oversized decoded image fails visibly before submission',async()=>{
  await assert.rejects(fixture(10000,10000).prepare({}),/80 megapixels/);
 });
+function draftFixture(){const source=readFileSync('photo-scout-site/app.js','utf8'),c={studioInputPlaceKey:'old',studioUploadGeneration:5,studioFile:{name:'old-selfie.png'},studioPrepared:'old-photo',studioUpload:{value:'old'},personPreview:{hidden:false,removeAttribute(){}},studioGenerate:{disabled:false},studioPreviewUrl:null};vm.runInNewContext(source.slice(source.indexOf('function resetStudioInputForPlace('),source.indexOf('function openPhotoStudio(')),c);return c;}
+test('changing the photo background clears the previous portrait and invalidates pending preparation',()=>{const c=draftFixture();c.resetStudioInputForPlace({sourceUrl:'new'});assert.equal(c.studioFile,null);assert.equal(c.studioPrepared,null);assert.equal(c.studioUpload.value,'');assert.equal(c.personPreview.hidden,true);assert.equal(c.studioGenerate.disabled,true);assert.equal(c.studioUploadGeneration,6);});
+test('reopening the same scene retains the explicitly chosen portrait draft',()=>{const c=draftFixture();c.resetStudioInputForPlace({sourceUrl:'old'});assert.equal(c.studioPrepared,'old-photo');assert.equal(c.studioUploadGeneration,5);});

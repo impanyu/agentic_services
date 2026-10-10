@@ -133,11 +133,11 @@ def test_subject_check_blocks_empty_or_failed_checks_and_allows_people_cartoons_
     if count:
         assert state['state']=='complete';assert [c[0] for c in calls]==['check','background','background','background','background-check','edit']
         assert 'cartoon' in calls[0][1]['instructions'] and 'animals' in calls[0][1]['instructions']
-        assert 'EVERY visible foreground subject' in calls[-1][1]['prompt']
+        assert 'Preserve all intended members of an actual group portrait' in calls[-1][1]['prompt']
         assert 'do not turn them into real humans or animals' in calls[-1][1]['prompt']
         assert 'do not humanize them' in calls[-1][1]['prompt']
         assert 'thoughtful natural expression' in calls[-1][1]['prompt']
-        assert 'Keep the original background, camera viewpoint' in calls[-1][1]['prompt']
+        assert 'Keep ONLY the background, camera viewpoint and landmarks from image 2' in calls[-1][1]['prompt']
     else:
         assert state['state']=='failed';assert len(calls)==1
         assert ('person, cartoon character or animal' if count==0 else 'Could not check') in state['error']
