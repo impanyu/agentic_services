@@ -68,7 +68,7 @@ def create_publications_router(settings,require_api):
             if not allowed and kind=='search' and identity.startswith('user:'):
                 row=db.execute('SELECT record FROM photo_account_history WHERE user_id=? AND id=?',(identity[5:],payload.id)).fetchone()
                 if row:legacy=json.loads(row['record']);allowed=True
-            if not allowed:raise HTTPException(404,'Only your own completed items can be published')
+            if not allowed or db.execute('SELECT 1 FROM photo_removed_items WHERE owner=? AND kind=? AND job=?',(identity,kind,payload.id)).fetchone():raise HTTPException(404,'Only your own visible, completed items can be published')
             image=None
             if kind=='portrait':
                 row=db.execute('SELECT state,output FROM photo_portraits WHERE id=?',(payload.id,)).fetchone()
@@ -122,6 +122,14 @@ def create_publications_router(settings,require_api):
         with store.db() as db:
             rows=db.execute('SELECT id,owner,kind,title,created,snapshot FROM photo_publications WHERE active=1 AND created<? ORDER BY created DESC LIMIT 51',(before or time.time()+1,)).fetchall()
         return {'items':[{**metadata(r,r['owner']==identity),**json.loads(r['snapshot'])} for r in rows[:50]],'nextBefore':rows[49]['created'] if len(rows)>50 else None}
+    @router.get('/photo-scout/v1/publications/mine')
+    def mine(request:Request,response:Response):
+        require_api(request.headers.get('authorization'))
+        response.headers['Cache-Control']='private, no-store'
+        identity=owner(request)
+        if not identity:return {'items':[]}
+        with store.db() as db:rows=db.execute('SELECT id,kind,title,created,source,poi FROM photo_publications WHERE owner=? AND active=1',(identity,)).fetchall()
+        return {'items':[{**metadata(row,True),'sourceId':row['source'],'poiId':row['poi']} for row in rows]}
     @router.get('/photo-scout/v1/publications/{ident}')
     def detail(ident:str,request:Request,response:Response):
         with store.db() as db:row=db.execute('SELECT * FROM photo_publications WHERE id=? AND active=1',(ident,)).fetchone()

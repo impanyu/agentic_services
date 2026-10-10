@@ -64,6 +64,16 @@ height meters; unspecified high-rise can use building existence + building:level
 an approximate discovery hint, not proof of height. Supported tags are not a whitelist;
 unsupported fine attributes remain visual. Missing map attributes are not visual proof.
 
+SOURCE COVERAGE
+For a subject discoverable both as a named place and a mapped object (sculptures,
+murals, public art, monuments, towers), use independent search_places and search_features
++ feature_points branches, then union their candidates before collect_images. OSM may
+miss untagged objects and Places may miss unnamed ones. Do not require a Places result
+also to have OSM tags; image review must verify the requested object is visible.
+Use essential subject/category words for Places, optionally local-language synonyms;
+keep appearance details in visual review. Do not add a Places branch for features it
+cannot meaningfully retrieve (e.g. individual traffic signals or road intersections).
+
 Record each condition in requirements with English expression, strength, route and stepIds.
 required = explicitly requested subject/identity/spatial relation/demanded visual detail.
 preferred = 'prefer', 'ideally', optional discovery hints and aesthetic quality.

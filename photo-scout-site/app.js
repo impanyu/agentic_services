@@ -2,7 +2,7 @@
 let lastRemovedPoi=null,selectedPoiView=null,poiViewOverrides=new Map(),poiPreviewTimer=null;
 let removedHistoryItems=new Set(),lastRemovedHistory=null;
 let sharedPublicationId=null;
-let publicationItems=[],publicationCursor=null;
+let publicationItems=[],publicationCursor=null;let ownPublications=new Map();
 const hydratedSearches=new Set();
 let tasksReady=false,taskRecords=[],taskRefreshBusy=false,taskRecoveryGeneration=0,taskRefreshTimer=null;
 const api=location.hostname==='localhost'||location.hostname==='127.0.0.1'?'': 'https://api.aisoup.net';
@@ -194,7 +194,7 @@ function removePoiButton(spot,searchId){
    const data=await json('/photo-scout/v1/hidden-pois',{method:'POST',headers:{'Content-Type':'application/json',...(csrfToken?{'X-CSRF-Token':csrfToken}:{})},body:JSON.stringify({searchId,poiId:poiHistoryKey(spot),hidden:true})});
    hiddenPoisBySearch=new Map(Object.entries(data.hiddenPois).map(([id,keys])=>[id,new Set(keys)]));lastRemovedPoi={searchId,poiId:poiHistoryKey(spot),name:spot.name};
    drawHistoryMap();renderHistory();refreshDisplayedShortlist();
-   message('Place removed from this search history.');
+   message('Place removed from this search history.');await loadPublications();
   }catch(error){button.disabled=false;button.textContent='Remove';message(error.message);}
  });return button;
 }
@@ -382,7 +382,7 @@ function removeHistoryButton(entry){
     if(displayedSearchId===entry.id){el('results').hidden=true;displayedResult=null;displayedSearchId=null;}
     persistHistory();drawHistoryMap();
    }
-   renderHistory();refreshVisiblePlaceSelfies();
+   renderHistory();refreshVisiblePlaceSelfies();await loadPublications();
   }catch(error){button.disabled=false;message(error.message);}
  });
  return button;
@@ -455,7 +455,8 @@ const studioResult=node('img',null,'studio-result');studioResult.alt='AI-generat
 const studioSave=node('button','Save to Photos','studio-save');studioSave.type='button';studioSave.hidden=true;
 const studioSaveHint=node('p',null,'studio-save-hint small');studioSaveHint.setAttribute('role','status');studioSaveHint.hidden=true;
 const studioDownload=node('a','Download PNG','studio-download');studioDownload.hidden=true;studioDownload.download='photo-scout-ai-photo.png';
-studio.append(studioTop,studioPlace,studioImages,uploadLabel,studioStyles,studioOptions,poseLabel,studioNote,studioGenerate,studioStatus,studioResult,studioSave,studioDownload,studioSaveHint);document.body.append(studio);
+const studioPending=node('div',null,'studio-job-progress');studioPending.hidden=true;studioPending.setAttribute('role','status');studioPending.setAttribute('aria-live','polite');
+studio.append(studioTop,studioPlace,studioImages,uploadLabel,studioStyles,studioOptions,poseLabel,studioNote,studioGenerate,studioPending,studioStatus,studioResult,studioSave,studioDownload,studioSaveHint);document.body.append(studio);
 // This separate map layer survives shortlist/history redraws and dialog closure.
 const selfieActivityLayer=L.layerGroup().addTo(map);
 const studioTask=node('button',null,'selfie-task');studioTask.type='button';studioTask.hidden=true;studioTask.setAttribute('aria-live','polite');
@@ -471,7 +472,7 @@ function setStudioActivity(state){
   studioActivityMarker=L.marker([pos.lat,pos.lon],{title:'Selfie in progress · '+studioSpot.name,keyboard:true,zIndexOffset:1200,icon:L.divIcon({className:'selfie-activity-pin',html:'<span class="selfie-glow"></span><span class="selfie-star star-one">✦</span><span class="selfie-star star-two">✧</span><span class="selfie-star star-three">✦</span>',iconSize:[64,64],iconAnchor:[32,32]})}).addTo(selfieActivityLayer).bindTooltip(node('span',studioTaskLabel.textContent),{permanent:true,direction:'top',offset:[0,-30],className:'selfie-map-tooltip'}).on('click',()=>studio.showModal());
  }else if(studioActivityMarker)studioActivityMarker.setTooltipContent(node('span',studioTaskLabel.textContent));
 }
-function openPhotoStudio(spot){if(savedPhoto.open)savedPhoto.close();if(portraitProgress.open)portraitProgress.close();if(studioBusy){studio.showModal();return;}if(!studioBusy){if(!taskRecords.some(t=>t.kind==='portrait'&&['queued','checking','running'].includes(t.state)))studioTask.hidden=true;studioSpot=spot;studioFraming.disabled=spot.provider!=='google-street-view';studioFraming.parentElement.hidden=spot.provider!=='google-street-view';studioPlace.textContent=spot.name+(photoBearing(spot).heading!=null?' · '+photoBearing(spot).label:'');scenePreview.removeAttribute('src');if(spot.provider==='google-street-view')refreshThumbnail(scenePreview,spot);else if(spot.imageUrl)scenePreview.src=spot.imageUrl;studioStatus.textContent='Upload a clear image of a person, cartoon character or animal. Groups are welcome; a clearly visible subject works best.';clearStudioOutput();studioGenerate.disabled=!studioPrepared;}studio.showModal();}
+function openPhotoStudio(spot){if(savedPhoto.open)savedPhoto.close();if(portraitProgress.open)portraitProgress.close();if(studioBusy){studio.showModal();return;}if(!studioBusy){if(!taskRecords.some(t=>t.kind==='portrait'&&['queued','checking','running'].includes(t.state)))studioTask.hidden=true;studioSpot=spot;studioFraming.disabled=spot.provider!=='google-street-view';studioFraming.parentElement.hidden=spot.provider!=='google-street-view';studioPlace.textContent=spot.name+(photoBearing(spot).heading!=null?' · '+photoBearing(spot).label:'');scenePreview.removeAttribute('src');if(spot.provider==='google-street-view')refreshThumbnail(scenePreview,spot);else if(spot.imageUrl)scenePreview.src=spot.imageUrl;studioStatus.textContent='Upload a clear image of a person, cartoon character or animal. Groups are welcome; a clearly visible subject works best.';clearStudioOutput();studioGenerate.disabled=!studioPrepared;}syncStudioProgress();studio.showModal();}
 studioClose.addEventListener('click',()=>studio.close());
 studioUpload.addEventListener('change',async()=>{const generation=++studioUploadGeneration;studioFile=studioUpload.files[0]||null;studioPrepared=null;personPreview.hidden=true;personPreview.removeAttribute('src');studioGenerate.disabled=true;if(studioPreviewUrl)URL.revokeObjectURL(studioPreviewUrl);if(!studioFile)return;if(studioFile.size>20000000){studioStatus.textContent='Choose a photo up to 20 MB.';studioFile=null;return;}if(!['image/jpeg','image/png','image/webp','image/heic','image/heif',''].includes(studioFile.type)&&!/\.(jpe?g|png|webp|heic|heif)$/i.test(studioFile.name)){studioStatus.textContent='Choose a JPG, PNG, WebP or HEIC photo.';studioFile=null;return;}studioStatus.textContent='Preparing your photo…';try{const prepared=await prepareStudioPhoto(studioFile);if(generation!==studioUploadGeneration)return;studioPrepared=prepared.data;personPreview.src=prepared.data;personPreview.hidden=!prepared.preview;studioGenerate.disabled=studioBusy;studioStatus.textContent=prepared.preview?'Your photo is ready. It has been resized for upload.':'Your phone photo will be converted securely when you submit. This browser cannot display its original format.';}catch(error){if(generation!==studioUploadGeneration)return;studioFile=null;studioStatus.textContent=error.message;}});
 async function prepareStudioPhoto(file){const data=await readPhoto(file);return new Promise((resolve,reject)=>{const image=new Image();image.onload=()=>{try{if(image.naturalWidth*image.naturalHeight>80000000)throw Error('This photo exceeds 80 megapixels. Export a smaller copy.');const scale=Math.min(1,2048/Math.max(image.naturalWidth,image.naturalHeight)),canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(image.naturalWidth*scale));canvas.height=Math.max(1,Math.round(image.naturalHeight*scale));const context=canvas.getContext('2d');context.fillStyle='#fff';context.fillRect(0,0,canvas.width,canvas.height);context.drawImage(image,0,0,canvas.width,canvas.height);resolve({data:canvas.toDataURL('image/jpeg',.92),preview:true});}catch(error){reject(error);}};image.onerror=()=>resolve({data,preview:false});image.src=data;});}
@@ -479,7 +480,7 @@ function readPhoto(file){return new Promise((resolve,reject)=>{const reader=new 
 studioGenerate.addEventListener('click',async()=>{
  if(!tasksReady||!studioPrepared||!studioSpot||studioBusy)return;studioBusy=true;studioGenerate.disabled=true;studioUpload.disabled=true;studioPose.disabled=true;studioStyles.disabled=true;studioOptions.disabled=true;studioStatus.classList.add('working');studioStatus.textContent='Uploading your photo…';
  const spot=studioSpot,payload={portrait:studioPrepared,background:spot.provider==='google-street-view'?spot.sourceUrl:spot.imageUrl,provider:spot.provider,place:spot.name,pose:studioPose.value.trim(),style:studioStyle,posture:studioPosture.value,weather:studioWeather.value,expression:studioExpression.value,framing:studioFraming.value,lat:spot.poi?.lat??null,lon:spot.poi?.lon??null};
- try{const job=await json('/photo-scout/v1/portraits',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});addSubmittedTask('portrait',job,{...spot,generation:{style:payload.style,posture:payload.posture,weather:payload.weather,expression:payload.expression,framing:payload.framing,directions:payload.pose}});studioStatus.textContent='Saved to History. You can create another selfie while this one runs.';syncPortraitActivities();restoreTasks();}
+ try{const job=await json('/photo-scout/v1/portraits',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});addSubmittedTask('portrait',job,{...spot,generation:{style:payload.style,posture:payload.posture,weather:payload.weather,expression:payload.expression,framing:payload.framing,directions:payload.pose}});studioStatus.textContent='Your selfie is generating in the background. You can close this window or create another photo.';syncPortraitActivities();studioPending.scrollIntoView({block:'nearest',behavior:'smooth'});restoreTasks();}
  catch(error){studioStatus.textContent=error.message;}
  finally{studioBusy=false;studioGenerate.disabled=!studioPrepared;studioUpload.disabled=false;studioPose.disabled=false;studioStyles.disabled=false;studioOptions.disabled=false;studioStatus.classList.remove('working');}
 });
@@ -646,7 +647,14 @@ async function viewSavedTask(task){
  }
  catch(error){message(error.message);}
 }
+function syncStudioProgress(){
+ const related=taskRecords.filter(task=>task.kind==='portrait'&&samePhotoPlace(studioSpot||{},task.context||{})).sort((a,b)=>b.created-a.created),task=related.find(t=>['queued','checking','running'].includes(t.state))||related[0];
+ studioPending.hidden=!task;if(!task)return;studioPending.dataset.state=task.state;const pending=['queued','checking','running'].includes(task.state);
+ const title=pending?(task.state==='queued'?'Your selfie is queued…':task.state==='checking'?'Checking your uploaded photo…':'Creating your selfie…'):(task.state==='complete'?'Your selfie is ready':'Photo generation failed');
+ const icon=node('span',pending?'✦':task.state==='complete'?'✓':'!','studio-progress-icon'),copy=node('div');copy.append(node('strong',title),node('p',pending?'You can close this window. Generation continues in the background.':task.error||(task.state==='complete'?'Open your finished photo below.':'Please try again.'),'small'));const view=node('button',pending?'View progress':'View photo');view.type='button';view.addEventListener('click',()=>viewSavedPhoto(task));studioPending.replaceChildren(icon,copy,view);
+}
 function syncPortraitActivities(){
+ syncStudioProgress();
  const photos=taskRecords.filter(t=>t.kind==='portrait'&&['queued','checking','running'].includes(t.state));
  selfieActivityLayer.clearLayers();studioActivityMarker=null;if(!photos.length){studioTask.hidden=true;return;}
  studioTask.hidden=false;studioTask.dataset.state='running';studioTaskSpark.textContent='✦';studioTaskLabel.textContent=photos.length===1?'Selfie in progress · History':photos.length+' selfies in progress · History';studioTaskPlace.textContent=photos.length===1?photos[0].context?.name||'Photo studio':'View each task’s progress';studioTask.setAttribute('aria-label',studioTaskLabel.textContent);
@@ -702,15 +710,18 @@ function showPublicationLink(item){
  const copy=node('button','Copy link','studio-save');copy.type='button';copy.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(item.url);copy.textContent='Link copied';}catch{copy.textContent='Select the link above to copy it';}});
  publicationDialog.replaceChildren(heading,node('p','Anyone can view this publication, including visitors who are not signed in.','small'),url,copy);if(!publicationDialog.open)publicationDialog.showModal();
 }
+function publicationKey(kind,id,poi=''){return JSON.stringify([kind,id,poi]);}
+function syncPublishButtons(){for(const button of document.querySelectorAll('button[data-publication-key]')){const published=ownPublications.has(button.dataset.publicationKey);button.textContent=published?'Published ✓ · Unpublish':button.dataset.publishLabel;button.setAttribute('aria-pressed',String(published));}}
 function publishButton(kind,id,spot){
- const button=node('button','Publish'+(kind==='place'?' place':kind==='photo'?' photo':''),'publish-button');button.type='button';button.hidden=!id||id.startsWith('public:');
- button.onclick=async()=>{button.disabled=true;button.textContent='Publishing…';try{
-  const item=await json('/photo-scout/v1/publications',{method:'POST',headers:{'Content-Type':'application/json',...(csrfToken?{'X-CSRF-Token':csrfToken}:{})},body:JSON.stringify({kind,id,...(spot?{poiId:poiHistoryKey(spot)}:{})})});
-  button.textContent='Published · Share';button.onclick=()=>showPublicationLink(item);showPublicationLink(item);await loadPublications();
- }catch(error){button.textContent='Publish';message(error.message);if(savedPhoto.open)savedPhotoStatus.textContent=error.message;}finally{button.disabled=false;}};return button;
+ const label='Publish'+(kind==='place'?' place':kind==='photo'?' photo':''),button=node('button',label,'publish-button');button.type='button';button.hidden=!id||id.startsWith('public:');button.dataset.publishLabel=label;button.dataset.publicationKey=publicationKey(kind,id,spot?poiHistoryKey(spot):'');button.setAttribute('aria-pressed',String(ownPublications.has(button.dataset.publicationKey)));if(ownPublications.has(button.dataset.publicationKey))button.textContent='Published ✓ · Unpublish';
+ button.onclick=async()=>{const existing=ownPublications.get(button.dataset.publicationKey);button.disabled=true;button.textContent=existing?'Unpublishing…':'Publishing…';try{
+  if(existing){await json('/photo-scout/v1/publications/withdraw',{method:'POST',headers:{'Content-Type':'application/json',...(csrfToken?{'X-CSRF-Token':csrfToken}:{})},body:JSON.stringify({id:existing.id})});}
+  else{const item=await json('/photo-scout/v1/publications',{method:'POST',headers:{'Content-Type':'application/json',...(csrfToken?{'X-CSRF-Token':csrfToken}:{})},body:JSON.stringify({kind,id,...(spot?{poiId:poiHistoryKey(spot)}:{})})});showPublicationLink(item);}
+  await loadPublications();
+ }catch(error){message(error.message);if(savedPhoto.open)savedPhotoStatus.textContent=error.message;}finally{button.disabled=false;syncPublishButtons();}};return button;
 }
 async function loadPublications(more=false){
- try{const data=await json('/photo-scout/v1/publications'+(more&&publicationCursor?'?before='+publicationCursor:''));const selection=new Map(publicationItems.map(item=>[item.id,item.checked]));const incoming=data.items.map(item=>({...item,checked:selection.get(item.id)!==false}));publicationItems=more?[...publicationItems,...incoming]:incoming;publicationCursor=data.nextBefore;renderPublications();drawPublications();}
+ try{const [data,mine]=await Promise.all([json('/photo-scout/v1/publications'+(more&&publicationCursor?'?before='+publicationCursor:'')),json('/photo-scout/v1/publications/mine')]);ownPublications=new Map(mine.items.map(item=>[publicationKey(item.kind,item.sourceId,item.poiId),item]));syncPublishButtons();const selection=new Map(publicationItems.map(item=>[item.id,item.checked]));const incoming=data.items.map(item=>({...item,checked:selection.get(item.id)!==false}));publicationItems=more?[...publicationItems,...incoming]:incoming;publicationCursor=data.nextBefore;renderPublications();drawPublications();}
  catch{el('published-items').replaceChildren(node('p','Could not load published items. Reopen this menu to retry.','small'));}
 }
 function renderPublications(){

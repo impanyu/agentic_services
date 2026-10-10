@@ -558,14 +558,14 @@ def test_fixed_pipeline_reports_partial_failures(tmp_path,monkeypatch):
     async def parse(**kw):
         rows=[json.loads(c['text'])['image'] for c in kw['input'][0]['content'][1:] if c['type']=='input_text']
         assessments=[_scoring_assessment(visual,r,False) for r in rows]
-        if rows[0]['id']=='1':assessments=assessments[:-1]  # Incomplete batch must not pass as fully scored.
+        assessments=[a for a in assessments if a.image_id!='5']  # One image remains unscored after bounded recovery.
         return SimpleNamespace(output_parsed=visual.VisualBatch(assessments=assessments),usage=SimpleNamespace(input_tokens=10,output_tokens=20))
     _scoring_client(monkeypatch,parse);monkeypatch.setattr(visual,'image_data',image)
     result=asyncio.run(visual.explore(settings,ExploreRequest(lat=0,lon=0),_scoring_rows(),{}))
-    assert len(result['spots'])==7 and result['inspectedImages']==7
+    assert len(result['spots'])==11 and result['inspectedImages']==11
     assert all(s['recommend'] is False for s in result['spots'])
-    assert result['scoring']=={'checkedImages':7,'filteredOutImages':0,'matchedImages':7,'candidateImages':13,'downloadedImages':12,'scoredImages':7,'downloadFailedImages':1,'scoringFailedImages':5,'batches':3,'cachedImages':0,'newlyScoredImages':7}
-    assert len(result['imageAssessments'])==7 and 'could not be scored' in result['coverage']
+    assert result['scoring']=={'checkedImages':11,'filteredOutImages':0,'matchedImages':11,'candidateImages':13,'downloadedImages':12,'scoredImages':11,'downloadFailedImages':1,'scoringFailedImages':1,'batches':3,'cachedImages':0,'newlyScoredImages':11}
+    assert len(result['imageAssessments'])==11 and 'could not be scored' in result['coverage']
 
 
 def test_fixed_pipeline_all_failed_is_an_error(tmp_path,monkeypatch):
@@ -1146,3 +1146,23 @@ def test_mood_sampling_keeps_thirty_anchors_and_twenty_area_points(monkeypatch):
     assert len(points)==50
     assert points[:30]==[f"{p['lat']},{p['lon']}" for p in anchors[:30]]
     assert points[30:]==[f'{lat},{lon}' for lat,lon in sources.google_query_points(0,0,5000)[:20]]
+
+def test_failed_batch_recovers_in_smaller_groups_without_redownloading(tmp_path,monkeypatch):
+    import json
+    from types import SimpleNamespace
+    import agentic_services.photo_scout.scoring as visual
+    monkeypatch.setenv('PHOTO_SCOUT_SCORING_BATCH_SIZE','24')
+    monkeypatch.setenv('PHOTO_SCOUT_SCORING_CONCURRENCY','1')
+    settings=Settings(openai_api_key='test',openai_model='test',database_path=tmp_path/'db',base_url='https://api.test')
+    downloads=[];calls=[]
+    async def image(url):downloads.append(url);return 'data:image/jpeg;base64,/9j/dGVzdA=='
+    async def parse(**kw):
+        rows=[json.loads(c['text'])['image'] for c in kw['input'][0]['content'][1:] if c['type']=='input_text']
+        calls.append(len(rows))
+        if len(rows)>8:raise ValueError('Large response failed')
+        return SimpleNamespace(output_parsed=visual.VisualBatch(assessments=[_scoring_assessment(visual,r,False) for r in rows]),usage=None)
+    _scoring_client(monkeypatch,parse);monkeypatch.setattr(visual,'image_data',image)
+    result=asyncio.run(asyncio.wait_for(visual.explore(settings,ExploreRequest(lat=0,lon=0),_scoring_rows(),{}),3))
+    assert calls==[13,8,5] and len(downloads)==13
+    assert result['inspectedImages']==13 and result['scoring']['scoringFailedImages']==0
+    assert result['usage']['requests']==3

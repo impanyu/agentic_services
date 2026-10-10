@@ -112,3 +112,32 @@ def test_public_photo_thumbnail_is_readable_and_withdrawn_with_photo(publication
     image=Image.open(io.BytesIO(response.content));assert image.size==(160,120)
     client.post('/photo-scout/v1/publications/withdraw',json={'id':ident})
     assert public.get('/photo-scout/v1/publications/'+ident+'/thumbnail').status_code==404
+
+def test_removing_search_withdraws_search_and_places_but_not_independent_photo(publication_env):
+    settings,app,client=publication_env
+    search=client.post('/photo-scout/v1/publications',json={'kind':'search','id':'search'}).json()
+    place=client.post('/photo-scout/v1/publications',json={'kind':'place','id':'search','poiId':'poi1'}).json()
+    photo=client.post('/photo-scout/v1/publications',json={'kind':'photo','id':'photo'}).json()
+    mine=client.get('/photo-scout/v1/publications/mine').json()['items']
+    assert {item['sourceId'] for item in mine}=={'search','photo'}
+    assert client.post('/photo-scout/v1/removed-items',json={'kind':'search','id':'search','removed':True}).status_code==200
+    public=TestClient(app)
+    for item in (search,place):assert public.get('/photo-scout/v1/publications/'+item['id']).status_code==404
+    assert public.get('/photo-scout/v1/publications/'+photo['id']).status_code==200
+    assert client.post('/photo-scout/v1/publications',json={'kind':'search','id':'search'}).status_code==404
+    client.post('/photo-scout/v1/removed-items',json={'kind':'search','id':'search','removed':False})
+    assert public.get('/photo-scout/v1/publications/'+search['id']).status_code==404
+    client.post('/photo-scout/v1/removed-items',json={'kind':'portrait','id':'photo','removed':True})
+    assert public.get('/photo-scout/v1/publications/'+photo['id']).status_code==404
+    with sqlite3.connect(settings.database_path) as db:
+        assert db.execute('SELECT count(*) FROM photo_scout_jobs').fetchone()[0]==1
+
+def test_removing_place_updates_public_search_and_withdraws_place(publication_env):
+    settings,app,client=publication_env
+    search=client.post('/photo-scout/v1/publications',json={'kind':'search','id':'search'}).json()
+    place=client.post('/photo-scout/v1/publications',json={'kind':'place','id':'search','poiId':'poi1'}).json()
+    response=client.post('/photo-scout/v1/hidden-pois',json={'searchId':'search','poiId':'poi1','hidden':True})
+    assert response.status_code==200
+    public=TestClient(app)
+    assert public.get('/photo-scout/v1/publications/'+place['id']).status_code==404
+    assert [s['name'] for s in public.get('/photo-scout/v1/publications/'+search['id']).json()['result']['spots']]==['Garden']

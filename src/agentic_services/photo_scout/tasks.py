@@ -195,7 +195,15 @@ def create_tasks_router(settings,require_api):
                 allowed=bool(db.execute('SELECT 1 FROM photo_account_history WHERE user_id=? AND id=?',(user,payload.searchId)).fetchone())
             if not allowed:raise HTTPException(404,'Search history unavailable')
             owner='user:'+user if user else 'guest:'+guest
-            if payload.hidden:db.execute('INSERT OR IGNORE INTO photo_hidden_pois VALUES(?,?,?)',(owner,payload.searchId,payload.poiId))
+            if payload.hidden:
+                db.execute('INSERT OR IGNORE INTO photo_hidden_pois VALUES(?,?,?)',(owner,payload.searchId,payload.poiId))
+                if db.execute("SELECT 1 FROM sqlite_master WHERE name='photo_publications'").fetchone():
+                    from .publications import poi_key
+                    db.execute("UPDATE photo_publications SET active=0 WHERE owner=? AND source=? AND kind='place' AND poi=?",(owner,payload.searchId,payload.poiId))
+                    for publication in db.execute("SELECT id,snapshot FROM photo_publications WHERE owner=? AND source=? AND kind='search' AND active=1",(owner,payload.searchId)).fetchall():
+                        snapshot=json.loads(publication['snapshot'])
+                        snapshot['result']['spots']=[spot for spot in snapshot['result']['spots'] if poi_key(spot)!=payload.poiId]
+                        db.execute('UPDATE photo_publications SET snapshot=? WHERE id=?',(json.dumps(snapshot),publication['id']))
             else:db.execute('DELETE FROM photo_hidden_pois WHERE owner=? AND search=? AND poi=?',(owner,payload.searchId,payload.poiId))
         return {'hiddenPois':store.hidden_pois(request)}
     @router.post('/photo-scout/v1/removed-items')
@@ -215,7 +223,11 @@ def create_tasks_router(settings,require_api):
                 allowed=bool(db.execute('SELECT 1 FROM photo_account_history WHERE user_id=? AND id=?',(user,payload.id)).fetchone())
             if not allowed:raise HTTPException(404,'History item unavailable')
             owner='user:'+user if user else 'guest:'+guest
-            if payload.removed:db.execute('INSERT OR IGNORE INTO photo_removed_items VALUES(?,?,?)',(owner,payload.kind,payload.id))
+            if payload.removed:
+                db.execute('INSERT OR IGNORE INTO photo_removed_items VALUES(?,?,?)',(owner,payload.kind,payload.id))
+                if db.execute("SELECT 1 FROM sqlite_master WHERE name='photo_publications'").fetchone():
+                    kinds=('search','place') if payload.kind=='search' else ('photo','photo')
+                    db.execute('UPDATE photo_publications SET active=0 WHERE owner=? AND source=? AND kind IN (?,?)',(owner,payload.id,*kinds))
             else:db.execute('DELETE FROM photo_removed_items WHERE owner=? AND kind=? AND job=?',(owner,payload.kind,payload.id))
         return {'ok':True}
     return router

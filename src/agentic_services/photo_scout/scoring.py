@@ -196,35 +196,41 @@ async def assess_images(settings,payload,rows,statuses=None):
         except Exception:
             return row,None
     async with AsyncOpenAI(api_key=settings.openai_api_key,timeout=180,max_retries=0) as client:
-        async def score_batch(batch):
-            # Download preparation does not occupy a model-call slot. Every
-            # batch can prepare concurrently, bounded by download_slots.
-            loaded=await asyncio.gather(*(download(row) for row in batch))
-            usable=[(row,data) for row,data in loaded if data]
-            if not usable: return {'assessments':[],'downloaded':0,'downloadFailed':len(batch),'scoringFailed':0,'usage':None}
-            async with batch_slots:
-                content=[{'type':'input_text','text':json.dumps({
-                    'request':{'requirements':[r.model_dump() for r in getattr(payload,'requirements',[])],'scoringIntent':payload.scoringIntent.strip(),'poiQueries':payload.poiQueries,'geographicKinds':payload.geographicKinds,'geographicCombination':getattr(payload,'geographicCombination','all'),'featureCombination':getattr(payload,'featureCombination','all'),'searchProgram':payload.searchProgram.model_dump() if getattr(payload,'searchProgram',None) else None,'searchBranches':[b.model_dump() for b in getattr(payload,'searchBranches',[])],'osmFeatures':[q.model_dump() for q in payload.osmFeatures],'preferences':payload.preferences.strip(),'photoStyles':sorted(payload.photoStyles or [])},
-                    'photoStyleBriefs':style_briefs(payload.photoStyles)})}]
-                for row,data in usable:
-                    content.extend([{'type':'input_text','text':json.dumps({'image':{k:v for k,v in row.items() if k not in ('imageUrl','author','distanceMeters','poiDistanceMeters','explorationReason')}})},
-                        {'type':'input_image','image_url':data,'detail':'high'}])
-                response=None
-                try:
+        async def score_loaded(usable,retry=True):
+            from collections import Counter
+            content=[{'type':'input_text','text':json.dumps({
+                'request':{'requirements':[r.model_dump() for r in getattr(payload,'requirements',[])],'scoringIntent':payload.scoringIntent.strip(),'poiQueries':payload.poiQueries,'geographicKinds':payload.geographicKinds,'geographicCombination':getattr(payload,'geographicCombination','all'),'featureCombination':getattr(payload,'featureCombination','all'),'searchProgram':payload.searchProgram.model_dump() if getattr(payload,'searchProgram',None) else None,'searchBranches':[b.model_dump() for b in getattr(payload,'searchBranches',[])],'osmFeatures':[q.model_dump() for q in payload.osmFeatures],'preferences':payload.preferences.strip(),'photoStyles':sorted(payload.photoStyles or [])},
+                'photoStyleBriefs':style_briefs(payload.photoStyles)})}]
+            for row,data in usable:
+                content.extend([{'type':'input_text','text':json.dumps({'image':{k:v for k,v in row.items() if k not in ('imageUrl','author','distanceMeters','poiDistanceMeters','explorationReason')}})},
+                    {'type':'input_image','image_url':data,'detail':'high'}])
+            response=None;valid=[];usages=[];requests=1
+            try:
+                async with batch_slots:
                     response=await client.responses.parse(model=model,instructions=INSTRUCTIONS+'\n'+OUTPUT_FORMAT,
                         input=[{'role':'user','content':content}],text_format=VisualBatch,
                         max_output_tokens=max(12000,len(usable)*900),store=False)
-                    output=response.output_parsed
-                    ids=[a.image_id for a in output.assessments] if output else []
-                    if len(ids)!=len(set(ids)) or set(ids)!={r['id'] for r,_ in usable}:
-                        raise ValueError('Incomplete or invalid image scoring')
-                    cache.put([(keys[a.image_id],a.model_dump()) for a in output.assessments])
-                    return {'assessments':output.assessments,'downloaded':len(usable),
-                        'downloadFailed':len(batch)-len(usable),'scoringFailed':0,'usage':response.usage}
-                except Exception as error:
-                    logging.getLogger(__name__).warning('Photo Scout batch scoring failed: %s; images=%s',type(error).__name__,len(usable))
-                    return {'assessments':[],'downloaded':len(usable),'downloadFailed':len(batch)-len(usable),
-                        'scoringFailed':len(usable),'usage':response.usage if response else None}
+                output=response.output_parsed
+                expected={r['id'] for r,_ in usable};counts=Counter(a.image_id for a in output.assessments) if output else {}
+                valid=[a for a in output.assessments if a.image_id in expected and counts[a.image_id]==1] if output else []
+                cache.put([(keys[a.image_id],a.model_dump()) for a in valid])
+            except Exception as error:
+                logging.getLogger(__name__).warning('Photo Scout batch scoring failed: %s; images=%s',type(error).__name__,len(usable))
+            if response is not None and response.usage:usages.append(response.usage)
+            finished={a.image_id for a in valid};remaining=[pair for pair in usable if pair[0]['id'] not in finished]
+            if remaining and retry:
+                # Release the model slot before recovery; retry only missing views,
+                # once, in smaller parallel groups, reusing downloaded image bytes.
+                recovery=await asyncio.gather(*(score_loaded(remaining[i:i+8],False) for i in range(0,len(remaining),8)))
+                valid.extend(a for group in recovery for a in group['assessments'])
+                usages.extend(u for group in recovery for u in group['usages'])
+                requests+=sum(group['modelRequests'] for group in recovery)
+            return {'assessments':valid,'scoringFailed':len(usable)-len(valid),'usages':usages,'modelRequests':requests}
+        async def score_batch(batch):
+            loaded=await asyncio.gather(*(download(row) for row in batch))
+            usable=[(row,data) for row,data in loaded if data]
+            result=await score_loaded(usable) if usable else {'assessments':[],'scoringFailed':0,'usages':[],'modelRequests':0}
+            return {**result,'downloaded':len(usable),'downloadFailed':len(batch)-len(usable),'usage':None}
         async with asyncio.timeout(600):
             results=await asyncio.gather(*(score_batch(batch) for batch in batches))
     fresh=[a for result in results for a in result['assessments']]
@@ -274,14 +280,14 @@ def rank_assessments(payload,output,statuses):
             'The model judged this image unsuitable for recommendation; see the evidence and uncertainty.'))} for a in sorted(assessments,key=lambda a:a.score if a.score is not None else -1,reverse=True)]
     downloaded=sum(r['downloaded'] for r in results);failed_downloads=sum(r['downloadFailed'] for r in results)
     failed_scoring=sum(r['scoringFailed'] for r in results)
-    usages=[r['usage'] for r in results if r['usage']]
+    usages=[u for r in results for u in r.get('usages',([r['usage']] if r.get('usage') else []))]
     return {'topLimit':len(spots),'spots':spots,'poiResults':poi_results,'summary':summary,'sources':statuses,
         'inspectedImages':len(assessments),'inspectedImageSources':sorted({by_id[a.image_id]['provider'] for a in assessments}),
         'imageAssessments':audit,'analysisMethod':'fixed-batch-scoring',
         'scoring':{'checkedImages':len(assessments),'filteredOutImages':filtered_out,'matchedImages':len(scored),'candidateImages':len(rows),'downloadedImages':downloaded,'scoredImages':len(scored),'cachedImages':len(cached),'newlyScoredImages':sum(a.matches_request for a in fresh),
             'downloadFailedImages':failed_downloads,'scoringFailedImages':failed_scoring,'batches':len(results)},
         'coverage':f'Checked {len(assessments)} of {len(rows)} sampled images; {filtered_out} excluded for not matching your request; {len(scored)} scored ({len(cached)} cached checks);  {failed_downloads} downloads failed; {failed_scoring} images could not be scored. Subjective scores, not complete nearby coverage.',
-        'model':model,'usage':{'requests':sum(bool(r['downloaded']) for r in results),
+        'model':model,'usage':{'requests':sum(r.get('modelRequests',int(bool(r['downloaded']))) for r in results),
             'inputTokens':sum(u.input_tokens for u in usages),'outputTokens':sum(u.output_tokens for u in usages)}}
 
 
