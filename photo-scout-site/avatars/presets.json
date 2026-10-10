@@ -7,7 +7,8 @@
       "aliases": [
         "海绵宝宝"
       ],
-      "category": "Cartoons"
+      "category": "Cartoons",
+      "thumbnailUrl": "./avatars/thumbnails/spongebob.webp"
     },
     {
       "id": "preset:doraemon",
@@ -18,7 +19,8 @@
         "哆啦a梦",
         "小叮当"
       ],
-      "category": "Cartoons"
+      "category": "Cartoons",
+      "thumbnailUrl": "./avatars/thumbnails/doraemon.webp"
     },
     {
       "id": "preset:totoro",
@@ -27,7 +29,8 @@
       "aliases": [
         "龙猫"
       ],
-      "category": "Cartoons"
+      "category": "Cartoons",
+      "thumbnailUrl": "./avatars/thumbnails/totoro.webp"
     },
     {
       "id": "preset:sun-wukong",
@@ -37,7 +40,8 @@
         "孙悟空",
         "齐天大圣"
       ],
-      "category": "Chinese classics"
+      "category": "Chinese classics",
+      "thumbnailUrl": "./avatars/thumbnails/sun-wukong.webp"
     },
     {
       "id": "preset:sherlock",
@@ -46,7 +50,8 @@
       "aliases": [
         "福尔摩斯"
       ],
-      "category": "Storybook"
+      "category": "Storybook",
+      "thumbnailUrl": "./avatars/thumbnails/sherlock.webp"
     },
     {
       "id": "preset:tom-cat",
@@ -56,7 +61,8 @@
       "aliases": [
         "汤姆",
         "猫和老鼠"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/tom-cat.webp"
     },
     {
       "id": "preset:jerry-mouse",
@@ -66,7 +72,8 @@
       "aliases": [
         "杰瑞",
         "猫和老鼠"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/jerry-mouse.webp"
     },
     {
       "id": "preset:snoopy",
@@ -75,7 +82,8 @@
       "category": "Cartoons",
       "aliases": [
         "史努比"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/snoopy.webp"
     },
     {
       "id": "preset:charlie-brown",
@@ -84,7 +92,8 @@
       "category": "Cartoons",
       "aliases": [
         "查理布朗"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/charlie-brown.webp"
     },
     {
       "id": "preset:woodstock",
@@ -93,7 +102,8 @@
       "category": "Cartoons",
       "aliases": [
         "伍德斯托克"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/woodstock.webp"
     },
     {
       "id": "preset:hello-kitty",
@@ -102,7 +112,8 @@
       "category": "Cartoons",
       "aliases": [
         "凯蒂猫"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/hello-kitty.webp"
     },
     {
       "id": "preset:my-melody",
@@ -111,7 +122,8 @@
       "category": "Cartoons",
       "aliases": [
         "美乐蒂"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/my-melody.webp"
     },
     {
       "id": "preset:kuromi",
@@ -120,7 +132,8 @@
       "category": "Cartoons",
       "aliases": [
         "库洛米"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/kuromi.webp"
     },
     {
       "id": "preset:cinnamoroll",
@@ -130,7 +143,8 @@
       "aliases": [
         "大耳狗",
         "玉桂狗"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/cinnamoroll.webp"
     },
     {
       "id": "preset:dr-watson",
@@ -139,7 +153,8 @@
       "category": "Storybook",
       "aliases": [
         "华生"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/dr-watson.webp"
     },
     {
       "id": "preset:robin-hood",
@@ -148,7 +163,8 @@
       "category": "Storybook",
       "aliases": [
         "罗宾汉"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/robin-hood.webp"
     },
     {
       "id": "preset:merlin",
@@ -157,7 +173,8 @@
       "category": "Storybook",
       "aliases": [
         "梅林"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/merlin.webp"
     },
     {
       "id": "preset:king-arthur",
@@ -166,7 +183,8 @@
       "category": "Storybook",
       "aliases": [
         "亚瑟王"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/king-arthur.webp"
     },
     {
       "id": "preset:don-quixote",
@@ -175,7 +193,8 @@
       "category": "Storybook",
       "aliases": [
         "堂吉诃德"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/don-quixote.webp"
     },
     {
       "id": "preset:sinbad",
@@ -184,7 +203,8 @@
       "category": "Storybook",
       "aliases": [
         "辛巴达"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/sinbad.webp"
     },
     {
       "id": "preset:scheherazade",
@@ -193,7 +213,8 @@
       "category": "Storybook",
       "aliases": [
         "山鲁佐德"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/scheherazade.webp"
     },
     {
       "id": "preset:medusa",
@@ -202,7 +223,8 @@
       "category": "Mythology",
       "aliases": [
         "美杜莎"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/medusa.webp"
     },
     {
       "id": "preset:athena",
@@ -211,7 +233,8 @@
       "category": "Mythology",
       "aliases": [
         "雅典娜"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/athena.webp"
     },
     {
       "id": "preset:mad-hatter",
@@ -220,7 +243,8 @@
       "category": "Fairy tales",
       "aliases": [
         "疯帽子"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/mad-hatter.webp"
     },
     {
       "id": "preset:red-riding-hood",
@@ -229,7 +253,8 @@
       "category": "Fairy tales",
       "aliases": [
         "小红帽"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/red-riding-hood.webp"
     },
     {
       "id": "preset:sha-wujing",
@@ -239,7 +264,8 @@
       "aliases": [
         "沙悟净",
         "沙僧"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/sha-wujing.webp"
     },
     {
       "id": "preset:tang-sanzang",
@@ -249,7 +275,8 @@
       "aliases": [
         "唐三藏",
         "唐僧"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/tang-sanzang.webp"
     },
     {
       "id": "preset:nezha",
@@ -258,7 +285,8 @@
       "category": "Chinese classics",
       "aliases": [
         "哪吒"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/nezha.webp"
     },
     {
       "id": "preset:hua-mulan",
@@ -267,7 +295,8 @@
       "category": "Chinese classics",
       "aliases": [
         "花木兰"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/hua-mulan.webp"
     },
     {
       "id": "preset:guan-yu",
@@ -277,7 +306,8 @@
       "aliases": [
         "关羽",
         "关公"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/guan-yu.webp"
     },
     {
       "id": "preset:dorothy",
@@ -286,7 +316,8 @@
       "category": "Storybook",
       "aliases": [
         "多萝西"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/dorothy.webp"
     },
     {
       "id": "preset:scarecrow",
@@ -295,7 +326,8 @@
       "category": "Storybook",
       "aliases": [
         "稻草人"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/scarecrow.webp"
     },
     {
       "id": "preset:cowardly-lion",
@@ -304,7 +336,8 @@
       "category": "Storybook",
       "aliases": [
         "胆小狮"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/cowardly-lion.webp"
     },
     {
       "id": "preset:pippi",
@@ -313,7 +346,8 @@
       "category": "Storybook",
       "aliases": [
         "长袜子皮皮"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/pippi.webp"
     },
     {
       "id": "preset:little-prince",
@@ -322,7 +356,8 @@
       "category": "Storybook",
       "aliases": [
         "小王子"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/little-prince.webp"
     },
     {
       "id": "preset:frankenstein",
@@ -332,7 +367,8 @@
       "aliases": [
         "科学怪人",
         "弗兰肯斯坦"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/frankenstein.webp"
     },
     {
       "id": "preset:dracula",
@@ -341,7 +377,8 @@
       "category": "Storybook",
       "aliases": [
         "德古拉"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/dracula.webp"
     },
     {
       "id": "preset:arsene-lupin",
@@ -350,7 +387,8 @@
       "category": "Storybook",
       "aliases": [
         "亚森罗宾"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/arsene-lupin.webp"
     },
     {
       "id": "preset:odysseus",
@@ -359,7 +397,8 @@
       "category": "Mythology",
       "aliases": [
         "奥德修斯"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/odysseus.webp"
     },
     {
       "id": "preset:perseus",
@@ -368,7 +407,8 @@
       "category": "Mythology",
       "aliases": [
         "珀尔修斯"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/perseus.webp"
     },
     {
       "id": "preset:romeo",
@@ -377,7 +417,8 @@
       "category": "Storybook",
       "aliases": [
         "罗密欧"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/romeo.webp"
     },
     {
       "id": "preset:juliet",
@@ -386,7 +427,8 @@
       "category": "Storybook",
       "aliases": [
         "朱丽叶"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/juliet.webp"
     },
     {
       "id": "preset:joan-of-arc",
@@ -395,7 +437,8 @@
       "category": "Historical",
       "aliases": [
         "圣女贞德"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/joan-of-arc.webp"
     },
     {
       "id": "preset:confucius",
@@ -404,7 +447,8 @@
       "category": "Chinese classics",
       "aliases": [
         "孔子"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/confucius.webp"
     },
     {
       "id": "preset:cleopatra",
@@ -414,7 +458,8 @@
       "aliases": [
         "克娄巴特拉",
         "埃及艳后"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/cleopatra.webp"
     },
     {
       "id": "preset:zeus",
@@ -423,7 +468,8 @@
       "category": "Mythology",
       "aliases": [
         "宙斯"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/zeus.webp"
     },
     {
       "id": "preset:poseidon",
@@ -432,7 +478,8 @@
       "category": "Mythology",
       "aliases": [
         "波塞冬"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/poseidon.webp"
     },
     {
       "id": "preset:hercules",
@@ -441,7 +488,8 @@
       "category": "Mythology",
       "aliases": [
         "赫拉克勒斯"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/hercules.webp"
     },
     {
       "id": "preset:anubis",
@@ -450,7 +498,8 @@
       "category": "Mythology",
       "aliases": [
         "阿努比斯"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/anubis.webp"
     },
     {
       "id": "preset:norse-thor",
@@ -460,7 +509,8 @@
       "aliases": [
         "雷神",
         "索尔"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/norse-thor.webp"
     },
     {
       "id": "preset:norse-loki",
@@ -469,7 +519,8 @@
       "category": "Mythology",
       "aliases": [
         "洛基"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/norse-loki.webp"
     },
     {
       "id": "preset:chang-e",
@@ -478,7 +529,8 @@
       "category": "Chinese classics",
       "aliases": [
         "嫦娥"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/chang-e.webp"
     },
     {
       "id": "preset:hou-yi",
@@ -487,7 +539,8 @@
       "category": "Chinese classics",
       "aliases": [
         "后羿"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/hou-yi.webp"
     },
     {
       "id": "preset:nuwa",
@@ -496,7 +549,8 @@
       "category": "Chinese classics",
       "aliases": [
         "女娲"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/nuwa.webp"
     },
     {
       "id": "preset:zhong-kui",
@@ -505,7 +559,8 @@
       "category": "Chinese classics",
       "aliases": [
         "钟馗"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/zhong-kui.webp"
     },
     {
       "id": "preset:ji-gong",
@@ -514,7 +569,8 @@
       "category": "Chinese classics",
       "aliases": [
         "济公"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/ji-gong.webp"
     },
     {
       "id": "preset:jiang-ziya",
@@ -523,7 +579,8 @@
       "category": "Chinese classics",
       "aliases": [
         "姜子牙"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/jiang-ziya.webp"
     },
     {
       "id": "preset:bao-zheng",
@@ -533,7 +590,8 @@
       "aliases": [
         "包拯",
         "包青天"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/bao-zheng.webp"
     },
     {
       "id": "preset:li-bai",
@@ -542,7 +600,8 @@
       "category": "Chinese classics",
       "aliases": [
         "李白"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/li-bai.webp"
     },
     {
       "id": "preset:momotaro",
@@ -551,7 +610,8 @@
       "category": "Fairy tales",
       "aliases": [
         "桃太郎"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/momotaro.webp"
     },
     {
       "id": "preset:kintaro",
@@ -560,7 +620,8 @@
       "category": "Fairy tales",
       "aliases": [
         "金太郎"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/kintaro.webp"
     },
     {
       "id": "preset:goldilocks",
@@ -569,7 +630,8 @@
       "category": "Fairy tales",
       "aliases": [
         "金发姑娘"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/goldilocks.webp"
     },
     {
       "id": "preset:pied-piper",
@@ -578,7 +640,8 @@
       "category": "Fairy tales",
       "aliases": [
         "花衣魔笛手"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/pied-piper.webp"
     },
     {
       "id": "preset:captain-nemo",
@@ -587,7 +650,8 @@
       "category": "Storybook",
       "aliases": [
         "尼摩船长"
-      ]
+      ],
+      "thumbnailUrl": "./avatars/thumbnails/captain-nemo.webp"
     },
     {
       "id": "preset:keanu-reeves",
@@ -598,7 +662,8 @@
         "基努·里维斯",
         "基努里维斯"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "thumbnailUrl": "./avatars/thumbnails/keanu-reeves.webp"
     },
     {
       "id": "preset:tom-cruise",
@@ -609,7 +674,8 @@
         "汤姆·克鲁斯",
         "汤姆克鲁斯"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "thumbnailUrl": "./avatars/thumbnails/tom-cruise.webp"
     },
     {
       "id": "preset:audrey-hepburn",
@@ -620,7 +686,8 @@
         "奥黛丽·赫本",
         "赫本"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "thumbnailUrl": "./avatars/thumbnails/audrey-hepburn.webp"
     },
     {
       "id": "preset:bruce-lee",
@@ -630,7 +697,8 @@
       "aliases": [
         "李小龙"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "thumbnailUrl": "./avatars/thumbnails/bruce-lee.webp"
     },
     {
       "id": "preset:charlie-chaplin",
@@ -641,7 +709,8 @@
         "查理·卓别林",
         "卓别林"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "thumbnailUrl": "./avatars/thumbnails/charlie-chaplin.webp"
     },
     {
       "id": "preset:albert-einstein",
@@ -652,7 +721,8 @@
         "阿尔伯特·爱因斯坦",
         "爱因斯坦"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "thumbnailUrl": "./avatars/thumbnails/albert-einstein.webp"
     },
     {
       "id": "preset:nikola-tesla",
@@ -663,7 +733,1610 @@
         "尼古拉·特斯拉",
         "特斯拉"
       ],
-      "synthetic": true
+      "synthetic": true,
+      "thumbnailUrl": "./avatars/thumbnails/nikola-tesla.webp"
+    },
+    {
+      "id": "preset:marie-curie",
+      "name": "Marie Curie",
+      "imageUrl": "./avatars/characters/marie-curie.png",
+      "aliases": [
+        "居里夫人"
+      ],
+      "category": "Science",
+      "thumbnailUrl": "./avatars/thumbnails/marie-curie.webp"
+    },
+    {
+      "id": "preset:isaac-newton",
+      "name": "Isaac Newton",
+      "imageUrl": "./avatars/characters/isaac-newton.png",
+      "aliases": [
+        "牛顿"
+      ],
+      "category": "Science",
+      "thumbnailUrl": "./avatars/thumbnails/isaac-newton.webp"
+    },
+    {
+      "id": "preset:galileo-galilei",
+      "name": "Galileo Galilei",
+      "imageUrl": "./avatars/characters/galileo-galilei.png",
+      "aliases": [
+        "伽利略"
+      ],
+      "category": "Science",
+      "thumbnailUrl": "./avatars/thumbnails/galileo-galilei.webp"
+    },
+    {
+      "id": "preset:niels-bohr",
+      "name": "Niels Bohr",
+      "imageUrl": "./avatars/characters/niels-bohr.png",
+      "aliases": [
+        "玻尔"
+      ],
+      "category": "Science",
+      "thumbnailUrl": "./avatars/thumbnails/niels-bohr.webp"
+    },
+    {
+      "id": "preset:max-planck",
+      "name": "Max Planck",
+      "imageUrl": "./avatars/characters/max-planck.png",
+      "aliases": [
+        "普朗克"
+      ],
+      "category": "Science",
+      "thumbnailUrl": "./avatars/thumbnails/max-planck.webp"
+    },
+    {
+      "id": "preset:charles-darwin",
+      "name": "Charles Darwin",
+      "imageUrl": "./avatars/characters/charles-darwin.png",
+      "aliases": [
+        "达尔文"
+      ],
+      "category": "Science",
+      "thumbnailUrl": "./avatars/thumbnails/charles-darwin.webp"
+    },
+    {
+      "id": "preset:louis-pasteur",
+      "name": "Louis Pasteur",
+      "imageUrl": "./avatars/characters/louis-pasteur.png",
+      "aliases": [
+        "巴斯德"
+      ],
+      "category": "Science",
+      "thumbnailUrl": "./avatars/thumbnails/louis-pasteur.webp"
+    },
+    {
+      "id": "preset:jane-goodall",
+      "name": "Jane Goodall",
+      "imageUrl": "./avatars/characters/jane-goodall.png",
+      "aliases": [
+        "珍古道尔"
+      ],
+      "category": "Science",
+      "thumbnailUrl": "./avatars/thumbnails/jane-goodall.webp"
+    },
+    {
+      "id": "preset:ada-lovelace",
+      "name": "Ada Lovelace",
+      "imageUrl": "./avatars/characters/ada-lovelace.png",
+      "aliases": [
+        "阿达"
+      ],
+      "category": "Science",
+      "thumbnailUrl": "./avatars/thumbnails/ada-lovelace.webp"
+    },
+    {
+      "id": "preset:rosalind-franklin",
+      "name": "Rosalind Franklin",
+      "imageUrl": "./avatars/characters/rosalind-franklin.png",
+      "aliases": [
+        "罗莎琳德富兰克林"
+      ],
+      "category": "Science",
+      "thumbnailUrl": "./avatars/thumbnails/rosalind-franklin.webp"
+    },
+    {
+      "id": "preset:srinivasa-ramanujan",
+      "name": "Srinivasa Ramanujan",
+      "imageUrl": "./avatars/characters/srinivasa-ramanujan.png",
+      "aliases": [],
+      "category": "Science",
+      "thumbnailUrl": "./avatars/thumbnails/srinivasa-ramanujan.webp"
+    },
+    {
+      "id": "preset:alan-turing",
+      "name": "Alan Turing",
+      "imageUrl": "./avatars/characters/alan-turing.png",
+      "aliases": [
+        "图灵"
+      ],
+      "category": "Science",
+      "thumbnailUrl": "./avatars/thumbnails/alan-turing.webp"
+    },
+    {
+      "id": "preset:leonardo-da-vinci",
+      "name": "Leonardo da Vinci",
+      "imageUrl": "./avatars/characters/leonardo-da-vinci.png",
+      "aliases": [
+        "达芬奇"
+      ],
+      "category": "Science",
+      "thumbnailUrl": "./avatars/thumbnails/leonardo-da-vinci.webp"
+    },
+    {
+      "id": "preset:katherine-johnson",
+      "name": "Katherine Johnson",
+      "imageUrl": "./avatars/characters/katherine-johnson.png",
+      "aliases": [],
+      "category": "Science",
+      "thumbnailUrl": "./avatars/thumbnails/katherine-johnson.webp"
+    },
+    {
+      "id": "preset:stephen-hawking",
+      "name": "Stephen Hawking",
+      "imageUrl": "./avatars/characters/stephen-hawking.png",
+      "aliases": [
+        "霍金"
+      ],
+      "category": "Science",
+      "thumbnailUrl": "./avatars/thumbnails/stephen-hawking.webp"
+    },
+    {
+      "id": "preset:benjamin-franklin",
+      "name": "Benjamin Franklin",
+      "imageUrl": "./avatars/characters/benjamin-franklin.png",
+      "aliases": [
+        "富兰克林"
+      ],
+      "category": "Science",
+      "thumbnailUrl": "./avatars/thumbnails/benjamin-franklin.webp"
+    },
+    {
+      "id": "preset:dmitri-mendeleev",
+      "name": "Dmitri Mendeleev",
+      "imageUrl": "./avatars/characters/dmitri-mendeleev.png",
+      "aliases": [
+        "门捷列夫"
+      ],
+      "category": "Science",
+      "thumbnailUrl": "./avatars/thumbnails/dmitri-mendeleev.webp"
+    },
+    {
+      "id": "preset:carl-sagan",
+      "name": "Carl Sagan",
+      "imageUrl": "./avatars/characters/carl-sagan.png",
+      "aliases": [
+        "卡尔萨根"
+      ],
+      "category": "Science",
+      "thumbnailUrl": "./avatars/thumbnails/carl-sagan.webp"
+    },
+    {
+      "id": "preset:richard-feynman",
+      "name": "Richard Feynman",
+      "imageUrl": "./avatars/characters/richard-feynman.png",
+      "aliases": [
+        "费曼"
+      ],
+      "category": "Science",
+      "thumbnailUrl": "./avatars/thumbnails/richard-feynman.webp"
+    },
+    {
+      "id": "preset:tu-youyou",
+      "name": "Tu Youyou",
+      "imageUrl": "./avatars/characters/tu-youyou.png",
+      "aliases": [
+        "屠呦呦"
+      ],
+      "category": "Science",
+      "thumbnailUrl": "./avatars/thumbnails/tu-youyou.webp"
+    },
+    {
+      "id": "preset:claude-monet",
+      "name": "Claude Monet",
+      "imageUrl": "./avatars/characters/claude-monet.png",
+      "aliases": [
+        "莫奈"
+      ],
+      "category": "Art & literature",
+      "thumbnailUrl": "./avatars/thumbnails/claude-monet.webp"
+    },
+    {
+      "id": "preset:johannes-vermeer",
+      "name": "Johannes Vermeer",
+      "imageUrl": "./avatars/characters/johannes-vermeer.png",
+      "aliases": [
+        "维米尔"
+      ],
+      "category": "Art & literature",
+      "thumbnailUrl": "./avatars/thumbnails/johannes-vermeer.webp"
+    },
+    {
+      "id": "preset:rembrandt",
+      "name": "Rembrandt",
+      "imageUrl": "./avatars/characters/rembrandt.png",
+      "aliases": [
+        "伦勃朗"
+      ],
+      "category": "Art & literature",
+      "thumbnailUrl": "./avatars/thumbnails/rembrandt.webp"
+    },
+    {
+      "id": "preset:vincent-van-gogh",
+      "name": "Vincent van Gogh",
+      "imageUrl": "./avatars/characters/vincent-van-gogh.png",
+      "aliases": [
+        "梵高"
+      ],
+      "category": "Art & literature",
+      "thumbnailUrl": "./avatars/thumbnails/vincent-van-gogh.webp"
+    },
+    {
+      "id": "preset:michelangelo",
+      "name": "Michelangelo",
+      "imageUrl": "./avatars/characters/michelangelo.png",
+      "aliases": [
+        "米开朗基罗"
+      ],
+      "category": "Art & literature",
+      "thumbnailUrl": "./avatars/thumbnails/michelangelo.webp"
+    },
+    {
+      "id": "preset:pablo-picasso",
+      "name": "Pablo Picasso",
+      "imageUrl": "./avatars/characters/pablo-picasso.png",
+      "aliases": [
+        "毕加索"
+      ],
+      "category": "Art & literature",
+      "thumbnailUrl": "./avatars/thumbnails/pablo-picasso.webp"
+    },
+    {
+      "id": "preset:ernest-hemingway",
+      "name": "Ernest Hemingway",
+      "imageUrl": "./avatars/characters/ernest-hemingway.png",
+      "aliases": [
+        "海明威"
+      ],
+      "category": "Art & literature",
+      "thumbnailUrl": "./avatars/thumbnails/ernest-hemingway.webp"
+    },
+    {
+      "id": "preset:william-shakespeare",
+      "name": "William Shakespeare",
+      "imageUrl": "./avatars/characters/william-shakespeare.png",
+      "aliases": [
+        "莎士比亚"
+      ],
+      "category": "Art & literature",
+      "thumbnailUrl": "./avatars/thumbnails/william-shakespeare.webp"
+    },
+    {
+      "id": "preset:salvador-dali",
+      "name": "Salvador Dali",
+      "imageUrl": "./avatars/characters/salvador-dali.png",
+      "aliases": [
+        "达利"
+      ],
+      "category": "Art & literature",
+      "thumbnailUrl": "./avatars/thumbnails/salvador-dali.webp"
+    },
+    {
+      "id": "preset:agatha-christie",
+      "name": "Agatha Christie",
+      "imageUrl": "./avatars/characters/agatha-christie.png",
+      "aliases": [
+        "阿加莎"
+      ],
+      "category": "Art & literature",
+      "thumbnailUrl": "./avatars/thumbnails/agatha-christie.webp"
+    },
+    {
+      "id": "preset:virginia-woolf",
+      "name": "Virginia Woolf",
+      "imageUrl": "./avatars/characters/virginia-woolf.png",
+      "aliases": [
+        "伍尔夫"
+      ],
+      "category": "Art & literature",
+      "thumbnailUrl": "./avatars/thumbnails/virginia-woolf.webp"
+    },
+    {
+      "id": "preset:jane-austen",
+      "name": "Jane Austen",
+      "imageUrl": "./avatars/characters/jane-austen.png",
+      "aliases": [
+        "简奥斯汀"
+      ],
+      "category": "Art & literature",
+      "thumbnailUrl": "./avatars/thumbnails/jane-austen.webp"
+    },
+    {
+      "id": "preset:victor-hugo",
+      "name": "Victor Hugo",
+      "imageUrl": "./avatars/characters/victor-hugo.png",
+      "aliases": [
+        "雨果"
+      ],
+      "category": "Art & literature",
+      "thumbnailUrl": "./avatars/thumbnails/victor-hugo.webp"
+    },
+    {
+      "id": "preset:frida-kahlo",
+      "name": "Frida Kahlo",
+      "imageUrl": "./avatars/characters/frida-kahlo.png",
+      "aliases": [
+        "弗里达"
+      ],
+      "category": "Art & literature",
+      "thumbnailUrl": "./avatars/thumbnails/frida-kahlo.webp"
+    },
+    {
+      "id": "preset:leo-tolstoy",
+      "name": "Leo Tolstoy",
+      "imageUrl": "./avatars/characters/leo-tolstoy.png",
+      "aliases": [
+        "托尔斯泰"
+      ],
+      "category": "Art & literature",
+      "thumbnailUrl": "./avatars/thumbnails/leo-tolstoy.webp"
+    },
+    {
+      "id": "preset:jules-verne",
+      "name": "Jules Verne",
+      "imageUrl": "./avatars/characters/jules-verne.png",
+      "aliases": [
+        "凡尔纳"
+      ],
+      "category": "Art & literature",
+      "thumbnailUrl": "./avatars/thumbnails/jules-verne.webp"
+    },
+    {
+      "id": "preset:mark-twain",
+      "name": "Mark Twain",
+      "imageUrl": "./avatars/characters/mark-twain.png",
+      "aliases": [
+        "马克吐温"
+      ],
+      "category": "Art & literature",
+      "thumbnailUrl": "./avatars/thumbnails/mark-twain.webp"
+    },
+    {
+      "id": "preset:ludwig-van-beethoven",
+      "name": "Ludwig van Beethoven",
+      "imageUrl": "./avatars/characters/ludwig-van-beethoven.png",
+      "aliases": [
+        "贝多芬"
+      ],
+      "category": "Music",
+      "thumbnailUrl": "./avatars/thumbnails/ludwig-van-beethoven.webp"
+    },
+    {
+      "id": "preset:johann-sebastian-bach",
+      "name": "Johann Sebastian Bach",
+      "imageUrl": "./avatars/characters/johann-sebastian-bach.png",
+      "aliases": [
+        "巴赫"
+      ],
+      "category": "Music",
+      "thumbnailUrl": "./avatars/thumbnails/johann-sebastian-bach.webp"
+    },
+    {
+      "id": "preset:rabindranath-tagore",
+      "name": "Rabindranath Tagore",
+      "imageUrl": "./avatars/characters/rabindranath-tagore.png",
+      "aliases": [
+        "泰戈尔"
+      ],
+      "category": "Art & literature",
+      "thumbnailUrl": "./avatars/thumbnails/rabindranath-tagore.webp"
+    },
+    {
+      "id": "preset:lu-xun",
+      "name": "Lu Xun",
+      "imageUrl": "./avatars/characters/lu-xun.png",
+      "aliases": [
+        "鲁迅"
+      ],
+      "category": "Art & literature",
+      "thumbnailUrl": "./avatars/thumbnails/lu-xun.webp"
+    },
+    {
+      "id": "preset:louis-armstrong",
+      "name": "Louis Armstrong",
+      "imageUrl": "./avatars/characters/louis-armstrong.png",
+      "aliases": [],
+      "category": "Music",
+      "thumbnailUrl": "./avatars/thumbnails/louis-armstrong.webp"
+    },
+    {
+      "id": "preset:oscar-wilde",
+      "name": "Oscar Wilde",
+      "imageUrl": "./avatars/characters/oscar-wilde.png",
+      "aliases": [
+        "王尔德"
+      ],
+      "category": "Art & literature",
+      "thumbnailUrl": "./avatars/thumbnails/oscar-wilde.webp"
+    },
+    {
+      "id": "preset:ella-fitzgerald",
+      "name": "Ella Fitzgerald",
+      "imageUrl": "./avatars/characters/ella-fitzgerald.png",
+      "aliases": [],
+      "category": "Music",
+      "thumbnailUrl": "./avatars/thumbnails/ella-fitzgerald.webp"
+    },
+    {
+      "id": "preset:wolfgang-amadeus-mozart",
+      "name": "Wolfgang Amadeus Mozart",
+      "imageUrl": "./avatars/characters/wolfgang-amadeus-mozart.png",
+      "aliases": [
+        "莫扎特"
+      ],
+      "category": "Music",
+      "thumbnailUrl": "./avatars/thumbnails/wolfgang-amadeus-mozart.webp"
+    },
+    {
+      "id": "preset:dolly-parton",
+      "name": "Dolly Parton",
+      "imageUrl": "./avatars/characters/dolly-parton.png",
+      "aliases": [],
+      "category": "Music",
+      "thumbnailUrl": "./avatars/thumbnails/dolly-parton.webp"
+    },
+    {
+      "id": "preset:frederic-chopin",
+      "name": "Frederic Chopin",
+      "imageUrl": "./avatars/characters/frederic-chopin.png",
+      "aliases": [
+        "肖邦"
+      ],
+      "category": "Music",
+      "thumbnailUrl": "./avatars/thumbnails/frederic-chopin.webp"
+    },
+    {
+      "id": "preset:elvis-presley",
+      "name": "Elvis Presley",
+      "imageUrl": "./avatars/characters/elvis-presley.png",
+      "aliases": [
+        "猫王"
+      ],
+      "category": "Music",
+      "thumbnailUrl": "./avatars/thumbnails/elvis-presley.webp"
+    },
+    {
+      "id": "preset:jackie-chan",
+      "name": "Jackie Chan",
+      "imageUrl": "./avatars/characters/jackie-chan.png",
+      "aliases": [
+        "成龙"
+      ],
+      "category": "Screen icons",
+      "thumbnailUrl": "./avatars/thumbnails/jackie-chan.webp"
+    },
+    {
+      "id": "preset:jet-li",
+      "name": "Jet Li",
+      "imageUrl": "./avatars/characters/jet-li.png",
+      "aliases": [
+        "李连杰"
+      ],
+      "category": "Screen icons",
+      "thumbnailUrl": "./avatars/thumbnails/jet-li.webp"
+    },
+    {
+      "id": "preset:michelle-yeoh",
+      "name": "Michelle Yeoh",
+      "imageUrl": "./avatars/characters/michelle-yeoh.png",
+      "aliases": [
+        "杨紫琼"
+      ],
+      "category": "Screen icons",
+      "thumbnailUrl": "./avatars/thumbnails/michelle-yeoh.webp"
+    },
+    {
+      "id": "preset:jacky-cheung",
+      "name": "Jacky Cheung",
+      "imageUrl": "./avatars/characters/jacky-cheung.png",
+      "aliases": [
+        "张学友"
+      ],
+      "category": "Music",
+      "thumbnailUrl": "./avatars/thumbnails/jacky-cheung.webp"
+    },
+    {
+      "id": "preset:david-bowie",
+      "name": "David Bowie",
+      "imageUrl": "./avatars/characters/david-bowie.png",
+      "aliases": [
+        "大卫鲍伊"
+      ],
+      "category": "Music",
+      "thumbnailUrl": "./avatars/thumbnails/david-bowie.webp"
+    },
+    {
+      "id": "preset:gong-li",
+      "name": "Gong Li",
+      "imageUrl": "./avatars/characters/gong-li.png",
+      "aliases": [
+        "巩俐"
+      ],
+      "category": "Screen icons",
+      "thumbnailUrl": "./avatars/thumbnails/gong-li.webp"
+    },
+    {
+      "id": "preset:jay-chou",
+      "name": "Jay Chou",
+      "imageUrl": "./avatars/characters/jay-chou.png",
+      "aliases": [
+        "周杰伦"
+      ],
+      "category": "Music",
+      "thumbnailUrl": "./avatars/thumbnails/jay-chou.webp"
+    },
+    {
+      "id": "preset:bob-marley",
+      "name": "Bob Marley",
+      "imageUrl": "./avatars/characters/bob-marley.png",
+      "aliases": [
+        "鲍勃马利"
+      ],
+      "category": "Music",
+      "thumbnailUrl": "./avatars/thumbnails/bob-marley.webp"
+    },
+    {
+      "id": "preset:andy-lau",
+      "name": "Andy Lau",
+      "imageUrl": "./avatars/characters/andy-lau.png",
+      "aliases": [
+        "刘德华"
+      ],
+      "category": "Screen icons",
+      "thumbnailUrl": "./avatars/thumbnails/andy-lau.webp"
+    },
+    {
+      "id": "preset:tony-leung",
+      "name": "Tony Leung",
+      "imageUrl": "./avatars/characters/tony-leung.png",
+      "aliases": [
+        "梁朝伟"
+      ],
+      "category": "Screen icons",
+      "thumbnailUrl": "./avatars/thumbnails/tony-leung.webp"
+    },
+    {
+      "id": "preset:stephen-chow",
+      "name": "Stephen Chow",
+      "imageUrl": "./avatars/characters/stephen-chow.png",
+      "aliases": [
+        "周星驰"
+      ],
+      "category": "Screen icons",
+      "thumbnailUrl": "./avatars/thumbnails/stephen-chow.webp"
+    },
+    {
+      "id": "preset:chow-yun-fat",
+      "name": "Chow Yun-fat",
+      "imageUrl": "./avatars/characters/chow-yun-fat.png",
+      "aliases": [
+        "周润发"
+      ],
+      "category": "Screen icons",
+      "thumbnailUrl": "./avatars/thumbnails/chow-yun-fat.webp"
+    },
+    {
+      "id": "preset:morgan-freeman",
+      "name": "Morgan Freeman",
+      "imageUrl": "./avatars/characters/morgan-freeman.png",
+      "aliases": [
+        "摩根弗里曼"
+      ],
+      "category": "Screen icons",
+      "thumbnailUrl": "./avatars/thumbnails/morgan-freeman.webp"
+    },
+    {
+      "id": "preset:denzel-washington",
+      "name": "Denzel Washington",
+      "imageUrl": "./avatars/characters/denzel-washington.png",
+      "aliases": [
+        "丹泽尔华盛顿"
+      ],
+      "category": "Screen icons",
+      "thumbnailUrl": "./avatars/thumbnails/denzel-washington.webp"
+    },
+    {
+      "id": "preset:meryl-streep",
+      "name": "Meryl Streep",
+      "imageUrl": "./avatars/characters/meryl-streep.png",
+      "aliases": [
+        "梅丽尔斯特里普"
+      ],
+      "category": "Screen icons",
+      "thumbnailUrl": "./avatars/thumbnails/meryl-streep.webp"
+    },
+    {
+      "id": "preset:shah-rukh-khan",
+      "name": "Shah Rukh Khan",
+      "imageUrl": "./avatars/characters/shah-rukh-khan.png",
+      "aliases": [
+        "沙鲁克汗"
+      ],
+      "category": "Screen icons",
+      "thumbnailUrl": "./avatars/thumbnails/shah-rukh-khan.webp"
+    },
+    {
+      "id": "preset:leonardo-dicaprio",
+      "name": "Leonardo DiCaprio",
+      "imageUrl": "./avatars/characters/leonardo-dicaprio.png",
+      "aliases": [
+        "莱昂纳多"
+      ],
+      "category": "Screen icons",
+      "thumbnailUrl": "./avatars/thumbnails/leonardo-dicaprio.webp"
+    },
+    {
+      "id": "preset:amitabh-bachchan",
+      "name": "Amitabh Bachchan",
+      "imageUrl": "./avatars/characters/amitabh-bachchan.png",
+      "aliases": [],
+      "category": "Screen icons",
+      "thumbnailUrl": "./avatars/thumbnails/amitabh-bachchan.webp"
+    },
+    {
+      "id": "preset:robert-downey-jr",
+      "name": "Robert Downey Jr.",
+      "imageUrl": "./avatars/characters/robert-downey-jr.png",
+      "aliases": [
+        "小罗伯特唐尼"
+      ],
+      "category": "Screen icons",
+      "thumbnailUrl": "./avatars/thumbnails/robert-downey-jr.webp"
+    },
+    {
+      "id": "preset:michael-jordan",
+      "name": "Michael Jordan",
+      "imageUrl": "./avatars/characters/michael-jordan.png",
+      "aliases": [
+        "乔丹"
+      ],
+      "category": "Sports",
+      "thumbnailUrl": "./avatars/thumbnails/michael-jordan.webp"
+    },
+    {
+      "id": "preset:emma-watson",
+      "name": "Emma Watson",
+      "imageUrl": "./avatars/characters/emma-watson.png",
+      "aliases": [
+        "艾玛沃森"
+      ],
+      "category": "Screen icons",
+      "thumbnailUrl": "./avatars/thumbnails/emma-watson.webp"
+    },
+    {
+      "id": "preset:stephen-curry",
+      "name": "Stephen Curry",
+      "imageUrl": "./avatars/characters/stephen-curry.png",
+      "aliases": [
+        "库里"
+      ],
+      "category": "Sports",
+      "thumbnailUrl": "./avatars/thumbnails/stephen-curry.webp"
+    },
+    {
+      "id": "preset:cate-blanchett",
+      "name": "Cate Blanchett",
+      "imageUrl": "./avatars/characters/cate-blanchett.png",
+      "aliases": [
+        "凯特布兰切特"
+      ],
+      "category": "Screen icons",
+      "thumbnailUrl": "./avatars/thumbnails/cate-blanchett.webp"
+    },
+    {
+      "id": "preset:kobe-bryant",
+      "name": "Kobe Bryant",
+      "imageUrl": "./avatars/characters/kobe-bryant.png",
+      "aliases": [
+        "科比"
+      ],
+      "category": "Sports",
+      "thumbnailUrl": "./avatars/thumbnails/kobe-bryant.webp"
+    },
+    {
+      "id": "preset:roger-federer",
+      "name": "Roger Federer",
+      "imageUrl": "./avatars/characters/roger-federer.png",
+      "aliases": [
+        "费德勒"
+      ],
+      "category": "Sports",
+      "thumbnailUrl": "./avatars/thumbnails/roger-federer.webp"
+    },
+    {
+      "id": "preset:harrison-ford",
+      "name": "Harrison Ford",
+      "imageUrl": "./avatars/characters/harrison-ford.png",
+      "aliases": [
+        "哈里森福特"
+      ],
+      "category": "Screen icons",
+      "thumbnailUrl": "./avatars/thumbnails/harrison-ford.webp"
+    },
+    {
+      "id": "preset:patrick-stewart",
+      "name": "Patrick Stewart",
+      "imageUrl": "./avatars/characters/patrick-stewart.png",
+      "aliases": [
+        "帕特里克斯图尔特"
+      ],
+      "category": "Screen icons",
+      "thumbnailUrl": "./avatars/thumbnails/patrick-stewart.webp"
+    },
+    {
+      "id": "preset:rafael-nadal",
+      "name": "Rafael Nadal",
+      "imageUrl": "./avatars/characters/rafael-nadal.png",
+      "aliases": [
+        "纳达尔"
+      ],
+      "category": "Sports",
+      "thumbnailUrl": "./avatars/thumbnails/rafael-nadal.webp"
+    },
+    {
+      "id": "preset:cristiano-ronaldo",
+      "name": "Cristiano Ronaldo",
+      "imageUrl": "./avatars/characters/cristiano-ronaldo.png",
+      "aliases": [
+        "C罗"
+      ],
+      "category": "Sports",
+      "thumbnailUrl": "./avatars/thumbnails/cristiano-ronaldo.webp"
+    },
+    {
+      "id": "preset:usain-bolt",
+      "name": "Usain Bolt",
+      "imageUrl": "./avatars/characters/usain-bolt.png",
+      "aliases": [
+        "博尔特"
+      ],
+      "category": "Sports",
+      "thumbnailUrl": "./avatars/thumbnails/usain-bolt.webp"
+    },
+    {
+      "id": "preset:yao-ming",
+      "name": "Yao Ming",
+      "imageUrl": "./avatars/characters/yao-ming.png",
+      "aliases": [
+        "姚明"
+      ],
+      "category": "Sports",
+      "thumbnailUrl": "./avatars/thumbnails/yao-ming.webp"
+    },
+    {
+      "id": "preset:li-na",
+      "name": "Li Na",
+      "imageUrl": "./avatars/characters/li-na.png",
+      "aliases": [
+        "李娜"
+      ],
+      "category": "Sports",
+      "thumbnailUrl": "./avatars/thumbnails/li-na.webp"
+    },
+    {
+      "id": "preset:naomi-osaka",
+      "name": "Naomi Osaka",
+      "imageUrl": "./avatars/characters/naomi-osaka.png",
+      "aliases": [
+        "大阪直美"
+      ],
+      "category": "Sports",
+      "thumbnailUrl": "./avatars/thumbnails/naomi-osaka.webp"
+    },
+    {
+      "id": "preset:simone-biles",
+      "name": "Simone Biles",
+      "imageUrl": "./avatars/characters/simone-biles.png",
+      "aliases": [
+        "拜尔斯"
+      ],
+      "category": "Sports",
+      "thumbnailUrl": "./avatars/thumbnails/simone-biles.webp"
+    },
+    {
+      "id": "preset:serena-williams",
+      "name": "Serena Williams",
+      "imageUrl": "./avatars/characters/serena-williams.png",
+      "aliases": [
+        "小威廉姆斯"
+      ],
+      "category": "Sports",
+      "thumbnailUrl": "./avatars/thumbnails/serena-williams.webp"
+    },
+    {
+      "id": "preset:manny-pacquiao",
+      "name": "Manny Pacquiao",
+      "imageUrl": "./avatars/characters/manny-pacquiao.png",
+      "aliases": [
+        "帕奎奥"
+      ],
+      "category": "Sports",
+      "thumbnailUrl": "./avatars/thumbnails/manny-pacquiao.webp"
+    },
+    {
+      "id": "preset:abraham-lincoln",
+      "name": "Abraham Lincoln",
+      "imageUrl": "./avatars/characters/abraham-lincoln.png",
+      "aliases": [
+        "林肯"
+      ],
+      "category": "History & explorers",
+      "thumbnailUrl": "./avatars/thumbnails/abraham-lincoln.webp"
+    },
+    {
+      "id": "preset:martin-luther-king-jr",
+      "name": "Martin Luther King Jr.",
+      "imageUrl": "./avatars/characters/martin-luther-king-jr.png",
+      "aliases": [
+        "马丁路德金"
+      ],
+      "category": "History & explorers",
+      "thumbnailUrl": "./avatars/thumbnails/martin-luther-king-jr.webp"
+    },
+    {
+      "id": "preset:winston-churchill",
+      "name": "Winston Churchill",
+      "imageUrl": "./avatars/characters/winston-churchill.png",
+      "aliases": [
+        "丘吉尔"
+      ],
+      "category": "History & explorers",
+      "thumbnailUrl": "./avatars/thumbnails/winston-churchill.webp"
+    },
+    {
+      "id": "preset:alexander-the-great",
+      "name": "Alexander the Great",
+      "imageUrl": "./avatars/characters/alexander-the-great.png",
+      "aliases": [
+        "亚历山大"
+      ],
+      "category": "History & explorers",
+      "thumbnailUrl": "./avatars/thumbnails/alexander-the-great.webp"
+    },
+    {
+      "id": "preset:nelson-mandela",
+      "name": "Nelson Mandela",
+      "imageUrl": "./avatars/characters/nelson-mandela.png",
+      "aliases": [
+        "曼德拉"
+      ],
+      "category": "History & explorers",
+      "thumbnailUrl": "./avatars/thumbnails/nelson-mandela.webp"
+    },
+    {
+      "id": "preset:genghis-khan",
+      "name": "Genghis Khan",
+      "imageUrl": "./avatars/characters/genghis-khan.png",
+      "aliases": [
+        "成吉思汗"
+      ],
+      "category": "History & explorers",
+      "thumbnailUrl": "./avatars/thumbnails/genghis-khan.webp"
+    },
+    {
+      "id": "preset:zheng-he",
+      "name": "Zheng He",
+      "imageUrl": "./avatars/characters/zheng-he.png",
+      "aliases": [
+        "郑和"
+      ],
+      "category": "History & explorers",
+      "thumbnailUrl": "./avatars/thumbnails/zheng-he.webp"
+    },
+    {
+      "id": "preset:qin-shi-huang",
+      "name": "Qin Shi Huang",
+      "imageUrl": "./avatars/characters/qin-shi-huang.png",
+      "aliases": [
+        "秦始皇"
+      ],
+      "category": "History & explorers",
+      "thumbnailUrl": "./avatars/thumbnails/qin-shi-huang.webp"
+    },
+    {
+      "id": "preset:queen-elizabeth-ii",
+      "name": "Queen Elizabeth II",
+      "imageUrl": "./avatars/characters/queen-elizabeth-ii.png",
+      "aliases": [
+        "伊丽莎白二世"
+      ],
+      "category": "History & explorers",
+      "thumbnailUrl": "./avatars/thumbnails/queen-elizabeth-ii.webp"
+    },
+    {
+      "id": "preset:marco-polo",
+      "name": "Marco Polo",
+      "imageUrl": "./avatars/characters/marco-polo.png",
+      "aliases": [
+        "马可波罗"
+      ],
+      "category": "History & explorers",
+      "thumbnailUrl": "./avatars/thumbnails/marco-polo.webp"
+    },
+    {
+      "id": "preset:neil-armstrong",
+      "name": "Neil Armstrong",
+      "imageUrl": "./avatars/characters/neil-armstrong.png",
+      "aliases": [
+        "阿姆斯特朗"
+      ],
+      "category": "History & explorers",
+      "thumbnailUrl": "./avatars/thumbnails/neil-armstrong.webp"
+    },
+    {
+      "id": "preset:amelia-earhart",
+      "name": "Amelia Earhart",
+      "imageUrl": "./avatars/characters/amelia-earhart.png",
+      "aliases": [
+        "埃尔哈特"
+      ],
+      "category": "History & explorers",
+      "thumbnailUrl": "./avatars/thumbnails/amelia-earhart.webp"
+    },
+    {
+      "id": "preset:napoleon-bonaparte",
+      "name": "Napoleon Bonaparte",
+      "imageUrl": "./avatars/characters/napoleon-bonaparte.png",
+      "aliases": [
+        "拿破仑"
+      ],
+      "category": "History & explorers",
+      "thumbnailUrl": "./avatars/thumbnails/napoleon-bonaparte.webp"
+    },
+    {
+      "id": "preset:sandy-cheeks",
+      "name": "Sandy Cheeks",
+      "imageUrl": "./avatars/characters/sandy-cheeks.png",
+      "aliases": [
+        "珊迪"
+      ],
+      "category": "Cartoons",
+      "thumbnailUrl": "./avatars/thumbnails/sandy-cheeks.webp"
+    },
+    {
+      "id": "preset:julius-caesar",
+      "name": "Julius Caesar",
+      "imageUrl": "./avatars/characters/julius-caesar.png",
+      "aliases": [
+        "凯撒"
+      ],
+      "category": "History & explorers",
+      "thumbnailUrl": "./avatars/thumbnails/julius-caesar.webp"
+    },
+    {
+      "id": "preset:garfield",
+      "name": "Garfield",
+      "imageUrl": "./avatars/characters/garfield.png",
+      "aliases": [
+        "加菲猫"
+      ],
+      "category": "Cartoons",
+      "thumbnailUrl": "./avatars/thumbnails/garfield.webp"
+    },
+    {
+      "id": "preset:squidward-tentacles",
+      "name": "Squidward Tentacles",
+      "imageUrl": "./avatars/characters/squidward-tentacles.png",
+      "aliases": [
+        "章鱼哥"
+      ],
+      "category": "Cartoons",
+      "thumbnailUrl": "./avatars/thumbnails/squidward-tentacles.webp"
+    },
+    {
+      "id": "preset:odie",
+      "name": "Odie",
+      "imageUrl": "./avatars/characters/odie.png",
+      "aliases": [
+        "欧迪"
+      ],
+      "category": "Cartoons",
+      "thumbnailUrl": "./avatars/thumbnails/odie.webp"
+    },
+    {
+      "id": "preset:betty-boop",
+      "name": "Betty Boop",
+      "imageUrl": "./avatars/characters/betty-boop.png",
+      "aliases": [],
+      "category": "Cartoons",
+      "thumbnailUrl": "./avatars/thumbnails/betty-boop.webp"
+    },
+    {
+      "id": "preset:felix-the-cat",
+      "name": "Felix the Cat",
+      "imageUrl": "./avatars/characters/felix-the-cat.png",
+      "aliases": [],
+      "category": "Cartoons",
+      "thumbnailUrl": "./avatars/thumbnails/felix-the-cat.webp"
+    },
+    {
+      "id": "preset:pink-panther",
+      "name": "Pink Panther",
+      "imageUrl": "./avatars/characters/pink-panther.png",
+      "aliases": [
+        "粉红豹"
+      ],
+      "category": "Cartoons",
+      "thumbnailUrl": "./avatars/thumbnails/pink-panther.webp"
+    },
+    {
+      "id": "preset:popeye",
+      "name": "Popeye",
+      "imageUrl": "./avatars/characters/popeye.png",
+      "aliases": [
+        "大力水手"
+      ],
+      "category": "Cartoons",
+      "thumbnailUrl": "./avatars/thumbnails/popeye.webp"
+    },
+    {
+      "id": "preset:fred-flintstone",
+      "name": "Fred Flintstone",
+      "imageUrl": "./avatars/characters/fred-flintstone.png",
+      "aliases": [],
+      "category": "Cartoons",
+      "thumbnailUrl": "./avatars/thumbnails/fred-flintstone.webp"
+    },
+    {
+      "id": "preset:olive-oyl",
+      "name": "Olive Oyl",
+      "imageUrl": "./avatars/characters/olive-oyl.png",
+      "aliases": [
+        "奥利芙"
+      ],
+      "category": "Cartoons",
+      "thumbnailUrl": "./avatars/thumbnails/olive-oyl.webp"
+    },
+    {
+      "id": "preset:paddington-bear",
+      "name": "Paddington Bear",
+      "imageUrl": "./avatars/characters/paddington-bear.png",
+      "aliases": [
+        "帕丁顿熊"
+      ],
+      "category": "Animation & games",
+      "thumbnailUrl": "./avatars/thumbnails/paddington-bear.webp"
+    },
+    {
+      "id": "preset:naruto-uzumaki",
+      "name": "Naruto Uzumaki",
+      "imageUrl": "./avatars/characters/naruto-uzumaki.png",
+      "aliases": [
+        "漩涡鸣人"
+      ],
+      "category": "Anime",
+      "thumbnailUrl": "./avatars/thumbnails/naruto-uzumaki.webp"
+    },
+    {
+      "id": "preset:kakashi-hatake",
+      "name": "Kakashi Hatake",
+      "imageUrl": "./avatars/characters/kakashi-hatake.png",
+      "aliases": [
+        "旗木卡卡西"
+      ],
+      "category": "Anime",
+      "thumbnailUrl": "./avatars/thumbnails/kakashi-hatake.webp"
+    },
+    {
+      "id": "preset:sasuke-uchiha",
+      "name": "Sasuke Uchiha",
+      "imageUrl": "./avatars/characters/sasuke-uchiha.png",
+      "aliases": [
+        "宇智波佐助"
+      ],
+      "category": "Anime",
+      "thumbnailUrl": "./avatars/thumbnails/sasuke-uchiha.webp"
+    },
+    {
+      "id": "preset:monkey-d-luffy",
+      "name": "Monkey D. Luffy",
+      "imageUrl": "./avatars/characters/monkey-d-luffy.png",
+      "aliases": [
+        "路飞"
+      ],
+      "category": "Anime",
+      "thumbnailUrl": "./avatars/thumbnails/monkey-d-luffy.webp"
+    },
+    {
+      "id": "preset:roronoa-zoro",
+      "name": "Roronoa Zoro",
+      "imageUrl": "./avatars/characters/roronoa-zoro.png",
+      "aliases": [
+        "索隆"
+      ],
+      "category": "Anime",
+      "thumbnailUrl": "./avatars/thumbnails/roronoa-zoro.webp"
+    },
+    {
+      "id": "preset:nami-from-one-piece",
+      "name": "Nami from One Piece",
+      "imageUrl": "./avatars/characters/nami-from-one-piece.png",
+      "aliases": [
+        "娜美"
+      ],
+      "category": "Anime",
+      "thumbnailUrl": "./avatars/thumbnails/nami-from-one-piece.webp"
+    },
+    {
+      "id": "preset:sailor-mercury",
+      "name": "Sailor Mercury",
+      "imageUrl": "./avatars/characters/sailor-mercury.png",
+      "aliases": [
+        "水野亚美"
+      ],
+      "category": "Anime",
+      "thumbnailUrl": "./avatars/thumbnails/sailor-mercury.webp"
+    },
+    {
+      "id": "preset:son-goku",
+      "name": "Son Goku",
+      "imageUrl": "./avatars/characters/son-goku.png",
+      "aliases": [
+        "孙悟空"
+      ],
+      "category": "Anime",
+      "thumbnailUrl": "./avatars/thumbnails/son-goku.webp"
+    },
+    {
+      "id": "preset:astro-boy",
+      "name": "Astro Boy",
+      "imageUrl": "./avatars/characters/astro-boy.png",
+      "aliases": [
+        "阿童木"
+      ],
+      "category": "Anime",
+      "thumbnailUrl": "./avatars/thumbnails/astro-boy.webp"
+    },
+    {
+      "id": "preset:vegeta",
+      "name": "Vegeta",
+      "imageUrl": "./avatars/characters/vegeta.png",
+      "aliases": [
+        "贝吉塔"
+      ],
+      "category": "Anime",
+      "thumbnailUrl": "./avatars/thumbnails/vegeta.webp"
+    },
+    {
+      "id": "preset:sailor-moon",
+      "name": "Sailor Moon",
+      "imageUrl": "./avatars/characters/sailor-moon.png",
+      "aliases": [
+        "美少女战士"
+      ],
+      "category": "Anime",
+      "thumbnailUrl": "./avatars/thumbnails/sailor-moon.webp"
+    },
+    {
+      "id": "preset:detective-conan",
+      "name": "Detective Conan",
+      "imageUrl": "./avatars/characters/detective-conan.png",
+      "aliases": [
+        "柯南"
+      ],
+      "category": "Anime",
+      "thumbnailUrl": "./avatars/thumbnails/detective-conan.webp"
+    },
+    {
+      "id": "preset:yor-forger",
+      "name": "Yor Forger",
+      "imageUrl": "./avatars/characters/yor-forger.png",
+      "aliases": [
+        "约尔"
+      ],
+      "category": "Anime",
+      "thumbnailUrl": "./avatars/thumbnails/yor-forger.webp"
+    },
+    {
+      "id": "preset:lupin-iii",
+      "name": "Lupin III",
+      "imageUrl": "./avatars/characters/lupin-iii.png",
+      "aliases": [
+        "鲁邦三世"
+      ],
+      "category": "Anime",
+      "thumbnailUrl": "./avatars/thumbnails/lupin-iii.webp"
+    },
+    {
+      "id": "preset:anya-forger",
+      "name": "Anya Forger",
+      "imageUrl": "./avatars/characters/anya-forger.png",
+      "aliases": [
+        "阿尼亚"
+      ],
+      "category": "Anime",
+      "thumbnailUrl": "./avatars/thumbnails/anya-forger.webp"
+    },
+    {
+      "id": "preset:haku-from-spirited-away",
+      "name": "Haku from Spirited Away",
+      "imageUrl": "./avatars/characters/haku-from-spirited-away.png",
+      "aliases": [
+        "白龙"
+      ],
+      "category": "Anime",
+      "thumbnailUrl": "./avatars/thumbnails/haku-from-spirited-away.webp"
+    },
+    {
+      "id": "preset:chihiro-ogino",
+      "name": "Chihiro Ogino",
+      "imageUrl": "./avatars/characters/chihiro-ogino.png",
+      "aliases": [
+        "千寻"
+      ],
+      "category": "Anime",
+      "thumbnailUrl": "./avatars/thumbnails/chihiro-ogino.webp"
+    },
+    {
+      "id": "preset:kiki-from-kikis-delivery-service",
+      "name": "Kiki from Kikis Delivery Service",
+      "imageUrl": "./avatars/characters/kiki-from-kikis-delivery-service.png",
+      "aliases": [
+        "琪琪"
+      ],
+      "category": "Anime",
+      "thumbnailUrl": "./avatars/thumbnails/kiki-from-kikis-delivery-service.webp"
+    },
+    {
+      "id": "preset:howl-from-howls-moving-castle",
+      "name": "Howl from Howls Moving Castle",
+      "imageUrl": "./avatars/characters/howl-from-howls-moving-castle.png",
+      "aliases": [
+        "哈尔"
+      ],
+      "category": "Anime",
+      "thumbnailUrl": "./avatars/thumbnails/howl-from-howls-moving-castle.webp"
+    },
+    {
+      "id": "preset:loid-forger",
+      "name": "Loid Forger",
+      "imageUrl": "./avatars/characters/loid-forger.png",
+      "aliases": [
+        "洛伊德"
+      ],
+      "category": "Anime",
+      "thumbnailUrl": "./avatars/thumbnails/loid-forger.webp"
+    },
+    {
+      "id": "preset:bilbo-baggins",
+      "name": "Bilbo Baggins",
+      "imageUrl": "./avatars/characters/bilbo-baggins.png",
+      "aliases": [
+        "比尔博"
+      ],
+      "category": "Storybook & fantasy",
+      "thumbnailUrl": "./avatars/thumbnails/bilbo-baggins.webp"
+    },
+    {
+      "id": "preset:geppetto",
+      "name": "Geppetto",
+      "imageUrl": "./avatars/characters/geppetto.png",
+      "aliases": [
+        "杰佩托"
+      ],
+      "category": "Storybook & fantasy",
+      "thumbnailUrl": "./avatars/thumbnails/geppetto.webp"
+    },
+    {
+      "id": "preset:frodo-baggins",
+      "name": "Frodo Baggins",
+      "imageUrl": "./avatars/characters/frodo-baggins.png",
+      "aliases": [
+        "弗罗多"
+      ],
+      "category": "Storybook & fantasy",
+      "thumbnailUrl": "./avatars/thumbnails/frodo-baggins.webp"
+    },
+    {
+      "id": "preset:gandalf",
+      "name": "Gandalf",
+      "imageUrl": "./avatars/characters/gandalf.png",
+      "aliases": [
+        "甘道夫"
+      ],
+      "category": "Storybook & fantasy",
+      "thumbnailUrl": "./avatars/thumbnails/gandalf.webp"
+    },
+    {
+      "id": "preset:legolas",
+      "name": "Legolas",
+      "imageUrl": "./avatars/characters/legolas.png",
+      "aliases": [
+        "莱戈拉斯"
+      ],
+      "category": "Storybook & fantasy",
+      "thumbnailUrl": "./avatars/thumbnails/legolas.webp"
+    },
+    {
+      "id": "preset:aragorn",
+      "name": "Aragorn",
+      "imageUrl": "./avatars/characters/aragorn.png",
+      "aliases": [
+        "阿拉贡"
+      ],
+      "category": "Storybook & fantasy",
+      "thumbnailUrl": "./avatars/thumbnails/aragorn.webp"
+    },
+    {
+      "id": "preset:grace-hopper",
+      "name": "Grace Hopper",
+      "imageUrl": "./avatars/characters/grace-hopper.png",
+      "aliases": [
+        "格蕾丝霍珀"
+      ],
+      "category": "Science",
+      "thumbnailUrl": "./avatars/thumbnails/grace-hopper.webp"
+    },
+    {
+      "id": "preset:henri-poincare",
+      "name": "Henri Poincare",
+      "imageUrl": "./avatars/characters/henri-poincare.png",
+      "aliases": [
+        "庞加莱"
+      ],
+      "category": "Science",
+      "thumbnailUrl": "./avatars/thumbnails/henri-poincare.webp"
+    },
+    {
+      "id": "preset:johannes-kepler",
+      "name": "Johannes Kepler",
+      "imageUrl": "./avatars/characters/johannes-kepler.png",
+      "aliases": [
+        "开普勒"
+      ],
+      "category": "Science",
+      "thumbnailUrl": "./avatars/thumbnails/johannes-kepler.webp"
+    },
+    {
+      "id": "preset:archimedes",
+      "name": "Archimedes",
+      "imageUrl": "./avatars/characters/archimedes.png",
+      "aliases": [
+        "阿基米德"
+      ],
+      "category": "Science",
+      "thumbnailUrl": "./avatars/thumbnails/archimedes.webp"
+    },
+    {
+      "id": "preset:emmy-noether",
+      "name": "Emmy Noether",
+      "imageUrl": "./avatars/characters/emmy-noether.png",
+      "aliases": [
+        "诺特"
+      ],
+      "category": "Science",
+      "thumbnailUrl": "./avatars/thumbnails/emmy-noether.webp"
+    },
+    {
+      "id": "preset:hippocrates",
+      "name": "Hippocrates",
+      "imageUrl": "./avatars/characters/hippocrates.png",
+      "aliases": [
+        "希波克拉底"
+      ],
+      "category": "Science",
+      "thumbnailUrl": "./avatars/thumbnails/hippocrates.webp"
+    },
+    {
+      "id": "preset:tao-yuanming",
+      "name": "Tao Yuanming",
+      "imageUrl": "./avatars/characters/tao-yuanming.png",
+      "aliases": [
+        "陶渊明"
+      ],
+      "category": "Chinese classics",
+      "thumbnailUrl": "./avatars/thumbnails/tao-yuanming.webp"
+    },
+    {
+      "id": "preset:wang-yangming",
+      "name": "Wang Yangming",
+      "imageUrl": "./avatars/characters/wang-yangming.png",
+      "aliases": [
+        "王阳明"
+      ],
+      "category": "Chinese classics",
+      "thumbnailUrl": "./avatars/thumbnails/wang-yangming.webp"
+    },
+    {
+      "id": "preset:li-qingzhao",
+      "name": "Li Qingzhao",
+      "imageUrl": "./avatars/characters/li-qingzhao.png",
+      "aliases": [
+        "李清照"
+      ],
+      "category": "Chinese classics",
+      "thumbnailUrl": "./avatars/thumbnails/li-qingzhao.webp"
+    },
+    {
+      "id": "preset:su-shi",
+      "name": "Su Shi",
+      "imageUrl": "./avatars/characters/su-shi.png",
+      "aliases": [
+        "苏轼"
+      ],
+      "category": "Chinese classics",
+      "thumbnailUrl": "./avatars/thumbnails/su-shi.webp"
+    },
+    {
+      "id": "preset:su-song",
+      "name": "Su Song",
+      "imageUrl": "./avatars/characters/su-song.png",
+      "aliases": [
+        "苏颂"
+      ],
+      "category": "Science",
+      "thumbnailUrl": "./avatars/thumbnails/su-song.webp"
+    },
+    {
+      "id": "preset:zhang-heng",
+      "name": "Zhang Heng",
+      "imageUrl": "./avatars/characters/zhang-heng.png",
+      "aliases": [
+        "张衡"
+      ],
+      "category": "Science",
+      "thumbnailUrl": "./avatars/thumbnails/zhang-heng.webp"
+    },
+    {
+      "id": "preset:shen-kuo",
+      "name": "Shen Kuo",
+      "imageUrl": "./avatars/characters/shen-kuo.png",
+      "aliases": [
+        "沈括"
+      ],
+      "category": "Science",
+      "thumbnailUrl": "./avatars/thumbnails/shen-kuo.webp"
+    },
+    {
+      "id": "preset:du-fu",
+      "name": "Du Fu",
+      "imageUrl": "./avatars/characters/du-fu.png",
+      "aliases": [
+        "杜甫"
+      ],
+      "category": "Chinese classics",
+      "thumbnailUrl": "./avatars/thumbnails/du-fu.webp"
+    },
+    {
+      "id": "preset:wu-chengen",
+      "name": "Wu Chengen",
+      "imageUrl": "./avatars/characters/wu-chengen.png",
+      "aliases": [
+        "吴承恩"
+      ],
+      "category": "Chinese classics",
+      "thumbnailUrl": "./avatars/thumbnails/wu-chengen.webp"
+    },
+    {
+      "id": "preset:j-r-r-tolkien",
+      "name": "J. R. R. Tolkien",
+      "imageUrl": "./avatars/characters/j-r-r-tolkien.png",
+      "aliases": [
+        "托尔金"
+      ],
+      "category": "Art & literature",
+      "thumbnailUrl": "./avatars/thumbnails/j-r-r-tolkien.webp"
+    },
+    {
+      "id": "preset:c-s-lewis",
+      "name": "C. S. Lewis",
+      "imageUrl": "./avatars/characters/c-s-lewis.png",
+      "aliases": [
+        "刘易斯"
+      ],
+      "category": "Art & literature",
+      "thumbnailUrl": "./avatars/thumbnails/c-s-lewis.webp"
+    },
+    {
+      "id": "preset:h-g-wells",
+      "name": "H. G. Wells",
+      "imageUrl": "./avatars/characters/h-g-wells.png",
+      "aliases": [
+        "威尔斯"
+      ],
+      "category": "Art & literature",
+      "thumbnailUrl": "./avatars/thumbnails/h-g-wells.webp"
+    },
+    {
+      "id": "preset:charles-dickens",
+      "name": "Charles Dickens",
+      "imageUrl": "./avatars/characters/charles-dickens.png",
+      "aliases": [
+        "狄更斯"
+      ],
+      "category": "Art & literature",
+      "thumbnailUrl": "./avatars/thumbnails/charles-dickens.webp"
+    },
+    {
+      "id": "preset:arthur-conan-doyle",
+      "name": "Arthur Conan Doyle",
+      "imageUrl": "./avatars/characters/arthur-conan-doyle.png",
+      "aliases": [
+        "柯南道尔"
+      ],
+      "category": "Art & literature",
+      "thumbnailUrl": "./avatars/thumbnails/arthur-conan-doyle.webp"
+    },
+    {
+      "id": "preset:anton-chekhov",
+      "name": "Anton Chekhov",
+      "imageUrl": "./avatars/characters/anton-chekhov.png",
+      "aliases": [
+        "契诃夫"
+      ],
+      "category": "Art & literature",
+      "thumbnailUrl": "./avatars/thumbnails/anton-chekhov.webp"
+    },
+    {
+      "id": "preset:edgar-allan-poe",
+      "name": "Edgar Allan Poe",
+      "imageUrl": "./avatars/characters/edgar-allan-poe.png",
+      "aliases": [
+        "爱伦坡"
+      ],
+      "category": "Art & literature",
+      "thumbnailUrl": "./avatars/thumbnails/edgar-allan-poe.webp"
+    },
+    {
+      "id": "preset:alexander-pushkin",
+      "name": "Alexander Pushkin",
+      "imageUrl": "./avatars/characters/alexander-pushkin.png",
+      "aliases": [
+        "普希金"
+      ],
+      "category": "Art & literature",
+      "thumbnailUrl": "./avatars/thumbnails/alexander-pushkin.webp"
+    },
+    {
+      "id": "preset:george-orwell",
+      "name": "George Orwell",
+      "imageUrl": "./avatars/characters/george-orwell.png",
+      "aliases": [
+        "奥威尔"
+      ],
+      "category": "Art & literature",
+      "thumbnailUrl": "./avatars/thumbnails/george-orwell.webp"
+    },
+    {
+      "id": "preset:mary-shelley",
+      "name": "Mary Shelley",
+      "imageUrl": "./avatars/characters/mary-shelley.png",
+      "aliases": [
+        "玛丽雪莱"
+      ],
+      "category": "Art & literature",
+      "thumbnailUrl": "./avatars/thumbnails/mary-shelley.webp"
+    },
+    {
+      "id": "preset:fyodor-dostoevsky",
+      "name": "Fyodor Dostoevsky",
+      "imageUrl": "./avatars/characters/fyodor-dostoevsky.png",
+      "aliases": [
+        "陀思妥耶夫斯基"
+      ],
+      "category": "Art & literature",
+      "thumbnailUrl": "./avatars/thumbnails/fyodor-dostoevsky.webp"
+    },
+    {
+      "id": "preset:emily-dickinson",
+      "name": "Emily Dickinson",
+      "imageUrl": "./avatars/characters/emily-dickinson.png",
+      "aliases": [
+        "狄金森"
+      ],
+      "category": "Art & literature",
+      "thumbnailUrl": "./avatars/thumbnails/emily-dickinson.webp"
     }
   ]
 }

@@ -1,0 +1,49 @@
+/* A readable type scale, independent of map symbols and provider controls. */
+:root{--scout-text:16px;--scout-label:15px;--scout-small:14px;--scout-caption:13px}
+body{font-size:var(--scout-text)}
+.small,.photo-studio .small,.history-menu>p:last-child,.studio-status,.studio-intro,.studio-save-hint,.photo-share-body .small{font-size:var(--scout-small);line-height:1.55}
+.map-overlay-controls .map-account button,.map-overlay-controls .map-toolbar>summary,.map-overlay-controls .map-details>summary,.map-overlay-controls .search-history>summary,#published-menu>summary{font-size:14px;padding-inline:9px}
+.map-overlay-controls summary>span[id$="count"]{font-size:12px;min-width:18px;padding-inline:4px}
+.map-styles button,.map-detail-menu label,.history-account,.history-select-all,.history-item button,.history-remove,.photo-history-row .history-remove,#published-more{font-size:var(--scout-small)}
+.history-item strong,.photo-history-copy strong{font-size:var(--scout-label);line-height:1.45}
+.history-item small,.photo-history-entry small,.history-row-copy small{font-size:var(--scout-caption);line-height:1.5}
+.dock-actions button,.dock-actions #toggle-results,.map-controls>summary,.dock-toolbar:has(#toggle-results:not(:disabled)) .map-controls>summary{font-size:13px}
+.map-controls>summary{padding-right:215px}
+.search-settings label,.coordinate-display>span,.coordinate-display output,.search-mode-picker label,.route-settings label,#photo-styles legend,.style-choice strong{font-size:var(--scout-small)}
+.search-settings select,.route-settings input,.route-result-sort,.route-result-sort select{font-size:16px}
+.photo-app .scout-dock .prompt-row textarea{font-size:19px;line-height:1.4}
+.body h3{font-size:19px}.body p,.body a{font-size:var(--scout-label);line-height:1.6}.tag{font-size:var(--scout-caption)}
+#results .compose-photo,#results .publish-button,#results .remove-poi,.back-button,.place-selfies summary,.place-selfie-heading,.place-selfie-link{font-size:var(--scout-small)}
+.photo-popup{font-size:var(--scout-label);line-height:1.5}.photo-popup h3{font-size:18px}.photo-popup p,.photo-popup a,.photo-popup .popup-selfie,.photo-popup .publish-button,.photo-popup .popup-actions>button{font-size:var(--scout-small)}
+.studio-heading h2{font-size:25px}.studio-heading button,.studio-upload,.studio-styles legend,.studio-options legend,.studio-options-grid label,.studio-style,.studio-photo-source button,.studio-image-card figcaption{font-size:var(--scout-label)}
+.studio-upload input,.studio-upload textarea,.studio-options-grid select,.studio-upload input::file-selector-button{font-size:16px}
+.studio-generate,.studio-save,.studio-download,.photo-studio .publication-actions>.publish-button,.saved-photo-nav a{font-size:var(--scout-label)}
+.saved-photo-params dl,.saved-photo-background p,.saved-photo-background a,.saved-photo-params dt,.saved-photo-params dd{font-size:var(--scout-small);line-height:1.55}
+.saved-photo-params h3,.saved-photo-background h3,.saved-photo-background .photo-place-link{font-size:17px}
+.avatar-tabs button,.avatar-pick span,.avatar-remove,.avatar-status,.avatar-count,.avatar-filters input,.avatar-filters select,.avatar-upload button{font-size:var(--scout-small)}
+.avatar-pick span{line-height:1.4;overflow-wrap:anywhere}.avatar-filters input,.avatar-filters select,.avatar-upload input{font-size:16px}
+.photo-comments,.comment-item,.comment-form,.reaction-button,.photo-reactions button{font-size:var(--scout-small)}
+.photo-comments input,.photo-comments textarea,.comment-form textarea{font-size:16px}
+.share-photo-preview strong,.social-tile strong{font-size:var(--scout-label)}.share-photo-preview span,.social-tile small{font-size:var(--scout-caption)}
+.leaflet-control-attribution{font-size:11px}
+@media(max-width:760px){
+ .map-overlay-controls .map-account button,.map-overlay-controls .map-toolbar>summary,.map-overlay-controls .map-details>summary,.map-overlay-controls .search-history>summary,#published-menu>summary{font-size:13px;padding-inline:7px;gap:4px}
+ .photo-app .scout-dock .prompt-row textarea{font-size:18px}.dock-actions button,.dock-actions #toggle-results,.map-controls>summary,.dock-toolbar:has(#toggle-results:not(:disabled)) .map-controls>summary{font-size:12px}
+ .dock-toolbar:has(#map-controls[open]) .map-controls>summary{padding-right:180px}
+ .studio-heading h2{font-size:22px}.studio-heading button{font-size:14px}.body h3{font-size:18px}
+ .studio-options-grid select{padding-inline:8px}.photo-studio .small,.studio-intro,.studio-status{font-size:14px}
+}
+/* Shared menu captions and community controls follow the same readable scale. */
+.history-menu p,.history-menu .avatar-count,.history-menu .avatar-status{font-size:var(--scout-small);line-height:1.5}
+.history-menu .history-map-credit{font-size:11px!important}
+.photo-library-tabs [role=tab],.comment-meta,.comment-status,.social-hint,.favorite-view small{font-size:var(--scout-small)}
+.comment-meta time,.comments-section .comment-delete,.publication-badge{font-size:var(--scout-caption)}
+.comment-item p,.comments-section button{font-size:var(--scout-label)}
+.favorite-remove{font-size:var(--scout-small)!important}
+.street-view-caption,.street-view-gesture-hint,.native-street-view-active>.native-view-caption,.studio-scene-view .street-view-caption,.studio-scene-view .street-view-gesture-hint{font-size:12px;line-height:1.4}
+.community-publications h3{font-size:var(--scout-label)}
+.scout-dock .dock-links,.scout-dock .dock-links a,.scout-dock .free-tag{font-size:12px;line-height:1.4}
+.scout-dock .map-controls>summary>span,.scout-dock .dock-status{font-size:var(--scout-caption)}
+.search-progress .progress-heading strong{font-size:var(--scout-label)}
+.search-progress .progress-heading p,.search-progress .progress-steps li{font-size:var(--scout-caption)}
+@media(max-width:760px){.scout-dock .dock-links,.scout-dock .dock-links a,.scout-dock .free-tag{font-size:11px}}

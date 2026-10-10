@@ -1,0 +1,2275 @@
+{
+  "mode": "built-in imagegen",
+  "items": [
+    {
+      "id": "marie-curie",
+      "name": "Marie Curie",
+      "category": "Science",
+      "kind": "real",
+      "aliases": [
+        "居里夫人"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/marie-curie.png"
+    },
+    {
+      "id": "charles-darwin",
+      "name": "Charles Darwin",
+      "category": "Science",
+      "kind": "real",
+      "aliases": [
+        "达尔文"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/charles-darwin.png"
+    },
+    {
+      "id": "isaac-newton",
+      "name": "Isaac Newton",
+      "category": "Science",
+      "kind": "real",
+      "aliases": [
+        "牛顿"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/isaac-newton.png"
+    },
+    {
+      "id": "galileo-galilei",
+      "name": "Galileo Galilei",
+      "category": "Science",
+      "kind": "real",
+      "aliases": [
+        "伽利略"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/galileo-galilei.png"
+    },
+    {
+      "id": "ada-lovelace",
+      "name": "Ada Lovelace",
+      "category": "Science",
+      "kind": "real",
+      "aliases": [
+        "阿达"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/ada-lovelace.png"
+    },
+    {
+      "id": "alan-turing",
+      "name": "Alan Turing",
+      "category": "Science",
+      "kind": "real",
+      "aliases": [
+        "图灵"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/alan-turing.png"
+    },
+    {
+      "id": "stephen-hawking",
+      "name": "Stephen Hawking",
+      "category": "Science",
+      "kind": "real",
+      "aliases": [
+        "霍金"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/stephen-hawking.png"
+    },
+    {
+      "id": "carl-sagan",
+      "name": "Carl Sagan",
+      "category": "Science",
+      "kind": "real",
+      "aliases": [
+        "卡尔萨根"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/carl-sagan.png"
+    },
+    {
+      "id": "richard-feynman",
+      "name": "Richard Feynman",
+      "category": "Science",
+      "kind": "real",
+      "aliases": [
+        "费曼"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/richard-feynman.png"
+    },
+    {
+      "id": "niels-bohr",
+      "name": "Niels Bohr",
+      "category": "Science",
+      "kind": "real",
+      "aliases": [
+        "玻尔"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/niels-bohr.png"
+    },
+    {
+      "id": "max-planck",
+      "name": "Max Planck",
+      "category": "Science",
+      "kind": "real",
+      "aliases": [
+        "普朗克"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/max-planck.png"
+    },
+    {
+      "id": "louis-pasteur",
+      "name": "Louis Pasteur",
+      "category": "Science",
+      "kind": "real",
+      "aliases": [
+        "巴斯德"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/louis-pasteur.png"
+    },
+    {
+      "id": "jane-goodall",
+      "name": "Jane Goodall",
+      "category": "Science",
+      "kind": "real",
+      "aliases": [
+        "珍古道尔"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/jane-goodall.png"
+    },
+    {
+      "id": "katherine-johnson",
+      "name": "Katherine Johnson",
+      "category": "Science",
+      "kind": "real",
+      "aliases": [],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/katherine-johnson.png"
+    },
+    {
+      "id": "rosalind-franklin",
+      "name": "Rosalind Franklin",
+      "category": "Science",
+      "kind": "real",
+      "aliases": [
+        "罗莎琳德富兰克林"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/rosalind-franklin.png"
+    },
+    {
+      "id": "srinivasa-ramanujan",
+      "name": "Srinivasa Ramanujan",
+      "category": "Science",
+      "kind": "real",
+      "aliases": [],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/srinivasa-ramanujan.png"
+    },
+    {
+      "id": "leonardo-da-vinci",
+      "name": "Leonardo da Vinci",
+      "category": "Science",
+      "kind": "real",
+      "aliases": [
+        "达芬奇"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/leonardo-da-vinci.png"
+    },
+    {
+      "id": "benjamin-franklin",
+      "name": "Benjamin Franklin",
+      "category": "Science",
+      "kind": "real",
+      "aliases": [
+        "富兰克林"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/benjamin-franklin.png"
+    },
+    {
+      "id": "dmitri-mendeleev",
+      "name": "Dmitri Mendeleev",
+      "category": "Science",
+      "kind": "real",
+      "aliases": [
+        "门捷列夫"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/dmitri-mendeleev.png"
+    },
+    {
+      "id": "tu-youyou",
+      "name": "Tu Youyou",
+      "category": "Science",
+      "kind": "real",
+      "aliases": [
+        "屠呦呦"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/tu-youyou.png"
+    },
+    {
+      "id": "vincent-van-gogh",
+      "name": "Vincent van Gogh",
+      "category": "Art & literature",
+      "kind": "real",
+      "aliases": [
+        "梵高"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/vincent-van-gogh.png"
+    },
+    {
+      "id": "pablo-picasso",
+      "name": "Pablo Picasso",
+      "category": "Art & literature",
+      "kind": "real",
+      "aliases": [
+        "毕加索"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/pablo-picasso.png"
+    },
+    {
+      "id": "salvador-dali",
+      "name": "Salvador Dali",
+      "category": "Art & literature",
+      "kind": "real",
+      "aliases": [
+        "达利"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/salvador-dali.png"
+    },
+    {
+      "id": "frida-kahlo",
+      "name": "Frida Kahlo",
+      "category": "Art & literature",
+      "kind": "real",
+      "aliases": [
+        "弗里达"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/frida-kahlo.png"
+    },
+    {
+      "id": "claude-monet",
+      "name": "Claude Monet",
+      "category": "Art & literature",
+      "kind": "real",
+      "aliases": [
+        "莫奈"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/claude-monet.png"
+    },
+    {
+      "id": "rembrandt",
+      "name": "Rembrandt",
+      "category": "Art & literature",
+      "kind": "real",
+      "aliases": [
+        "伦勃朗"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/rembrandt.png"
+    },
+    {
+      "id": "johannes-vermeer",
+      "name": "Johannes Vermeer",
+      "category": "Art & literature",
+      "kind": "real",
+      "aliases": [
+        "维米尔"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/johannes-vermeer.png"
+    },
+    {
+      "id": "michelangelo",
+      "name": "Michelangelo",
+      "category": "Art & literature",
+      "kind": "real",
+      "aliases": [
+        "米开朗基罗"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/michelangelo.png"
+    },
+    {
+      "id": "william-shakespeare",
+      "name": "William Shakespeare",
+      "category": "Art & literature",
+      "kind": "real",
+      "aliases": [
+        "莎士比亚"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/william-shakespeare.png"
+    },
+    {
+      "id": "jane-austen",
+      "name": "Jane Austen",
+      "category": "Art & literature",
+      "kind": "real",
+      "aliases": [
+        "简奥斯汀"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/jane-austen.png"
+    },
+    {
+      "id": "mark-twain",
+      "name": "Mark Twain",
+      "category": "Art & literature",
+      "kind": "real",
+      "aliases": [
+        "马克吐温"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/mark-twain.png"
+    },
+    {
+      "id": "oscar-wilde",
+      "name": "Oscar Wilde",
+      "category": "Art & literature",
+      "kind": "real",
+      "aliases": [
+        "王尔德"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/oscar-wilde.png"
+    },
+    {
+      "id": "ernest-hemingway",
+      "name": "Ernest Hemingway",
+      "category": "Art & literature",
+      "kind": "real",
+      "aliases": [
+        "海明威"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/ernest-hemingway.png"
+    },
+    {
+      "id": "virginia-woolf",
+      "name": "Virginia Woolf",
+      "category": "Art & literature",
+      "kind": "real",
+      "aliases": [
+        "伍尔夫"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/virginia-woolf.png"
+    },
+    {
+      "id": "agatha-christie",
+      "name": "Agatha Christie",
+      "category": "Art & literature",
+      "kind": "real",
+      "aliases": [
+        "阿加莎"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/agatha-christie.png"
+    },
+    {
+      "id": "jules-verne",
+      "name": "Jules Verne",
+      "category": "Art & literature",
+      "kind": "real",
+      "aliases": [
+        "凡尔纳"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/jules-verne.png"
+    },
+    {
+      "id": "victor-hugo",
+      "name": "Victor Hugo",
+      "category": "Art & literature",
+      "kind": "real",
+      "aliases": [
+        "雨果"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/victor-hugo.png"
+    },
+    {
+      "id": "leo-tolstoy",
+      "name": "Leo Tolstoy",
+      "category": "Art & literature",
+      "kind": "real",
+      "aliases": [
+        "托尔斯泰"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/leo-tolstoy.png"
+    },
+    {
+      "id": "rabindranath-tagore",
+      "name": "Rabindranath Tagore",
+      "category": "Art & literature",
+      "kind": "real",
+      "aliases": [
+        "泰戈尔"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/rabindranath-tagore.png"
+    },
+    {
+      "id": "lu-xun",
+      "name": "Lu Xun",
+      "category": "Art & literature",
+      "kind": "real",
+      "aliases": [
+        "鲁迅"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/lu-xun.png"
+    },
+    {
+      "id": "ludwig-van-beethoven",
+      "name": "Ludwig van Beethoven",
+      "category": "Music",
+      "kind": "real",
+      "aliases": [
+        "贝多芬"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/ludwig-van-beethoven.png"
+    },
+    {
+      "id": "wolfgang-amadeus-mozart",
+      "name": "Wolfgang Amadeus Mozart",
+      "category": "Music",
+      "kind": "real",
+      "aliases": [
+        "莫扎特"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/wolfgang-amadeus-mozart.png"
+    },
+    {
+      "id": "johann-sebastian-bach",
+      "name": "Johann Sebastian Bach",
+      "category": "Music",
+      "kind": "real",
+      "aliases": [
+        "巴赫"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/johann-sebastian-bach.png"
+    },
+    {
+      "id": "frederic-chopin",
+      "name": "Frederic Chopin",
+      "category": "Music",
+      "kind": "real",
+      "aliases": [
+        "肖邦"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/frederic-chopin.png"
+    },
+    {
+      "id": "elvis-presley",
+      "name": "Elvis Presley",
+      "category": "Music",
+      "kind": "real",
+      "aliases": [
+        "猫王"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/elvis-presley.png"
+    },
+    {
+      "id": "freddie-mercury",
+      "name": "Freddie Mercury",
+      "category": "Music",
+      "kind": "real",
+      "aliases": [
+        "弗雷迪"
+      ],
+      "outcome": "omitted",
+      "reason": "Provider rejected generation; not listed or retried."
+    },
+    {
+      "id": "david-bowie",
+      "name": "David Bowie",
+      "category": "Music",
+      "kind": "real",
+      "aliases": [
+        "大卫鲍伊"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/david-bowie.png"
+    },
+    {
+      "id": "bob-marley",
+      "name": "Bob Marley",
+      "category": "Music",
+      "kind": "real",
+      "aliases": [
+        "鲍勃马利"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/bob-marley.png"
+    },
+    {
+      "id": "louis-armstrong",
+      "name": "Louis Armstrong",
+      "category": "Music",
+      "kind": "real",
+      "aliases": [],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/louis-armstrong.png"
+    },
+    {
+      "id": "ella-fitzgerald",
+      "name": "Ella Fitzgerald",
+      "category": "Music",
+      "kind": "real",
+      "aliases": [],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/ella-fitzgerald.png"
+    },
+    {
+      "id": "dolly-parton",
+      "name": "Dolly Parton",
+      "category": "Music",
+      "kind": "real",
+      "aliases": [],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/dolly-parton.png"
+    },
+    {
+      "id": "taylor-swift",
+      "name": "Taylor Swift",
+      "category": "Music",
+      "kind": "real",
+      "aliases": [
+        "泰勒斯威夫特"
+      ],
+      "outcome": "omitted",
+      "reason": "Provider rejected generation; not listed or retried."
+    },
+    {
+      "id": "beyonce",
+      "name": "Beyonce",
+      "category": "Music",
+      "kind": "real",
+      "aliases": [
+        "碧昂丝"
+      ],
+      "outcome": "omitted",
+      "reason": "Provider rejected generation; not listed or retried."
+    },
+    {
+      "id": "jacky-cheung",
+      "name": "Jacky Cheung",
+      "category": "Music",
+      "kind": "real",
+      "aliases": [
+        "张学友"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/jacky-cheung.png"
+    },
+    {
+      "id": "jay-chou",
+      "name": "Jay Chou",
+      "category": "Music",
+      "kind": "real",
+      "aliases": [
+        "周杰伦"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/jay-chou.png"
+    },
+    {
+      "id": "jackie-chan",
+      "name": "Jackie Chan",
+      "category": "Screen icons",
+      "kind": "real",
+      "aliases": [
+        "成龙"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/jackie-chan.png"
+    },
+    {
+      "id": "jet-li",
+      "name": "Jet Li",
+      "category": "Screen icons",
+      "kind": "real",
+      "aliases": [
+        "李连杰"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/jet-li.png"
+    },
+    {
+      "id": "michelle-yeoh",
+      "name": "Michelle Yeoh",
+      "category": "Screen icons",
+      "kind": "real",
+      "aliases": [
+        "杨紫琼"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/michelle-yeoh.png"
+    },
+    {
+      "id": "gong-li",
+      "name": "Gong Li",
+      "category": "Screen icons",
+      "kind": "real",
+      "aliases": [
+        "巩俐"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/gong-li.png"
+    },
+    {
+      "id": "tony-leung",
+      "name": "Tony Leung",
+      "category": "Screen icons",
+      "kind": "real",
+      "aliases": [
+        "梁朝伟"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/tony-leung.png"
+    },
+    {
+      "id": "chow-yun-fat",
+      "name": "Chow Yun-fat",
+      "category": "Screen icons",
+      "kind": "real",
+      "aliases": [
+        "周润发"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/chow-yun-fat.png"
+    },
+    {
+      "id": "andy-lau",
+      "name": "Andy Lau",
+      "category": "Screen icons",
+      "kind": "real",
+      "aliases": [
+        "刘德华"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/andy-lau.png"
+    },
+    {
+      "id": "stephen-chow",
+      "name": "Stephen Chow",
+      "category": "Screen icons",
+      "kind": "real",
+      "aliases": [
+        "周星驰"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/stephen-chow.png"
+    },
+    {
+      "id": "morgan-freeman",
+      "name": "Morgan Freeman",
+      "category": "Screen icons",
+      "kind": "real",
+      "aliases": [
+        "摩根弗里曼"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/morgan-freeman.png"
+    },
+    {
+      "id": "denzel-washington",
+      "name": "Denzel Washington",
+      "category": "Screen icons",
+      "kind": "real",
+      "aliases": [
+        "丹泽尔华盛顿"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/denzel-washington.png"
+    },
+    {
+      "id": "meryl-streep",
+      "name": "Meryl Streep",
+      "category": "Screen icons",
+      "kind": "real",
+      "aliases": [
+        "梅丽尔斯特里普"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/meryl-streep.png"
+    },
+    {
+      "id": "tom-hanks",
+      "name": "Tom Hanks",
+      "category": "Screen icons",
+      "kind": "real",
+      "aliases": [
+        "汤姆汉克斯"
+      ],
+      "outcome": "omitted",
+      "reason": "Provider rejected generation; not listed or retried."
+    },
+    {
+      "id": "leonardo-dicaprio",
+      "name": "Leonardo DiCaprio",
+      "category": "Screen icons",
+      "kind": "real",
+      "aliases": [
+        "莱昂纳多"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/leonardo-dicaprio.png"
+    },
+    {
+      "id": "robert-downey-jr",
+      "name": "Robert Downey Jr.",
+      "category": "Screen icons",
+      "kind": "real",
+      "aliases": [
+        "小罗伯特唐尼"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/robert-downey-jr.png"
+    },
+    {
+      "id": "emma-watson",
+      "name": "Emma Watson",
+      "category": "Screen icons",
+      "kind": "real",
+      "aliases": [
+        "艾玛沃森"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/emma-watson.png"
+    },
+    {
+      "id": "cate-blanchett",
+      "name": "Cate Blanchett",
+      "category": "Screen icons",
+      "kind": "real",
+      "aliases": [
+        "凯特布兰切特"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/cate-blanchett.png"
+    },
+    {
+      "id": "harrison-ford",
+      "name": "Harrison Ford",
+      "category": "Screen icons",
+      "kind": "real",
+      "aliases": [
+        "哈里森福特"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/harrison-ford.png"
+    },
+    {
+      "id": "patrick-stewart",
+      "name": "Patrick Stewart",
+      "category": "Screen icons",
+      "kind": "real",
+      "aliases": [
+        "帕特里克斯图尔特"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/patrick-stewart.png"
+    },
+    {
+      "id": "shah-rukh-khan",
+      "name": "Shah Rukh Khan",
+      "category": "Screen icons",
+      "kind": "real",
+      "aliases": [
+        "沙鲁克汗"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/shah-rukh-khan.png"
+    },
+    {
+      "id": "amitabh-bachchan",
+      "name": "Amitabh Bachchan",
+      "category": "Screen icons",
+      "kind": "real",
+      "aliases": [],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/amitabh-bachchan.png"
+    },
+    {
+      "id": "michael-jordan",
+      "name": "Michael Jordan",
+      "category": "Sports",
+      "kind": "real",
+      "aliases": [
+        "乔丹"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/michael-jordan.png"
+    },
+    {
+      "id": "lebron-james",
+      "name": "LeBron James",
+      "category": "Sports",
+      "kind": "real",
+      "aliases": [
+        "詹姆斯"
+      ],
+      "outcome": "omitted",
+      "reason": "Provider rejected generation; not listed or retried."
+    },
+    {
+      "id": "stephen-curry",
+      "name": "Stephen Curry",
+      "category": "Sports",
+      "kind": "real",
+      "aliases": [
+        "库里"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/stephen-curry.png"
+    },
+    {
+      "id": "kobe-bryant",
+      "name": "Kobe Bryant",
+      "category": "Sports",
+      "kind": "real",
+      "aliases": [
+        "科比"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/kobe-bryant.png"
+    },
+    {
+      "id": "lionel-messi",
+      "name": "Lionel Messi",
+      "category": "Sports",
+      "kind": "real",
+      "aliases": [
+        "梅西"
+      ],
+      "outcome": "omitted",
+      "reason": "Provider rejected generation; not listed or retried."
+    },
+    {
+      "id": "cristiano-ronaldo",
+      "name": "Cristiano Ronaldo",
+      "category": "Sports",
+      "kind": "real",
+      "aliases": [
+        "C罗"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/cristiano-ronaldo.png"
+    },
+    {
+      "id": "serena-williams",
+      "name": "Serena Williams",
+      "category": "Sports",
+      "kind": "real",
+      "aliases": [
+        "小威廉姆斯"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/serena-williams.png"
+    },
+    {
+      "id": "roger-federer",
+      "name": "Roger Federer",
+      "category": "Sports",
+      "kind": "real",
+      "aliases": [
+        "费德勒"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/roger-federer.png"
+    },
+    {
+      "id": "rafael-nadal",
+      "name": "Rafael Nadal",
+      "category": "Sports",
+      "kind": "real",
+      "aliases": [
+        "纳达尔"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/rafael-nadal.png"
+    },
+    {
+      "id": "naomi-osaka",
+      "name": "Naomi Osaka",
+      "category": "Sports",
+      "kind": "real",
+      "aliases": [
+        "大阪直美"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/naomi-osaka.png"
+    },
+    {
+      "id": "usain-bolt",
+      "name": "Usain Bolt",
+      "category": "Sports",
+      "kind": "real",
+      "aliases": [
+        "博尔特"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/usain-bolt.png"
+    },
+    {
+      "id": "simone-biles",
+      "name": "Simone Biles",
+      "category": "Sports",
+      "kind": "real",
+      "aliases": [
+        "拜尔斯"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/simone-biles.png"
+    },
+    {
+      "id": "yao-ming",
+      "name": "Yao Ming",
+      "category": "Sports",
+      "kind": "real",
+      "aliases": [
+        "姚明"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/yao-ming.png"
+    },
+    {
+      "id": "li-na",
+      "name": "Li Na",
+      "category": "Sports",
+      "kind": "real",
+      "aliases": [
+        "李娜"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/li-na.png"
+    },
+    {
+      "id": "manny-pacquiao",
+      "name": "Manny Pacquiao",
+      "category": "Sports",
+      "kind": "real",
+      "aliases": [
+        "帕奎奥"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/manny-pacquiao.png"
+    },
+    {
+      "id": "abraham-lincoln",
+      "name": "Abraham Lincoln",
+      "category": "History & explorers",
+      "kind": "real",
+      "aliases": [
+        "林肯"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/abraham-lincoln.png"
+    },
+    {
+      "id": "nelson-mandela",
+      "name": "Nelson Mandela",
+      "category": "History & explorers",
+      "kind": "real",
+      "aliases": [
+        "曼德拉"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/nelson-mandela.png"
+    },
+    {
+      "id": "mahatma-gandhi",
+      "name": "Mahatma Gandhi",
+      "category": "History & explorers",
+      "kind": "real",
+      "aliases": [
+        "甘地"
+      ],
+      "outcome": "omitted",
+      "reason": "Provider rejected generation; not listed or retried."
+    },
+    {
+      "id": "martin-luther-king-jr",
+      "name": "Martin Luther King Jr.",
+      "category": "History & explorers",
+      "kind": "real",
+      "aliases": [
+        "马丁路德金"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/martin-luther-king-jr.png"
+    },
+    {
+      "id": "winston-churchill",
+      "name": "Winston Churchill",
+      "category": "History & explorers",
+      "kind": "real",
+      "aliases": [
+        "丘吉尔"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/winston-churchill.png"
+    },
+    {
+      "id": "queen-elizabeth-ii",
+      "name": "Queen Elizabeth II",
+      "category": "History & explorers",
+      "kind": "real",
+      "aliases": [
+        "伊丽莎白二世"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/queen-elizabeth-ii.png"
+    },
+    {
+      "id": "napoleon-bonaparte",
+      "name": "Napoleon Bonaparte",
+      "category": "History & explorers",
+      "kind": "real",
+      "aliases": [
+        "拿破仑"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/napoleon-bonaparte.png"
+    },
+    {
+      "id": "julius-caesar",
+      "name": "Julius Caesar",
+      "category": "History & explorers",
+      "kind": "real",
+      "aliases": [
+        "凯撒"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/julius-caesar.png"
+    },
+    {
+      "id": "alexander-the-great",
+      "name": "Alexander the Great",
+      "category": "History & explorers",
+      "kind": "real",
+      "aliases": [
+        "亚历山大"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/alexander-the-great.png"
+    },
+    {
+      "id": "genghis-khan",
+      "name": "Genghis Khan",
+      "category": "History & explorers",
+      "kind": "real",
+      "aliases": [
+        "成吉思汗"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/genghis-khan.png"
+    },
+    {
+      "id": "qin-shi-huang",
+      "name": "Qin Shi Huang",
+      "category": "History & explorers",
+      "kind": "real",
+      "aliases": [
+        "秦始皇"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/qin-shi-huang.png"
+    },
+    {
+      "id": "zheng-he",
+      "name": "Zheng He",
+      "category": "History & explorers",
+      "kind": "real",
+      "aliases": [
+        "郑和"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/zheng-he.png"
+    },
+    {
+      "id": "marco-polo",
+      "name": "Marco Polo",
+      "category": "History & explorers",
+      "kind": "real",
+      "aliases": [
+        "马可波罗"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/marco-polo.png"
+    },
+    {
+      "id": "amelia-earhart",
+      "name": "Amelia Earhart",
+      "category": "History & explorers",
+      "kind": "real",
+      "aliases": [
+        "埃尔哈特"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/amelia-earhart.png"
+    },
+    {
+      "id": "neil-armstrong",
+      "name": "Neil Armstrong",
+      "category": "History & explorers",
+      "kind": "real",
+      "aliases": [
+        "阿姆斯特朗"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/neil-armstrong.png"
+    },
+    {
+      "id": "patrick-star",
+      "name": "Patrick Star",
+      "category": "Cartoons",
+      "kind": "cartoon",
+      "aliases": [
+        "派大星"
+      ],
+      "outcome": "omitted",
+      "reason": "Provider rejected generation; not listed or retried."
+    },
+    {
+      "id": "squidward-tentacles",
+      "name": "Squidward Tentacles",
+      "category": "Cartoons",
+      "kind": "cartoon",
+      "aliases": [
+        "章鱼哥"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/squidward-tentacles.png"
+    },
+    {
+      "id": "sandy-cheeks",
+      "name": "Sandy Cheeks",
+      "category": "Cartoons",
+      "kind": "cartoon",
+      "aliases": [
+        "珊迪"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/sandy-cheeks.png"
+    },
+    {
+      "id": "mr-krabs",
+      "name": "Mr. Krabs",
+      "category": "Cartoons",
+      "kind": "cartoon",
+      "aliases": [
+        "蟹老板"
+      ],
+      "outcome": "omitted",
+      "reason": "Provider rejected generation; not listed or retried."
+    },
+    {
+      "id": "garfield",
+      "name": "Garfield",
+      "category": "Cartoons",
+      "kind": "cartoon",
+      "aliases": [
+        "加菲猫"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/garfield.png"
+    },
+    {
+      "id": "odie",
+      "name": "Odie",
+      "category": "Cartoons",
+      "kind": "cartoon",
+      "aliases": [
+        "欧迪"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/odie.png"
+    },
+    {
+      "id": "bugs-bunny",
+      "name": "Bugs Bunny",
+      "category": "Cartoons",
+      "kind": "cartoon",
+      "aliases": [
+        "兔八哥"
+      ],
+      "outcome": "omitted",
+      "reason": "Provider rejected generation; not listed or retried."
+    },
+    {
+      "id": "daffy-duck",
+      "name": "Daffy Duck",
+      "category": "Cartoons",
+      "kind": "cartoon",
+      "aliases": [
+        "达菲鸭"
+      ],
+      "outcome": "omitted",
+      "reason": "Provider rejected generation; not listed or retried."
+    },
+    {
+      "id": "tweety",
+      "name": "Tweety",
+      "category": "Cartoons",
+      "kind": "cartoon",
+      "aliases": [
+        "崔弟"
+      ],
+      "outcome": "omitted",
+      "reason": "Provider rejected generation; not listed or retried."
+    },
+    {
+      "id": "sylvester",
+      "name": "Sylvester",
+      "category": "Cartoons",
+      "kind": "cartoon",
+      "aliases": [
+        "傻大猫"
+      ],
+      "outcome": "omitted",
+      "reason": "Provider rejected generation; not listed or retried."
+    },
+    {
+      "id": "wile-e-coyote",
+      "name": "Wile E. Coyote",
+      "category": "Cartoons",
+      "kind": "cartoon",
+      "aliases": [],
+      "outcome": "omitted",
+      "reason": "Provider rejected generation; not listed or retried."
+    },
+    {
+      "id": "road-runner",
+      "name": "Road Runner",
+      "category": "Cartoons",
+      "kind": "cartoon",
+      "aliases": [],
+      "outcome": "omitted",
+      "reason": "Provider rejected generation; not listed or retried."
+    },
+    {
+      "id": "popeye",
+      "name": "Popeye",
+      "category": "Cartoons",
+      "kind": "cartoon",
+      "aliases": [
+        "大力水手"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/popeye.png"
+    },
+    {
+      "id": "olive-oyl",
+      "name": "Olive Oyl",
+      "category": "Cartoons",
+      "kind": "cartoon",
+      "aliases": [
+        "奥利芙"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/olive-oyl.png"
+    },
+    {
+      "id": "betty-boop",
+      "name": "Betty Boop",
+      "category": "Cartoons",
+      "kind": "cartoon",
+      "aliases": [],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/betty-boop.png"
+    },
+    {
+      "id": "felix-the-cat",
+      "name": "Felix the Cat",
+      "category": "Cartoons",
+      "kind": "cartoon",
+      "aliases": [],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/felix-the-cat.png"
+    },
+    {
+      "id": "pink-panther",
+      "name": "Pink Panther",
+      "category": "Cartoons",
+      "kind": "cartoon",
+      "aliases": [
+        "粉红豹"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/pink-panther.png"
+    },
+    {
+      "id": "scooby-doo",
+      "name": "Scooby-Doo",
+      "category": "Cartoons",
+      "kind": "cartoon",
+      "aliases": [
+        "史酷比"
+      ],
+      "outcome": "omitted",
+      "reason": "Provider rejected generation; not listed or retried."
+    },
+    {
+      "id": "shaggy-rogers",
+      "name": "Shaggy Rogers",
+      "category": "Cartoons",
+      "kind": "cartoon",
+      "aliases": [],
+      "outcome": "omitted",
+      "reason": "Provider rejected generation; not listed or retried."
+    },
+    {
+      "id": "fred-flintstone",
+      "name": "Fred Flintstone",
+      "category": "Cartoons",
+      "kind": "cartoon",
+      "aliases": [],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/fred-flintstone.png"
+    },
+    {
+      "id": "shrek",
+      "name": "Shrek",
+      "category": "Animation & games",
+      "kind": "cartoon",
+      "aliases": [
+        "史莱克"
+      ],
+      "outcome": "omitted",
+      "reason": "Provider rejected generation; not listed or retried."
+    },
+    {
+      "id": "donkey-from-shrek",
+      "name": "Donkey from Shrek",
+      "category": "Animation & games",
+      "kind": "cartoon",
+      "aliases": [
+        "驴子"
+      ],
+      "outcome": "omitted",
+      "reason": "Provider rejected generation; not listed or retried."
+    },
+    {
+      "id": "puss-in-boots",
+      "name": "Puss in Boots",
+      "category": "Animation & games",
+      "kind": "cartoon",
+      "aliases": [
+        "靴猫"
+      ],
+      "outcome": "omitted",
+      "reason": "Provider rejected generation; not listed or retried."
+    },
+    {
+      "id": "po-from-kung-fu-panda",
+      "name": "Po from Kung Fu Panda",
+      "category": "Animation & games",
+      "kind": "cartoon",
+      "aliases": [
+        "阿宝"
+      ],
+      "outcome": "omitted",
+      "reason": "Provider rejected generation; not listed or retried."
+    },
+    {
+      "id": "woody-from-toy-story",
+      "name": "Woody from Toy Story",
+      "category": "Animation & games",
+      "kind": "cartoon",
+      "aliases": [
+        "胡迪"
+      ],
+      "outcome": "omitted",
+      "reason": "Provider rejected generation; not listed or retried."
+    },
+    {
+      "id": "buzz-lightyear",
+      "name": "Buzz Lightyear",
+      "category": "Animation & games",
+      "kind": "cartoon",
+      "aliases": [
+        "巴斯光年"
+      ],
+      "outcome": "omitted",
+      "reason": "Provider rejected generation; not listed or retried."
+    },
+    {
+      "id": "olaf-from-frozen",
+      "name": "Olaf from Frozen",
+      "category": "Animation & games",
+      "kind": "cartoon",
+      "aliases": [
+        "雪宝"
+      ],
+      "outcome": "omitted",
+      "reason": "Provider rejected generation; not listed or retried."
+    },
+    {
+      "id": "elsa-from-frozen",
+      "name": "Elsa from Frozen",
+      "category": "Animation & games",
+      "kind": "cartoon",
+      "aliases": [
+        "艾莎"
+      ],
+      "outcome": "omitted",
+      "reason": "Provider rejected generation; not listed or retried."
+    },
+    {
+      "id": "anna-from-frozen",
+      "name": "Anna from Frozen",
+      "category": "Animation & games",
+      "kind": "cartoon",
+      "aliases": [
+        "安娜"
+      ],
+      "outcome": "omitted",
+      "reason": "Provider rejected generation; not listed or retried."
+    },
+    {
+      "id": "stitch",
+      "name": "Stitch",
+      "category": "Animation & games",
+      "kind": "cartoon",
+      "aliases": [
+        "史迪奇"
+      ],
+      "outcome": "omitted",
+      "reason": "Provider rejected generation; not listed or retried."
+    },
+    {
+      "id": "baymax",
+      "name": "Baymax",
+      "category": "Animation & games",
+      "kind": "cartoon",
+      "aliases": [
+        "大白"
+      ],
+      "outcome": "omitted",
+      "reason": "Provider rejected generation; not listed or retried."
+    },
+    {
+      "id": "wall-e",
+      "name": "Wall-E",
+      "category": "Animation & games",
+      "kind": "cartoon",
+      "aliases": [
+        "瓦力"
+      ],
+      "outcome": "omitted",
+      "reason": "Provider rejected generation; not listed or retried."
+    },
+    {
+      "id": "eve-from-wall-e",
+      "name": "EVE from Wall-E",
+      "category": "Animation & games",
+      "kind": "cartoon",
+      "aliases": [
+        "伊娃"
+      ],
+      "outcome": "omitted",
+      "reason": "Provider rejected generation; not listed or retried."
+    },
+    {
+      "id": "remy-from-ratatouille",
+      "name": "Remy from Ratatouille",
+      "category": "Animation & games",
+      "kind": "cartoon",
+      "aliases": [
+        "小米"
+      ],
+      "outcome": "omitted",
+      "reason": "Provider rejected generation; not listed or retried."
+    },
+    {
+      "id": "paddington-bear",
+      "name": "Paddington Bear",
+      "category": "Animation & games",
+      "kind": "cartoon",
+      "aliases": [
+        "帕丁顿熊"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/paddington-bear.png"
+    },
+    {
+      "id": "winnie-the-pooh",
+      "name": "Winnie the Pooh",
+      "category": "Animation & games",
+      "kind": "cartoon",
+      "aliases": [
+        "小熊维尼"
+      ],
+      "outcome": "omitted",
+      "reason": "Provider rejected generation; not listed or retried."
+    },
+    {
+      "id": "tigger",
+      "name": "Tigger",
+      "category": "Animation & games",
+      "kind": "cartoon",
+      "aliases": [
+        "跳跳虎"
+      ],
+      "outcome": "omitted",
+      "reason": "Provider rejected generation; not listed or retried."
+    },
+    {
+      "id": "eeyore",
+      "name": "Eeyore",
+      "category": "Animation & games",
+      "kind": "cartoon",
+      "aliases": [
+        "屹耳"
+      ],
+      "outcome": "omitted",
+      "reason": "Provider rejected generation; not listed or retried."
+    },
+    {
+      "id": "donald-duck",
+      "name": "Donald Duck",
+      "category": "Animation & games",
+      "kind": "cartoon",
+      "aliases": [
+        "唐老鸭"
+      ],
+      "outcome": "omitted",
+      "reason": "Provider rejected generation; not listed or retried."
+    },
+    {
+      "id": "goofy",
+      "name": "Goofy",
+      "category": "Animation & games",
+      "kind": "cartoon",
+      "aliases": [
+        "高飞"
+      ],
+      "outcome": "omitted",
+      "reason": "Provider rejected generation; not listed or retried."
+    },
+    {
+      "id": "naruto-uzumaki",
+      "name": "Naruto Uzumaki",
+      "category": "Anime",
+      "kind": "cartoon",
+      "aliases": [
+        "漩涡鸣人"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/naruto-uzumaki.png"
+    },
+    {
+      "id": "sasuke-uchiha",
+      "name": "Sasuke Uchiha",
+      "category": "Anime",
+      "kind": "cartoon",
+      "aliases": [
+        "宇智波佐助"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/sasuke-uchiha.png"
+    },
+    {
+      "id": "kakashi-hatake",
+      "name": "Kakashi Hatake",
+      "category": "Anime",
+      "kind": "cartoon",
+      "aliases": [
+        "旗木卡卡西"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/kakashi-hatake.png"
+    },
+    {
+      "id": "monkey-d-luffy",
+      "name": "Monkey D. Luffy",
+      "category": "Anime",
+      "kind": "cartoon",
+      "aliases": [
+        "路飞"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/monkey-d-luffy.png"
+    },
+    {
+      "id": "roronoa-zoro",
+      "name": "Roronoa Zoro",
+      "category": "Anime",
+      "kind": "cartoon",
+      "aliases": [
+        "索隆"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/roronoa-zoro.png"
+    },
+    {
+      "id": "nami-from-one-piece",
+      "name": "Nami from One Piece",
+      "category": "Anime",
+      "kind": "cartoon",
+      "aliases": [
+        "娜美"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/nami-from-one-piece.png"
+    },
+    {
+      "id": "son-goku",
+      "name": "Son Goku",
+      "category": "Anime",
+      "kind": "cartoon",
+      "aliases": [
+        "孙悟空"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/son-goku.png"
+    },
+    {
+      "id": "vegeta",
+      "name": "Vegeta",
+      "category": "Anime",
+      "kind": "cartoon",
+      "aliases": [
+        "贝吉塔"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/vegeta.png"
+    },
+    {
+      "id": "sailor-moon",
+      "name": "Sailor Moon",
+      "category": "Anime",
+      "kind": "cartoon",
+      "aliases": [
+        "美少女战士"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/sailor-moon.png"
+    },
+    {
+      "id": "sailor-mercury",
+      "name": "Sailor Mercury",
+      "category": "Anime",
+      "kind": "cartoon",
+      "aliases": [
+        "水野亚美"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/sailor-mercury.png"
+    },
+    {
+      "id": "astro-boy",
+      "name": "Astro Boy",
+      "category": "Anime",
+      "kind": "cartoon",
+      "aliases": [
+        "阿童木"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/astro-boy.png"
+    },
+    {
+      "id": "detective-conan",
+      "name": "Detective Conan",
+      "category": "Anime",
+      "kind": "cartoon",
+      "aliases": [
+        "柯南"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/detective-conan.png"
+    },
+    {
+      "id": "lupin-iii",
+      "name": "Lupin III",
+      "category": "Anime",
+      "kind": "cartoon",
+      "aliases": [
+        "鲁邦三世"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/lupin-iii.png"
+    },
+    {
+      "id": "anya-forger",
+      "name": "Anya Forger",
+      "category": "Anime",
+      "kind": "cartoon",
+      "aliases": [
+        "阿尼亚"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/anya-forger.png"
+    },
+    {
+      "id": "loid-forger",
+      "name": "Loid Forger",
+      "category": "Anime",
+      "kind": "cartoon",
+      "aliases": [
+        "洛伊德"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/loid-forger.png"
+    },
+    {
+      "id": "yor-forger",
+      "name": "Yor Forger",
+      "category": "Anime",
+      "kind": "cartoon",
+      "aliases": [
+        "约尔"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/yor-forger.png"
+    },
+    {
+      "id": "chihiro-ogino",
+      "name": "Chihiro Ogino",
+      "category": "Anime",
+      "kind": "cartoon",
+      "aliases": [
+        "千寻"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/chihiro-ogino.png"
+    },
+    {
+      "id": "haku-from-spirited-away",
+      "name": "Haku from Spirited Away",
+      "category": "Anime",
+      "kind": "cartoon",
+      "aliases": [
+        "白龙"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/haku-from-spirited-away.png"
+    },
+    {
+      "id": "kiki-from-kikis-delivery-service",
+      "name": "Kiki from Kikis Delivery Service",
+      "category": "Anime",
+      "kind": "cartoon",
+      "aliases": [
+        "琪琪"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/kiki-from-kikis-delivery-service.png"
+    },
+    {
+      "id": "howl-from-howls-moving-castle",
+      "name": "Howl from Howls Moving Castle",
+      "category": "Anime",
+      "kind": "cartoon",
+      "aliases": [
+        "哈尔"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/howl-from-howls-moving-castle.png"
+    },
+    {
+      "id": "alice-in-wonderland",
+      "name": "Alice in Wonderland",
+      "category": "Storybook & fantasy",
+      "kind": "illustration",
+      "aliases": [
+        "爱丽丝"
+      ],
+      "outcome": "omitted",
+      "reason": "Provider rejected generation; not listed or retried."
+    },
+    {
+      "id": "white-rabbit",
+      "name": "White Rabbit",
+      "category": "Storybook & fantasy",
+      "kind": "illustration",
+      "aliases": [
+        "白兔"
+      ],
+      "outcome": "omitted",
+      "reason": "Provider rejected generation; not listed or retried."
+    },
+    {
+      "id": "cheshire-cat",
+      "name": "Cheshire Cat",
+      "category": "Storybook & fantasy",
+      "kind": "illustration",
+      "aliases": [
+        "柴郡猫"
+      ],
+      "outcome": "omitted",
+      "reason": "Provider rejected generation; not listed or retried."
+    },
+    {
+      "id": "peter-pan",
+      "name": "Peter Pan",
+      "category": "Storybook & fantasy",
+      "kind": "illustration",
+      "aliases": [
+        "彼得潘"
+      ],
+      "outcome": "omitted",
+      "reason": "Provider rejected generation; not listed or retried."
+    },
+    {
+      "id": "tinker-bell",
+      "name": "Tinker Bell",
+      "category": "Storybook & fantasy",
+      "kind": "illustration",
+      "aliases": [
+        "小叮当"
+      ],
+      "outcome": "omitted",
+      "reason": "Provider rejected generation; not listed or retried."
+    },
+    {
+      "id": "captain-hook",
+      "name": "Captain Hook",
+      "category": "Storybook & fantasy",
+      "kind": "illustration",
+      "aliases": [
+        "胡克船长"
+      ],
+      "outcome": "omitted",
+      "reason": "Provider rejected generation; not listed or retried."
+    },
+    {
+      "id": "wendy-darling",
+      "name": "Wendy Darling",
+      "category": "Storybook & fantasy",
+      "kind": "illustration",
+      "aliases": [
+        "温蒂"
+      ],
+      "outcome": "omitted",
+      "reason": "Provider rejected generation; not listed or retried."
+    },
+    {
+      "id": "pinocchio",
+      "name": "Pinocchio",
+      "category": "Storybook & fantasy",
+      "kind": "illustration",
+      "aliases": [
+        "匹诺曹"
+      ],
+      "outcome": "omitted",
+      "reason": "Provider rejected generation; not listed or retried."
+    },
+    {
+      "id": "geppetto",
+      "name": "Geppetto",
+      "category": "Storybook & fantasy",
+      "kind": "illustration",
+      "aliases": [
+        "杰佩托"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/geppetto.png"
+    },
+    {
+      "id": "gandalf",
+      "name": "Gandalf",
+      "category": "Storybook & fantasy",
+      "kind": "illustration",
+      "aliases": [
+        "甘道夫"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/gandalf.png"
+    },
+    {
+      "id": "bilbo-baggins",
+      "name": "Bilbo Baggins",
+      "category": "Storybook & fantasy",
+      "kind": "illustration",
+      "aliases": [
+        "比尔博"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/bilbo-baggins.png"
+    },
+    {
+      "id": "frodo-baggins",
+      "name": "Frodo Baggins",
+      "category": "Storybook & fantasy",
+      "kind": "illustration",
+      "aliases": [
+        "弗罗多"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/frodo-baggins.png"
+    },
+    {
+      "id": "aragorn",
+      "name": "Aragorn",
+      "category": "Storybook & fantasy",
+      "kind": "illustration",
+      "aliases": [
+        "阿拉贡"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/aragorn.png"
+    },
+    {
+      "id": "legolas",
+      "name": "Legolas",
+      "category": "Storybook & fantasy",
+      "kind": "illustration",
+      "aliases": [
+        "莱戈拉斯"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/legolas.png"
+    },
+    {
+      "id": "dumbledore",
+      "name": "Dumbledore",
+      "category": "Storybook & fantasy",
+      "kind": "illustration",
+      "aliases": [
+        "邓布利多"
+      ],
+      "outcome": "omitted",
+      "reason": "Provider rejected generation; not listed or retried."
+    },
+    {
+      "id": "hedy-lamarr",
+      "name": "Hedy Lamarr",
+      "category": "Science",
+      "kind": "real",
+      "aliases": [
+        "海蒂拉玛"
+      ],
+      "outcome": "omitted",
+      "reason": "Provider rejected generation; not listed or retried."
+    },
+    {
+      "id": "grace-hopper",
+      "name": "Grace Hopper",
+      "category": "Science",
+      "kind": "real",
+      "aliases": [
+        "格蕾丝霍珀"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/grace-hopper.png"
+    },
+    {
+      "id": "henri-poincare",
+      "name": "Henri Poincare",
+      "category": "Science",
+      "kind": "real",
+      "aliases": [
+        "庞加莱"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/henri-poincare.png"
+    },
+    {
+      "id": "emmy-noether",
+      "name": "Emmy Noether",
+      "category": "Science",
+      "kind": "real",
+      "aliases": [
+        "诺特"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/emmy-noether.png"
+    },
+    {
+      "id": "johannes-kepler",
+      "name": "Johannes Kepler",
+      "category": "Science",
+      "kind": "real",
+      "aliases": [
+        "开普勒"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/johannes-kepler.png"
+    },
+    {
+      "id": "archimedes",
+      "name": "Archimedes",
+      "category": "Science",
+      "kind": "real",
+      "aliases": [
+        "阿基米德"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/archimedes.png"
+    },
+    {
+      "id": "hippocrates",
+      "name": "Hippocrates",
+      "category": "Science",
+      "kind": "real",
+      "aliases": [
+        "希波克拉底"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/hippocrates.png"
+    },
+    {
+      "id": "wang-yangming",
+      "name": "Wang Yangming",
+      "category": "Chinese classics",
+      "kind": "real",
+      "aliases": [
+        "王阳明"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/wang-yangming.png"
+    },
+    {
+      "id": "su-shi",
+      "name": "Su Shi",
+      "category": "Chinese classics",
+      "kind": "real",
+      "aliases": [
+        "苏轼"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/su-shi.png"
+    },
+    {
+      "id": "du-fu",
+      "name": "Du Fu",
+      "category": "Chinese classics",
+      "kind": "real",
+      "aliases": [
+        "杜甫"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/du-fu.png"
+    },
+    {
+      "id": "tao-yuanming",
+      "name": "Tao Yuanming",
+      "category": "Chinese classics",
+      "kind": "real",
+      "aliases": [
+        "陶渊明"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/tao-yuanming.png"
+    },
+    {
+      "id": "li-qingzhao",
+      "name": "Li Qingzhao",
+      "category": "Chinese classics",
+      "kind": "real",
+      "aliases": [
+        "李清照"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/li-qingzhao.png"
+    },
+    {
+      "id": "su-song",
+      "name": "Su Song",
+      "category": "Science",
+      "kind": "real",
+      "aliases": [
+        "苏颂"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/su-song.png"
+    },
+    {
+      "id": "zhang-heng",
+      "name": "Zhang Heng",
+      "category": "Science",
+      "kind": "real",
+      "aliases": [
+        "张衡"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/zhang-heng.png"
+    },
+    {
+      "id": "shen-kuo",
+      "name": "Shen Kuo",
+      "category": "Science",
+      "kind": "real",
+      "aliases": [
+        "沈括"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/shen-kuo.png"
+    },
+    {
+      "id": "wu-chengen",
+      "name": "Wu Chengen",
+      "category": "Chinese classics",
+      "kind": "real",
+      "aliases": [
+        "吴承恩"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/wu-chengen.png"
+    },
+    {
+      "id": "j-r-r-tolkien",
+      "name": "J. R. R. Tolkien",
+      "category": "Art & literature",
+      "kind": "real",
+      "aliases": [
+        "托尔金"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/j-r-r-tolkien.png"
+    },
+    {
+      "id": "c-s-lewis",
+      "name": "C. S. Lewis",
+      "category": "Art & literature",
+      "kind": "real",
+      "aliases": [
+        "刘易斯"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/c-s-lewis.png"
+    },
+    {
+      "id": "arthur-conan-doyle",
+      "name": "Arthur Conan Doyle",
+      "category": "Art & literature",
+      "kind": "real",
+      "aliases": [
+        "柯南道尔"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/arthur-conan-doyle.png"
+    },
+    {
+      "id": "george-orwell",
+      "name": "George Orwell",
+      "category": "Art & literature",
+      "kind": "real",
+      "aliases": [
+        "奥威尔"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/george-orwell.png"
+    },
+    {
+      "id": "h-g-wells",
+      "name": "H. G. Wells",
+      "category": "Art & literature",
+      "kind": "real",
+      "aliases": [
+        "威尔斯"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/h-g-wells.png"
+    },
+    {
+      "id": "charles-dickens",
+      "name": "Charles Dickens",
+      "category": "Art & literature",
+      "kind": "real",
+      "aliases": [
+        "狄更斯"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/charles-dickens.png"
+    },
+    {
+      "id": "fyodor-dostoevsky",
+      "name": "Fyodor Dostoevsky",
+      "category": "Art & literature",
+      "kind": "real",
+      "aliases": [
+        "陀思妥耶夫斯基"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/fyodor-dostoevsky.png"
+    },
+    {
+      "id": "anton-chekhov",
+      "name": "Anton Chekhov",
+      "category": "Art & literature",
+      "kind": "real",
+      "aliases": [
+        "契诃夫"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/anton-chekhov.png"
+    },
+    {
+      "id": "alexander-pushkin",
+      "name": "Alexander Pushkin",
+      "category": "Art & literature",
+      "kind": "real",
+      "aliases": [
+        "普希金"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/alexander-pushkin.png"
+    },
+    {
+      "id": "edgar-allan-poe",
+      "name": "Edgar Allan Poe",
+      "category": "Art & literature",
+      "kind": "real",
+      "aliases": [
+        "爱伦坡"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/edgar-allan-poe.png"
+    },
+    {
+      "id": "mary-shelley",
+      "name": "Mary Shelley",
+      "category": "Art & literature",
+      "kind": "real",
+      "aliases": [
+        "玛丽雪莱"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/mary-shelley.png"
+    },
+    {
+      "id": "emily-dickinson",
+      "name": "Emily Dickinson",
+      "category": "Art & literature",
+      "kind": "real",
+      "aliases": [
+        "狄金森"
+      ],
+      "outcome": "saved",
+      "savedPath": "photo-scout-site/avatars/characters/emily-dickinson.png"
+    }
+  ],
+  "promptTemplate": "Create one single full-body avatar of {name}, alone, centered with generous transparent margins. Entire body and feet visible. {kindDescription} Friendly relaxed standing pose, soft studio light. Actual transparent background. No scenery, floor, extra people, words, labels, logos, watermark or border. Synthetic character interpretation for Photo Scout travel-photo compositing.",
+  "kindDescriptions": {
+    "real": "Photorealistic familiar public figure, modest signature attire, realistic anatomy and natural skin texture.",
+    "cartoon": "Faithful recognizable familiar character design, original colors, signature outfit, proportions and original animation medium.",
+    "illustration": "Polished recognizable familiar literary character interpretation."
+  }
+}

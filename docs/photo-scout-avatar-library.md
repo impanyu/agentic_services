@@ -4,7 +4,7 @@ The right map toolbar contains Avatar Library, with Characters (the default tab)
 
 Personal images are stored in the Photo Scout SQLite database, scoped to the existing account or anonymous cookie identity. Login adopts an active guest library. Account uploads remain private and permanent; guest uploads expire after seven days without a visit. Each library admits up to 50 visible images. Removed images are hidden from lists and inaccessible through the image endpoint.
 
-Images are normalized on the server to JPEG, at most 1600 pixels on the longest side, with metadata stripped. The browser uses the existing resize helper before upload. HEIC needs browser decoding; otherwise the library asks for JPG/PNG export. The visible presets are 71 distinct recognizable cartoon, literary, mythological and historical characters stored as PNG cutouts in `photo-scout-site/avatars/characters/`. 70 use built-in imagegen artwork; SpongeBob reuses the existing validated input asset. `presets.json` defines the visible list. Both the toolbar menu and the selfie picker open on Characters by default. Generated interpretations are not represented as official character assets.
+Images are normalized on the server to JPEG, at most 1600 pixels on the longest side, with metadata stripped. The browser uses the existing resize helper before upload. HEIC needs browser decoding; otherwise the library asks for JPG/PNG export. The visible presets are 233 distinct recognizable cartoon, literary, mythological and historical characters stored as PNG cutouts in `photo-scout-site/avatars/characters/`. 232 use built-in imagegen artwork; SpongeBob reuses the existing validated input asset. `presets.json` defines the visible list. Both the toolbar menu and the selfie picker open on Characters by default. Generated interpretations are not represented as official character assets.
 
 Endpoints behind the existing service gateway:
 
@@ -31,7 +31,7 @@ Two other attempted presets were omitted following provider output moderation: P
 
 ## Expanded character catalog
 
-The catalog contains 12 Cartoons, 15 Chinese classics, 19 Storybook characters, 10 Mythology characters, 6 Fairy tales 2 Historical characters, 5 Screen icons and 2 Public figures. Both library surfaces support category filtering and case-insensitive English names plus Chinese aliases. Filtering preserves input focus. Images load lazily; mobile cards use two columns. A private-upload API failure does not prevent the character catalog from loading.
+The catalog contains 233 distinct characters across 16 categories: 22 Cartoons, 21 Chinese classics, 19 Storybook, 10 Mythology, 6 Fairy tales, 2 Historical, 24 Screen icons, 2 Public figures, 29 Science, 32 Art & literature, 12 Music, 13 Sports, 14 History & explorers, 1 Animation & games, 20 Anime, 6 Storybook & fantasy. Both library surfaces support category filtering and case-insensitive English names plus Chinese aliases. Filtering preserves input focus. Images load lazily; mobile cards use two columns. A private-upload API failure does not prevent the character catalog from loading.
 
 Assets are PNG cutouts saved in `photo-scout-site/avatars/characters/`. Each listed asset passed PNG decoding, alpha-channel verification and SHA-256 uniqueness checks. The manifest lists only successfully produced assets; rejected attempts are omitted.
 
@@ -49,3 +49,11 @@ Seven AI-generated full-body photorealistic likenesses were added: Keanu Reeves,
 [Built-in imagegen prompt set](photo-scout-realistic-avatar-prompts.json). Saved assets remain in `photo-scout-site/avatars/characters/`, with the seven names as kebab-case PNG filenames. The Marilyn Monroe attempt was omitted after output moderation returned `moderation_blocked`, category `sexual`, request `c5a53a40-9113-469b-98e9-ebd22fccd3d1`; no specific cause beyond that provider category was returned, and no retry was made.
 
 Clicking the right-side person preview opens a compact photo-source menu with Upload photo, Take a photo and Choose from Avatar Library. It uses the same existing upload/camera/library handlers. The menu closes after selection, outside clicks, Escape or studio closure. Take a selfie still opens the studio first.
+
+## October 10 broad expansion and readable UI
+
+Added 162 successfully generated independent full-body cutouts, covering science, art and literature, music, screen icons, sports, history and explorers, cartoons, animation and games, anime, and storybook fantasy. The original 71 images remain unchanged. Each new image was generated with its own built-in imagegen request; attempted images rejected by the provider were omitted and not retried. The exact prompt template, category, Chinese search aliases, outcome and saved path for each attempt are recorded in [the expansion prompt set](photo-scout-avatar-expansion-prompts.json).
+
+Every catalog item uses a lightweight 240 × 300 maximum WebP thumbnail in `photo-scout-site/avatars/thumbnails/`, with lazy image loading. Selection fetches the original transparent PNG for the current selfie scene, never the thumbnail. Both the toolbar and studio picker retain the Characters default tab, English/Chinese search and category filtering.
+
+`photo-scout-site/typography.css` provides a shared readable font scale across map controls, menus, search settings, Shortlist, selfie forms, photo details and community controls. Form text is at least 16 px, ordinary body and labels about 14–16 px, and the main prompt is 18 px on mobile and 19 px on desktop. The shared stylesheet also applies to the privacy and terms pages. Mobile controls retain their compact layout, and imagery provider controls and map symbols are unchanged.
