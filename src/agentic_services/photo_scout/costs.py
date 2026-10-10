@@ -23,7 +23,7 @@ class TaskSpend:
 current = ContextVar('photo_scout_task_spend', default=None)
 # USD per million tokens (Standard), and per provider call, before free tiers.
 RATES = {'gpt-6-astra':(10,1,50), 'gpt-6.1-sol':(2,.1,10), 'gpt-6-luna':(.1,.01,.5)}
-CALL_RATES = {'places-text':.032, 'routes-essentials':.005,
+CALL_RATES = {'places-text':.032, 'places-details-pro':.017, 'places-photo':.007, 'routes-essentials':.005,
               'streetview-tile-z0':.002, 'static-streetview':.007}
 
 

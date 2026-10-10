@@ -69,3 +69,25 @@ def test_image_edit_counts_both_inputs_and_output(tmp_path):
         costs.record('image-generation','gpt-image-2.5-sunburst',{'input_tokens':2000,'input_tokens_details':{'image_tokens':1500,'text_tokens':500},'output_tokens':7024})
         assert costs.summary()['estimatedKnownUsd']==pytest.approx(.22522)
     asyncio.run(run())
+
+
+def test_places_photos_discovery_and_scoring_do_not_repeat_paid_calls(tmp_path,monkeypatch):
+    from agentic_services.photo_scout import place_photos
+    monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_API_KEY','test')
+    calls=[]
+    async def get_json(client,url,params=None,headers=None):
+        calls.append(url)
+        if url.endswith('/abc'):
+            return {'id':'abc','displayName':{'text':'Public place'},'photos':[
+                {'name':'places/abc/photos/p'+str(i),'widthPx':400+i,'heightPx':300,
+                 'authorAttributions':[{'displayName':'Photographer '+str(i)}]} for i in range(2)]}
+        return {'photoUri':'https://lh3.googleusercontent.com/image'}
+    monkeypatch.setattr(place_photos,'get_json',get_json)
+    @costs.tracked_task(tmp_path/'db','search')
+    async def run():
+        discovered=await place_photos.place_photos(None,'abc',limit=2)
+        await asyncio.gather(*(place_photos.place_photos(None,'abc',limit=1,
+            selector=p['photoReference'].rsplit('/',1)[1]) for p in discovered['photos']))
+        assert costs.summary()['estimatedKnownUsd']==pytest.approx(.031)
+    asyncio.run(run());assert len(calls)==3
+    asyncio.run(run());assert len(calls)==6

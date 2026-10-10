@@ -609,3 +609,9 @@ https://developers.google.com/maps/documentation/tile/policies . Therefore the
 low tile-fetch estimate above does not establish permission to use those tiles
 for AI scoring or synthesis. Commercial AI-use economics require an authorized
 source/license; switching transport alone does not establish that permission.
+
+Places contributor photos are also accounted separately: current Details Pro
+fields ($0.017 per attempt) and photo media ($0.007) before allowances. Reuse fresh
+details and media responses within the job so scoring does not repeat discovery's
+paid requests. No photo names/media URLs are persisted across tasks. The text
+search cap is separate from these bounded (up to eight POIs, two photos each) calls.

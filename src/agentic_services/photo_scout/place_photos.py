@@ -12,6 +12,7 @@ import json
 from urllib.parse import urlsplit
 
 from .sources import get_json, text
+from .costs import record, reuse_request
 
 
 def photo_media_host(url):
@@ -51,14 +52,20 @@ async def place_photos(client, place_id, *, limit=3, width=800, selector=None):
     if not key:raise ValueError('Google Places credential unavailable')
     limit=max(1,min(10,limit));width=max(1,min(1600,width))
     headers={'X-Goog-Api-Key':key}
-    data=await get_json(client,'https://places.googleapis.com/v1/places/'+place_id,
-        headers={**headers,'X-Goog-FieldMask':'id,displayName,googleMapsUri,photos'})
+    async def details():
+        record('places-details-pro', status='attempted')
+        return await get_json(client,'https://places.googleapis.com/v1/places/'+place_id,
+            headers={**headers,'X-Goog-FieldMask':'id,displayName,googleMapsUri,photos'})
+    data=await reuse_request(('place-photo-details',place_id),details)
     if data.get('id')!=place_id:raise ValueError('Photo response place mismatch')
     async def media(photo):
         name=photo.get('name','')
         if not re.fullmatch(r'places/'+re.escape(place_id)+r'/photos/[A-Za-z0-9_-]{1,2000}',name):return None
-        response=await get_json(client,'https://places.googleapis.com/v1/'+name+'/media',
-            {'maxWidthPx':width,'skipHttpRedirect':'true'},headers)
+        async def fetch_media():
+            record('places-photo', status='attempted')
+            return await get_json(client,'https://places.googleapis.com/v1/'+name+'/media',
+                {'maxWidthPx':width,'skipHttpRedirect':'true'},headers)
+        response=await reuse_request(('place-photo-media',name,width),fetch_media)
         url=response.get('photoUri','')
         if not photo_media_host(url):return None
         authors=[{'displayName':text(a.get('displayName','')),'uri':attribution_url(a.get('uri'))}
