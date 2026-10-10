@@ -124,11 +124,16 @@ def create_publications_router(settings,require_api):
             items.append({**metadata(row),'poiId':row['poi'],'savedAt':row['saved'],**({'title':spot.get('name') or row['title'],'kind':'place'} if spot else {})})
             if len(items)==51:break
         return {'items':items[:50],'nextBefore':items[49]['savedAt'] if len(items)>50 else None}
+    def photo_comment_publication(db,ident,poi=''):
+        publication=comment_publication(db,ident,poi)
+        if publication['kind']!='photo' or poi:
+            raise HTTPException(403,'Comments are only available on published photos')
+        return publication
     @router.get('/photo-scout/v1/publications/{ident}/comments')
     def comments(ident:str,request:Request,response:Response,poiId:str='',before:float|None=None):
         identity=owner(request);response.headers['Cache-Control']='private, no-store'
         with store.db() as db:
-            publication=comment_publication(db,ident,poiId)
+            publication=photo_comment_publication(db,ident,poiId)
             rows=db.execute('SELECT * FROM photo_publication_comments WHERE publication=? AND poi=? AND deleted=0 AND created<? ORDER BY created DESC,id DESC LIMIT 31',(ident,poiId,before or time.time()+1)).fetchall()
         return {'items':[{'id':r['id'],'name':r['name'],'text':r['text'],'created':r['created'],'mine':identity==r['author'],'canDelete':identity in (r['author'],publication['owner'])} for r in rows[:30]],'nextBefore':rows[29]['created'] if len(rows)>30 else None,'canComment':bool(identity and identity.startswith('user:'))}
     @router.post('/photo-scout/v1/publications/{ident}/comments')
@@ -140,7 +145,7 @@ def create_publications_router(settings,require_api):
         now=time.time();comment_id=secrets.token_urlsafe(18)
         with store.db() as db:
             db.execute('BEGIN IMMEDIATE')
-            comment_publication(db,ident,payload.poiId)
+            photo_comment_publication(db,ident,payload.poiId)
             if db.execute('SELECT count(*) FROM photo_publication_comments WHERE author=? AND created>?',(identity,now-3600)).fetchone()[0]>=20:
                 raise HTTPException(429,'Please wait before posting more comments')
             session=db.execute('SELECT user_json FROM photo_sessions WHERE hash=? AND expires>?',(digest(request.cookies.get(ACCOUNT_COOKIE,'')),now)).fetchone()
@@ -151,7 +156,7 @@ def create_publications_router(settings,require_api):
     def delete_comment(ident:str,comment_id:str,request:Request):
         identity=write_owner(request)
         with store.db() as db:
-            publication=comment_publication(db,ident)
+            publication=photo_comment_publication(db,ident)
             changed=db.execute('UPDATE photo_publication_comments SET deleted=1 WHERE id=? AND publication=? AND deleted=0 AND (author=? OR ?=?)',(comment_id,ident,identity,identity,publication['owner'])).rowcount
         if not changed:raise HTTPException(404,'Comment unavailable')
         return {'ok':True}

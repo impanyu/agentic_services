@@ -29,3 +29,10 @@ test('likes and private saves toggle reversibly using explicit idempotent state'
  const requests=[],states={likes:0,liked:false,favorited:false};const {root}=fixture({request:async(path,options)=>{requests.push({path,options});if(path.endsWith('/reactions')){const body=JSON.parse(options.body);assert.equal(body.poiId,'lake');if(body.kind==='like'){states.likes=body.active?1:0;states.liked=body.active;}else states.favorited=body.active;}return {threads:{lake:{...states}},canReact:true,items:[],canComment:true};}});await settle();const [like,favorite]=root.children[0].children;
  await like.onclick();assert.match(like.textContent,/♥ Liked · 1/);await like.onclick();assert.equal(like.textContent,'♡ Like');await favorite.onclick();assert.equal(favorite.textContent,'★ Saved');await favorite.onclick();assert.equal(favorite.textContent,'☆ Save');assert.equal(requests.filter(r=>r.options?.method==='POST').length,4);
 });
+
+test('place and search widgets keep likes and saves without loading or displaying comments',async()=>{
+ const {root,box,requests}=fixture({commentsEnabled:false,compact:true});await settle();
+ assert.equal(box.hidden,true);assert.equal(requests.length,1);assert.match(requests[0].path,/\/social$/);
+ box.open=true;box.events.toggle();await settle();assert.equal(requests.length,1);
+ assert.equal(root.children[0].children.length,2);
+});

@@ -486,7 +486,7 @@ Raw and manually reviewed October 10 planner-only evaluations are retained in `e
 
 ### Public social features
 
-Published photos, places and search Shortlists have comments, likes and private saves. Places inside a published search have separate `poiId` threads; a standalone place publication has its own root thread. Reading comments and like counts is public. Posting comments and changing reactions require Google sign-in, the website gateway, same-origin requests and account CSRF. Comments expose display names, never emails or account IDs. Authors can delete their own comments; publishers can moderate comments on their publications. Unpublishing hides comments/reactions and excludes the item from saved lists. Restoring a publication restores its social activity.
+Published photos have comments, likes and private saves. Published places and search Shortlists support likes and private saves only; their comment endpoints return 403. Places inside a published search have separate `poiId` reaction scopes. Reading comments and like counts is public. Posting comments and changing reactions require Google sign-in, the website gateway, same-origin requests and account CSRF. Comments expose display names, never emails or account IDs. Authors can delete their own comments; publishers can moderate comments on their publications. Unpublishing hides comments/reactions and excludes the item from saved lists. Restoring a publication restores its social activity.
 
 - `GET /photo-scout/v1/publications/{id}/comments?poiId=&before=`: newest 30 comments, `nextBefore` cursor, per-viewer delete permissions.
 - `POST .../{id}/comments`: `{text, poiId?}`, up to 2,000 characters and 20 posts per account/hour.
@@ -495,4 +495,4 @@ Published photos, places and search Shortlists have comments, likes and private 
 - `POST .../{id}/reactions`: `{kind: "like" | "favorite", active: boolean, poiId?}`. Explicit state makes retries idempotent. A unique account/thread/kind constraint prevents double likes.
 - `GET /photo-scout/v1/favorites?before=`: the signed-in viewer's private saved list, 50 per page. The Saved menu opens photos in the existing viewer and saved places on the map. Removed/withdrawn targets are omitted. Maximum 1,000 saves per account.
 
-Unpublished private histories are not made public by comments, likes or saves. Publish first to enable social features. Database migrations add social tables and indexes without modifying existing search/image-score caches.
+Unpublished private histories are not made public by comments, likes or saves. Publish first to enable social features; comments are available only for photos. Database migrations add social tables and indexes without modifying existing search/image-score caches.

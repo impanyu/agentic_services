@@ -233,8 +233,8 @@ def comment_client(env,user):
     client.cookies.set(ACCOUNT_COOKIE,cookie)
     return client
 
-@pytest.mark.parametrize('kind,source,poi',[('search','search',None),('place','search','poi1'),('photo','photo',None)])
-def test_comments_on_all_publication_types_are_public_but_require_login(publication_env,kind,source,poi):
+def test_photo_comments_are_public_but_require_login(publication_env):
+    kind,source,poi='photo','photo',None
     _,app,owner=publication_env
     item=owner.post('/photo-scout/v1/publications',json={'kind':kind,'id':source,**({'poiId':poi} if poi else {})}).json()
     path='/photo-scout/v1/publications/'+item['id']+'/comments'
@@ -261,20 +261,26 @@ def test_comments_on_all_publication_types_are_public_but_require_login(publicat
     assert owner.delete(path+'/'+moderated['id']).status_code==200
 
 
-def test_place_subthreads_are_scoped_to_the_published_search(publication_env):
+@pytest.mark.parametrize('kind,poi',[('search',None),('place','poi1')])
+def test_search_and_place_comments_are_disabled_but_reactions_remain(publication_env,kind,poi):
     _,app,owner=publication_env
-    ident=owner.post('/photo-scout/v1/publications',json={'kind':'search','id':'search'}).json()['id']
+    ident=owner.post('/photo-scout/v1/publications',json={'kind':kind,'id':'search',**({'poiId':poi} if poi else {})}).json()['id']
+    path='/photo-scout/v1/publications/'+ident
+    alice=comment_client(publication_env,'alice')
+    assert TestClient(app).get(path+'/comments').status_code==403
+    assert alice.post(path+'/comments',json={'text':'Not permitted'}).status_code==403
+    assert alice.delete(path+'/comments/any-id').status_code==403
+    assert alice.post(path+'/reactions',json={'kind':'like','active':True}).status_code==200
+    assert alice.post(path+'/reactions',json={'kind':'favorite','active':True}).status_code==200
+
+
+def test_photo_comment_threads_hide_after_withdrawal(publication_env):
+    _,app,owner=publication_env
+    ident=owner.post('/photo-scout/v1/publications',json={'kind':'photo','id':'photo'}).json()['id']
     path='/photo-scout/v1/publications/'+ident+'/comments'
     alice=comment_client(publication_env,'alice')
-    alice.post(path,json={'text':'Whole shortlist'})
-    alice.post(path,json={'text':'Only Lake view','poiId':'poi1'})
-    assert [c['text'] for c in alice.get(path).json()['items']]==['Whole shortlist']
-    assert [c['text'] for c in alice.get(path,params={'poiId':'poi1'}).json()['items']]==['Only Lake view']
-    assert alice.get(path,params={'poiId':'poi2'}).json()['items']==[]
-    assert alice.post(path,json={'text':'Invalid place','poiId':'unknown'}).status_code==404
-    with sqlite3.connect(publication_env[0].database_path) as db:
-        db.execute("UPDATE photo_publications SET snapshot=? WHERE id=?",(json.dumps({'result':{'spots':[]}}),ident))
-    assert alice.get(path,params={'poiId':'poi1'}).status_code==404
+    assert alice.post(path,json={'text':'Photo comment'}).status_code==200
+    assert alice.post(path,json={'text':'Invalid scope','poiId':'poi1'}).status_code==404
     owner.post('/photo-scout/v1/publications/withdraw',json={'id':ident})
     assert TestClient(app).get(path).status_code==404
     assert alice.post(path,json={'text':'Withdrawn'}).status_code==404
@@ -282,7 +288,7 @@ def test_place_subthreads_are_scoped_to_the_published_search(publication_env):
 
 def test_comment_pagination_and_rate_limit(publication_env):
     settings,_,owner=publication_env
-    ident=owner.post('/photo-scout/v1/publications',json={'kind':'search','id':'search'}).json()['id']
+    ident=owner.post('/photo-scout/v1/publications',json={'kind':'photo','id':'photo'}).json()['id']
     path='/photo-scout/v1/publications/'+ident+'/comments'
     alice=comment_client(publication_env,'alice')
     for i in range(20):assert alice.post(path,json={'text':str(i)}).status_code==200

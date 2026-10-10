@@ -849,7 +849,7 @@ function showPublicationLink(item){
  publicationDialog.replaceChildren(heading,node('p','Anyone can view this publication, including visitors who are not signed in.','small'),url,copy);if(!publicationDialog.open)publicationDialog.showModal();
 }
 function commentSection(kind,id,spot=null,publication=null,compact=false){
- return window.PhotoScoutComments.create({compact,request:json,headers:()=>csrfToken?{'X-CSRF-Token':csrfToken}:{},onReaction:()=>{for(const box of document.querySelectorAll('.comments-section'))box.refreshComments?.();if(el('saved-items').open)loadFavorites();},signIn:()=>{if(el('account-login').disabled){message('Sign-in is temporarily unavailable. Please try again.');return;}persistHistory();location.href=api+'/photo-scout/v1/auth/login';},resolve:()=>{
+ return window.PhotoScoutComments.create({compact,commentsEnabled:kind==='photo',request:json,headers:()=>csrfToken?{'X-CSRF-Token':csrfToken}:{},onReaction:()=>{for(const box of document.querySelectorAll('.comments-section'))box.refreshComments?.();if(el('saved-items').open)loadFavorites();},signIn:()=>{if(el('account-login').disabled){message('Sign-in is temporarily unavailable. Please try again.');return;}persistHistory();location.href=api+'/photo-scout/v1/auth/login';},resolve:()=>{
   if(publication)return {id:publication.id,poi:spot&&publication.kind==='search'?poiHistoryKey(spot):''};
   if(id?.startsWith('public:')){const item=publicationItems.find(p=>p.id===id.slice(7));return {id:id.slice(7),poi:spot&&item?.kind!=='place'?poiHistoryKey(spot):''};}
   const own=ownPublications.get(publicationKey(kind,id,spot?poiHistoryKey(spot):''));
