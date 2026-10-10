@@ -51,6 +51,13 @@ class HiddenPoiRequest(BaseModel):
     poiId: str = Field(min_length=1,max_length=500)
     hidden: bool = True
 
+class PoiViewRequest(BaseModel):
+    searchId: str = Field(min_length=1,max_length=80)
+    poiId: str = Field(min_length=1,max_length=500)
+    heading: float = Field(ge=0,lt=360,allow_inf_nan=False)
+    pitch: float = Field(ge=-90,le=90,allow_inf_nan=False)
+    fov: float = Field(ge=30,le=120,allow_inf_nan=False)
+
 class RemovedItemRequest(BaseModel):
     kind: Literal['search','portrait']
     id: str = Field(min_length=1,max_length=80)
@@ -178,6 +185,49 @@ def create_tasks_router(settings,require_api):
         require_api(request.headers.get('authorization'));response.headers['Cache-Control']='private, no-store'
         items=store.recent(request,response,touch=visit);_,user=store.identity(request)
         return {'items':items,'hiddenPois':store.hidden_pois(request),'searchRetentionDays':None if user else 7,'photoRetentionDays':None if user else 7,'retention':'permanent' if user else 'seven_days_inactive'}
+    @router.post('/photo-scout/v1/poi-view')
+    def save_poi_view(payload:PoiViewRequest,request:Request,response:Response):
+        from urllib.parse import urlsplit,urlunsplit,parse_qsl,urlencode
+        from .publications import poi_key
+        require_api(request.headers.get('authorization'))
+        response.headers['Cache-Control']='private, no-store'
+        if request.headers.get('origin')!=os.getenv('PHOTO_SCOUT_WEB_ORIGIN','https://aisoup.net').rstrip('/'):
+            raise HTTPException(403,'Invalid viewpoint request')
+        guest,user=store.identity(request)
+        if not guest and not user:raise HTTPException(401,'Open Photo Scout before editing a view')
+        owner='user:'+user if user else 'guest:'+guest
+        with store.db() as db:
+            if user:
+                session=db.execute('SELECT csrf FROM photo_sessions WHERE hash=? AND expires>?',(digest(request.cookies.get(ACCOUNT_COOKIE,'')),time.time())).fetchone()
+                if not session or not hmac.compare_digest(request.headers.get('x-csrf-token',''),session['csrf']):raise HTTPException(403,'Invalid account request')
+            allowed=store.allowed('search',payload.searchId,request)
+            legacy=db.execute('SELECT record FROM photo_account_history WHERE user_id=? AND id=?',(user,payload.searchId)).fetchone() if user else None
+            if not allowed and not legacy:raise HTTPException(404,'Search history unavailable')
+            row=db.execute('SELECT state,result FROM photo_scout_jobs WHERE id=?',(payload.searchId,)).fetchone() if allowed else None
+            record=json.loads(legacy['record']) if legacy else None
+            result=json.loads(row['result']) if row and row['state']=='complete' and row['result'] else (record or {}).get('result')
+            if not result:raise HTTPException(409,'Wait for your search to finish')
+            matches=[spot for field in ('poiResults','spots') for spot in result.get(field,[]) if poi_key(spot)==payload.poiId and spot.get('provider')=='google-street-view']
+            if not matches:raise HTTPException(404,'Street View place unavailable')
+            # Derive the URL from the saved scene, never from a caller-supplied URL.
+            url=urlsplit(matches[0]['sourceUrl']);params=dict(parse_qsl(url.query))
+            params.update(heading=str(payload.heading),pitch=str(payload.pitch),fov=str(payload.fov))
+            override={'sourceUrl':urlunsplit(url._replace(query=urlencode(params))),
+                      'viewHeadingDegrees':payload.heading,'viewPitchDegrees':payload.pitch,'viewFovDegrees':payload.fov,
+                      'viewAdjusted':True,'imageUrl':None,'streetViewReference':None}
+            def update(result):
+                for field in ('poiResults','spots'):
+                    for spot in result.get(field,[]):
+                        if poi_key(spot)==payload.poiId and spot.get('provider')=='google-street-view':spot.update(override)
+            update(result)
+            if row:db.execute('UPDATE photo_scout_jobs SET result=? WHERE id=?',(json.dumps(result),payload.searchId))
+            if record:
+                update(record['result']);db.execute('UPDATE photo_account_history SET record=? WHERE user_id=? AND id=?',(json.dumps(record),user,payload.searchId))
+            if db.execute("SELECT 1 FROM sqlite_master WHERE name='photo_publications'").fetchone():
+                for published in db.execute("SELECT id,snapshot FROM photo_publications WHERE owner=? AND source=? AND kind IN ('search','place')",(owner,payload.searchId)).fetchall():
+                    snapshot=json.loads(published['snapshot']);update(snapshot.get('result',{}))
+                    db.execute('UPDATE photo_publications SET snapshot=? WHERE id=?',(json.dumps(snapshot),published['id']))
+        return {'ok':True,'view':override}
     @router.post('/photo-scout/v1/hidden-pois')
     def hide_poi(payload:HiddenPoiRequest,request:Request,response:Response):
         response.headers['Cache-Control']='private, no-store'

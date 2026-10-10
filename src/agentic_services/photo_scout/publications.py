@@ -25,7 +25,7 @@ def poi_key(spot):
 
 def public_spot(spot):
     # Never publish internal fetch references, job tokens, or uploaded originals.
-    fields=('id','name','score','confidence','recommend','provider','poi','sourceUrl','imageUrl','viewHeadingDegrees','viewPitchDegrees','viewFovDegrees','visible_evidence','photo_tip','uncertainty','coordinateWarning','author','license','licenseUrl','sourceDate','capturedAt','locationType','distanceMeters')
+    fields=('id','name','score','confidence','recommend','provider','poi','sourceUrl','imageUrl','viewHeadingDegrees','viewPitchDegrees','viewFovDegrees','viewAdjusted','visible_evidence','photo_tip','uncertainty','coordinateWarning','author','license','licenseUrl','sourceDate','capturedAt','locationType','distanceMeters')
     result={k:spot[k] for k in fields if k in spot}
     if result.get('provider')=='google-street-view':result.pop('imageUrl',None)
     return result

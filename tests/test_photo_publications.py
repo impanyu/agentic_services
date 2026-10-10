@@ -141,3 +141,56 @@ def test_removing_place_updates_public_search_and_withdraws_place(publication_en
     public=TestClient(app)
     assert public.get('/photo-scout/v1/publications/'+place['id']).status_code==404
     assert [s['name'] for s in public.get('/photo-scout/v1/publications/'+search['id']).json()['result']['spots']]==['Garden']
+
+
+def test_owner_camera_edit_survives_restart_and_updates_publications(publication_env):
+    from urllib.parse import urlsplit,parse_qs
+    settings,app,client=publication_env
+    publication=client.post('/photo-scout/v1/publications',json={'kind':'search','id':'search'}).json()['id']
+    place=client.post('/photo-scout/v1/publications',json={'kind':'place','id':'search','poiId':'poi1'}).json()['id']
+    payload={'searchId':'search','poiId':'poi1','heading':227.5,'pitch':12,'fov':60}
+    assert client.post('/photo-scout/v1/poi-view',json=payload).status_code==200
+    reopened=TestClient(create_app(settings=settings),base_url='https://api.test',headers={'Authorization':'Bearer private'})
+    reopened.cookies.set(GUEST_COOKIE,client.cookies.get(GUEST_COOKIE))
+    spot=reopened.get('/photo-scout/v1/report/search').json()['result']['spots'][0]
+    assert (spot['viewHeadingDegrees'],spot['viewPitchDegrees'],spot['viewFovDegrees'])==(227.5,12,60)
+    assert spot['viewAdjusted'] and spot['score']==75 and spot['imageUrl'] is None
+    assert parse_qs(urlsplit(spot['sourceUrl']).query)['pano']==['example']
+    for ident in (publication,place):
+        public=TestClient(app).get('/photo-scout/v1/publications/'+ident).json()['result']['spots'][0]
+        assert public['viewHeadingDegrees']==227.5 and public['viewFovDegrees']==60
+    later=client.post('/photo-scout/v1/publications',json={'kind':'search','id':'search'}).json()['id']
+    assert TestClient(app).get('/photo-scout/v1/publications/'+later).json()['result']['spots'][0]['viewAdjusted']
+
+
+def test_camera_edit_requires_owner_origin_and_valid_existing_google_place(publication_env):
+    settings,app,client=publication_env
+    payload={'searchId':'search','poiId':'poi1','heading':45,'pitch':0,'fov':90}
+    stranger=TestClient(app,base_url='https://api.test',headers={'Authorization':'Bearer private','Origin':'https://aisoup.net'})
+    stranger.get('/photo-scout/v1/tasks')
+    assert stranger.post('/photo-scout/v1/poi-view',json=payload).status_code==404
+    assert client.post('/photo-scout/v1/poi-view',json=payload,headers={'Origin':'https://evil.example'}).status_code==403
+    assert client.post('/photo-scout/v1/poi-view',json={**payload,'poiId':'poi2'}).status_code==404
+    for field,value in [('fov',5),('heading',360),('pitch',91)]:
+        assert client.post('/photo-scout/v1/poi-view',json={**payload,field:value}).status_code==422
+    assert client.get('/photo-scout/v1/report/search').json()['result']['spots'][0]['viewHeadingDegrees']==90
+
+
+def test_signed_in_camera_edit_requires_csrf_and_preserves_account_history(publication_env):
+    from agentic_services.photo_scout.tasks import ACCOUNT_COOKIE,digest
+    settings,app,client=publication_env
+    with sqlite3.connect(settings.database_path) as db:
+        result=json.loads(db.execute("SELECT result FROM photo_scout_jobs WHERE id='search'").fetchone()[0])
+        db.execute("UPDATE photo_task_owners SET user_id='owner' WHERE job='search'")
+        db.execute('INSERT INTO photo_sessions VALUES(?,?,?,?,?)',(digest('session'),'owner',json.dumps({'id':'owner'}),'csrf',time.time()+86400))
+        db.execute('INSERT INTO photo_account_history VALUES(?,?,?,?)',('owner','search',1,json.dumps({'id':'search','result':result})))
+    client.cookies.set(ACCOUNT_COOKIE,'session')
+    payload={'searchId':'search','poiId':'poi1','heading':180,'pitch':-5,'fov':45}
+    assert client.post('/photo-scout/v1/poi-view',json=payload).status_code==403
+    assert client.post('/photo-scout/v1/poi-view',json=payload,headers={'X-CSRF-Token':'csrf'}).status_code==200
+    with sqlite3.connect(settings.database_path) as db:
+        record=json.loads(db.execute("SELECT record FROM photo_account_history WHERE id='search'").fetchone()[0])
+        assert record['result']['spots'][0]['viewFovDegrees']==45
+        # Pre-task account histories can also save their owned view.
+        db.execute("DELETE FROM photo_task_owners WHERE job='search'")
+    assert client.post('/photo-scout/v1/poi-view',json={**payload,'fov':60},headers={'X-CSRF-Token':'csrf'}).status_code==200
