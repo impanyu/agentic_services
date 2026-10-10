@@ -53,3 +53,8 @@
 .studio-person-frame:hover:not(:disabled){border-color:#8860ad;box-shadow:0 0 0 3px #9272c914}
 .studio-person-frame:focus-visible{outline:3px solid #9272c9;outline-offset:3px}
 .studio-person-frame:disabled{cursor:wait}
+
+.studio-camera-button{min-height:44px;padding:10px 14px;border:1px solid #c9b5e0;border-radius:12px;background:#f2eafa;color:#684793;font-size:13px;font-weight:600;cursor:pointer}
+.camera-dialog{width:min(560px,calc(100vw - 24px))}.camera-dialog video{display:block;width:100%;max-height:52dvh;aspect-ratio:4/3;object-fit:contain;border-radius:16px;background:#26212d;margin-top:16px;transform:scaleX(-1)}
+.camera-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}.camera-actions .studio-download{margin:0}.camera-status{min-height:36px}
+@media(max-width:600px){.camera-dialog video{max-height:45dvh}.camera-actions{grid-template-columns:1fr}.camera-dialog .studio-heading{margin-bottom:0}}
