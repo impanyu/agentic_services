@@ -141,3 +141,30 @@ def test_dual_source_artwork_union_keeps_both_routes():
     data['sourceCoverage']=[{'subject':'sculptures','usefulTools':['search_places','search_features'],'stepIds':['p','f'],'reason':'Named artworks and unlisted mapped sculptures complement each other.'}]
     result=PlannerIntent.model_validate(data)
     assert result.searchProgram.compile().steps[3].inputs==['p','fp']
+
+
+def test_typo_plan_repair_receives_rejected_coverage_without_weakening_subject(monkeypatch):
+    import json
+    calls=[]
+    good=output()
+    good.update(photoStyles=[],requirements=[{'expression':'beautiful woman','strength':'required','route':'visual','stepIds':[]}],scoringIntent='A beautiful woman visible in the image',preferences='Portrait subject',sourceCoverage=[])
+    good['searchProgram']['steps'][0]={'id':'p','tool':'area_imagery'}
+    class Client:
+        def __init__(self,**kw):self.responses=self
+        async def __aenter__(self):return self
+        async def __aexit__(self,*args):pass
+        async def parse(self,**kw):
+            calls.append(kw)
+            if len(calls)==1:
+                broken=output();broken['sourceCoverage'][0]['usefulTools'].append('search_features')
+                PlannerIntent.model_validate(broken)
+            return SimpleNamespace(output_parsed=PlannerIntent.model_validate(good))
+    monkeypatch.setattr(intent,'AsyncOpenAI',Client)
+    r=asyncio.run(intent.parse_intent(SimpleNamespace(openai_api_key='fixture',openai_model='test'),intent.IntentRequest(query='beautidul woman',lat=40,lon=-96,radius=20000,photoStyles=['waterside'])))
+    repair=json.loads(calls[1]['input'])
+    assert repair['request']['query']=='beautidul woman'
+    assert repair['repair']['rejectedPlan']['sourceCoverage'][0]['usefulTools']==['search_places','search_features']
+    assert r.requirements[0].expression=='beautiful woman'
+    assert r.requirements[0].strength=='required'
+    assert r.searchProgram.steps[0].tool=='area_imagery'
+    assert not r.photoStyles and not r.sourceCoverage

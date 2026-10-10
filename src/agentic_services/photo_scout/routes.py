@@ -582,6 +582,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
         if lock.locked(): return False
         job=store.claim_preview()
         if not job: return False
+        context={}
         try:
             submitted=current_website_task(SearchTaskRequest.model_validate_json(job['payload']))
             context=tasks.context('search',job['id']) or submitted.model_dump()
@@ -597,7 +598,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
             store.update(job['id'],state='complete',result=json.dumps(result),error=None,lease_until=0)
         except Exception as error:
             logging.getLogger(__name__).warning('Photo Scout background search failed: %s fields=%s',type(error).__name__,[(e['loc'],e['type']) for e in error.errors(include_input=False,include_url=False)] if isinstance(error,ValidationError) else [])
-            store.update(job['id'],state='failed',lease_until=0,error=str(error.detail) if isinstance(error,HTTPException) else 'Search could not be completed. Please try again later.')
+            store.update(job['id'],state='failed',lease_until=0,error=str(error.detail) if isinstance(error,HTTPException) else 'Could not prepare a valid search plan. Please try again.' if isinstance(error,ValidationError) and context.get('stage')=='planning' else 'Search could not be completed. Please try again later.')
         return True
 
     router.process_preview=process_preview

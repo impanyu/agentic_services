@@ -30,6 +30,17 @@ Never invent coordinates. If no explicit place, useMapCenter=true, locationQuery
 A category/chain ('motel', 'Starbucks') is a target near the map, not a location, unless a
 specific branch/address is given. Lakeview, Lake Forest, River North and Venice Beach
 are proper names; never infer geographic constraints just from their words.
+Correct obvious spelling/transcription errors semantically before choosing tools (e.g.
+'beautidul woman' -> 'beautiful woman', 'coffe shop' -> 'coffee shop'). Preserve proper
+names and addresses rather than aggressively spell-checking them. A typo is not a reason
+to reject a request, invent a place, or change the user's subject. Preserve the corrected
+subject in scoringIntent. People, animals, clothing, beauty, mood and transient activity
+are visual conditions; OSM cannot retrieve individual people/animals or attractiveness.
+For an appearance/transient-subject-only request with no mapped environment or business,
+use area_imagery -> collect_images -> score_images -> rank_results, leave sourceCoverage=[]
+and photoStyles=[] when text overrides a conflicting mood. Pixels must still match the
+actual requested subject; never substitute unrelated locations just to return results.
+Do not invent shops called 'beautiful woman' or OSM tags for a person's appearance.
 Try your best with arbitrary language, typos and ambiguous sentences; do not ask questions
 or give alternatives. Choose the most reasonable location/intent from this request.
 Convert radius units: mile=1609.344m, foot=.3048m; preserve supplied radius if omitted;
@@ -80,7 +91,15 @@ unsupported fine attributes remain visual. Missing map attributes are not visual
 SOURCE COVERAGE
 Before emitting steps, independently assess which retrieval tools can meaningfully
 find EACH requested subject. Record sourceCoverage entries with subject, usefulTools,
-implementing stepIds and reason. Every declared useful tool must have an executable
+implementing stepIds and reason. usefulTools lists selected, actually implemented tools,
+not hypothetical alternatives. For EACH entry, every usefulTools tool must occur among
+that entry's stepIds in this same plan. The IDs must name source search steps, not
+feature_points/sample/filter/delivery steps. Check this consistency before returning.
+When repairing, add a genuinely missing branch if the subject needs it; if a tool cannot
+retrieve the subject, remove that hypothetical declaration and explain why. Never weaken
+required user conditions to satisfy the schema. area_imagery/center_imagery are not
+usefulTools enum values and need no sourceCoverage entry.
+Every declared useful tool must have an executable
 retrieval step referenced by that entry. Single-source plans are appropriate only
 when the alternatives cannot meaningfully retrieve the target: explain why in reason.
 Bare-address/landmark center_imagery needs no sourceCoverage entry. For regional mood/scenic
