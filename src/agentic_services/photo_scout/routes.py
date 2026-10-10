@@ -292,7 +292,8 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
             if not visual or error.status_code!=503:raise
             pois=[];poi_status={'status':'unavailable','role':'optional-place-context'}
         point=bool(payload.searchProgram and payload.searchProgram.retrieval().steps[-1].tool=='point_imagery')
-        rows,statuses=await candidates(payload.lat,payload.lon,payload.radius,pois,**({'visual_exploration':True, **({'point_only':True} if point else {})} if visual else {}))
+        rows,statuses=await candidates(payload.lat,payload.lon,payload.radius,pois,**({'visual_exploration':True, **({'point_only':True} if point else {}),
+            **({'photo_styles':payload.photoStyles} if payload.photoStyles else {})} if visual else {}))
         features=poi_status.pop('_features',[])
         contexts=poi_status.pop('_branchContexts',[])
         execution=poi_status.pop('_programExecution',None)
@@ -458,7 +459,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
                 rows,statuses,pois=report.images.rows,report.images.statuses,report.images.places
                 result=report.result
                 source_name='google-places' if os.getenv('PHOTO_SCOUT_POI_PROVIDER')=='google-places' else 'openstreetmap'
-                statuses[source_name]={'status':'ok','searchPlan':compile_search(search_parameters(payload)).model_dump(),
+                statuses[source_name]={'status':'ok',**statuses.get(source_name,{}),'searchPlan':compile_search(search_parameters(payload)).model_dump(),
                     'executionTrace':execution.trace,'searchCounts':{'returnedCandidates':len(pois),
                         'programSteps':len(execution.trace),'sourceSearches':sum(s.tool.startswith('search_') for s in payload.searchProgram.steps)}}
                 result['executionTrace']=execution.trace

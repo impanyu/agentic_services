@@ -963,7 +963,7 @@ def test_visual_exploration_survives_place_provider_failure(tmp_path,monkeypatch
     client=TestClient(create_app(settings=settings));headers={'Authorization':'Bearer private'}
     broad=client.post('/photo-scout/v1/preview',json={'lat':0,'lon':0,'photoStyles':['nature']},headers=headers)
     assert broad.status_code==200 and broad.json()['discoveryMethod']=='fixed-geographic-and-poi'
-    assert calls==[{'visual_exploration':True}]
+    assert calls==[{'visual_exploration':True,'photo_styles':['nature']}]
     strict=client.post('/photo-scout/v1/preview',json={'lat':0,'lon':0,'poiQueries':['cafes']},headers=headers)
     assert strict.status_code==503
 
@@ -1034,11 +1034,13 @@ def test_address_point_queries_only_nearest_google_panorama(monkeypatch):
         calls.append(params)
         assert params['location']=='0,0' and params['radius']==50
         return {'status':'OK','pano_id':'fixture','location':{'lat':0,'lng':0}}
-    async def unexpected(*args):raise AssertionError('No regional image sources for a pure address')
+    async def unexpected(*args,**kwargs):raise AssertionError('No regional image sources for a pure address')
+    from agentic_services.photo_scout import places
+    monkeypatch.setattr(places,'nearby_places',unexpected)
     monkeypatch.setattr(sources,'get_json',metadata)
     monkeypatch.setattr(sources,'commons',unexpected)
     monkeypatch.setattr(sources,'panoramax',unexpected)
-    rows,statuses=asyncio.run(sources.candidates(0,0,5000,[],visual_exploration=True,point_only=True))
+    rows,statuses=asyncio.run(sources.candidates(0,0,5000,[],visual_exploration=True,point_only=True,photo_styles=['vintage']))
     assert len(calls)==1 and len(rows)==8
     assert set(statuses)=={'google-street-view'}
     assert statuses['google-street-view']['queriedLocations']==1
@@ -1064,7 +1066,13 @@ def test_address_without_street_view_falls_back_to_blank_regional_search(monkeyp
     monkeypatch.setattr(sources,'google_streetview',google)
     monkeypatch.setattr(sources,'commons',regional)
     monkeypatch.setattr(sources,'panoramax',regional)
-    rows,statuses=asyncio.run(sources.candidates(0,0,5000,[],visual_exploration=True,point_only=True))
+    from agentic_services.photo_scout import places
+    mood_calls=[]
+    async def hints(*args,**kwargs):
+        mood_calls.append(args[3]);return [],{'status':'ok'}
+    monkeypatch.setattr(places,'nearby_places',hints)
+    rows,statuses=asyncio.run(sources.candidates(0,0,5000,[],visual_exploration=True,point_only=True,photo_styles=['vintage']))
+    assert mood_calls==[['historic districts','historic buildings']]
     assert calls[0][:3]==(0,0,50) and not calls[0][4]
     assert calls[1]==(0,0,5000,[],True)
     assert other and all(x==(0,0,5000) for x in other)
@@ -1072,3 +1080,69 @@ def test_address_without_street_view_falls_back_to_blank_regional_search(monkeyp
     assert rows[0]['allowUnlistedPlace']
     assert statuses['google-street-view']['addressFallback']
     assert statuses['google-street-view']['pointLookupRadiusMeters']==50
+
+
+@pytest.mark.parametrize('mood,queries',[
+    ('vintage',['historic districts','historic buildings']),
+    ('artistic',['public art','street murals']),
+    ('waterside',['waterfront promenades','lakeside parks']),
+])
+def test_mood_guides_regional_discovery_and_keeps_unlisted_views(monkeypatch,mood,queries):
+    from agentic_services.photo_scout import sources,places
+    monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_ENABLED','1')
+    monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_API_KEY','fixture')
+    monkeypatch.setenv('PHOTO_SCOUT_PANORAMAX_ENABLED','0')
+    monkeypatch.delenv('PHOTO_SCOUT_MAPILLARY_TOKEN',raising=False)
+    anchor={'id':'mood-place','name':'Mood landmark','lat':0,'lon':0}
+    async def hints(lat,lon,radius,terms,limit):
+        assert (lat,lon,radius,terms,limit)==(0,0,5000,queries,30)
+        return [anchor],{'status':'ok','queries':terms,'count':1}
+    async def street(client,lat,lon,radius,targets=None,area_sampling=False):
+        assert targets==[anchor] and area_sampling
+        return [{'id':'named','provider':'google-street-view','lat':0,'lon':0,'imageUrl':'named'},
+                {'id':'unlisted','provider':'google-street-view','lat':0,'lon':.02,'imageUrl':'unlisted'}]
+    async def commons(*args):return []
+    monkeypatch.setattr(places,'nearby_places',hints)
+    monkeypatch.setattr(sources,'google_streetview',street)
+    monkeypatch.setattr(sources,'commons',commons)
+    rows,statuses=asyncio.run(sources.candidates(0,0,5000,[],visual_exploration=True,photo_styles=[mood]))
+    assert {r['id'] for r in rows}=={'named','unlisted'}
+    assert rows[0]['poi']['id']=='mood-place' and not rows[1].get('poi')
+    assert statuses['google-places']['role']=='mood-discovery-hints'
+    assert statuses['google-places']['photoStyles']==[mood]
+
+
+def test_mood_search_failure_keeps_regional_sampling(monkeypatch):
+    from agentic_services.photo_scout import sources,places
+    monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_ENABLED','1')
+    monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_API_KEY','fixture')
+    monkeypatch.setenv('PHOTO_SCOUT_PANORAMAX_ENABLED','0')
+    monkeypatch.delenv('PHOTO_SCOUT_MAPILLARY_TOKEN',raising=False)
+    async def hints(*args,**kwargs):raise httpx.ConnectError('Unavailable')
+    async def street(*args,**kwargs):
+        assert kwargs['targets']==[] and kwargs['area_sampling']
+        return [{'id':'area','provider':'google-street-view','lat':0,'lon':0,'imageUrl':'area'}]
+    async def commons(*args):return []
+    monkeypatch.setattr(places,'nearby_places',hints)
+    monkeypatch.setattr(sources,'google_streetview',street)
+    monkeypatch.setattr(sources,'commons',commons)
+    rows,statuses=asyncio.run(sources.candidates(0,0,5000,[],visual_exploration=True,photo_styles=['nature']))
+    assert [r['id'] for r in rows]==['area']
+    assert statuses['google-places']['status']=='unavailable'
+
+
+def test_mood_sampling_keeps_thirty_anchors_and_twenty_area_points(monkeypatch):
+    from agentic_services.photo_scout import sources
+    monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_API_KEY','fixture')
+    anchors=[{'id':str(i),'lat':0,'lon':.0001*i} for i in range(40)]
+    points=[]
+    async def metadata(client,url,params):
+        points.append(params['location']);return {'status':'ZERO_RESULTS'}
+    monkeypatch.setattr(sources,'get_json',metadata)
+    async def run():
+        async with httpx.AsyncClient() as c:
+            return await sources.google_streetview(c,0,0,5000,anchors,area_sampling=True)
+    asyncio.run(run())
+    assert len(points)==50
+    assert points[:30]==[f"{p['lat']},{p['lon']}" for p in anchors[:30]]
+    assert points[30:]==[f'{lat},{lon}' for lat,lon in sources.google_query_points(0,0,5000)[:20]]

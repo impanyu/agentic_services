@@ -334,3 +334,19 @@ def test_address_point_program_collects_one_location_without_area_sampling():
     async def score(*args):return ScoringOutput([],[],[],[],[],'test')
     asyncio.run(execute_program(p.searchProgram,p,providers(),Path('/unused'),'google-places',
         PipelineHooks(p,collect,score,lambda *args:{'spots':[]},before)))
+
+
+def test_selected_mood_reaches_full_program_collection_and_scoring():
+    from agentic_services.photo_scout.program import PipelineHooks
+    from agentic_services.photo_scout.scoring import ScoringOutput
+    p=SearchParameters(lat=0,lon=0,radius=5000,photoStyles=['artistic'],
+        searchProgram=SearchProgram(steps=[{'id':'area','tool':'area_imagery'}],output='area').with_delivery())
+    async def collect(*args,**kwargs):
+        assert kwargs=={'visual_exploration':True,'photo_styles':['artistic']}
+        return [],{}
+    async def before(images):pass
+    async def score(payload,*args):
+        assert payload.photoStyles==['artistic']
+        return ScoringOutput([],[],[],[],[],'test')
+    asyncio.run(execute_program(p.searchProgram,p,providers(),Path('/unused'),'google-places',
+        PipelineHooks(p,collect,score,lambda *args:{'spots':[]},before)))

@@ -229,11 +229,11 @@ async def google_streetview(client, lat, lon, radius, targets=None, area_samplin
     from urllib.parse import urlencode
     key=os.getenv('PHOTO_SCOUT_GOOGLE_API_KEY','')
     if area_sampling:
-        # Reserve most samples for the region, plus a few named POI anchors.
-        anchors=list(targets or [])[:5]
+        # Mood-guided anchors lead; reserve at least 20 independent regional points.
+        anchors=list(targets or [])[:30]
         area_points=google_query_points(lat,lon,radius)[:50-len(anchors)]
-        points=area_points+[(p['lat'],p['lon']) for p in anchors]
-        target_rows=[None]*len(area_points)+anchors
+        points=[(p['lat'],p['lon']) for p in anchors]+area_points
+        target_rows=anchors+[None]*len(area_points)
     else:
         points=[(p['lat'],p['lon']) for p in targets] if targets is not None else google_query_points(lat,lon,radius)
         target_rows=list(targets) if targets is not None else [None]*len(points)
@@ -314,7 +314,7 @@ def diverse_sample(rows,limit=12):
     return selected
 
 
-async def candidates(lat,lon,radius,pois=None,visual_exploration=False,point_only=False):
+async def candidates(lat,lon,radius,pois=None,visual_exploration=False,point_only=False,photo_styles=None):
     import asyncio
     statuses={}; rows=[]
     requested_radius=radius
@@ -322,6 +322,17 @@ async def candidates(lat,lon,radius,pois=None,visual_exploration=False,point_onl
         # Resolve one nearest panorama at the address, not a grid of nearby spots.
         radius=50
         pois=[{'id':f'address:{lat:.6f}:{lon:.6f}','name':'Selected address','lat':lat,'lon':lon}]
+    if visual_exploration and not point_only and photo_styles:
+        from .places import nearby_places
+        from .styles import discovery_queries
+        queries=discovery_queries([],photo_styles)
+        try:
+            anchors,status=await nearby_places(lat,lon,radius,queries,limit=30)
+        except (httpx.HTTPError,ValueError):
+            anchors=[];status={'status':'unavailable','provider':'google-places','queries':queries}
+        statuses['google-places']={**status,'role':'mood-discovery-hints','photoStyles':list(photo_styles)}
+        # Preserve any caller-supplied anchors, then add distinct mood discoveries.
+        pois=list({p['id']:p for p in [*(pois or []),*anchors]}.values())[:30]
     if pois == [] and not visual_exploration: return [],statuses
     async with httpx.AsyncClient(timeout=25,headers=HEADERS,follow_redirects=False) as client:
         providers=[] if point_only else [('wikimedia-commons',commons)]
@@ -341,7 +352,7 @@ async def candidates(lat,lon,radius,pois=None,visual_exploration=False,point_onl
                 statuses[name]={'status':'ok','eligibleImages':len(result)}; rows+=result
                 if name=='google-street-view':
                     statuses[name].update(samplingSpacingMeters=google_sampling_spacing(radius) if (visual_exploration and not point_only) or pois is None else None,maxViewsPerLocation=VIEWS_PER_PANORAMA,
-                        queriedLocations=1 if point_only else (min(50,len(google_query_points(lat,lon,radius))+min(5,len(pois or []))) if visual_exploration else len(pois) if pois is not None else len(google_query_points(lat,lon,radius))),samplingMode='point' if point_only else 'area-and-poi' if visual_exploration else 'poi' if pois is not None else 'area')
+                        queriedLocations=1 if point_only else (min(50,len(google_query_points(lat,lon,radius))+min(30,len(pois or []))) if visual_exploration else len(pois) if pois is not None else len(google_query_points(lat,lon,radius))),samplingMode='point' if point_only else 'area-and-poi' if visual_exploration else 'poi' if pois is not None else 'area')
     valid=[]
     for row in rows:
         d=distance((lat,lon),(row['lat'],row['lon']))
@@ -364,7 +375,7 @@ async def candidates(lat,lon,radius,pois=None,visual_exploration=False,point_onl
     if point_only and not sampled:
         # Same regional retrieval as a blank input, centered on the resolved address.
         point_status=statuses.get('google-street-view',{'status':'disabled'})
-        sampled,statuses=await candidates(lat,lon,requested_radius,[],visual_exploration=True)
+        sampled,statuses=await candidates(lat,lon,requested_radius,[],visual_exploration=True,photo_styles=photo_styles)
         for status in statuses.values():
             status.update(addressFallback=True,pointLookupStatus=point_status['status'],
                 pointLookupRadiusMeters=50)

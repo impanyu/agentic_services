@@ -269,11 +269,14 @@ class Tools:
             locations=Places([p for p in locations.rows if p['id'] in self.pipeline.selected_ids],locations.paths)
         pois=locations.rows[:50] if isinstance(locations,Places) else []
         rows,statuses=await self.pipeline.collect(self.p.lat,self.p.lon,self.p.radius,pois,
-            **({'visual_exploration':True, **({'point_only':True} if locations.point_only else {})} if isinstance(locations,Area) else {}))
+            **({'visual_exploration':True, **({'point_only':True} if locations.point_only else {}),
+                **({'photo_styles':self.p.photoStyles} if self.p.photoStyles else {})} if isinstance(locations,Area) else {}))
         eligible=self.execution.filter_images(rows,locations)
         for provider,status in statuses.items():
             status['geographicallyExcludedImages']=sum(r['provider']==provider for r in rows)-sum(r['provider']==provider for r in eligible)
             status['sampledImages']=sum(r['provider']==provider for r in eligible)
+        if isinstance(locations,Area):
+            pois=list({p['id']:p for row in eligible for p in row.get('poiCandidates',[]) if not p['id'].startswith('address:')}.values())
         return Images(eligible,statuses,pois,isinstance(locations,Area))
 
     async def score_images(self,s,inputs):
