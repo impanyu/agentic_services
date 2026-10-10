@@ -22,13 +22,33 @@ def log_portrait_failure(job,stage,error,started):
     details=details if isinstance(details,dict) else {}
     def identifier(value):
         return value if isinstance(value,(int,float)) or isinstance(value,str) and re.fullmatch(r'[A-Za-z0-9_.:-]{1,160}',value) else None
-    logger.error('photo_portrait_failure %s',json.dumps({
+    moderation=details.get('moderation_details')
+    moderation=moderation if isinstance(moderation,dict) else {}
+    categories=moderation.get('categories')
+    categories=categories if isinstance(categories,list) else []
+    diagnostics={
         'job':job,'stage':stage,'elapsedSeconds':round(time.monotonic()-started,2),
+        'failedAt':time.time(),
         'exceptionType':type(error).__name__,
         'statusCode':identifier(getattr(error,'status_code',None)),
         'code':identifier(getattr(error,'code',None) or details.get('code')),
         'requestId':identifier(getattr(error,'request_id',None)),
-    }))
+        'moderationStage':moderation.get('moderation_stage') if moderation.get('moderation_stage') in ('input','output') else None,
+        'moderationCategories':list(dict.fromkeys(c for c in categories[:32] if isinstance(c,str) and re.fullmatch(r'[a-z_/-]{1,80}',c))),
+        'moderationDetailsProvided':bool(moderation),
+    }
+    logger.error('photo_portrait_failure %s',json.dumps(diagnostics))
+    return diagnostics
+
+
+def portrait_failure_message(error,diagnostics):
+    if diagnostics.get('code')=='moderation_blocked':
+        if diagnostics.get('moderationStage')=='output':
+            return 'The image provider blocked the generated result in a safety check. No photo was delivered.'
+        if diagnostics.get('moderationStage')=='input':
+            return 'The image provider blocked this request in an input safety check. No composite was created.'
+        return 'The image provider blocked this request in a safety check. It did not specify which stage. No photo was delivered.'
+    return error.detail if isinstance(error,HTTPException) else 'Could not compose this photo. Please try another photo or view.'
 
 class PortraitRequest(BaseModel):
     portrait: str = Field(max_length=27000000)
@@ -210,6 +230,12 @@ def create_portrait_router(settings,require_api):
         c.execute('CREATE TABLE IF NOT EXISTS photo_portrait_budget (day INTEGER PRIMARY KEY, runs INTEGER NOT NULL)')
         c.execute('CREATE TABLE IF NOT EXISTS photo_portraits (id TEXT PRIMARY KEY, token_hash TEXT NOT NULL, created REAL NOT NULL, expires REAL NOT NULL, state TEXT NOT NULL, payload TEXT, photo BLOB, output BLOB, error TEXT)')
     def prune(c):prune_records(c)
+    def record_failure(job,stage,error,started):
+        diagnostics=log_portrait_failure(job,stage,error,started)
+        context=tasks.context('portrait',job) or {}
+        context['failureDiagnostics']=diagnostics
+        tasks.update_context('portrait',job,context)
+        return diagnostics
     def owned(job,token,request):
         with db() as c:
             prune(c);row=c.execute('SELECT * FROM photo_portraits WHERE id=?',(job,)).fetchone()
@@ -277,7 +303,7 @@ def create_portrait_router(settings,require_api):
                         async with asyncio.timeout(90):
                             subjects=await check_subjects(client,bytes(row['photo']),os.getenv('PHOTO_SCOUT_PERSON_MODEL','gpt-6-astra'))
                     except Exception as error:
-                        log_portrait_failure(row['id'],stage,error,started)
+                        record_failure(row['id'],stage,error,started)
                         with db() as c:c.execute("UPDATE photo_portraits SET state='failed',photo=NULL,payload=NULL,error='Could not check your photo. Please try again; no composite was created.' WHERE id=?",(row['id'],))
                         return True
                     if subjects<1:
@@ -311,8 +337,8 @@ def create_portrait_router(settings,require_api):
                 if not generated.startswith(b'\x89PNG') or len(generated)>25000000:raise ValueError()
             with db() as c:c.execute("UPDATE photo_portraits SET state='complete',photo=NULL,payload=NULL,output=? WHERE id=?",(generated,row['id']))
         except Exception as error:
-            log_portrait_failure(row['id'],stage,error,started)
-            message=error.detail if isinstance(error,HTTPException) else 'Could not compose this photo. Please try another photo or view.'
+            diagnostics=record_failure(row['id'],stage,error,started)
+            message=portrait_failure_message(error,diagnostics)
             with db() as c:c.execute("UPDATE photo_portraits SET state='failed',photo=NULL,payload=NULL,error=? WHERE id=?",(message,row['id']))
         return True
     return router,process

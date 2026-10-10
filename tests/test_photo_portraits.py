@@ -11,14 +11,56 @@ import agentic_services.photo_scout.portraits as portraits
 def test_failure_diagnostics_preserve_codes_without_private_content(caplog):
     import json,time
     error=RuntimeError('private prompt and uploaded image')
-    error.body={'error':{'code':'moderation_blocked','message':'private provider response'}}
+    error.body={'error':{'code':'moderation_blocked','message':'private provider response',
+        'moderation_details':{'moderation_stage':'input','categories':['harassment','sexual/minors','private prompt with spaces','harassment']}}}
     error.status_code=400
     error.request_id='req_test123'
     portraits.log_portrait_failure('job_test','image_generation',error,time.monotonic())
     record=json.loads(caplog.records[-1].message.split('photo_portrait_failure ',1)[1])
     assert record['stage']=='image_generation' and record['code']=='moderation_blocked'
     assert record['statusCode']==400 and record['requestId']=='req_test123'
+    assert record['moderationStage']=='input'
+    assert record['moderationCategories']==['harassment','sexual/minors']
+    assert record['moderationDetailsProvided'] is True
     assert 'private' not in caplog.text and 'provider response' not in caplog.text
+
+
+@pytest.mark.parametrize('moderation_stage',['input','output',None])
+def test_moderation_diagnostics_survive_restart_and_upload_is_removed(tmp_path,monkeypatch,moderation_stage):
+    raw=photo()
+    class Client:
+        def __init__(self,**kwargs):self.images=self
+        async def __aenter__(self):return self
+        async def __aexit__(self,*args):pass
+        async def edit(self,**kwargs):
+            error=RuntimeError('private provider response')
+            error.body={'code':'moderation_blocked'}
+            if moderation_stage:
+                error.body['moderation_details']={'moderation_stage':moderation_stage,'categories':['harassment']}
+            error.status_code=400;error.request_id='req_durable_test'
+            raise error
+    async def subjects(*args):return 1
+    async def background(*args):return raw,'https://upload.wikimedia.org/test.png',{'scene':{}}
+    monkeypatch.setattr(portraits,'AsyncOpenAI',Client)
+    monkeypatch.setattr(portraits,'check_subjects',subjects)
+    monkeypatch.setattr(portraits,'prepare_background',background)
+    settings=Settings(openai_api_key='fixture',openai_model='test',database_path=tmp_path/'db',base_url='https://api.test',service_api_key='private')
+    app=create_app(settings=settings);client=TestClient(app,base_url='https://api.test');auth={'Authorization':'Bearer private'}
+    body={'portrait':'data:image/png;base64,'+base64.b64encode(raw).decode(),
+          'background':'https://upload.wikimedia.org/test.png','provider':'wikimedia-commons','place':'Test park'}
+    job=client.post('/photo-scout/v1/portraits',json=body,headers=auth).json()
+    assert asyncio.run(app.state.process_photo_portrait())
+    restarted=TestClient(create_app(settings=settings),base_url='https://api.test')
+    state=restarted.get('/photo-scout/v1/portraits/'+job['id'],headers=auth|{'X-Report-Token':job['token']}).json()
+    assert state['state']=='failed' and 'safety check' in state['error']
+    diagnostics=state['context']['failureDiagnostics']
+    assert diagnostics['requestId']=='req_durable_test' and diagnostics['code']=='moderation_blocked'
+    assert diagnostics['moderationStage']==moderation_stage
+    assert diagnostics['moderationCategories']==(['harassment'] if moderation_stage else [])
+    assert diagnostics['moderationDetailsProvided']==bool(moderation_stage)
+    assert 'private provider response' not in str(state)
+    with sqlite3.connect(settings.database_path) as db:
+        assert db.execute('SELECT photo,payload,output FROM photo_portraits').fetchone()==(None,None,None)
 
 
 def photo():

@@ -121,3 +121,16 @@ Batch exploration tools now cover `search_places_batch`, `find_streetview_batch`
 New natural-language requests now generate a validated `searchProgram` that composes small provider, sampling, spatial-filter, set-operation, image collection, visual assessment and ranking tools. The complete plan ends with collect_images -> score_images -> rank_results. The executor runs its dependency graph with shared concurrent lookups and batched image assessment; it does not run arbitrary generated code or an autonomous tool loop. Legacy flat/searchBranches requests remain compatible. Candidate-to-camera logical paths are preserved into pixel matching and scoring. See `photo-scout-search-tool.md` for the registry and program contract.
 
 All raw searches, including an empty text field, now enter the same interpretation model. UI-only requests preserve the selected map coordinate, radius and moods and generate a complete discovery program. Text overrides only conflicting controls. Queued website tasks interpret once in the background worker and preserve the original query; execution of already compiled plans or signed catalog selections does not replan. Checkout freezes a raw request's interpreted plan before payment.
+
+### Durable image failure diagnostics
+
+Portrait failures retain a bounded `context.failureDiagnostics` record under the
+existing private task ownership and retention rules: pipeline stage, timestamp,
+elapsed time, exception type, HTTP status, provider error code, request ID, optional
+moderation stage (`input`/`output`) and coarse category identifiers. Missing provider
+details remain explicitly unavailable; do not infer the offending image or prompt
+from an error code. The same sanitized record is logged and survives container
+restarts in SQLite. Uploaded images, full prompts, provider message bodies and
+credentials are never included. Raw portrait inputs remain deleted on completion
+or failure. Safety blocks show a specific user-facing error instead of the generic
+composition failure. No automatic moderation retry is performed.
