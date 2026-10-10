@@ -27,3 +27,9 @@ test('native share cancellation is not reported as a failed share',async()=>{
 });
 
 test('Share focuses a separate dialog without an inline accordion',()=>{const f=fixture();f.sharing.onclick();assert.equal(f.c.photoShareDialog.open,true);assert.equal(f.buttons()[1].focused,true);});
+test('unpublished Facebook click opens a composer after publishing without another app explanation step',async()=>{
+ const f=fixture(),destinations=[];const target={location:{replace:url=>destinations.push(url)},close(){this.closed=true;}};f.c.window={open:(url)=>{assert.equal(url,'about:blank');return target;},location:{assign:url=>destinations.push(url)}};await f.buttons()[2].children[0].onclick();assert.equal(f.calls[0].kind,'photo');assert.equal(f.calls[0].id,'photo-1');assert.equal(new URL(destinations[0]).hostname,'www.facebook.com');assert.equal(new URL(destinations[0]).searchParams.get('u'),'https://aisoup.net/photo-scout/?published=pub-1');assert.equal(target.opener,null);
+});
+test('publication failure closes the pending share tab and never navigates to a bad social link',async()=>{
+ const f=fixture(),target={close(){this.closed=true;},location:{replace(){assert.fail('must not navigate');}}};f.c.window={open:()=>target};f.c.json=async()=>{throw Error('Photo unavailable');};await f.buttons()[2].children[1].onclick();assert.equal(target.closed,true);assert.equal(f.buttons()[6].textContent,'Photo unavailable');
+});

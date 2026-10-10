@@ -729,13 +729,13 @@ const savedPhotoSharing=node('button','Share','studio-save photo-share-trigger')
 const photoShareDialog=node('dialog',null,'photo-studio photo-share-dialog');photoShareDialog.setAttribute('aria-label','Share photo');document.body.append(photoShareDialog);
 photoShareDialog.addEventListener('click',event=>{if(event.target===photoShareDialog){const r=photoShareDialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)photoShareDialog.close();}});
 function photoSocialLinks(url,text){
- return [['Facebook','https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(url)],['X','https://twitter.com/intent/tweet?url='+encodeURIComponent(url)+'&text='+encodeURIComponent(text)]];
+ return [['Facebook','https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(url)],['X','https://x.com/intent/tweet?url='+encodeURIComponent(url)+'&text='+encodeURIComponent(text)]];
 }
 function renderPhotoSharing(context){
  const generation=savedPhotoGeneration,photoId=savedPhoto.dataset.photoId,publicId=savedPhoto.dataset.publication;
  const text='My AI-generated selfie at '+(context?.name||'a photo spot')+' · Photo Scout';
  const heading=node('div',null,'studio-heading'),close=node('button','Close ×'),body=node('div',null,'photo-share-body'),status=node('p',null,'small');close.type='button';close.onclick=()=>photoShareDialog.close();heading.append(node('h2','Share photo'),close);status.setAttribute('role','status');
- const native=node('button',null,'social-tile'),wechat=node('button',null,'social-tile');native.type=wechat.type='button';native.append(node('span','↗','social-icon social-more'),node('strong','More apps'),node('small','Image'));wechat.append(node('span','💬','social-icon social-wechat'),node('strong','WeChat / 微信'),node('small','Image · system menu'));
+ const native=node('button',null,'social-tile'),wechat=node('button',null,'social-tile');native.type=wechat.type='button';native.append(node('span','↗','social-icon social-more'),node('strong','More apps'),node('small','Image'));wechat.append(node('span','💬','social-icon social-wechat'),node('strong','WeChat / 微信'),node('small','Choose WeChat in Send to'));
  const sharePhoto=async(weChat=false)=>{
   if(generation!==savedPhotoGeneration)return;
   const file=savedPhotoFile;
@@ -755,7 +755,17 @@ function renderPhotoSharing(context){
   const item=publicId?{url:location.origin+'/photo-scout/?published='+encodeURIComponent(publicId)}:ownPublications.get(publicationKey('photo',photoId));
   links.replaceChildren();copy.hidden=!item;publish.hidden=!!item||!photoId;
   if(item){for(const [label,url] of photoSocialLinks(item.url,text)){const a=link('Share on '+label+' ↗',url);a.className='social-tile';a.replaceChildren(node('span',label==='X'?'𝕏':'f','social-icon '+(label==='X'?'social-x':'social-facebook')),node('strong',label),node('small','Public link'));links.append(a);}note.textContent='Facebook and X share your public photo link. To attach the image itself, use More apps or download it. WeChat: choose WeChat in the share menu, or save and send the image.';}
-  else {for(const label of ['Facebook','X']){const b=node('button',null,'social-tile');b.type='button';b.append(node('span',label==='X'?'𝕏':'f','social-icon '+(label==='X'?'social-x':'social-facebook')),node('strong',label),node('small','Publish link first'));b.onclick=()=>{status.textContent='Publish a shareable link below to share on '+label+'. Your photo will be publicly visible.';publish.focus();};links.append(b);}note.textContent='Sharing the image does not publish it. Facebook and X link sharing requires a public photo. “Publish a shareable link” makes this photo and its background info visible to anyone.';}
+  else {for(const label of ['Facebook','X']){const b=node('button',null,'social-tile');b.type='button';b.append(node('span',label==='X'?'𝕏':'f','social-icon '+(label==='X'?'social-x':'social-facebook')),node('strong',label),node('small','Publish & share'));b.onclick=async()=>{
+   if(generation!==savedPhotoGeneration||b.disabled)return;
+   const target=window.open('about:blank','_blank');if(target)target.opener=null;
+   b.disabled=true;status.textContent='Preparing your public photo link for '+label+'…';
+   try{const item=await json('/photo-scout/v1/publications',{method:'POST',headers:{'Content-Type':'application/json',...(csrfToken?{'X-CSRF-Token':csrfToken}:{})},body:JSON.stringify({kind:'photo',id:photoId})});
+    ownPublications.set(publicationKey('photo',photoId),item);syncPublishButtons();
+    const url=photoSocialLinks(item.url,text).find(([name])=>name===label)[1];
+    if(target&&!target.closed)target.location.replace(url);else window.location.assign(url);
+    if(generation===savedPhotoGeneration){status.textContent=label+' opened. Finish posting there.';photoShareDialog.close();}
+   }catch(error){if(target&&!target.closed)target.close();if(generation===savedPhotoGeneration)status.textContent=error.message;}finally{b.disabled=false;}
+  };links.append(b);}note.textContent='Facebook / X: clicking Publish & share makes this photo and background info public on Photo Scout, then opens the platform composer. WeChat uses the system menu; choose WeChat there.';}
   copy.onclick=async()=>{try{await navigator.clipboard.writeText(item.url);if(generation===savedPhotoGeneration)status.textContent='Link copied. Paste it into WeChat or any social app.';}catch{if(generation===savedPhotoGeneration){status.replaceChildren(node('span','Copy this public link: '),link(item.url,item.url));}}};
  }
  publish.onclick=async()=>{publish.disabled=true;status.textContent='Creating your public photo link…';try{
