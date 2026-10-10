@@ -244,11 +244,11 @@ def create_portrait_router(settings,require_api):
                         context=tasks.context('portrait',row['id']) or {}
                         context['originalSourceUrl']=context.get('sourceUrl')
                         query={'api':1,'map_action':'pano','pano':prepared_reference.split('/')[2],
-                            'heading':preparation['headingDegrees'],'pitch':0,'fov':preparation['fovDegrees']}
+                            'heading':preparation['headingDegrees'],'pitch':preparation['pitchDegrees'],'fov':preparation['fovDegrees']}
                         position=context.get('poi',{})
                         if position.get('lat') is not None and position.get('lon') is not None:query['viewpoint']=f"{position['lat']},{position['lon']}"
                         context.update(sourceUrl='https://www.google.com/maps/@?'+urlencode(query),
-                            viewPitchDegrees=0,viewFovDegrees=preparation['fovDegrees'],backgroundPreparation=preparation)
+                            viewPitchDegrees=preparation['pitchDegrees'],viewFovDegrees=preparation['fovDegrees'],backgroundPreparation=preparation)
                         tasks.update_context('portrait',row['id'],context)
                     ext='jpg' if raw.startswith(b'\xff\xd8') else 'png' if raw.startswith(b'\x89PNG') else 'webp'
                     image_model=os.getenv('PHOTO_SCOUT_IMAGE_MODEL','gpt-image-2.5-sunburst')

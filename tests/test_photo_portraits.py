@@ -62,7 +62,7 @@ def test_private_job_edits_both_images_and_removes_upload(tmp_path,monkeypatch,i
     assert 'cheerful broad smile' in calls[0]['prompt']
     assert 'relight the entire scene and subjects together' in calls[0]['prompt']
     completed=client.get(path,headers=owned).json();assert completed['state']=='complete'
-    assert completed['context']['viewHeadingDegrees']==90 and completed['context']['viewPitchDegrees']==0
+    assert completed['context']['viewHeadingDegrees']==90 and completed['context']['viewPitchDegrees']==-20
     assert completed['context']['viewFovDegrees']==90
     assert completed['context']['backgroundPreparation']['comparedFovDegrees']==[90,60,45]
     assert completed['context']['generation']=={'style':'natural','posture':'walking','weather':weather,'expression':'big_smile','framing':'auto','directions':''}
