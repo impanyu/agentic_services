@@ -44,6 +44,8 @@ def prune_records(db):
             db.execute("DELETE FROM photo_hidden_pois WHERE owner LIKE 'guest:%' AND NOT EXISTS (SELECT 1 FROM photo_guests g WHERE 'guest:'||g.hash=owner AND g.expires>?)",(now,))
         if 'photo_removed_items' in tables:
             db.execute("DELETE FROM photo_removed_items WHERE owner LIKE 'guest:%' AND NOT EXISTS (SELECT 1 FROM photo_guests g WHERE 'guest:'||g.hash=owner AND g.expires>?)",(now,))
+        if 'photo_avatars' in tables:
+            db.execute("DELETE FROM photo_avatars WHERE owner LIKE 'guest:%' AND NOT EXISTS (SELECT 1 FROM photo_guests g WHERE 'guest:'||g.hash=owner AND g.expires>?)",(now,))
         db.execute('DELETE FROM photo_guests WHERE expires<=?',(now,))
 
 class HiddenPoiRequest(BaseModel):
@@ -145,6 +147,8 @@ class TaskStore:
             with self.db() as db:
                 prune_records(db)
                 db.execute('UPDATE photo_task_owners SET user_id=? WHERE guest=? AND user_id IS NULL',(user,guest))
+                if db.execute("SELECT 1 FROM sqlite_master WHERE name='photo_avatars'").fetchone():
+                    db.execute('UPDATE photo_avatars SET owner=? WHERE owner=?',('user:'+user,'guest:'+guest))
                 if db.execute("SELECT 1 FROM sqlite_master WHERE name='photo_publications'").fetchone():
                     db.execute('UPDATE OR IGNORE photo_publications SET owner=? WHERE owner=?',('user:'+user,'guest:'+guest))
                 db.execute('INSERT OR IGNORE INTO photo_hidden_pois SELECT ?,search,poi FROM photo_hidden_pois WHERE owner=?',('user:'+user,'guest:'+guest))

@@ -35,6 +35,7 @@ from .photo_scout.routes import create_photo_router
 from .photo_scout.portraits import create_portrait_router
 from .photo_scout.accounts import create_accounts_router
 from .photo_scout.publications import create_publications_router
+from .photo_scout.avatars import create_avatars_router
 from .photo_scout.tasks import create_tasks_router
 from .contact import send_contact_email, send_email
 from .models import (
@@ -395,6 +396,7 @@ def create_app(
     app.state.process_photo_portrait=portrait_process
     app.include_router(create_accounts_router(resolved_settings,require_service_api_key))
     app.include_router(create_tasks_router(resolved_settings,require_service_api_key))
+    app.include_router(create_avatars_router(resolved_settings,require_service_api_key))
     app.include_router(create_publications_router(resolved_settings,require_service_api_key))
     app.include_router(contractor_router)
     app.include_router(create_niche_router(resolved_settings))

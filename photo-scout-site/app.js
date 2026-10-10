@@ -590,7 +590,7 @@ el('history-all').addEventListener('change',()=>{for(const h of searchHistory)h.
 try{const legacy=localStorage.getItem(HISTORY_KEY);if(legacy&&!sessionStorage.getItem(HISTORY_KEY))sessionStorage.setItem(HISTORY_KEY,legacy);localStorage.removeItem(HISTORY_KEY);const lastVisit=Number(sessionStorage.getItem(HISTORY_KEY+'-last-visit'));if(lastVisit&&lastVisit<Date.now()-7*86400000)sessionStorage.removeItem(HISTORY_KEY);const saved=JSON.parse(sessionStorage.getItem(HISTORY_KEY)||'[]');if(Array.isArray(saved))searchHistory=saved.filter(h=>h&&typeof h.id==='string'&&typeof h.label==='string'&&h.result&&Array.isArray(h.result.spots));}catch{}renderHistory();drawHistoryMap();loadAccount().finally(()=>restoreTasks());
 
 // The photo studio keeps personal uploads and generated images out of search history.
-let studioBusy=false,studioActivityMarker=null;
+let studioBusy=false,studioActivityMarker=null,avatarLibrary=null;
 let studioJob=null,studioFile=null,studioSpot=null,studioUrl=null,studioPreviewUrl=null,studioTimer=null,studioPrepared=null,studioUploadGeneration=0,studioInputPlaceKey=null,studioOutputFile=null,studioOutputGeneration=0;
 const studio=node('dialog',null,'photo-studio');studio.setAttribute('aria-label','Photo studio');
 const studioTop=node('div',null,'studio-heading'),studioTitle=node('h2','Take a selfie here'),studioClose=node('button','Close ×');studioClose.type='button';studioTop.append(studioTitle,studioClose);
@@ -603,7 +603,7 @@ const studioIntro=node('p','For best results, upload a clear selfie or portrait 
 const uploadLabel=node('label','Upload your selfie · JPG, PNG, WebP or HEIC, up to 20 MB · automatically resized','studio-upload'),studioUpload=node('input');studioUpload.type='file';studioUpload.accept='image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif';uploadLabel.append(studioUpload);studioPersonFrame.addEventListener('click',()=>{if(!studioUpload.disabled)studioUpload.click();});
 const studioCameraButton=node('button','Take a photo','studio-camera-button');studioCameraButton.type='button';
 let studioCamera=null;studioCameraButton.addEventListener('click',()=>{if(studioBusy)return;studioCamera??=new PhotoScoutCamera(file=>{studioUpload.value='';acceptStudioPhoto(file);});studioCamera.open();});
-uploadLabel.append(studioCameraButton);
+const studioAvatarButton=node('button','Choose from Avatar Library','studio-camera-button');studioAvatarButton.type='button';studioAvatarButton.addEventListener('click',()=>{if(!studioBusy)avatarLibrary?.open();});uploadLabel.append(studioCameraButton,studioAvatarButton);
 let studioStyle='natural',studioAdjustedView=null,studioSearchId=null;
 const studioStyles=node('fieldset',null,'studio-styles'),studioStyleLegend=node('legend','Photo style'),studioStyleGrid=node('div',null,'studio-style-grid'),studioStyleHint=node('p','Relaxed pose, soft smile, your original outfit.','small');
 const portraitStyles=[['natural','Natural','Relaxed pose, soft smile, your original outfit.'],['street','Street style','Confident pose, contemporary urban clothing, candid expression.'],['cinematic','Cinematic','Expressive pose, understated clothing, a thoughtful look.'],['vacation','Vacation','Relaxed holiday pose, comfortable clothing, a cheerful smile.'],['editorial','Editorial','Elegant pose, refined clothing, a polished magazine look.']];
@@ -864,7 +864,7 @@ function syncPortraitActivities(){
   L.marker([pos.lat,pos.lon],{title:'Selfie in progress · '+spot.name,zIndexOffset:1200,icon:L.divIcon({className:'selfie-activity-pin',html:'<span class="selfie-glow"></span><span class="selfie-star star-one">✦</span><span class="selfie-star star-two">✧</span>',iconSize:[64,64],iconAnchor:[32,32]})}).addTo(selfieActivityLayer).bindTooltip(node('span',spot.name+' · '+(task.state==='queued'?'Queued':'Creating selfie…')),{direction:'top',className:'selfie-map-tooltip'}).on('click',()=>viewSavedPhoto(task));
  }
 }
-function resetTaskRecovery(){
+function resetTaskRecovery(){avatarLibrary?.reset();
  photoLibraryGeneration++;el('photo-library-items').replaceChildren();selectPhotoLibraryTab('mine');
  if(studioCamera?.dialog.open)studioCamera.dialog.close();studioCamera?.stop();
  if(savedPhoto.open)savedPhoto.close();if(portraitProgress.open)portraitProgress.close();
@@ -1021,3 +1021,5 @@ for(const button of document.querySelectorAll('[data-photo-tab]')){
  button.addEventListener('keydown',event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();const tabs=[...document.querySelectorAll('[data-photo-tab]')],index=tabs.indexOf(button),next=event.key==='Home'?0:event.key==='End'?tabs.length-1:(index+(event.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;tabs[next].focus();selectPhotoLibraryTab(tabs[next].dataset.photoTab);});
 }
 el('photo-history').addEventListener('toggle',refreshPhotoLibraryIfOpen);el('photo-library-more').onclick=()=>loadPhotoLibrary(true);
+
+if(typeof window!=='undefined'&&window.PhotoScoutAvatars)avatarLibrary=new window.PhotoScoutAvatars({api,request:json,prepare:prepareStudioPhoto,session:()=>({id:authUser?.id||'guest',csrf:csrfToken}),canSelect:()=>studio.open&&!studioBusy,onSelect:async file=>{studioUpload.value='';await acceptStudioPhoto(file);}});
