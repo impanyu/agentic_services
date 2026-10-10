@@ -235,3 +235,8 @@ html:has(body.photo-app),body.photo-app{height:100%;overflow:hidden}.photo-app m
 .shortlist-place-focus{display:block;width:100%;padding:0;border:0;background:transparent;color:inherit;text-align:left;font:inherit;cursor:pointer}.shortlist-place-focus:hover{color:#76508f;text-decoration:underline;text-underline-offset:3px}
 
 .saved-photo-actions .studio-download[aria-disabled="true"]{opacity:.6;cursor:wait}
+
+/* Keep place previews above overlays and scroll long content within the map. */
+.leaflet-popup-pane{z-index:850}
+.leaflet-popup-scrolled{overscroll-behavior:contain;scrollbar-width:thin}
+@media(max-width:760px){.map-stage:has(.leaflet-popup) #results{visibility:hidden;pointer-events:none}}
