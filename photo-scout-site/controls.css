@@ -169,3 +169,20 @@
  .map-brand .brand-copy{display:none}
  .selfie-task{display:none}
 }
+
+/* Mobile overlays must fit the visible screen even after Safari zooms/pans. */
+@media(max-width:760px),(max-height:500px){
+ .photo-app .scout-dock{left:calc(var(--scout-visible-left,0px) + var(--scout-visible-width,100vw)/2);width:calc(var(--scout-visible-width,100vw) - 20px);bottom:calc(var(--scout-visible-bottom,0px) + 10px + env(safe-area-inset-bottom))}
+ .map-brand{left:calc(var(--scout-visible-left,0px) + 12px);top:calc(var(--scout-visible-top,0px) + 12px + env(safe-area-inset-top));max-width:calc(var(--scout-visible-width,100vw) - 166px)}
+ .map-overlay-controls{position:fixed;right:calc(var(--scout-visible-right,0px) + 12px);top:calc(var(--scout-visible-top,0px) + 12px + env(safe-area-inset-top))}
+ .map-overlay-controls details[open]{right:calc(var(--scout-visible-right,0px) + 12px);top:calc(var(--scout-visible-top,0px) + 12px + env(safe-area-inset-top))}
+ .map-overlay-controls .map-tools,.map-overlay-controls .map-detail-menu,.map-overlay-controls .history-menu,.map-overlay-controls .avatar-library .history-menu{right:calc(var(--scout-visible-right,0px) + 12px);top:calc(var(--scout-visible-top,0px) + 64px + env(safe-area-inset-top));width:min(340px,calc(var(--scout-visible-width,100vw) - 24px));max-width:calc(var(--scout-visible-width,100vw) - 24px);max-height:calc(var(--scout-visible-height,100dvh) - 170px)}
+ #results{left:calc(var(--scout-visible-left,0px) + 10px);width:calc(var(--scout-visible-width,100vw) - 20px);bottom:calc(var(--scout-visible-bottom,0px) + var(--scout-dock-height,100px) + 24px + env(safe-area-inset-bottom))}
+ .photo-app input:not([type=checkbox]):not([type=radio]),.photo-app textarea,.photo-app select{font-size:16px}
+}
+@media(max-width:760px){
+ .photo-app[data-compact-viewport=true] .map-overlay-controls{display:grid;grid-template-columns:110px 110px;gap:4px}
+ .photo-app[data-compact-viewport=true] .map-overlay-controls>div,.photo-app[data-compact-viewport=true] .map-overlay-controls>details{width:110px}
+ .photo-app[data-compact-viewport=true] .map-overlay-controls .center-map{grid-column:2;justify-self:end}
+ .photo-app[data-compact-viewport=true] .map-brand{max-width:calc(var(--scout-visible-width,100vw) - 250px);overflow:hidden}
+}
