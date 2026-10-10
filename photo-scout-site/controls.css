@@ -186,3 +186,7 @@
  .photo-app[data-compact-viewport=true] .map-overlay-controls .center-map{grid-column:2;justify-self:end}
  .photo-app[data-compact-viewport=true] .map-brand{max-width:calc(var(--scout-visible-width,100vw) - 250px);overflow:hidden}
 }
+
+/* Character cutouts need space to remain recognizable in the library. */
+.avatar-library .avatar-pick img,.avatar-picker .avatar-pick img{height:140px;object-fit:contain}.avatar-pick span{font-weight:600}.avatar-pick:hover{border-color:#aa8acb;background:#f2eafa}
+@media(max-width:600px){.avatar-library .avatar-grid,.avatar-picker .avatar-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.avatar-library .avatar-pick img,.avatar-picker .avatar-pick img{height:130px}}

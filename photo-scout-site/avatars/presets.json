@@ -1,196 +1,29 @@
 {
   "items": [
     {
-      "id": "preset:sunny-robot",
-      "name": "Sunny Robot",
-      "imageUrl": "./avatars/sunny-robot.svg",
-      "original": true
+      "id": "preset:spongebob",
+      "name": "SpongeBob",
+      "imageUrl": "./avatars/characters/spongebob.png"
     },
     {
-      "id": "preset:berry-robot",
-      "name": "Berry Robot",
-      "imageUrl": "./avatars/berry-robot.svg",
-      "original": true
+      "id": "preset:doraemon",
+      "name": "Doraemon",
+      "imageUrl": "./avatars/characters/doraemon.png"
     },
     {
-      "id": "preset:ocean-robot",
-      "name": "Ocean Robot",
-      "imageUrl": "./avatars/ocean-robot.svg",
-      "original": true
+      "id": "preset:totoro",
+      "name": "Totoro",
+      "imageUrl": "./avatars/characters/totoro.png"
     },
     {
-      "id": "preset:mint-robot",
-      "name": "Mint Robot",
-      "imageUrl": "./avatars/mint-robot.svg",
-      "original": true
+      "id": "preset:sun-wukong",
+      "name": "Monkey King",
+      "imageUrl": "./avatars/characters/sun-wukong.png"
     },
     {
-      "id": "preset:sunny-bunny",
-      "name": "Sunny Bunny",
-      "imageUrl": "./avatars/sunny-bunny.svg",
-      "original": true
-    },
-    {
-      "id": "preset:berry-bunny",
-      "name": "Berry Bunny",
-      "imageUrl": "./avatars/berry-bunny.svg",
-      "original": true
-    },
-    {
-      "id": "preset:ocean-bunny",
-      "name": "Ocean Bunny",
-      "imageUrl": "./avatars/ocean-bunny.svg",
-      "original": true
-    },
-    {
-      "id": "preset:mint-bunny",
-      "name": "Mint Bunny",
-      "imageUrl": "./avatars/mint-bunny.svg",
-      "original": true
-    },
-    {
-      "id": "preset:sunny-fox",
-      "name": "Sunny Fox",
-      "imageUrl": "./avatars/sunny-fox.svg",
-      "original": true
-    },
-    {
-      "id": "preset:berry-fox",
-      "name": "Berry Fox",
-      "imageUrl": "./avatars/berry-fox.svg",
-      "original": true
-    },
-    {
-      "id": "preset:ocean-fox",
-      "name": "Ocean Fox",
-      "imageUrl": "./avatars/ocean-fox.svg",
-      "original": true
-    },
-    {
-      "id": "preset:mint-fox",
-      "name": "Mint Fox",
-      "imageUrl": "./avatars/mint-fox.svg",
-      "original": true
-    },
-    {
-      "id": "preset:sunny-cat",
-      "name": "Sunny Cat",
-      "imageUrl": "./avatars/sunny-cat.svg",
-      "original": true
-    },
-    {
-      "id": "preset:berry-cat",
-      "name": "Berry Cat",
-      "imageUrl": "./avatars/berry-cat.svg",
-      "original": true
-    },
-    {
-      "id": "preset:ocean-cat",
-      "name": "Ocean Cat",
-      "imageUrl": "./avatars/ocean-cat.svg",
-      "original": true
-    },
-    {
-      "id": "preset:mint-cat",
-      "name": "Mint Cat",
-      "imageUrl": "./avatars/mint-cat.svg",
-      "original": true
-    },
-    {
-      "id": "preset:sunny-bear",
-      "name": "Sunny Bear",
-      "imageUrl": "./avatars/sunny-bear.svg",
-      "original": true
-    },
-    {
-      "id": "preset:berry-bear",
-      "name": "Berry Bear",
-      "imageUrl": "./avatars/berry-bear.svg",
-      "original": true
-    },
-    {
-      "id": "preset:ocean-bear",
-      "name": "Ocean Bear",
-      "imageUrl": "./avatars/ocean-bear.svg",
-      "original": true
-    },
-    {
-      "id": "preset:mint-bear",
-      "name": "Mint Bear",
-      "imageUrl": "./avatars/mint-bear.svg",
-      "original": true
-    },
-    {
-      "id": "preset:sunny-astronaut",
-      "name": "Sunny Astronaut",
-      "imageUrl": "./avatars/sunny-astronaut.svg",
-      "original": true
-    },
-    {
-      "id": "preset:berry-astronaut",
-      "name": "Berry Astronaut",
-      "imageUrl": "./avatars/berry-astronaut.svg",
-      "original": true
-    },
-    {
-      "id": "preset:ocean-astronaut",
-      "name": "Ocean Astronaut",
-      "imageUrl": "./avatars/ocean-astronaut.svg",
-      "original": true
-    },
-    {
-      "id": "preset:mint-astronaut",
-      "name": "Mint Astronaut",
-      "imageUrl": "./avatars/mint-astronaut.svg",
-      "original": true
-    },
-    {
-      "id": "preset:sunny-monster",
-      "name": "Sunny Monster",
-      "imageUrl": "./avatars/sunny-monster.svg",
-      "original": true
-    },
-    {
-      "id": "preset:berry-monster",
-      "name": "Berry Monster",
-      "imageUrl": "./avatars/berry-monster.svg",
-      "original": true
-    },
-    {
-      "id": "preset:ocean-monster",
-      "name": "Ocean Monster",
-      "imageUrl": "./avatars/ocean-monster.svg",
-      "original": true
-    },
-    {
-      "id": "preset:mint-monster",
-      "name": "Mint Monster",
-      "imageUrl": "./avatars/mint-monster.svg",
-      "original": true
-    },
-    {
-      "id": "preset:sunny-cloud-sprite",
-      "name": "Sunny Cloud Sprite",
-      "imageUrl": "./avatars/sunny-cloud-sprite.svg",
-      "original": true
-    },
-    {
-      "id": "preset:berry-cloud-sprite",
-      "name": "Berry Cloud Sprite",
-      "imageUrl": "./avatars/berry-cloud-sprite.svg",
-      "original": true
-    },
-    {
-      "id": "preset:ocean-cloud-sprite",
-      "name": "Ocean Cloud Sprite",
-      "imageUrl": "./avatars/ocean-cloud-sprite.svg",
-      "original": true
-    },
-    {
-      "id": "preset:mint-cloud-sprite",
-      "name": "Mint Cloud Sprite",
-      "imageUrl": "./avatars/mint-cloud-sprite.svg",
-      "original": true
+      "id": "preset:sherlock",
+      "name": "Sherlock Holmes",
+      "imageUrl": "./avatars/characters/sherlock.png"
     }
   ]
 }
