@@ -61,6 +61,11 @@ def clean_photo(value):
 
 
 def background_reference(provider,url):
+    if provider=='google-places-photos':
+        if re.fullmatch(r'google-place-photo://[A-Za-z0-9_-]{1,200}/[a-f0-9]{64}',url):return url
+        u=urlsplit(url);q=parse_qs(u.query);reference=q.get('reference',[''])[0]
+        if u.scheme=='https' and u.netloc==urlsplit(os.getenv('BASE_URL','https://api.aisoup.net')).netloc and u.path=='/photo-scout/v1/street-view-image' and re.fullmatch(r'google-place-photo://[A-Za-z0-9_-]{1,200}/[a-f0-9]{64}',reference):return reference
+        raise HTTPException(422,'Invalid place photo background')
     if provider!='google-street-view':
         if not image_host(url):raise HTTPException(422,'Unsupported background image provider')
         return url

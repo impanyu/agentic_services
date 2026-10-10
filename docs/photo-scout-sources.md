@@ -11,7 +11,7 @@ must disclose actual sampled sources; no claim of whole-world street-view covera
 | Mapillary | Crowdsourced street-level imagery | Adapter exists; no token configured; not live-verified | Obtain developer token through secure configuration; verify real imagery and attribution |
 | KartaView | Crowdsourced street imagery | Official public API probed twice; timeouts; not connected | Resolve network/API availability before enabling |
 | Google Street View | Outdoor panorama discovery and agent image inspection | Deployed and enabled; actual Google images inspected in a production multimodal run alongside Panoramax and Commons; dedicated API/IP-restricted key and persistent daily image cap; commercial inference permission unverified | Verify real image/model path; request Google confirmation of commercial inference and downstream output scope |
-| Google Places Photos | Place-associated contributor photos | October 10: real retrieval verified; standalone trial adapter only, not registered in search or selfie generation | Resolve permitted downstream use before enabling scoring/composites; display requires Google Maps and author attribution |
+| Google Places Photos | Place-associated contributor photos | October 10: real retrieval verified; now integrated with POI image discovery, batch scoring, report previews and selfie backgrounds | Preserve Google Maps and author attribution; resolve downstream-use authorization separately |
 | Google Maps Grounding Lite | Official LLM place context | Not connected; not an image analysis substitute | Evaluate alongside a Google-compliant display and storage design |
 | Flickr | Geotagged photographer images | Candidate; no adapter/key | Review API commercial use, file licenses and removal rules; do not treat all public photos as reusable |
 | Tourism boards, parks, museums and cities | Open/authorized location-specific photo collections | Candidate | Connect only after confirming collection-level access plus file-level rights |
@@ -105,3 +105,27 @@ References:
   content from Maps content. Do not enable Places Photos composites without an
   applicable permission basis.
 - [Mapillary API access](https://help.mapillary.com/hc/en-us/articles/360010234680-Accessing-imagery-and-data-through-the-Mapillary-API)
+
+## Places Photos workflow integration (October 10, 2026)
+
+The earlier display-only trial is superseded by an additive integration. Existing
+Google Street View discovery, eight-angle scoring, framing and selfie composition
+are unchanged. Set `PHOTO_SCOUT_GOOGLE_PLACES_PHOTOS_ENABLED=0` to disable only
+this additional source; the default is enabled when a Google Places key and Google
+POI anchors are present. Fetch at most two photos each for eight POIs, with four
+parallel lookups and a 12-second lookup bound. Errors are source-level statuses and
+do not disable the existing providers.
+
+Place-associated photos enter the same visual relevance check/scoring as other
+sources. Their POI association is retained, but camera coordinates and direction
+are unknown; no synthetic heading or interactive panorama is claimed. Signed
+previews and portrait input resolve a hashed photo selector from freshly retrieved
+Places metadata. Expired media URLs and raw Google photo resource names are not
+saved in reports. If a photo disappears, fail that preview instead of silently
+substituting another. These photos do not reuse persistent visual-score caches.
+
+Technical capabilities (`scorable`, `selfieBackground`) describe implemented
+functionality, not a conclusion about provider authorization. Authorization review
+remains separate. No authorization gate was added to the existing Street View
+portrait API. Mapillary still needs a developer token; domestic providers remain
+unconnected as documented in the regional plan.

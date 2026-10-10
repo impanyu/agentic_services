@@ -1,8 +1,8 @@
 """On-demand Places photo probe/display adapter, separate from scoring and composites.
 
 Photo resources and media URLs are transient. Fetch names fresh on every invocation;
-never put them in durable reports, score caches, or portrait jobs. A POI association
-is not the camera position. This adapter is not registered as a scoring source.
+keep media URLs and resource names out of durable reports and portrait jobs. A POI association
+is not the camera position. Reports retain only a place ID and a hashed photo selector, resolved fresh.
 """
 import asyncio
 import hashlib
@@ -33,7 +33,7 @@ def attribution_url(url):
         return None
 
 
-async def place_photos(client, place_id, *, limit=3, width=800):
+async def place_photos(client, place_id, *, limit=3, width=800, selector=None):
     """Fetch a fresh, bounded photo selection with attribution. No API key in output."""
     place_id=place_id.removeprefix('google:')
     if not re.fullmatch(r'[A-Za-z0-9_-]{1,200}',place_id):
@@ -54,13 +54,53 @@ async def place_photos(client, place_id, *, limit=3, width=800):
         if not photo_media_host(url):return None
         authors=[{'displayName':text(a.get('displayName','')),'uri':attribution_url(a.get('uri'))}
                  for a in photo.get('authorAttributions',[]) if isinstance(a,dict)]
-        return {'id':'google-place-photo:'+hashlib.sha256(url.encode()).hexdigest()[:24],
+        return {'id':'google-place-photo:'+hashlib.sha256(name.encode()).hexdigest()[:24],
+            'photoReference':'google-place-photo://'+place_id+'/'+hashlib.sha256(name.encode()).hexdigest(),
             'provider':'google-places-photos','imageUrl':url,'authorAttributions':authors,
             'originalWidth':photo.get('widthPx'),'originalHeight':photo.get('heightPx'),
             'locationType':'place_association_not_verified_camera_position',
-            'capabilities':{'viewable':True,'scorable':False,'selfieBackground':False,'adjustableView':False}}
-    photos=await asyncio.gather(*(media(p) for p in data.get('photos',[])[:limit] if isinstance(p,dict)),return_exceptions=True)
+            'capabilities':{'viewable':True,'scorable':True,'selfieBackground':True,'adjustableView':False}}
+    selected=[p for p in data.get('photos',[]) if isinstance(p,dict) and (selector is None or hashlib.sha256(str(p.get('name','')).encode()).hexdigest()==selector)][:limit]
+    photos=await asyncio.gather(*(media(p) for p in selected),return_exceptions=True)
     return {'placeId':place_id,'title':text(data.get('displayName',{}).get('text')),
         'sourceUrl':attribution_url(data.get('googleMapsUri')),
         'photos':[p for p in photos if isinstance(p,dict)],'availablePhotos':len(data.get('photos',[])),
-        'cachePolicy':'no-store','attribution':'Google Maps','usage':'display-evaluation-only'}
+        'cachePolicy':'no-store','attribution':'Google Maps','usage':'photo-candidate'}
+
+
+async def candidates(client,pois):
+    """Bounded POI photos; no invented camera position or heading."""
+    slots=asyncio.Semaphore(4)
+    async def fetch(poi):
+        async with slots:
+            async with asyncio.timeout(12):
+                data=await place_photos(client,poi['id'],limit=2)
+        return [{**photo,'imageUrl':photo['photoReference'],'provider':'google-places-photos',
+            'title':data['title'],'lat':poi['lat'],'lon':poi['lon'],'poi':poi,'poiCandidates':[poi],
+            'author':'; '.join(a['displayName'] for a in photo['authorAttributions']),
+            'license':'Google Maps Platform terms','licenseUrl':'https://cloud.google.com/maps-platform/terms',
+            'sourceUrl':data['sourceUrl'],'cacheable':False,'viewHeadingDegrees':None,
+            'description':'Contributor photo associated with this POI. Camera coordinates and direction are unknown; inspect the image for relevance.'}
+            for photo in data['photos']]
+    results=await asyncio.gather(*(fetch(p) for p in pois[:8] if str(p.get('id','')).startswith('google:')),return_exceptions=True)
+    if results and all(isinstance(r,Exception) for r in results):raise ValueError('Place photo lookups unavailable')
+    return [row for rows in results if isinstance(rows,list) for row in rows]
+
+
+async def image_data(reference):
+    import base64,httpx
+    match=re.fullmatch(r'google-place-photo://([A-Za-z0-9_-]{1,200})/([a-f0-9]{64})',reference)
+    if not match:raise ValueError('Invalid place photo reference')
+    async with httpx.AsyncClient(timeout=25,follow_redirects=False) as client:
+        data=await place_photos(client,match[1],limit=1,selector=match[2])
+        if not data['photos']:raise ValueError('Selected place photo is no longer available')
+        async with client.stream('GET',data['photos'][0]['imageUrl']) as response:
+            response.raise_for_status();raw=bytearray()
+            async for chunk in response.aiter_bytes():
+                raw.extend(chunk)
+                if len(raw)>3_000_000:raise ValueError('Place photo exceeds limit')
+    if raw.startswith(b'\xff\xd8\xff'):mime='image/jpeg'
+    elif raw.startswith(b'\x89PNG\r\n\x1a\n'):mime='image/png'
+    elif raw[:4]==b'RIFF' and raw[8:12]==b'WEBP':mime='image/webp'
+    else:raise ValueError('Unsupported place photo type')
+    return f'data:{mime};base64,'+base64.b64encode(raw).decode()

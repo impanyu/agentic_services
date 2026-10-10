@@ -21,6 +21,7 @@ import httpx
 from fastapi import APIRouter, Header, HTTPException, Request, Response
 from pydantic import BaseModel, Field, model_validator, ValidationError
 
+from .sources import image_data
 from .tasks import TaskStore, SEARCH_RETENTION, prune_records
 from .styles import PHOTO_STYLES, mapped_categories, style_briefs
 from .scoring import explore, assess_images, rank_assessments
@@ -368,7 +369,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
     def image_links(result):
         if not result or not settings.service_api_key: return result
         for spot in result.get('spots',[])+result.get('poiResults',[]):
-            ref=spot.get('streetViewReference')
+            ref=spot.get('streetViewReference') or spot.get('imageReference')
             if not ref: continue
             expires=int(time.time())+1200
             sig=hmac.new(settings.service_api_key.encode(),f'{ref}|{expires}'.encode(),hashlib.sha256).hexdigest()
@@ -380,6 +381,8 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
         require_api(authorization)
         results=[]
         for url in payload.sourceUrls:
+            if re.fullmatch(r'google-place-photo://[A-Za-z0-9_-]{1,200}/[a-f0-9]{64}',url):
+                results.append(image_links({'spots':[{'imageReference':url}]})['spots'][0]['imageUrl']);continue
             if len(url)>4000:raise HTTPException(422,'Invalid Street View URL')
             u=urlsplit(url);q=parse_qs(u.query)
             pano=q.get('pano',[''])[0];heading=q.get('heading',[''])[0];pitch=q.get('pitch',['0'])[0]
@@ -402,8 +405,8 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
             raise HTTPException(403,'Image link expired or invalid; reload the report')
         image_limit()
         try:
-            data=await google_image_data(reference)
-            return Response(base64.b64decode(data.split(',',1)[1]),media_type='image/jpeg',
+            data=await image_data(reference) if reference.startswith('google-place-photo://') else await google_image_data(reference)
+            return Response(base64.b64decode(data.split(',',1)[1]),media_type=data.split(';',1)[0].removeprefix('data:'),
                 headers={'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff'})
         except Exception as e: raise HTTPException(503,'Street View image is temporarily unavailable') from e
 

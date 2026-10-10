@@ -367,6 +367,10 @@ async def candidates(lat,lon,radius,pois=None,visual_exploration=False,point_onl
             providers.append(('panoramax',panoramax))
         if not point_only and os.getenv('PHOTO_SCOUT_MAPILLARY_TOKEN'):
             providers.append(('mapillary',mapillary))
+        if not point_only and pois and os.getenv('PHOTO_SCOUT_GOOGLE_PLACES_PHOTOS_ENABLED','1')=='1' and (os.getenv('PHOTO_SCOUT_GOOGLE_PLACES_API_KEY') or os.getenv('PHOTO_SCOUT_GOOGLE_API_KEY')):
+            from .place_photos import candidates as place_photo_candidates
+            async def photos(client,lat,lon,radius):return await place_photo_candidates(client,pois)
+            providers.append(('google-places-photos',photos))
         results=await asyncio.gather(*(fn(client,lat,lon,radius) for _,fn in providers),return_exceptions=True)
         for (name,_),result in zip(providers,results):
             if isinstance(result,Exception):
@@ -406,6 +410,9 @@ async def candidates(lat,lon,radius,pois=None,visual_exploration=False,point_onl
 
 
 async def image_data(url):
+    if url.startswith('google-place-photo://'):
+        from .place_photos import image_data as place_image_data
+        return await place_image_data(url)
     if url.startswith('google-streetview://'):
         return await google_image_data(url)
     if not image_host(url):

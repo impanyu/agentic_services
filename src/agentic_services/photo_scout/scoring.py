@@ -174,6 +174,8 @@ def validate_result(result,rows,inspected,limit):
         if row.get('poi') and any(x.get('poi',{}).get('id')==row['poi']['id'] for x in out): continue
         if any(distance((row['lat'],row['lon']),(x['lat'],x['lon']))<35 for x in out): continue
         public_row={**row}
+        if row.get('provider')=='google-places-photos':
+            public_row['imageReference']=row['imageUrl'];public_row['imageUrl']=None
         if row.get('provider')=='google-street-view':
             public_row['streetViewReference']=row['imageUrl'];public_row['imageUrl']=None
         out.append({**public_row,**choice.model_dump(),**({'name':row['poi']['name']} if row.get('poi') else {}),'accessStatus':'unknown',
@@ -205,7 +207,7 @@ async def assess_images(settings,payload,rows,statuses=None):
     keys={r['id']:cache.key(r,payload,model,INSTRUCTIONS) for r in rows}
     cached=[];missing=[]
     for row in rows:
-        saved=cache.get(keys[row['id']])
+        saved=cache.get(keys[row['id']]) if row.get('cacheable',True) else None
         try:
             assessment=ImageAssessment.model_validate(saved) if saved else None
         except ValueError:
@@ -243,7 +245,7 @@ async def assess_images(settings,payload,rows,statuses=None):
                 output=response.output_parsed
                 expected={aliases[r['id']]:r['id'] for r,_ in usable};counts=Counter(a.image_id for a in output.assessments) if output else {}
                 valid=[a.model_copy(update={'image_id':expected[a.image_id]}) for a in output.assessments if a.image_id in expected and counts[a.image_id]==1] if output else []
-                cache.put([(keys[a.image_id],a.model_dump()) for a in valid])
+                cache.put([(keys[a.image_id],a.model_dump()) for a in valid if next(r for r in rows if r['id']==a.image_id).get('cacheable',True)])
             except Exception as error:
                 logging.getLogger(__name__).warning('Photo Scout batch scoring failed: %s; images=%s',type(error).__name__,len(usable))
             if response is not None and response.usage:usages.append(response.usage)
