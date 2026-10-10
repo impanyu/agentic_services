@@ -10,21 +10,22 @@
   const caption=document.createElement('span');caption.className='street-view-caption';caption.setAttribute('aria-live','polite');
   const hint=document.createElement('span');hint.className='street-view-gesture-hint';hint.textContent='Drag to look · + / − to zoom';
   const zoom=document.createElement('div');zoom.className='street-view-zoom';
-  let timer,drag=null,suppressClick=false;
+  let timer,drag=null,suppressClick=false,lastPreview=0;
   function refresh(){const spot=getSpot(),enabled=spot?.provider==='google-street-view';container.classList.toggle('street-view-active',enabled);tools.hidden=hint.hidden=!enabled;if(enabled){const v=view(spot);caption.textContent=`${Math.round(v.heading)}° · tilt ${Math.round(v.pitch)}° · FOV ${Math.round(v.fov)}°`;}}
-  function commit(){clearTimeout(timer);if(container.isConnected===false)return;if(getSpot()?.provider==='google-street-view'&&!isDisabled())onCommit();}
-  function change(delta,delay=true){if(getSpot()?.provider!=='google-street-view'||isDisabled())return false;onChange(adjust(view(getSpot()),delta));refresh();if(delay){clearTimeout(timer);timer=setTimeout(commit,250);}return true;}
+  function commit(){clearTimeout(timer);timer=null;if(container.isConnected===false)return;if(getSpot()?.provider==='google-street-view'&&!isDisabled())onCommit();}
+  function preview(){const now=Date.now();if(!lastPreview||now-lastPreview>=180){lastPreview=now;commit();}else if(!timer)timer=setTimeout(()=>{timer=null;lastPreview=Date.now();commit();},180-(now-lastPreview));}
+  function change(delta,delay=true){if(getSpot()?.provider!=='google-street-view'||isDisabled())return false;onChange(adjust(view(getSpot()),delta));refresh();if(delay)preview();return true;}
   for(const [text,label,delta] of [['+','Zoom in',{fov:-10}],['−','Zoom out',{fov:10}]]){const b=document.createElement('button');b.type='button';b.textContent=text;b.setAttribute('aria-label',label);b.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();change(delta);});zoom.append(b);}
   tools.append(caption,zoom);container.append(tools,hint);
   container.addEventListener('keydown',event=>{const delta=keyDelta(event.key);if(delta&&change(delta)){event.preventDefault();event.stopPropagation();}});
   container.addEventListener('wheel',event=>{if(getSpot()?.provider!=='google-street-view'||isDisabled())return;event.preventDefault();event.stopPropagation();change({fov:event.deltaY>0?10:-10});},{passive:false});
   container.addEventListener('dragstart',event=>event.preventDefault());
   container.addEventListener('pointerdown',event=>{if(event.button!==0||event.target.closest('button')||getSpot()?.provider!=='google-street-view'||isDisabled())return;container.focus({preventScroll:true});drag={id:event.pointerId,x:event.clientX,y:event.clientY,start:view(getSpot()),moved:false};suppressClick=false;container.setPointerCapture(event.pointerId);event.preventDefault();event.stopPropagation();});
-  container.addEventListener('pointermove',event=>{if(!drag||event.pointerId!==drag.id)return;const dx=event.clientX-drag.x,dy=event.clientY-drag.y;if(Math.hypot(dx,dy)<4&&!drag.moved)return;drag.moved=true;clearTimeout(timer);const width=container.getBoundingClientRect().width||300;onChange(adjust(drag.start,{heading:-dx*drag.start.fov/width,pitch:dy*drag.start.fov/width}));container.classList.add('street-view-dragging');hint.textContent='Release to update view';refresh();event.preventDefault();event.stopPropagation();});
+  container.addEventListener('pointermove',event=>{if(!drag||event.pointerId!==drag.id)return;const dx=event.clientX-drag.x,dy=event.clientY-drag.y;if(Math.hypot(dx,dy)<4&&!drag.moved)return;drag.moved=true;const width=container.getBoundingClientRect().width||300;onChange(adjust(drag.start,{heading:-dx*drag.start.fov/width,pitch:dy*drag.start.fov/width}));container.classList.add('street-view-dragging');hint.textContent='Updating view…';refresh();preview();event.preventDefault();event.stopPropagation();});
   function finish(event){if(!drag||drag.id!==event.pointerId)return;const moved=drag.moved;drag=null;container.classList.remove('street-view-dragging');hint.textContent='Drag to look · + / − to zoom';if(moved){suppressClick=true;commit();}if(container.hasPointerCapture(event.pointerId))container.releasePointerCapture(event.pointerId);}
   container.addEventListener('pointerup',finish);container.addEventListener('pointercancel',finish);
   container.addEventListener('click',event=>{if(suppressClick){suppressClick=false;event.preventDefault();event.stopImmediatePropagation();}},{capture:true});
-  function reset(){clearTimeout(timer);drag=null;suppressClick=false;container.classList.remove('street-view-dragging');hint.textContent='Drag to look · + / − to zoom';refresh();}
+  function reset(){clearTimeout(timer);timer=null;lastPreview=0;drag=null;suppressClick=false;container.classList.remove('street-view-dragging');hint.textContent='Drag to look · + / − to zoom';refresh();}
   refresh();return {refresh,reset,dispose(){clearTimeout(timer);drag=null;}};
  }
  global.PhotoScoutStreetView={view,adjust,keyDelta,bind};

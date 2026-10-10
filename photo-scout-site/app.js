@@ -274,6 +274,11 @@ function bindStreetViewPreview(surface,getSpot,searchId,{onChange,onCommit,isDis
  if(typeof window.PhotoScoutStreetView?.bind!=='function')return;
  surface.streetViewSpot=getSpot;surface.streetViewSearchId=searchId;
  surface.streetViewController=window.PhotoScoutStreetView.bind(surface,{getSpot,isDisabled:()=>Boolean(isDisabled?.()||window.PhotoScoutNativeStreetView?.isActive(surface)),onChange:view=>{if(onChange)onChange(view);else applyStreetView(getSpot(),view,searchId);},onCommit:()=>{if(onCommit)onCommit();else refreshStreetViewPreviews(getSpot(),searchId);}});
+ // Start the reusable interactive panorama only for the surface being used.
+ // Shortlist cards used to remain static until a gesture ended.
+ let nativeLoading=false;
+ const interact=()=>{if(nativeLoading||isDisabled?.()||window.PhotoScoutNativeStreetView?.isActive(surface)||getSpot()?.provider!=='google-street-view')return;nativeLoading=true;Promise.resolve(activateNativeStreetView(surface,getSpot,searchId,{isDisabled,onChange})).finally(()=>nativeLoading=false);};
+ for(const event of ['pointerdown','focusin','wheel'])surface.addEventListener(event,interact,{capture:true,passive:true});
  L.DomEvent.disableClickPropagation(surface);L.DomEvent.disableScrollPropagation(surface);
 }
 function activateNativeStreetView(surface,getSpot,searchId,options={}){
