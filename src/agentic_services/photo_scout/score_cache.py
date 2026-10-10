@@ -33,12 +33,15 @@ class ScoreCache:
         image = {k: v for k, v in row.items() if k not in ('distanceMeters', 'poiDistanceMeters', 'author', 'explorationReason')}
         if image.get('poiCandidates'):
             image['poiCandidates'] = sorted(image['poiCandidates'], key=lambda p: p['id'])
+        from .streetview_tiles import profile
         data = {'version': 2, 'subjectRole':getattr(payload,'subjectRole','scene'), 'requirements':[r.model_dump() for r in getattr(payload,'requirements',[])], 'image': image, 'model': model, 'instructions': instructions,
                 'photoStyles': sorted(payload.photoStyles or []), 'preferences': payload.preferences.strip(),
                 'geographicKinds': sorted(getattr(payload,'geographicKinds',[])),
                 'geographicCombination':getattr(payload,'geographicCombination','all'),'featureCombination':getattr(payload,'featureCombination','all'),
                 'searchProgram':payload.searchProgram.retrieval().model_dump() if getattr(payload,'searchProgram',None) else None,'searchBranches':[b.model_dump() for b in getattr(payload,'searchBranches',[])],'osmFeatures': [q.model_dump() for q in getattr(payload,'osmFeatures',[])],
                 'poiQueries': sorted(payload.poiQueries), 'scoringIntent': payload.scoringIntent.strip()}
+        if row.get('provider')=='google-street-view':
+            data['imageryProfile']=profile()
         return hashlib.sha256(json.dumps(data, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
 
     def get(self, key):

@@ -21,6 +21,9 @@
  function caption(){if(!active)return;const v=global.PhotoScoutStreetView.view(active.getSpot());active.caption.textContent=`${v.heading}° · tilt ${v.pitch}° · FOV ${v.fov}°`;}
  function refresh(surface){if(!panorama||active?.surface!==surface)return false;userEditingUntil=0;const spot=active.getSpot(),view=global.PhotoScoutStreetView.view(spot),pano=new URL(spot.sourceUrl).searchParams.get('pano');applying=true;if(panorama.getPano()!==pano)panorama.setPano(pano);panorama.setPov({heading:view.heading,pitch:view.pitch});panorama.setZoom(zoomForFov(view.fov));applying=false;caption();return true;}
  async function attach(surface,options){
+  // Cost-first default: reuse the backend's low-resolution panorama projections.
+  // Native Google Maps is an explicit opt-in, never an automatic paid load.
+  if(global.PhotoScoutMapsConfig?.interactiveStreetView!==true)return false;
   if(options.getSpot()?.provider!=='google-street-view')return false;
   const ticket=++generation;userEditingUntil=0;requestedSurface=surface;surface.classList.add('native-street-view-loading');
   try{const maps=await load();if(ticket!==generation||!surface.isConnected)return false;

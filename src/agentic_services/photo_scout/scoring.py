@@ -235,7 +235,7 @@ async def assess_images(settings,payload,rows,statuses=None):
                 'photoStyleBriefs':style_briefs(payload.photoStyles)})}]
             for row,data in usable:
                 content.extend([{'type':'input_text','text':json.dumps({'image':{**{k:v for k,v in row.items() if k not in ('id','imageUrl','author','distanceMeters','poiDistanceMeters','explorationReason')},'id':aliases[row['id']]}})},
-                    {'type':'input_image','image_url':data,'detail':'high'}])
+                    {'type':'input_image','image_url':data,'detail':'low' if row.get('imageryProfile')=='google-tiles-z0-v1' else 'high'}])
             response=None;valid=[];usages=[];requests=1
             try:
                 async with batch_slots:

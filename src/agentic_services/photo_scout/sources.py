@@ -241,6 +241,11 @@ def google_query_points(lat,lon,radius):
     return result
 
 
+def google_imagery_profile():
+    from .streetview_tiles import profile
+    return profile()
+
+
 async def google_streetview(client, lat, lon, radius, targets=None, area_sampling=False, center_priority=False):
     """Bounded panorama discovery, including provider-supported indoor views. Never put the credential in candidate URLs."""
     import asyncio
@@ -302,7 +307,8 @@ async def google_streetview(client, lat, lon, radius, targets=None, area_samplin
                 'licenseUrl':'https://cloud.google.com/maps-platform/terms',
                 'sourceDate':data.get('date'),'capturedAt':data.get('date'),
                 'viewHeadingDegrees':heading,'viewPitchDegrees':pitch,'viewFovDegrees':120,
-                'description':'Street View camera position; access and safe standing point unverified.',
+                'imageryProfile':google_imagery_profile(),
+                'description':'Street View camera position; access and safe standing point unverified.'+(' Lowest-resolution panorama projection; small visual details may be unresolved.' if google_imagery_profile()=='google-tiles-z0-v1' else ''),
                 **({'centerPriority':True} if poi and poi.get('centerPriority') else {}),
                 **({'poi':poi,'poiCandidates':[poi],'poiDistanceMeters':round(distance((lat2,lon2),(poi['lat'],poi['lon'])))} if poi else {})})
     if not successful: raise ValueError('Google Street View metadata unavailable')
@@ -378,7 +384,7 @@ async def candidates(lat,lon,radius,pois=None,visual_exploration=False,point_onl
             else:
                 statuses[name]={'status':'ok','eligibleImages':len(result)}; rows+=result
                 if name=='google-street-view':
-                    statuses[name].update(samplingSpacingMeters=google_sampling_spacing(radius) if (visual_exploration and not point_only) or pois is None else None,maxViewsPerLocation=VIEWS_PER_PANORAMA,
+                    statuses[name].update(imageryProfile=google_imagery_profile(),samplingSpacingMeters=google_sampling_spacing(radius) if (visual_exploration and not point_only) or pois is None else None,maxViewsPerLocation=VIEWS_PER_PANORAMA,
                         queriedLocations=1 if point_only else (min(50,len(google_query_points(lat,lon,radius))+min(30,len(pois or []))) if visual_exploration else len(pois) if pois is not None else len(google_query_points(lat,lon,radius))),centerPriority=center_priority,samplingMode='point' if point_only else 'area-and-poi' if visual_exploration else 'poi' if pois is not None else 'area')
     valid=[]
     for row in rows:
@@ -442,15 +448,11 @@ async def image_data(url):
     return f'data:{mime};base64,'+base64.b64encode(data).decode()
 
 
-async def google_image_data(reference):
-    import re
+def record_google_image_request(kind):
+    """Count actual outgoing paid-image attempts, including failures, by SKU."""
     import sqlite3
     from datetime import datetime, timezone
     from pathlib import Path
-    match=re.fullmatch(r'google-streetview://([A-Za-z0-9_-]{1,200})/(\d{1,3})(?:/(-?\d{1,2}))?(?:/(\d{2,3}))?',reference)
-    if not match or int(match[2])>=360 or not -90<=int(match[3] or 0)<=90 or not 30<=int(match[4] or 120)<=120 or not google_enabled(): raise ValueError('Google imagery unavailable')
-    # Keep request accounting; a positive limit is an optional operator setting.
-    # Development is uncapped by default. The signed image proxy remains protected.
     path=Path(os.getenv('WEB_EVIDENCE_DB','data/web-evidence.db'))
     path.parent.mkdir(parents=True,exist_ok=True)
     with sqlite3.connect(path,timeout=15) as db:
@@ -463,6 +465,18 @@ async def google_image_data(reference):
         if limit>0 and count>=limit:
             raise ValueError('Google image budget exhausted')
         db.execute('UPDATE photo_scout_google_budget SET requests=requests+1 WHERE day=?',(day,))
+        db.execute('CREATE TABLE IF NOT EXISTS photo_scout_google_image_usage (day TEXT, kind TEXT, requests INTEGER NOT NULL, PRIMARY KEY(day,kind))')
+        db.execute('INSERT INTO photo_scout_google_image_usage VALUES(?,?,1) ON CONFLICT(day,kind) DO UPDATE SET requests=requests+1',(day,kind))
+
+
+async def google_image_data(reference):
+    import re
+    match=re.fullmatch(r'google-streetview://([A-Za-z0-9_-]{1,200})/(\d{1,3})(?:/(-?\d{1,2}))?(?:/(\d{2,3}))?',reference)
+    if not match or int(match[2])>=360 or not -90<=int(match[3] or 0)<=90 or not 30<=int(match[4] or 120)<=120 or not google_enabled(): raise ValueError('Google imagery unavailable')
+    from . import streetview_tiles
+    if streetview_tiles.enabled():
+        return await streetview_tiles.image_data(match[1],int(match[2]),int(match[3] or 0),int(match[4] or 120))
+    record_google_image_request('static-streetview')
     async with httpx.AsyncClient(timeout=25,follow_redirects=False) as client:
         async with client.stream('GET','https://maps.googleapis.com/maps/api/streetview',params={
             'pano':match[1],'heading':match[2],'pitch':int(match[3] or 0),'fov':int(match[4] or 120),'size':'640x640',

@@ -518,3 +518,47 @@ The My Photos menu has four tabs: My photos (existing personal task/history list
 ### Subject proportions and framing
 
 Selfie composition supports `composition`: `auto` (default), `full_body`, `half_body`, and `close_up`, independently of background Street View FOV (`framing`). The selected-background assessment records visible people/object scale references and ground-plane/perspective guidance, reused by the image model without an extra model call. Compare subjects at similar depth, preserve natural near/far perspective and use camera crops instead of making subjects physically larger. Choices are saved with private tasks and published photo metadata. Existing tasks without composition retain Auto.
+
+## Cost-first Street View delivery (October 10)
+
+`PHOTO_SCOUT_GOOGLE_IMAGE_MODE=tiles-low` is the default. Discover panorama IDs
+with the existing free Static metadata endpoint. Fetch one full-sphere zoom-zero
+Map Tiles image per panorama, then render every requested compass heading, tilt,
+and FOV locally as a 256x256 JPEG. The metadata gives native panorama dimensions; infer its native pyramid level
+from the tile width and halve down to z0. Contributor panoramas can have fewer
+levels than Google car panoramas. The sphere can be smaller than the 512x512 tile. Discard horizontal
+repetition and black padding outside that rectangle. The 256x256 output size
+does not imply additional detail.
+All eight search directions remain available. Previews and selfie framing use the
+same low-resolution source; neither automatically requests a higher zoom level.
+The image generator and its output quality are unchanged.
+
+Enable `tile.googleapis.com` and add it to the server key's API allowlist, preserving
+its production IP restriction and existing Static/Places/Routes restrictions.
+Optionally supply `PHOTO_SCOUT_GOOGLE_TILES_API_KEY` as a separate restricted key.
+The actual street-view session response selects the image format; setting
+`imageFormat` on createSession returned Invalid Value in the live provider test.
+
+One concurrent fetch serves all eight directions. Raw panorama bytes are retained
+only in memory for ten minutes, with a maximum of 128 panoramas; they are not added
+to the persistent score database. Google assessment cache entries distinguish
+image delivery profiles so old high-resolution scores cannot hide low-resolution
+quality. Other providers' score cache keys remain unchanged. Outgoing image attempts
+are counted by SKU in `photo_scout_google_image_usage`; local view renders do not
+consume the daily paid-image request budget. Provider failures never silently
+fall back to the more expensive static image path. An operator can explicitly
+restore `PHOTO_SCOUT_GOOGLE_IMAGE_MODE=static` if needed.
+
+Native Maps JavaScript Street View is not auto-loaded for popups, shortlist cards,
+or selfie backgrounds. The existing drag/keyboard/zoom controller refreshes local
+projections instead. An operator can explicitly opt back in with
+`PhotoScoutMapsConfig.interactiveStreetView=true`; doing so adds separate Dynamic
+Street View costs. The production default keeps it disabled.
+
+At post-free first-tier list prices, one z0 tile costs $0.002 instead of eight
+static image requests at $0.056: approximately 96.4% lower image-fetch spend for
+that panorama. This is not a reduction of all task costs: Places, text planning,
+other providers, model calls, UI requests after cache expiry and infrastructure
+still need separate accounting. Tiny text, distant subjects and subtle objects
+can be unresolved at this deliberately lowest-resolution setting; generated
+sharpness cannot prove the accuracy of missing real-world details.

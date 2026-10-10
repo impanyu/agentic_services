@@ -198,6 +198,7 @@ def test_google_candidates_keep_angles_without_credentials(monkeypatch):
 
 
 def test_google_image_budget_and_reference_validation(tmp_path,monkeypatch):
+    monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_IMAGE_MODE','static')
     import agentic_services.photo_scout.sources as sources
     monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_ENABLED','1')
     monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_API_KEY','secret-fixture')
@@ -220,6 +221,7 @@ def test_google_image_budget_and_reference_validation(tmp_path,monkeypatch):
 
 @pytest.mark.parametrize('configured',[None,'0'])
 def test_google_image_development_requests_continue_past_existing_count(tmp_path,monkeypatch,configured):
+    monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_IMAGE_MODE','static')
     import sqlite3
     from datetime import datetime,timezone
     import agentic_services.photo_scout.sources as sources
@@ -701,6 +703,7 @@ def test_multiangle_scoring_keeps_best_view_even_after_old_24_image_cap(tmp_path
 
 
 def test_google_horizontal_reference_reaches_provider(tmp_path,monkeypatch):
+    monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_IMAGE_MODE','static')
     import agentic_services.photo_scout.sources as sources
     monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_ENABLED','1');monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_API_KEY','test')
     monkeypatch.setenv('WEB_EVIDENCE_DB',str(tmp_path/'db'));monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_DAILY_IMAGE_LIMIT','0')
