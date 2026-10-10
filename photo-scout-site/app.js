@@ -446,7 +446,7 @@ el('sample-paris').addEventListener('click',async()=>{try{const r=await fetch('.
 el("sample-google").addEventListener("click",async()=>{try{const r=await fetch("./sample-google.json");if(!r.ok)throw Error("Sample unavailable");const data=await r.json();render(data);message(data.sampleNotice);}catch(e){message(e.message)}});
 
 const HISTORY_KEY='photo-scout-search-history-v1';let searchHistory=[],focusedSearchId=null,displayedResult=null,displayedSearchId=null,hiddenPoisBySearch=new Map(),authUser=null,csrfToken=null;const pendingHistory=new Map();let syncingHistory=false;
-function hasScoredImage(spot){return Number.isFinite(spot.score)&&spot.assessmentStatus!=='no_verified_view'&&Boolean(spot.imageUrl||spot.imageReference||spot.streetViewReference||(spot.provider==='google-street-view'&&spot.sourceUrl));}
+function hasScoredImage(spot){return Number.isFinite(spot.score)&&spot.assessmentStatus!=='no_verified_view'&&Boolean(spot.verifiedImageAvailable||spot.imageUrl||spot.imageReference||spot.streetViewReference||(spot.provider==='google-street-view'&&spot.sourceUrl));}
 function poiHistoryKey(spot){return String(spot.poi?.id||spot.id||`geo:${spot.poi?.lat},${spot.poi?.lon}:${spot.name}`);}
 function allPoiViews(result,searchId=searchHistory.find(h=>h.result===result)?.id){const hidden=hiddenPoisBySearch.get(searchId)||new Set();const seen=new Set();return [...(result.poiResults||[]),...(result.spots||[])].filter(s=>hasScoredImage(s)&&!hidden.has(poiHistoryKey(s))).sort((a,b)=>b.score-a.score).filter(s=>{const id=s.poi?.id||s.id;if(seen.has(id))return false;seen.add(id);return true;});}
 function photoTopCount(result){return allPoiViews(result).length;}
@@ -462,6 +462,7 @@ async function loadAccount(){
    const guest=searchHistory,remote=await json('/photo-scout/v1/history'),merged=new Map(remote.items.map(h=>[h.id,h]));
    for(const h of guest)merged.set(h.id,h);
    searchHistory=[...merged.values()].sort((a,b)=>b.created-a.created);
+   if(remote.hiddenPois)hiddenPoisBySearch=new Map(Object.entries(remote.hiddenPois).map(([id,keys])=>[id,new Set(keys)]));
    el('history-note').textContent='Your searches and generated photos are saved permanently to your account.';
    renderHistory();drawHistoryMap();
    // Show saved places before waiting for background guest-history uploads.
@@ -477,7 +478,7 @@ async function loadAccount(){
 }
 el('account-login').addEventListener('click',()=>{persistHistory();location.href=api+'/photo-scout/v1/auth/login';});
 el('account-logout').addEventListener('click',async()=>{try{await json('/photo-scout/v1/auth/logout',{method:'POST',headers:{'X-CSRF-Token':csrfToken}});authUser=null;csrfToken=null;pendingHistory.clear();searchHistory=[];sessionStorage.removeItem(HISTORY_KEY);el('results').hidden=true;el('toggle-results').disabled=true;renderHistory();drawHistoryMap();resetTaskRecovery();await loadAccount();await restoreTasks();await loadPublications();}catch{el('history-note').textContent='Sign-out failed. Please try again.';}});
-function stripHistoryImage(s){const copy={...s};delete copy.imageUrl;delete copy.streetViewReference;return copy;}
+function stripHistoryImage(s){const copy={...s,verifiedImageAvailable:hasScoredImage(s)};delete copy.imageUrl;delete copy.streetViewReference;return copy;}
 function saveSearch(result){const id=activeSearch?.jobId||crypto.randomUUID();focusedSearchId=id;if(searchHistory.some(h=>h.id===id))return id;const context=activeSearch?.context;searchHistory.unshift({id,created:Date.now(),label:context?.query||context?.locationLabel||el('prompt-query').value.trim()||`Around ${Number(el('lat').value).toFixed(4)}, ${Number(el('lon').value).toFixed(4)}`,radius:context?.radius||Number(el('radius').value),checked:true,result:{...result,searchContext:{...(context||coordinates())}}});persistHistory();renderHistory();return id;}
 function searchDraft(){return JSON.stringify({...coordinates(),query:el('prompt-query').value.trim(),preferences:'Scenic, distinctive public places for photography'});}
 function addSubmittedTask(kind,job,context){const id=job.id||job.jobId;taskRecords=[{id,kind,created:Date.now()/1000,state:'queued',context,localPending:true},...taskRecords.filter(t=>t.id!==id||t.kind!==kind)];renderHistory();}

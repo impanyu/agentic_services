@@ -114,3 +114,37 @@ def test_removed_history_does_not_return_after_stale_browser_sync(tmp_path,monke
         assert db.execute('SELECT count(*) FROM photo_account_history').fetchone()[0]==1
         db.execute("DELETE FROM photo_removed_items WHERE owner='user:alice'")
     assert len(client.get('/photo-scout/v1/history').json()['items'])==1
+
+
+def test_history_bootstrap_includes_owned_completed_tasks_without_browser_sync(tmp_path,monkeypatch):
+    from agentic_services.photo_scout.tasks import TaskStore
+    client,path=fixture(tmp_path,monkeypatch);headers=seed(client,path,'alice');TaskStore(path)
+    with sqlite3.connect(path) as db:
+        db.execute('CREATE TABLE photo_scout_jobs(id TEXT PRIMARY KEY,state TEXT,payload TEXT,result TEXT)')
+        report={'spots':[{'poi':{'id':'park','lat':1,'lon':2},'score':80,'imageUrl':'temporary','streetViewReference':'private-reference'}],'poiResults':[],'imageAssessments':[{'large':'audit'}]}
+        for job,user in [('owned','alice'),('other','bob'),('removed','alice')]:
+            db.execute('INSERT INTO photo_scout_jobs VALUES(?,?,?,?)',(job,'complete',json.dumps({'query':'Lake views'}),json.dumps(report)))
+            db.execute('INSERT INTO photo_task_owners VALUES(?,?,?,?,?,?)',('search',job,None,user,123,json.dumps({'lat':1,'lon':2,'radius':5000})))
+        db.execute('INSERT INTO photo_removed_items VALUES(?,?,?)',('user:alice','search','removed'))
+        db.execute('INSERT INTO photo_hidden_pois VALUES(?,?,?)',('user:alice','owned','park'))
+    record={**item(),'id':'owned','checked':False}
+    assert client.post('/photo-scout/v1/history',headers=headers,json=record).status_code==200
+    response=client.get('/photo-scout/v1/history').json();assert len(response['items'])==1
+    record=response['items'][0];assert record['id']=='owned' and record['checked'] is False
+    assert response['hiddenPois']=={'owned':['park']}
+    view=record['result']['spots'][0];assert view['verifiedImageAvailable'] is True
+    assert 'imageUrl' not in view and 'streetViewReference' not in view
+    assert 'imageAssessments' not in record['result']
+    # No legacy history row is required to display task-owned map places.
+    with sqlite3.connect(path) as db:db.execute('DELETE FROM photo_account_history')
+    assert client.get('/photo-scout/v1/history').json()['items'][0]['id']=='owned'
+
+
+def test_history_accepts_current_fifty_place_searches(tmp_path,monkeypatch):
+    client,path=fixture(tmp_path,monkeypatch);headers=seed(client,path,'alice')
+    result={'spots':[],'poiResults':[{'score':80,'imageUrl':'temporary','poi':{'id':str(i)}} for i in range(50)]}
+    assert client.post('/photo-scout/v1/history',headers=headers,json={**item(),'result':result}).status_code==200
+    saved=client.get('/photo-scout/v1/history').json()['items'][0]['result']['poiResults']
+    assert len(saved)==50 and all(view['verifiedImageAvailable'] for view in saved)
+    result['poiResults'].append({'score':80})
+    assert client.post('/photo-scout/v1/history',headers=headers,json={**item(),'result':result}).status_code==422

@@ -44,3 +44,10 @@ test('account map and task recovery are not blocked by slow guest uploads',async
  ctx.loadAccount().then(()=>finished=true);await tick();
  assert.equal(finished,true);assert.equal(paints,1);assert.equal(ctx.searchHistory.length,2);
 });
+test('temporary image URLs are not required to draw a previously verified saved place',()=>{
+ const ctx={};vm.runInNewContext(source.slice(source.indexOf('function hasScoredImage('),source.indexOf('function poiHistoryKey(')),ctx);
+ assert.equal(ctx.hasScoredImage({score:80,verifiedImageAvailable:true}),true);
+ assert.equal(ctx.hasScoredImage({score:80,verifiedImageAvailable:false}),false);
+ assert.equal(ctx.hasScoredImage({score:null,verifiedImageAvailable:true}),false);
+ assert.equal(ctx.hasScoredImage({score:80,verifiedImageAvailable:true,assessmentStatus:'no_verified_view'}),false);
+});

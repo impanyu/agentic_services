@@ -111,11 +111,36 @@ def create_accounts_router(settings,require_api):
         row=user_session(request,True)
         with db() as d:d.execute('DELETE FROM photo_sessions WHERE hash=?',(row['hash'],))
         return cookie(JSONResponse({'ok':True}),COOKIE,'',0)
+    def map_history_result(result):
+        result.pop('imageAssessments',None)
+        result.pop('reportToken',None)
+        for field in ('spots','poiResults'):
+            for spot in result.get(field,[]):
+                # Keep proof that this was a scored image even after removing temporary URLs.
+                spot['verifiedImageAvailable']=bool(spot.get('verifiedImageAvailable') or spot.get('imageUrl') or spot.get('imageReference') or spot.get('streetViewReference') or (spot.get('provider')=='google-street-view' and spot.get('sourceUrl')))
+                spot.pop('imageUrl',None)
+                spot.pop('streetViewReference',None)
+        return result
+
     @router.get('/photo-scout/v1/history')
     def history(request:Request):
-        row=user_session(request)
-        with db() as d:items=[json.loads(r['record']) for r in d.execute("SELECT record FROM photo_account_history h WHERE user_id=? AND NOT EXISTS (SELECT 1 FROM photo_removed_items r WHERE r.owner=? AND r.kind='search' AND r.job=h.id) ORDER BY created DESC",(row['user_id'],'user:'+row['user_id']))]
-        return JSONResponse({'items':items},headers={'Cache-Control':'private, no-store'})
+        row=user_session(request);owner='user:'+row['user_id'];hidden={}
+        with db() as d:
+            items={r['id']:json.loads(r['record']) for r in d.execute("SELECT id,record FROM photo_account_history h WHERE user_id=? AND NOT EXISTS (SELECT 1 FROM photo_removed_items r WHERE r.owner=? AND r.kind='search' AND r.job=h.id)",(row['user_id'],owner))}
+            tables={r[0] for r in d.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+            # Completed tasks are the durable source of truth; browser sync may be missing.
+            if {'photo_task_owners','photo_scout_jobs'}<=tables:
+                reports=d.execute("SELECT o.job,o.created,o.context,j.payload,j.result FROM photo_task_owners o JOIN photo_scout_jobs j ON j.id=o.job WHERE o.user_id=? AND o.kind='search' AND j.state='complete' AND j.result IS NOT NULL AND NOT EXISTS (SELECT 1 FROM photo_removed_items r WHERE r.owner=? AND r.kind='search' AND r.job=o.job)",(row['user_id'],owner))
+                for report in reports:
+                    context=json.loads(report['context']);context['query']=json.loads(report['payload']).get('query',context.get('query',''))
+                    result=json.loads(report['result']);result['searchContext']=context
+                    previous=items.get(report['job'],{})
+                    items[report['job']]={'id':report['job'],'created':int(report['created']*1000),'label':previous.get('label') or context.get('query') or context.get('locationLabel') or f"Around {context.get('lat')}, {context.get('lon')}",'radius':context.get('radius') or 5000,'checked':previous.get('checked',True),'result':result}
+            if 'photo_hidden_pois' in tables:
+                for place in d.execute('SELECT search,poi FROM photo_hidden_pois WHERE owner=?',(owner,)):
+                    hidden.setdefault(place['search'],[]).append(place['poi'])
+        for record in items.values():map_history_result(record['result'])
+        return JSONResponse({'items':sorted(items.values(),key=lambda h:h['created'],reverse=True),'hiddenPois':hidden},headers={'Cache-Control':'private, no-store'})
     @router.post('/photo-scout/v1/history')
     def save_history(item:HistoryItem,request:Request):
         row=user_session(request,True);record=item.model_dump()
@@ -123,9 +148,10 @@ def create_accounts_router(settings,require_api):
         result=record['result'];result.pop('imageAssessments',None)
         for name in ('spots','poiResults'):
             views=result.get(name,[])
-            if not isinstance(views,list) or len(views)>24:raise HTTPException(422,'Invalid history views')
+            if not isinstance(views,list) or len(views)>50:raise HTTPException(422,'Invalid history views')
             for spot in views:
                 if not isinstance(spot,dict):raise HTTPException(422,'Invalid history record')
+                spot['verifiedImageAvailable']=bool(spot.get('verifiedImageAvailable') or spot.get('imageUrl') or spot.get('imageReference') or spot.get('streetViewReference') or (spot.get('provider')=='google-street-view' and spot.get('sourceUrl')))
                 spot.pop('imageUrl',None);spot.pop('streetViewReference',None)
         result.pop('reportToken',None)
         encoded=json.dumps(record)
