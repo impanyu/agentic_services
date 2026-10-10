@@ -15,6 +15,7 @@ from typing import Callable, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from .program import SearchProgram, execute_program, Places, Area, Geography
 from .conditions import SearchBranch, validate_branch_scope
 from .geography import GeographicKind, PROXIMITY, filter_places, geographic_places
 from .sources import distance, google_query_points
@@ -27,6 +28,7 @@ class SearchParameters(BaseModel):
     lat: float = Field(ge=-85, le=85, allow_inf_nan=False)
     lon: float = Field(ge=-180, le=180, allow_inf_nan=False)
     radius: int = Field(default=5000, ge=100, le=20000)
+    searchProgram: SearchProgram | None = None
     searchBranches: list[SearchBranch] = Field(default_factory=list,max_length=6)
     poiQueries: list[str] = Field(default_factory=list, max_length=4)
     geographicKinds: list[GeographicKind] = Field(default_factory=list, max_length=6)
@@ -56,7 +58,7 @@ class SearchPlan(BaseModel):
     placesQueries: list[str]
     placesRole: Literal['target', 'discovery-hints', 'not-requested']
     geographicKinds: list[GeographicKind]
-    mergeStrategy: Literal['places-only', 'spatial-intersection', 'spatial-union', 'area-imagery', 'feature-search', 'branch-union']
+    mergeStrategy: Literal['places-only', 'spatial-intersection', 'spatial-union', 'area-imagery', 'feature-search', 'branch-union', 'tool-program']
     branches: list[SearchPlan] = Field(default_factory=list)
     rawPlacesLimit: int
     candidateLimit: int = 50
@@ -89,6 +91,12 @@ def branch_parameters(parameters,branch):
 
 
 def compile_search(parameters: SearchParameters) -> SearchPlan:
+    if parameters.searchProgram is not None:
+        program=parameters.searchProgram
+        area=program.steps[-1].tool=='area_imagery'
+        return SearchPlan(parameters=parameters,placesQueries=[],placesRole='not-requested',geographicKinds=[],
+            mergeStrategy='area-imagery' if area else 'tool-program',
+            rawPlacesLimit=sum(60 for s in program.steps if s.tool=='search_places'),geographicProximityMeters={})
     if parameters.searchBranches:
         branches=[compile_search(branch_parameters(parameters,b)) for b in parameters.searchBranches]
         return SearchPlan(parameters=parameters,placesQueries=[],placesRole='not-requested',
@@ -127,6 +135,7 @@ class SearchResult:
     plan: SearchPlan
     branch_results: list[SearchResult] = field(default_factory=list)
     feature_groups: list[list[dict]] = field(default_factory=list)
+    program_execution: object | None = None
 
     @property
     def imagery_targets(self):
@@ -173,6 +182,17 @@ async def search_locations(parameters: SearchParameters, *, database_path: Path,
         from .geography import fetch_region
         providers=SearchProviders(nearby_places,nearby_pois,fetch_region)
     plan=compile_search(parameters)
+    if parameters.searchProgram is not None:
+        try:execution=await execute_program(parameters.searchProgram,parameters,providers,database_path,poi_provider)
+        except ValueError as error:raise SearchUnavailable(str(error)) from error
+        rows=[] if isinstance(execution.output,Area) else execution.output.rows[:plan.candidateLimit]
+        places=[{**p,'searchPathCount':len(execution.output.paths[p['id']])} for p in rows]
+        features=list({f['id']:f for value in execution.values.values() if isinstance(value,Geography) for f in value.features}.values())
+        counts={'returnedCandidates':len(places),'programSteps':len(execution.trace),
+                'sourceSearches':sum(s.tool.startswith('search_') for s in parameters.searchProgram.steps)}
+        status={'status':'ok','provider':poi_provider,'count':len(places),'searchPlan':plan.model_dump(),
+                'searchCounts':counts,'executionTrace':execution.trace}
+        return SearchResult(places,features,status,plan,program_execution=execution)
     if plan.mergeStrategy=='branch-union':
         # Share identical in-flight provider lookups between branches. A branch
         # failure aborts the union instead of silently claiming complete coverage.

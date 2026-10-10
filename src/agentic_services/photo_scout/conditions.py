@@ -26,6 +26,8 @@ class SearchBranch(BaseModel):
 
 
 def validate_branch_scope(value):
+    if getattr(value,'searchProgram',None) is not None and (value.searchBranches or value.poiQueries or value.geographicKinds or value.osmFeatures or getattr(value,'categories',None)):
+        raise ValueError('Put all target/spatial conditions in searchProgram when a program is supplied')
     if value.searchBranches and (value.poiQueries or value.geographicKinds or value.osmFeatures or getattr(value,'categories',None)):
         raise ValueError('Put all target/spatial conditions inside searchBranches; do not mix with top-level conditions')
     return value

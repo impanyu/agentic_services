@@ -106,3 +106,43 @@ Branches run concurrently; identical in-flight provider lookups are shared. Each
 Panorama coordinates are checked under their originating branch, with `eligibleSearchBranchIndexes` passed to the evaluator. Named targets must be associated with a candidate from that branch; geography/features must hold for the actual camera location. Scoring evaluates one complete eligible branch, its visualIntent and shared requirements, never a subject/environment mix from different branches. Score-cache keys and signed catalogs bind the full branch parameters. This behavior is shared by the website, structured HTTP API, and MCP.
 
 Nested positive AND/OR conditions are normalized into these bounded groups. Negations and image-only requirements are checked visually rather than guaranteed by geometry subtraction. Searches beyond the six-group representation remain a limitation; this is not an unbounded logical query language.
+
+### Model-written search programs
+
+New text searches produce `searchProgram`: a bounded, typed data-flow program. It is executable tool composition, not arbitrary Python, SQL, HTTP URLs or Overpass source. Legacy flat parameters and searchBranches continue to work when no program is supplied; combining those retrieval fields with a program is rejected. Location geocoding remains separate; all tools share the resolved center and radius. Image acquisition and batch scoring stay downstream.
+
+Small tools live in `photo_scout/program.py` and can be tested independently:
+
+| Tool | Inputs | Output |
+|---|---|---|
+| search_places | Complete text queries | Named place set |
+| search_geography | Geographic kinds | Geometry plus mapped paths |
+| search_features | Typed OSM feature queries | Mapped feature groups |
+| sample_geography | Geometry/path result | Spatially sampled viewpoints |
+| feature_points | Mapped feature groups | Matching feature locations |
+| filter_geography | Place set + geometry | Places inside/outside the specified spatial constraints |
+| filter_features | Place set + feature groups | Places near/not near the specified mapped objects |
+| union | Two or more place sets | Deduplicated OR |
+| intersection | Two or more place sets | Shared POI IDs (AND by identity, not proximity) |
+| area_imagery | No inputs | Surrounding imagery targets |
+
+Example lakeside scenery program:
+
+```json
+{
+  "steps": [
+    {"id":"lake","tool":"search_geography","geographicKinds":["lake"]},
+    {"id":"parks","tool":"search_places","queries":["lakeside parks","lake viewpoints"],"discoveryHints":true},
+    {"id":"shore_parks","tool":"filter_geography","inputs":["parks","lake"]},
+    {"id":"shore_points","tool":"sample_geography","inputs":["lake"]},
+    {"id":"result","tool":"union","inputs":["shore_parks","shore_points"],"weights":[1,4]}
+  ],
+  "output":"result"
+}
+```
+
+The executor validates known tool names, argument usage, input/output types, unique step IDs, earlier dependencies, complete reachability and an output place set/standalone area plan. Limits: 24 steps, 8 source-search steps, 50 combined imagery candidate targets, 64 logical paths per candidate. Independent source tools run concurrently and identical provider calls share an in-flight task. Union supports weights 1..4 per input for dense spatial sampling without losing named discoveries. Required source failures fail the search; explicitly marked scenic discovery hints may fail while other required paths still supply samples. No model loop runs during execution.
+
+Every returned candidate retains its successful source/filter/visual paths internally. Actual panorama coordinates are rechecked against those paths; explicit targets also require POI association. Eligible paths are supplied to multimodal evaluation, preserving target groups, spatial AND/OR/exclusions and branch-specific visual requirements. Program content enters the score-cache key and signed catalog validation. `executionTrace` records each step's tool, dependencies, output count, provider status and execution time. `GET /photo-scout/v1/search-tools` exposes tool contracts, the full program schema and limits. HTTP API and MCP accept `searchProgram` as structured input; website and paid natural-language requests use the same program executor.
+
+A geometry exclusion removes positions inside the known mapped feature buffers; it is not proof that unmapped real-world objects are absent. Pixel-only requirements remain visual checks. The provider and imagery coverage limits are unchanged.

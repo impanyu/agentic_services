@@ -24,6 +24,7 @@ from .styles import PHOTO_STYLES, mapped_categories, style_briefs
 from .scoring import explore
 from .geography import GeographicKind, fetch_region, filter_places
 from .search import branch_contexts, filter_branch_images, branch_parameters
+from .program import SearchProgram, CONTRACTS
 from .conditions import SearchBranch,validate_branch_scope
 from .osm_features import OSMFeatureQuery,fetch_features
 from .intent import IntentRequest, PoiQuery, resolve_intent
@@ -40,6 +41,7 @@ DEFAULT_PHOTO_PREFERENCES = 'Scenic, distinctive public places for photography'
 
 
 class ExploreRequest(BaseModel):
+    searchProgram: SearchProgram | None = None
     searchBranches: list[SearchBranch] = Field(default_factory=list,max_length=6)
     query: str = Field(default="",max_length=1000)
     lat: float = Field(ge=-85,le=85,allow_inf_nan=False)
@@ -199,7 +201,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
                 r.raise_for_status(); return r.json()
             except httpx.HTTPError as e: raise HTTPException(503,'Stripe is temporarily unavailable') from e
     def geographic_kinds(payload):
-        if payload.searchBranches:return []
+        if payload.searchBranches or payload.searchProgram is not None:return []
         return payload.geographicKinds or (['waterside'] if 'waterside' in (payload.photoStyles or []) else [])
 
     def search_parameters(payload):
@@ -216,12 +218,13 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
         if include_geometry:
             status['_features']=result.features
             if result.branch_results:status['_branchContexts']=branch_contexts(result)
+            if result.program_execution is not None:status['_programExecution']=result.program_execution
         return result.places,status
 
     def sign_catalog(payload,pois,status):
         if not settings.service_api_key: raise HTTPException(503,'Private gateway credential is required')
-        data={'lat':payload.lat,'lon':payload.lon,'radius':payload.radius,'categories':sorted(set(payload.poi_categories())) if payload.poi_categories() is not None else None,'photoStyles':sorted(set(payload.photoStyles)) if payload.photoStyles is not None else None,'poiQueries':payload.poiQueries,'osmFeatures':[q.model_dump() for q in payload.osmFeatures],'geographicKinds':geographic_kinds(payload),'searchBranches':[b.model_dump() for b in payload.searchBranches],'geographicCombination':payload.geographicCombination,'featureCombination':payload.featureCombination,'expires':int(time.time())+3600,'pois':pois,'status':status}
-        if payload.searchBranches:
+        data={'lat':payload.lat,'lon':payload.lon,'radius':payload.radius,'categories':sorted(set(payload.poi_categories())) if payload.poi_categories() is not None else None,'photoStyles':sorted(set(payload.photoStyles)) if payload.photoStyles is not None else None,'poiQueries':payload.poiQueries,'osmFeatures':[q.model_dump() for q in payload.osmFeatures],'geographicKinds':geographic_kinds(payload),'searchProgram':payload.searchProgram.model_dump() if payload.searchProgram else None,'searchBranches':[b.model_dump() for b in payload.searchBranches],'geographicCombination':payload.geographicCombination,'featureCombination':payload.featureCombination,'expires':int(time.time())+3600,'pois':pois,'status':status}
+        if payload.searchBranches or payload.searchProgram is not None:
             data['status']={k:v for k,v in status.items() if k not in ('searchPlan','branchSearches')}
         encoded=base64.urlsafe_b64encode(json.dumps(data,separators=(',',':')).encode()).decode().rstrip('=')
         signature=hmac.new(settings.service_api_key.encode(),('poi-catalog:'+encoded).encode(),hashlib.sha256).hexdigest()
@@ -244,6 +247,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
             if data.get('photoStyles')!=(sorted(set(payload.photoStyles)) if payload.photoStyles is not None else None): raise ValueError()
             if data.get('poiQueries',[])!=payload.poiQueries:raise ValueError()
             if data.get('searchBranches',[])!=[b.model_dump() for b in payload.searchBranches]:raise ValueError()
+            if data.get('searchProgram')!=(payload.searchProgram.model_dump() if payload.searchProgram else None):raise ValueError()
             if data.get('osmFeatures',[])!=[q.model_dump() for q in payload.osmFeatures]:raise ValueError()
             if data.get('geographicKinds',[])!=geographic_kinds(payload):raise ValueError()
             if any(data.get(k,'all')!=getattr(payload,k) for k in ('geographicCombination','featureCombination')):raise ValueError()
@@ -253,11 +257,18 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
         except (AttributeError,ValueError,KeyError,TypeError):
             raise HTTPException(422,'Place selection is invalid or expired; find nearby places again')
         status={**data['status'],'count':len(pois),'catalogCount':len(data['pois'])}
-        if payload.searchBranches:status['searchPlan']=compile_search(search_parameters(payload)).model_dump()
+        if payload.searchBranches or payload.searchProgram is not None:status['searchPlan']=compile_search(search_parameters(payload)).model_dump()
         if include_geometry and geographic_kinds(payload):
             features,_,geo_status=await fetch_region(payload.lat,payload.lon,payload.radius,geographic_kinds(payload),settings.database_path)
             if geo_status['status']!='ok':raise HTTPException(503,'Geographic search is temporarily unavailable')
             status['_features']=features
+        if include_geometry and payload.searchProgram is not None:
+            _,fresh_status=await lookup_pois(payload,include_geometry=True)
+            execution=fresh_status['_programExecution']
+            if not set(p['id'] for p in pois).issubset(execution.output.paths):
+                raise HTTPException(503,'Selected places changed; search again')
+            execution.output.rows=[p for p in execution.output.rows if p['id'] in {r['id'] for r in pois}]
+            status['_programExecution']=execution
         if include_geometry and payload.searchBranches:
             async def context(index,branch):
                 p=branch_parameters(search_parameters(payload),branch)
@@ -283,6 +294,13 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
         rows,statuses=await candidates(payload.lat,payload.lon,payload.radius,pois,**({'visual_exploration':True} if visual else {}))
         features=poi_status.pop('_features',[])
         contexts=poi_status.pop('_branchContexts',[])
+        execution=poi_status.pop('_programExecution',None)
+        if execution is not None:
+            eligible=execution.filter_images(rows)
+            for name,status in statuses.items():
+                status['geographicallyExcludedImages']=sum(r['provider']==name for r in rows)-sum(r['provider']==name for r in eligible)
+                status['sampledImages']=sum(r['provider']==name for r in eligible)
+            rows=eligible
         if contexts:
             eligible=filter_branch_images(rows,contexts)
             for name,status in statuses.items():
@@ -310,6 +328,14 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
         except Exception as error:
             logging.getLogger(__name__).warning('Photo Scout text resolution failed: %s',type(error).__name__)
             raise HTTPException(503,'Text search is temporarily unavailable. You can still choose a location on the map.') from error
+
+    @router.get('/photo-scout/v1/search-tools')
+    def search_tools(authorization: str | None=Header(None)):
+        require_api(authorization)
+        return {'tools':[{'name':name,'inputTypes':inputs,'outputType':output} for name,(inputs,output) in CONTRACTS.items()],
+                'programSchema':SearchProgram.model_json_schema(),
+                'limits':{'steps':24,'sourceSearches':8,'candidatePlaces':50},
+                'execution':'One validated program; independent steps execute concurrently.'}
 
     @router.post('/photo-scout/v1/search',operation_id='search_photo_locations')
     async def search_tool(payload: SearchParameters,response: Response,authorization: str | None=Header(None)):
@@ -384,7 +410,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
                 location=plan['locations'][0]
                 payload=ExploreRequest.model_validate({**payload.model_dump(), 'query':'', 'lat':location['lat'], 'lon':location['lon'],
                     'radius':plan['radiusMeters'], 'photoStyles':plan['photoStyles'] or None, 'preferences':plan['preferences'],
-                    'searchBranches':plan.get('searchBranches') or [],'poiQueries':plan.get('poiQueries') or [], 'scoringIntent':plan.get('scoringIntent') or plan['preferences'],
+                    'searchProgram':plan.get('searchProgram'),'searchBranches':plan.get('searchBranches') or [],'poiQueries':plan.get('poiQueries') or [], 'scoringIntent':plan.get('scoringIntent') or plan['preferences'],
                     'geographicKinds':plan.get('geographicKinds') or [], 'osmFeatures':plan.get('osmFeatures') or [], 'geographicCombination':plan.get('geographicCombination','all'),'featureCombination':plan.get('featureCombination','all'), 'categories':None,'selectedPoiIds':None,'poiCatalogToken':None})
             retrieval_started=time.monotonic()
             rows,statuses,pois=await catalog(payload,allow_expired)
@@ -526,7 +552,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
                 # only this query plus the visible current controls are defaults.
                 plan=await resolve_intent(settings,IntentRequest(query=submitted.query,lat=submitted.lat,lon=submitted.lon,radius=submitted.radius,photoStyles=submitted.photoStyles or [],preferences=''))
                 place=plan['locations'][0]
-                values.update(lat=place['lat'],lon=place['lon'],radius=plan['radiusMeters'],photoStyles=plan['photoStyles'] or None,preferences=plan['preferences'],scoringIntent=plan.get('scoringIntent') or plan['preferences'],categories=None,searchBranches=plan.get('searchBranches') or [],poiQueries=plan.get('poiQueries') or [],geographicKinds=plan.get('geographicKinds') or [],osmFeatures=plan.get('osmFeatures') or [],geographicCombination=plan.get('geographicCombination','all'),featureCombination=plan.get('featureCombination','all'),selectedPoiIds=None,poiCatalogToken=None)
+                values.update(lat=place['lat'],lon=place['lon'],radius=plan['radiusMeters'],photoStyles=plan['photoStyles'] or None,preferences=plan['preferences'],scoringIntent=plan.get('scoringIntent') or plan['preferences'],categories=None,searchProgram=plan.get('searchProgram'),searchBranches=plan.get('searchBranches') or [],poiQueries=plan.get('poiQueries') or [],geographicKinds=plan.get('geographicKinds') or [],osmFeatures=plan.get('osmFeatures') or [],geographicCombination=plan.get('geographicCombination','all'),featureCombination=plan.get('featureCombination','all'),selectedPoiIds=None,poiCatalogToken=None)
                 context['locationLabel']=place['label'];context['explanation']=plan['explanation']
             payload=ExploreRequest.model_validate(values)
             context.update(payload.model_dump(exclude={'query'}));context['query']=submitted.query

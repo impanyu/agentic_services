@@ -157,7 +157,7 @@ function renderStyles(styles){
 }
 async function loadPois(poiQueries=[],plan={}){
  if(!el('search').reportValidity()||!serviceAvailable)return;
- invalidatePois();const generation=catalogGeneration,coords={...coordinates(),poiQueries,geographicKinds:plan.geographicKinds||[],searchBranches:plan.searchBranches||[],osmFeatures:plan.osmFeatures||[],geographicCombination:plan.geographicCombination||'all',featureCombination:plan.featureCombination||'all',scoringIntent:plan.scoringIntent||'',preferences:plan.preferences||'Scenic, distinctive public places for photography'};setProgress(1,'Finding nearby places…','Looking for places that match your location and photo mood.');message('Finding nearby places…');
+ invalidatePois();const generation=catalogGeneration,coords={...coordinates(),poiQueries,geographicKinds:plan.geographicKinds||[],searchProgram:plan.searchProgram||null,searchBranches:plan.searchBranches||[],osmFeatures:plan.osmFeatures||[],geographicCombination:plan.geographicCombination||'all',featureCombination:plan.featureCombination||'all',scoringIntent:plan.scoringIntent||'',preferences:plan.preferences||'Scenic, distinctive public places for photography'};setProgress(1,'Finding nearby places…','Looking for places that match your location and photo mood.');message('Finding nearby places…');
  try{const data=await json('/photo-scout/v1/pois',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(coords)});
   if(generation!==catalogGeneration)return;poiCatalog={...data,coords};
   for(const p of data.nearbyPois)L.circleMarker([p.lat,p.lon],{radius:6,color:'#fff',weight:2,fillColor:'#456951',fillOpacity:.9}).bindTooltip(node('span',p.name)).addTo(candidatePoiLayer);

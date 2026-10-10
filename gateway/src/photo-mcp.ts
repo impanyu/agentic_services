@@ -43,7 +43,24 @@ const searchBranchSchema={type:'object',additionalProperties:false,properties:{
  osmFeatures:{type:'array',maxItems:6,items:osmFeatureSchema},featureCombination:{enum:['all','any'],default:'all'},
  visualIntent:{type:'string',maxLength:1000},
 }}
+const searchTools=['search_places','search_geography','search_features','sample_geography','feature_points','filter_geography','filter_features','union','intersection','area_imagery'] as const
+const searchStep=z.object({
+ id:z.string().regex(/^[a-zA-Z][a-zA-Z0-9_]{0,39}$/),tool:z.enum(searchTools),
+ inputs:z.array(z.string().max(40)).max(6).optional(),queries:z.array(z.string().min(1).max(200)).max(4).optional(),
+ geographicKinds:z.array(z.enum(geographicKinds)).max(6).optional(),osmFeatures:z.array(osmFeature).max(6).optional(),
+ combination:z.enum(['all','any']).optional(),exclude:z.boolean().optional(),discoveryHints:z.boolean().optional(),
+ weights:z.array(z.number().int().min(1).max(4)).max(6).optional(),visualIntent:z.string().max(1000).optional(),
+}).strict()
+const searchProgram=z.object({steps:z.array(searchStep).min(1).max(24),output:z.string().min(1).max(40)}).strict()
+const searchProgramSchema={type:['object','null'],additionalProperties:false,required:['steps','output'],properties:{
+ output:{type:'string',minLength:1,maxLength:40},steps:{type:'array',minItems:1,maxItems:24,items:{type:'object',additionalProperties:false,required:['id','tool'],properties:{
+ id:{type:'string',pattern:'^[a-zA-Z][a-zA-Z0-9_]{0,39}$'},tool:{enum:searchTools},inputs:{type:'array',maxItems:6,items:{type:'string',maxLength:40}},
+ queries:{type:'array',maxItems:4,items:{type:'string',minLength:1,maxLength:200}},geographicKinds:{type:'array',maxItems:6,items:{enum:geographicKinds}},
+ osmFeatures:{type:'array',maxItems:6,items:osmFeatureSchema},combination:{enum:['all','any'],default:'all'},exclude:{type:'boolean',default:false},discoveryHints:{type:'boolean',default:false},
+ weights:{type:'array',maxItems:6,items:{type:'integer',minimum:1,maximum:4}},visualIntent:{type:'string',maxLength:1000},
+ }}}}}
 const photoArguments={
+  searchProgram:searchProgram.nullable().optional().describe('Validated data-flow program over small search/spatial/set tools. Leave all other target/spatial fields empty; global center/radius/styles are shared. Up to 24 steps and 8 source queries.'),
   searchBranches:z.array(searchBranch).max(6).optional().describe('OR across independently constrained target groups; AND between target, geography and features inside a group. When set, leave top-level poiQueries/geographicKinds/osmFeatures empty.'),
   query:z.string().max(1000).optional().describe('Natural-language request. Explicit text overrides conflicting structured parameters.'),
   poiQueries:z.array(z.string().min(1).max(200)).max(4).optional().describe('Arbitrary POI categories or business names, e.g. coffee shops.'),
@@ -60,6 +77,7 @@ const photoArguments={
   preferences:z.string().max(500).optional().describe('Additional photography preferences.'),
 }
 export const photoInputSchema={type:'object',additionalProperties:false,required:['lat','lon'],properties:{
+ searchProgram:searchProgramSchema,
  searchBranches:{type:'array',maxItems:6,items:searchBranchSchema},
  query:{type:'string',maxLength:1000},poiQueries:{type:'array',maxItems:4,items:{type:'string',minLength:1,maxLength:200}},
  osmFeatures:{type:'array',maxItems:6,items:osmFeatureSchema},
