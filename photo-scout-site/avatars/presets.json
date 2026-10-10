@@ -588,6 +588,82 @@
       "aliases": [
         "尼摩船长"
       ]
+    },
+    {
+      "id": "preset:keanu-reeves",
+      "name": "Keanu Reeves",
+      "imageUrl": "./avatars/characters/keanu-reeves.png",
+      "category": "Screen icons",
+      "aliases": [
+        "基努·里维斯",
+        "基努里维斯"
+      ],
+      "synthetic": true
+    },
+    {
+      "id": "preset:tom-cruise",
+      "name": "Tom Cruise",
+      "imageUrl": "./avatars/characters/tom-cruise.png",
+      "category": "Screen icons",
+      "aliases": [
+        "汤姆·克鲁斯",
+        "汤姆克鲁斯"
+      ],
+      "synthetic": true
+    },
+    {
+      "id": "preset:audrey-hepburn",
+      "name": "Audrey Hepburn",
+      "imageUrl": "./avatars/characters/audrey-hepburn.png",
+      "category": "Screen icons",
+      "aliases": [
+        "奥黛丽·赫本",
+        "赫本"
+      ],
+      "synthetic": true
+    },
+    {
+      "id": "preset:bruce-lee",
+      "name": "Bruce Lee",
+      "imageUrl": "./avatars/characters/bruce-lee.png",
+      "category": "Screen icons",
+      "aliases": [
+        "李小龙"
+      ],
+      "synthetic": true
+    },
+    {
+      "id": "preset:charlie-chaplin",
+      "name": "Charlie Chaplin",
+      "imageUrl": "./avatars/characters/charlie-chaplin.png",
+      "category": "Screen icons",
+      "aliases": [
+        "查理·卓别林",
+        "卓别林"
+      ],
+      "synthetic": true
+    },
+    {
+      "id": "preset:albert-einstein",
+      "name": "Albert Einstein",
+      "imageUrl": "./avatars/characters/albert-einstein.png",
+      "category": "Public figures",
+      "aliases": [
+        "阿尔伯特·爱因斯坦",
+        "爱因斯坦"
+      ],
+      "synthetic": true
+    },
+    {
+      "id": "preset:nikola-tesla",
+      "name": "Nikola Tesla",
+      "imageUrl": "./avatars/characters/nikola-tesla.png",
+      "category": "Public figures",
+      "aliases": [
+        "尼古拉·特斯拉",
+        "特斯拉"
+      ],
+      "synthetic": true
     }
   ]
 }

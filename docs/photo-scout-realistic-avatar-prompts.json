@@ -1,0 +1,85 @@
+{
+  "mode": "built-in imagegen",
+  "promptTemplate": "Use case: photorealistic portrait. Asset type: Photo Scout selectable AI-generated avatar for travel-photo compositing. Create a recognizable photorealistic full-body cutout of {name}, with {details}. Natural skin texture and realistic human anatomy, accurate familiar facial likeness, photographed studio lighting, not a cartoon or illustration. One adult person alone, entire body including shoes visible, centered with generous margins. Friendly upright pose, no props other than specified accessories. Actual transparent background, no scenery, no text, labels, logos, watermark or border. This is synthetic demonstration artwork, not an authentic archival photograph.",
+  "items": [
+    {
+      "id": "keanu-reeves",
+      "name": "Keanu Reeves",
+      "aliases": [
+        "基努·里维斯",
+        "基努里维斯"
+      ],
+      "category": "Screen icons",
+      "details": "modern black tailored suit, shoulder-length dark hair, short beard, warm relaxed expression"
+    },
+    {
+      "id": "tom-cruise",
+      "name": "Tom Cruise",
+      "aliases": [
+        "汤姆·克鲁斯",
+        "汤姆克鲁斯"
+      ],
+      "category": "Screen icons",
+      "details": "dark casual jacket, plain navy shirt, trousers, relaxed friendly smile"
+    },
+    {
+      "id": "audrey-hepburn",
+      "name": "Audrey Hepburn",
+      "aliases": [
+        "奥黛丽·赫本",
+        "赫本"
+      ],
+      "category": "Screen icons",
+      "details": "elegant black evening dress, pearl necklace, classic swept-up hair, graceful smile"
+    },
+    {
+      "id": "marilyn-monroe",
+      "name": "Marilyn Monroe",
+      "aliases": [
+        "玛丽莲·梦露",
+        "梦露"
+      ],
+      "category": "Screen icons",
+      "details": "classic white halter dress, signature platinum blonde curls, warm smile, tasteful elegant standing pose"
+    },
+    {
+      "id": "bruce-lee",
+      "name": "Bruce Lee",
+      "aliases": [
+        "李小龙"
+      ],
+      "category": "Screen icons",
+      "details": "iconic yellow tracksuit with black side stripes, short dark hair, relaxed athletic stance, no fighting"
+    },
+    {
+      "id": "charlie-chaplin",
+      "name": "Charlie Chaplin",
+      "aliases": [
+        "查理·卓别林",
+        "卓别林"
+      ],
+      "category": "Screen icons",
+      "details": "recognizable Tramp costume, bowler hat, little moustache, dark suit, cane, kindly playful expression"
+    },
+    {
+      "id": "albert-einstein",
+      "name": "Albert Einstein",
+      "aliases": [
+        "阿尔伯特·爱因斯坦",
+        "爱因斯坦"
+      ],
+      "category": "Public figures",
+      "details": "white unruly hair and moustache, tweed jacket and gray trousers, genial smile"
+    },
+    {
+      "id": "nikola-tesla",
+      "name": "Nikola Tesla",
+      "aliases": [
+        "尼古拉·特斯拉",
+        "特斯拉"
+      ],
+      "category": "Public figures",
+      "details": "recognizable dark parted hair and moustache, early twentieth century dark three-piece suit, dignified expression"
+    }
+  ]
+}

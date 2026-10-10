@@ -4,7 +4,7 @@ The right map toolbar contains Avatar Library, with Characters (the default tab)
 
 Personal images are stored in the Photo Scout SQLite database, scoped to the existing account or anonymous cookie identity. Login adopts an active guest library. Account uploads remain private and permanent; guest uploads expire after seven days without a visit. Each library admits up to 50 visible images. Removed images are hidden from lists and inaccessible through the image endpoint.
 
-Images are normalized on the server to JPEG, at most 1600 pixels on the longest side, with metadata stripped. The browser uses the existing resize helper before upload. HEIC needs browser decoding; otherwise the library asks for JPG/PNG export. The visible presets are 64 distinct recognizable cartoon, literary, mythological and historical characters stored as PNG cutouts in `photo-scout-site/avatars/characters/`. 63 use built-in imagegen artwork; SpongeBob reuses the existing validated input asset. `presets.json` defines the visible list. Both the toolbar menu and the selfie picker open on Characters by default. Generated interpretations are not represented as official character assets.
+Images are normalized on the server to JPEG, at most 1600 pixels on the longest side, with metadata stripped. The browser uses the existing resize helper before upload. HEIC needs browser decoding; otherwise the library asks for JPG/PNG export. The visible presets are 71 distinct recognizable cartoon, literary, mythological and historical characters stored as PNG cutouts in `photo-scout-site/avatars/characters/`. 70 use built-in imagegen artwork; SpongeBob reuses the existing validated input asset. `presets.json` defines the visible list. Both the toolbar menu and the selfie picker open on Characters by default. Generated interpretations are not represented as official character assets.
 
 Endpoints behind the existing service gateway:
 
@@ -31,7 +31,7 @@ Two other attempted presets were omitted following provider output moderation: P
 
 ## Expanded character catalog
 
-The catalog contains 12 Cartoons, 15 Chinese classics, 19 Storybook characters, 10 Mythology characters, 6 Fairy tales and 2 Historical characters. Both library surfaces support category filtering and case-insensitive English names plus Chinese aliases. Filtering preserves input focus. Images load lazily; mobile cards use two columns. A private-upload API failure does not prevent the character catalog from loading.
+The catalog contains 12 Cartoons, 15 Chinese classics, 19 Storybook characters, 10 Mythology characters, 6 Fairy tales 2 Historical characters, 5 Screen icons and 2 Public figures. Both library surfaces support category filtering and case-insensitive English names plus Chinese aliases. Filtering preserves input focus. Images load lazily; mobile cards use two columns. A private-upload API failure does not prevent the character catalog from loading.
 
 Assets are PNG cutouts saved in `photo-scout-site/avatars/characters/`. Each listed asset passed PNG decoding, alpha-channel verification and SHA-256 uniqueness checks. The manifest lists only successfully produced assets; rejected attempts are omitted.
 
@@ -41,3 +41,9 @@ Built-in imagegen prompt sets (including attempted roles that are not in the vis
 - [Literary and mythical additions](photo-scout-character-extra-prompts.json)
 - [Myths and fairy tales](photo-scout-character-myth-prompts.json)
 - [Literary and historical additions](photo-scout-character-literary-prompts.json)
+
+## Photorealistic people
+
+Seven AI-generated full-body photorealistic likenesses were added: Keanu Reeves, Tom Cruise, Audrey Hepburn, Bruce Lee, Charlie Chaplin, Albert Einstein and Nikola Tesla. Screen icons and Public figures are separate categories. Chinese aliases use the same search/filter controls. The library labels these as AI-generated avatars; they are not original celebrity photographs. Selecting them follows the same explicit Choose from Avatar Library flow.
+
+[Built-in imagegen prompt set](photo-scout-realistic-avatar-prompts.json). Saved assets remain in `photo-scout-site/avatars/characters/`, with the seven names as kebab-case PNG filenames. The Marilyn Monroe attempt was omitted after output moderation returned `moderation_blocked`, category `sexual`, request `c5a53a40-9113-469b-98e9-ebd22fccd3d1`; no specific cause beyond that provider category was returned, and no retry was made.
