@@ -838,12 +838,25 @@ function renderPhotoSharing(context){
   const item=await json('/photo-scout/v1/publications',{method:'POST',headers:{'Content-Type':'application/json',...(csrfToken?{'X-CSRF-Token':csrfToken}:{})},body:JSON.stringify({kind:'photo',id:photoId})});
   ownPublications.set(publicationKey('photo',photoId),item);syncPublishButtons();return item;
  }
- function refresh(){note.textContent=publicItem()?'Shares your public photo link. WeChat copies the link and attempts to open the app; paste it in your chat.':'Choosing a destination publishes this photo and its background info on Photo Scout, then shares its link. WeChat: copy link, open app, paste in chat.';}
+ function canSharePhoto(){try{return Boolean(savedPhotoFile&&typeof navigator.share==='function'&&typeof navigator.canShare==='function'&&navigator.canShare({files:[savedPhotoFile]}));}catch{return false;}}
+ function refresh(){note.textContent=canSharePhoto()?'WeChat and Facebook share the actual photo. Choose the app in your device’s share menu, then finish sending there. X shares a public photo link.':publicItem()?'This browser cannot share photo files. WeChat copies your public link for pasting; Facebook and X open link-sharing pages.':'This browser cannot share photo files. Link sharing publishes this photo and its background info on Photo Scout. WeChat copies the link; Facebook and X open link-sharing pages.';}
  for(const [kind,label] of [['wechat','WeChat'],['facebook','Facebook'],['x','X']]){
-  const button=node('button',null,'social-tile');button.type='button';button.append(socialShareIcon(kind),node('strong',label),node('small',kind==='wechat'?'Copy link & open':'Open post'));buttons.push(button);destinations.append(button);
+  const button=node('button',null,'social-tile');button.type='button';button.append(socialShareIcon(kind),node('strong',label),node('small',kind==='x'?'Share link':canSharePhoto()?'Choose app · photo':kind==='wechat'?'Copy photo link':'Share photo link'));buttons.push(button);destinations.append(button);
   button.onclick=async()=>{
    if(!current()||busy)return;busy=true;buttons.forEach(b=>b.disabled=true);status.textContent='Preparing your photo link…';
-   // Reserve social composers inside the user gesture, before publishing awaits.
+   if(kind!=='x'&&canSharePhoto()){
+    // The PNG is already prepared. Invoke share before any asynchronous work
+    // so iOS keeps the original button's user activation.
+    const file=savedPhotoFile;status.textContent='Choose '+label+' in your device’s share menu.';
+    try{
+     await navigator.share({files:[file]});
+     if(current())status.textContent='Photo handed to the sharing app. Finish sending or posting there.';
+    }catch(error){
+     if(current())status.textContent=error.name==='AbortError'?'Sharing canceled. Your photo is still saved.':'Could not share the photo. Try Send to or download the PNG and attach it in '+label+'.';
+    }finally{busy=false;buttons.forEach(b=>b.disabled=false);refresh();}
+    return;
+   }
+   // Reserve link-sharing pages inside the user gesture, before publishing awaits.
    const target=kind==='wechat'?null:window.open('about:blank','_blank');if(target)target.opener=null;
    const pendingItem=ensurePublic();let clipboardResult;
    if(kind==='wechat'){
@@ -860,9 +873,7 @@ function renderPhotoSharing(context){
     if(kind==='wechat'){
      const copied=await clipboardResult;if(!current())return;
      if(!copied){status.replaceChildren(node('span','Copy this link, then open WeChat: '),link(item.url,item.url));return;}
-     status.textContent='Link copied. Opening WeChat… Paste the link into your chat. If it does not open, open WeChat yourself.';
-     // Launch only; ordinary websites cannot prefill a WeChat conversation.
-     window.location.assign('weixin://');
+     status.textContent='Photo link copied. Open WeChat and paste it into your chat. To send the image instead, download the PNG and attach it in WeChat.';
     }else{
      const url=photoSocialLinks(item.url,text).find(([name])=>name===label)[1];
      if(target&&!target.closed)target.location.replace(url);else window.location.assign(url);
