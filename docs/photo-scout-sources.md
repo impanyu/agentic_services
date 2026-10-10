@@ -16,7 +16,13 @@ must disclose actual sampled sources; no claim of whole-world street-view covera
 | Flickr | Geotagged photographer images | Candidate; no adapter/key | Review API commercial use, file licenses and removal rules; do not treat all public photos as reusable |
 | Tourism boards, parks, museums and cities | Open/authorized location-specific photo collections | Candidate | Connect only after confirming collection-level access plus file-level rights |
 | Owner-authorized image collections | Local-business/photographer site images with explicit coordinates | Candidate | Signed scope, provenance, permission and deletion flow; do not scrape arbitrary websites |
+| Baidu Panorama | Mainland China directional street imagery | Candidate; no credential or panorama permission verified | Evaluate approved trial and commercial/synthesis scope before connecting |
+| AMap POI photos | Mainland place-associated photographs | Candidate; not street panoramas | Resolve permitted photo use and coordinate handling; pair with domestic POI search |
 | Licensed commercial imagery providers | Regional street-level imagery and freshness | Candidate | Compare coverage, redistribution/inference/API permissions and actual pricing before purchase |
+
+China-market support requires more than an imagery adapter. See the
+[regional provider plan](photo-scout-regional-providers.md) for address/POI retrieval,
+basemap delivery, coordinate systems, non-Google login and source fallbacks.
 
 ## Panoramax implementation boundary
 
