@@ -1,0 +1,523 @@
+{
+  "note": "Regrades saved plans without new model calls. Raw campaigns are unchanged. These partial predicates are not a full semantic-equivalence score.",
+  "runs": 72,
+  "passed": 70,
+  "records": [
+    {
+      "campaign": "baseline",
+      "case": "address-nearby",
+      "repeat": 1,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "address-nearby",
+      "repeat": 2,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "bare-address",
+      "repeat": 1,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "bare-address",
+      "repeat": 2,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "blank-ui",
+      "repeat": 1,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "blank-ui",
+      "repeat": 2,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "blue-walls",
+      "repeat": 1,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "blue-walls",
+      "repeat": 2,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "brand",
+      "repeat": 1,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "brand",
+      "repeat": 2,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "chinese",
+      "repeat": 1,
+      "originalFailures": [
+        "query_missing:vegan"
+      ],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "chinese",
+      "repeat": 2,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "cross-branches",
+      "repeat": 1,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "cross-branches",
+      "repeat": 2,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "distant-water",
+      "repeat": 1,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "distant-water",
+      "repeat": 2,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "height",
+      "repeat": 1,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "height",
+      "repeat": 2,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "junctions",
+      "repeat": 1,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "junctions",
+      "repeat": 2,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "lake-and-forest",
+      "repeat": 1,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "lake-and-forest",
+      "repeat": 2,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "lake-forest-name",
+      "repeat": 1,
+      "originalFailures": [
+        "query_missing:coffee"
+      ],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "lake-forest-name",
+      "repeat": 2,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "lake-or-sea",
+      "repeat": 1,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "lake-or-sea",
+      "repeat": 2,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "lakeside-cafe",
+      "repeat": 1,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "lakeside-cafe",
+      "repeat": 2,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "lakeview-name",
+      "repeat": 1,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "lakeview-name",
+      "repeat": 2,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "location-only",
+      "repeat": 1,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "location-only",
+      "repeat": 2,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "miles",
+      "repeat": 1,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "miles",
+      "repeat": 2,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "mountain-view-address",
+      "repeat": 1,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "mountain-view-address",
+      "repeat": 2,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "near-signals",
+      "repeat": 1,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "near-signals",
+      "repeat": 2,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "override",
+      "repeat": 1,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "override",
+      "repeat": 2,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "prompt-injection",
+      "repeat": 1,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "prompt-injection",
+      "repeat": 2,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "river-north-name",
+      "repeat": 1,
+      "originalFailures": [
+        "query_missing:mural"
+      ],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "river-north-name",
+      "repeat": 2,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "roof",
+      "repeat": 1,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "roof",
+      "repeat": 2,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "signals",
+      "repeat": 1,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "signals",
+      "repeat": 2,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "soft-preference",
+      "repeat": 1,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "soft-preference",
+      "repeat": 2,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "spatial-negation",
+      "repeat": 1,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "spatial-negation",
+      "repeat": 2,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "subjects-or",
+      "repeat": 1,
+      "originalFailures": [
+        "runtime:ValidationError"
+      ],
+      "calibratedFailures": [
+        "runtime:ValidationError"
+      ]
+    },
+    {
+      "campaign": "baseline",
+      "case": "subjects-or",
+      "repeat": 2,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "vegan-brick",
+      "repeat": 1,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "vegan-brick",
+      "repeat": 2,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "visual-negation",
+      "repeat": 1,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "baseline",
+      "case": "visual-negation",
+      "repeat": 2,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "probes",
+      "case": "checkerboard",
+      "repeat": 1,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "probes",
+      "case": "checkerboard",
+      "repeat": 2,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "probes",
+      "case": "courtyard-bridge",
+      "repeat": 1,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "probes",
+      "case": "courtyard-bridge",
+      "repeat": 2,
+      "originalFailures": [],
+      "calibratedFailures": [
+        "footbridge_broadened_to_any_bridge"
+      ]
+    },
+    {
+      "campaign": "probes",
+      "case": "subjects-or",
+      "repeat": 1,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "probes",
+      "case": "subjects-or",
+      "repeat": 2,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "probes",
+      "case": "vegan-chinese",
+      "repeat": 1,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "probes",
+      "case": "vegan-chinese",
+      "repeat": 2,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "probes",
+      "case": "vegetarian",
+      "repeat": 1,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "probes",
+      "case": "vegetarian",
+      "repeat": 2,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "probes",
+      "case": "venice-beach-name",
+      "repeat": 1,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "probes",
+      "case": "venice-beach-name",
+      "repeat": 2,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "probes",
+      "case": "wedding-purpose",
+      "repeat": 1,
+      "originalFailures": [],
+      "calibratedFailures": []
+    },
+    {
+      "campaign": "probes",
+      "case": "wedding-purpose",
+      "repeat": 2,
+      "originalFailures": [],
+      "calibratedFailures": []
+    }
+  ]
+}

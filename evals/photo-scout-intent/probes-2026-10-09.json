@@ -1,0 +1,1685 @@
+{
+  "summary": {
+    "model": "gpt-6-luna",
+    "promptSha256": "4d4b775fc09192fe4c3c692905e91ed7021e5bd39211fbc5ce701f1a90ce1bf6",
+    "generatedAt": "2026-10-10T03:22:25.611008+00:00",
+    "cases": 7,
+    "runs": 14,
+    "passed": 14,
+    "failed": 0,
+    "medianSeconds": 6.595,
+    "p95Seconds": 13.559,
+    "wallSeconds": 27.495,
+    "failureTypes": {},
+    "scope": "Synthetic planner-only checks plus saved plans for human review; not provider execution, geocoding or visual scoring."
+  },
+  "results": [
+    {
+      "case": "checkerboard",
+      "repeat": 1,
+      "input": {
+        "query": "dog-friendly bakeries with checkerboard floors",
+        "lat": 41.8827,
+        "lon": -87.6233,
+        "radius": 5000,
+        "photoStyles": [
+          "waterside"
+        ]
+      },
+      "expected": {
+        "queryAny": [
+          [
+            "baker"
+          ]
+        ],
+        "queryForbidden": [
+          "checkerboard",
+          "floor"
+        ],
+        "visualRequired": [
+          [
+            "checkerboard",
+            "checkered",
+            "chequered"
+          ],
+          [
+            "dog",
+            "pet"
+          ]
+        ]
+      },
+      "plan": {
+        "searchProgram": {
+          "steps": [
+            {
+              "id": "bakeries",
+              "tool": "search_places",
+              "inputs": [],
+              "queries": [
+                "dog-friendly bakeries"
+              ],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Find dog-friendly bakeries; visually verify checkerboard floors."
+            },
+            {
+              "id": "images",
+              "tool": "collect_images",
+              "inputs": [
+                "bakeries"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": ""
+            },
+            {
+              "id": "assessments",
+              "tool": "score_images",
+              "inputs": [
+                "images"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": ""
+            },
+            {
+              "id": "ranked",
+              "tool": "rank_results",
+              "inputs": [
+                "assessments"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": ""
+            }
+          ],
+          "output": "ranked"
+        },
+        "searchBranches": [],
+        "geographicCombination": "all",
+        "featureCombination": "all",
+        "osmFeatures": [],
+        "geographicKinds": [],
+        "scoringIntent": "Dog-friendly bakeries with visibly checkerboard floors.",
+        "poiQueries": [],
+        "locationQuery": null,
+        "useMapCenter": true,
+        "photoStyles": [],
+        "radiusMeters": 5000,
+        "preferences": "Dog-friendly bakeries with visibly checkerboard floors.",
+        "explanation": "Search the selected map area for dog-friendly bakeries, then inspect and rank imagery for checkerboard floors within a 5,000-meter radius.",
+        "clarification": null
+      },
+      "failures": [],
+      "seconds": 5.654
+    },
+    {
+      "case": "checkerboard",
+      "repeat": 2,
+      "input": {
+        "query": "dog-friendly bakeries with checkerboard floors",
+        "lat": 41.8827,
+        "lon": -87.6233,
+        "radius": 5000,
+        "photoStyles": [
+          "waterside"
+        ]
+      },
+      "expected": {
+        "queryAny": [
+          [
+            "baker"
+          ]
+        ],
+        "queryForbidden": [
+          "checkerboard",
+          "floor"
+        ],
+        "visualRequired": [
+          [
+            "checkerboard",
+            "checkered",
+            "chequered"
+          ],
+          [
+            "dog",
+            "pet"
+          ]
+        ]
+      },
+      "plan": {
+        "searchProgram": {
+          "steps": [
+            {
+              "id": "bakeries",
+              "tool": "search_places",
+              "inputs": [],
+              "queries": [
+                "dog-friendly bakeries"
+              ],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Find dog-friendly bakeries; visually verify checkerboard floors."
+            },
+            {
+              "id": "images",
+              "tool": "collect_images",
+              "inputs": [
+                "bakeries"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": ""
+            },
+            {
+              "id": "assessments",
+              "tool": "score_images",
+              "inputs": [
+                "images"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": ""
+            },
+            {
+              "id": "ranked",
+              "tool": "rank_results",
+              "inputs": [
+                "assessments"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": ""
+            }
+          ],
+          "output": "ranked"
+        },
+        "searchBranches": [],
+        "geographicCombination": "all",
+        "featureCombination": "all",
+        "osmFeatures": [],
+        "geographicKinds": [],
+        "scoringIntent": "Dog-friendly bakeries with visibly checkerboard floors.",
+        "poiQueries": [],
+        "locationQuery": null,
+        "useMapCenter": true,
+        "photoStyles": [],
+        "radiusMeters": 5000,
+        "preferences": "Dog-friendly bakeries with visibly checkerboard floors.",
+        "explanation": "Search for dog-friendly bakeries within 5,000 meters of the selected map center, then inspect and rank imagery for checkerboard floors.",
+        "clarification": null
+      },
+      "failures": [],
+      "seconds": 6.742
+    },
+    {
+      "case": "courtyard-bridge",
+      "repeat": 1,
+      "input": {
+        "query": "a rustic courtyard with a turquoise gate near a footbridge",
+        "lat": 41.8827,
+        "lon": -87.6233,
+        "radius": 5000,
+        "photoStyles": [
+          "waterside"
+        ]
+      },
+      "expected": {
+        "toolsRequired": [
+          "search_places",
+          "search_features",
+          "filter_features"
+        ],
+        "queryForbidden": [
+          "turquoise",
+          "rustic"
+        ],
+        "visualRequired": [
+          [
+            "rustic"
+          ],
+          [
+            "turquoise"
+          ],
+          [
+            "gate"
+          ]
+        ]
+      },
+      "plan": {
+        "searchProgram": {
+          "steps": [
+            {
+              "id": "courtyards",
+              "tool": "search_places",
+              "inputs": [],
+              "queries": [
+                "courtyards"
+              ],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Find courtyards with a rustic character and visibly turquoise gates, near footbridges."
+            },
+            {
+              "id": "footbridges",
+              "tool": "search_features",
+              "inputs": [],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [
+                {
+                  "label": "footbridges",
+                  "kind": "tagged",
+                  "filters": [
+                    {
+                      "key": "bridge",
+                      "value": "yes",
+                      "required": true
+                    },
+                    {
+                      "key": "highway",
+                      "value": "footway",
+                      "required": true
+                    }
+                  ],
+                  "numericFilters": [],
+                  "proximityMeters": 150
+                }
+              ],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": ""
+            },
+            {
+              "id": "nearby_courtyards",
+              "tool": "filter_features",
+              "inputs": [
+                "courtyards",
+                "footbridges"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Keep courtyards near footbridges; visually check for rustic character and turquoise gates."
+            },
+            {
+              "id": "images",
+              "tool": "collect_images",
+              "inputs": [
+                "nearby_courtyards"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": ""
+            },
+            {
+              "id": "assessments",
+              "tool": "score_images",
+              "inputs": [
+                "images"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": ""
+            },
+            {
+              "id": "ranked",
+              "tool": "rank_results",
+              "inputs": [
+                "assessments"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": ""
+            }
+          ],
+          "output": "ranked"
+        },
+        "searchBranches": [],
+        "geographicCombination": "all",
+        "featureCombination": "all",
+        "osmFeatures": [],
+        "geographicKinds": [],
+        "scoringIntent": "Rustic courtyards with visibly turquoise gates near footbridges; favor a rustic, vintage character.",
+        "poiQueries": [],
+        "locationQuery": null,
+        "useMapCenter": true,
+        "photoStyles": [
+          "vintage"
+        ],
+        "radiusMeters": 5000,
+        "preferences": "Rustic courtyard character, visibly turquoise gates, and nearby footbridges.",
+        "explanation": "Search courtyards near mapped footbridges around the selected map center, then inspect and rank imagery for rustic character and turquoise gates within 5 km.",
+        "clarification": null
+      },
+      "failures": [],
+      "seconds": 13.559
+    },
+    {
+      "case": "courtyard-bridge",
+      "repeat": 2,
+      "input": {
+        "query": "a rustic courtyard with a turquoise gate near a footbridge",
+        "lat": 41.8827,
+        "lon": -87.6233,
+        "radius": 5000,
+        "photoStyles": [
+          "waterside"
+        ]
+      },
+      "expected": {
+        "toolsRequired": [
+          "search_places",
+          "search_features",
+          "filter_features"
+        ],
+        "queryForbidden": [
+          "turquoise",
+          "rustic"
+        ],
+        "visualRequired": [
+          [
+            "rustic"
+          ],
+          [
+            "turquoise"
+          ],
+          [
+            "gate"
+          ]
+        ]
+      },
+      "plan": {
+        "searchProgram": {
+          "steps": [
+            {
+              "id": "courtyards",
+              "tool": "search_places",
+              "inputs": [],
+              "queries": [
+                "courtyards"
+              ],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": ""
+            },
+            {
+              "id": "footbridges",
+              "tool": "search_features",
+              "inputs": [],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [
+                {
+                  "label": "Footbridges",
+                  "kind": "tagged",
+                  "filters": [
+                    {
+                      "key": "bridge",
+                      "value": "yes",
+                      "required": true
+                    }
+                  ],
+                  "numericFilters": [],
+                  "proximityMeters": 150
+                }
+              ],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": ""
+            },
+            {
+              "id": "near_footbridges",
+              "tool": "filter_features",
+              "inputs": [
+                "courtyards",
+                "footbridges"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Courtyards near a footbridge, with a rustic appearance and a turquoise gate."
+            },
+            {
+              "id": "images",
+              "tool": "collect_images",
+              "inputs": [
+                "near_footbridges"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": ""
+            },
+            {
+              "id": "assessments",
+              "tool": "score_images",
+              "inputs": [
+                "images"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": ""
+            },
+            {
+              "id": "ranked",
+              "tool": "rank_results",
+              "inputs": [
+                "assessments"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": ""
+            }
+          ],
+          "output": "ranked"
+        },
+        "searchBranches": [],
+        "geographicCombination": "all",
+        "featureCombination": "all",
+        "osmFeatures": [],
+        "geographicKinds": [],
+        "scoringIntent": "A rustic courtyard with a visibly turquoise gate near a footbridge.",
+        "poiQueries": [],
+        "locationQuery": null,
+        "useMapCenter": true,
+        "photoStyles": [
+          "vintage"
+        ],
+        "radiusMeters": 5000,
+        "preferences": "A rustic courtyard with a visibly turquoise gate near a footbridge.",
+        "explanation": "Search for courtyards near mapped footbridges, then inspect and rank imagery for rustic character and a turquoise gate within 5 km of the selected map center.",
+        "clarification": null
+      },
+      "failures": [],
+      "seconds": 9.869
+    },
+    {
+      "case": "subjects-or",
+      "repeat": 1,
+      "input": {
+        "query": "cafes OR motels",
+        "lat": 41.8827,
+        "lon": -87.6233,
+        "radius": 5000,
+        "photoStyles": [
+          "waterside"
+        ]
+      },
+      "expected": {
+        "queryRequired": [
+          "motel"
+        ],
+        "geo": [],
+        "toolsForbidden": [
+          "intersection"
+        ]
+      },
+      "plan": {
+        "searchProgram": {
+          "steps": [
+            {
+              "id": "places",
+              "tool": "search_places",
+              "inputs": [],
+              "queries": [
+                "coffee shops",
+                "motels"
+              ],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": ""
+            },
+            {
+              "id": "images",
+              "tool": "collect_images",
+              "inputs": [
+                "places"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": ""
+            },
+            {
+              "id": "assessments",
+              "tool": "score_images",
+              "inputs": [
+                "images"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": ""
+            },
+            {
+              "id": "ranked",
+              "tool": "rank_results",
+              "inputs": [
+                "assessments"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": ""
+            }
+          ],
+          "output": "ranked"
+        },
+        "searchBranches": [],
+        "geographicCombination": "all",
+        "featureCombination": "all",
+        "osmFeatures": [],
+        "geographicKinds": [],
+        "scoringIntent": "Coffee shops OR motels.",
+        "poiQueries": [],
+        "locationQuery": null,
+        "useMapCenter": true,
+        "photoStyles": [],
+        "radiusMeters": 5000,
+        "preferences": "",
+        "explanation": "Search the selected map area for coffee shops or motels within 5,000 meters, then collect, assess, and rank matching imagery.",
+        "clarification": null
+      },
+      "failures": [],
+      "seconds": 6.965
+    },
+    {
+      "case": "subjects-or",
+      "repeat": 2,
+      "input": {
+        "query": "cafes OR motels",
+        "lat": 41.8827,
+        "lon": -87.6233,
+        "radius": 5000,
+        "photoStyles": [
+          "waterside"
+        ]
+      },
+      "expected": {
+        "queryRequired": [
+          "motel"
+        ],
+        "geo": [],
+        "toolsForbidden": [
+          "intersection"
+        ]
+      },
+      "plan": {
+        "searchProgram": {
+          "steps": [
+            {
+              "id": "places",
+              "tool": "search_places",
+              "inputs": [],
+              "queries": [
+                "coffee shops",
+                "motels"
+              ],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Coffee shops OR motels."
+            },
+            {
+              "id": "images",
+              "tool": "collect_images",
+              "inputs": [
+                "places"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": ""
+            },
+            {
+              "id": "assessments",
+              "tool": "score_images",
+              "inputs": [
+                "images"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": ""
+            },
+            {
+              "id": "ranked",
+              "tool": "rank_results",
+              "inputs": [
+                "assessments"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": ""
+            }
+          ],
+          "output": "ranked"
+        },
+        "searchBranches": [],
+        "geographicCombination": "all",
+        "featureCombination": "all",
+        "osmFeatures": [],
+        "geographicKinds": [],
+        "scoringIntent": "Coffee shops OR motels.",
+        "poiQueries": [],
+        "locationQuery": null,
+        "useMapCenter": true,
+        "photoStyles": [],
+        "radiusMeters": 5000,
+        "preferences": "",
+        "explanation": "Search for coffee shops or motels around the selected map center within 5,000 meters, then collect, assess, and rank matching imagery.",
+        "clarification": null
+      },
+      "failures": [],
+      "seconds": 6.449
+    },
+    {
+      "case": "vegan-chinese",
+      "repeat": 1,
+      "input": {
+        "query": "有红砖墙的纯素咖啡馆",
+        "lat": 41.8827,
+        "lon": -87.6233,
+        "radius": 5000,
+        "photoStyles": [
+          "waterside"
+        ]
+      },
+      "expected": {
+        "queryRequired": [
+          "vegan"
+        ],
+        "queryForbidden": [
+          "red",
+          "brick"
+        ],
+        "visualRequired": [
+          [
+            "red"
+          ],
+          [
+            "brick"
+          ]
+        ]
+      },
+      "plan": {
+        "searchProgram": {
+          "steps": [
+            {
+              "id": "places",
+              "tool": "search_places",
+              "inputs": [],
+              "queries": [
+                "vegan coffee shops"
+              ],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Vegan coffee shops with visibly red brick walls."
+            },
+            {
+              "id": "images",
+              "tool": "collect_images",
+              "inputs": [
+                "places"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": ""
+            },
+            {
+              "id": "assessments",
+              "tool": "score_images",
+              "inputs": [
+                "images"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": ""
+            },
+            {
+              "id": "ranked",
+              "tool": "rank_results",
+              "inputs": [
+                "assessments"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": ""
+            }
+          ],
+          "output": "ranked"
+        },
+        "searchBranches": [],
+        "geographicCombination": "all",
+        "featureCombination": "all",
+        "osmFeatures": [],
+        "geographicKinds": [],
+        "scoringIntent": "Vegan coffee shops with visibly red brick walls.",
+        "poiQueries": [],
+        "locationQuery": null,
+        "useMapCenter": true,
+        "photoStyles": [],
+        "radiusMeters": 5000,
+        "preferences": "Find vegan coffee shops with visibly red brick walls.",
+        "explanation": "Search the selected map area for vegan coffee shops, then inspect imagery for red brick walls within a 5,000-meter radius.",
+        "clarification": null
+      },
+      "failures": [],
+      "seconds": 5.737
+    },
+    {
+      "case": "vegan-chinese",
+      "repeat": 2,
+      "input": {
+        "query": "有红砖墙的纯素咖啡馆",
+        "lat": 41.8827,
+        "lon": -87.6233,
+        "radius": 5000,
+        "photoStyles": [
+          "waterside"
+        ]
+      },
+      "expected": {
+        "queryRequired": [
+          "vegan"
+        ],
+        "queryForbidden": [
+          "red",
+          "brick"
+        ],
+        "visualRequired": [
+          [
+            "red"
+          ],
+          [
+            "brick"
+          ]
+        ]
+      },
+      "plan": {
+        "searchProgram": {
+          "steps": [
+            {
+              "id": "cafes",
+              "tool": "search_places",
+              "inputs": [],
+              "queries": [
+                "vegan coffee shops"
+              ],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Vegan cafes with visibly red brick walls."
+            },
+            {
+              "id": "images",
+              "tool": "collect_images",
+              "inputs": [
+                "cafes"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": ""
+            },
+            {
+              "id": "assessments",
+              "tool": "score_images",
+              "inputs": [
+                "images"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Match vegan cafes and visibly red brick walls."
+            },
+            {
+              "id": "ranked",
+              "tool": "rank_results",
+              "inputs": [
+                "assessments"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": ""
+            }
+          ],
+          "output": "ranked"
+        },
+        "searchBranches": [],
+        "geographicCombination": "all",
+        "featureCombination": "all",
+        "osmFeatures": [],
+        "geographicKinds": [],
+        "scoringIntent": "Vegan cafes with visibly red brick walls.",
+        "poiQueries": [],
+        "locationQuery": null,
+        "useMapCenter": true,
+        "photoStyles": [],
+        "radiusMeters": 5000,
+        "preferences": "Vegan cafes with visibly red brick walls.",
+        "explanation": "Search for vegan coffee shops around the selected map center, collect nearby imagery, and rank images for visible red brick walls. Search radius: 5,000 meters.",
+        "clarification": null
+      },
+      "failures": [],
+      "seconds": 5.624
+    },
+    {
+      "case": "vegetarian",
+      "repeat": 1,
+      "input": {
+        "query": "素食咖啡馆，不要求纯素",
+        "lat": 41.8827,
+        "lon": -87.6233,
+        "radius": 5000,
+        "photoStyles": [
+          "waterside"
+        ]
+      },
+      "expected": {
+        "queryRequired": [
+          "vegetarian"
+        ],
+        "queryForbidden": [
+          "vegan"
+        ],
+        "visualRequired": [
+          [
+            "vegetarian"
+          ]
+        ]
+      },
+      "plan": {
+        "searchProgram": {
+          "steps": [
+            {
+              "id": "cafes",
+              "tool": "search_places",
+              "inputs": [],
+              "queries": [
+                "vegetarian cafes"
+              ],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": ""
+            },
+            {
+              "id": "images",
+              "tool": "collect_images",
+              "inputs": [
+                "cafes"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": ""
+            },
+            {
+              "id": "assessments",
+              "tool": "score_images",
+              "inputs": [
+                "images"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": ""
+            },
+            {
+              "id": "ranked",
+              "tool": "rank_results",
+              "inputs": [
+                "assessments"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": ""
+            }
+          ],
+          "output": "ranked"
+        },
+        "searchBranches": [],
+        "geographicCombination": "all",
+        "featureCombination": "all",
+        "osmFeatures": [],
+        "geographicKinds": [],
+        "scoringIntent": "Vegetarian cafes; they do not need to be fully vegan.",
+        "poiQueries": [],
+        "locationQuery": null,
+        "useMapCenter": true,
+        "photoStyles": [],
+        "radiusMeters": 5000,
+        "preferences": "",
+        "explanation": "Search for vegetarian cafes around the selected map center within 5,000 meters, without requiring them to be fully vegan, then collect, assess, and rank available imagery.",
+        "clarification": null
+      },
+      "failures": [],
+      "seconds": 5.346
+    },
+    {
+      "case": "vegetarian",
+      "repeat": 2,
+      "input": {
+        "query": "素食咖啡馆，不要求纯素",
+        "lat": 41.8827,
+        "lon": -87.6233,
+        "radius": 5000,
+        "photoStyles": [
+          "waterside"
+        ]
+      },
+      "expected": {
+        "queryRequired": [
+          "vegetarian"
+        ],
+        "queryForbidden": [
+          "vegan"
+        ],
+        "visualRequired": [
+          [
+            "vegetarian"
+          ]
+        ]
+      },
+      "plan": {
+        "searchProgram": {
+          "steps": [
+            {
+              "id": "cafes",
+              "tool": "search_places",
+              "inputs": [],
+              "queries": [
+                "vegetarian cafés"
+              ],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": ""
+            },
+            {
+              "id": "images",
+              "tool": "collect_images",
+              "inputs": [
+                "cafes"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": ""
+            },
+            {
+              "id": "assessments",
+              "tool": "score_images",
+              "inputs": [
+                "images"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Vegetarian cafés; vegan-only options are not required."
+            },
+            {
+              "id": "ranked",
+              "tool": "rank_results",
+              "inputs": [
+                "assessments"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": ""
+            }
+          ],
+          "output": "ranked"
+        },
+        "searchBranches": [],
+        "geographicCombination": "all",
+        "featureCombination": "all",
+        "osmFeatures": [],
+        "geographicKinds": [],
+        "scoringIntent": "Vegetarian cafés; vegan-only options are not required.",
+        "poiQueries": [],
+        "locationQuery": null,
+        "useMapCenter": true,
+        "photoStyles": [],
+        "radiusMeters": 5000,
+        "preferences": "",
+        "explanation": "Search for vegetarian cafés near the selected map center within 5 km, then collect, assess, and rank matching imagery.",
+        "clarification": null
+      },
+      "failures": [],
+      "seconds": 6.954
+    },
+    {
+      "case": "venice-beach-name",
+      "repeat": 1,
+      "input": {
+        "query": "coffee shops in Venice Beach, Los Angeles",
+        "lat": 41.8827,
+        "lon": -87.6233,
+        "radius": 5000,
+        "photoStyles": [
+          "waterside"
+        ]
+      },
+      "expected": {
+        "locationContains": "Venice Beach",
+        "queryAny": [
+          [
+            "coffee",
+            "cafe"
+          ]
+        ],
+        "geo": []
+      },
+      "plan": {
+        "searchProgram": {
+          "steps": [
+            {
+              "id": "coffee_shops",
+              "tool": "search_places",
+              "inputs": [],
+              "queries": [
+                "coffee shops"
+              ],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": ""
+            },
+            {
+              "id": "images",
+              "tool": "collect_images",
+              "inputs": [
+                "coffee_shops"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": ""
+            },
+            {
+              "id": "assessments",
+              "tool": "score_images",
+              "inputs": [
+                "images"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Coffee shops"
+            },
+            {
+              "id": "ranked_results",
+              "tool": "rank_results",
+              "inputs": [
+                "assessments"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": ""
+            }
+          ],
+          "output": "ranked_results"
+        },
+        "searchBranches": [],
+        "geographicCombination": "all",
+        "featureCombination": "all",
+        "osmFeatures": [],
+        "geographicKinds": [],
+        "scoringIntent": "Coffee shops",
+        "poiQueries": [],
+        "locationQuery": "Venice Beach, Los Angeles, California, USA",
+        "useMapCenter": false,
+        "photoStyles": [],
+        "radiusMeters": 5000,
+        "preferences": "",
+        "explanation": "Search for coffee shops in Venice Beach, Los Angeles, within a 5,000-meter radius, then collect and evaluate imagery to rank matching results.",
+        "clarification": null
+      },
+      "failures": [],
+      "seconds": 5.788
+    },
+    {
+      "case": "venice-beach-name",
+      "repeat": 2,
+      "input": {
+        "query": "coffee shops in Venice Beach, Los Angeles",
+        "lat": 41.8827,
+        "lon": -87.6233,
+        "radius": 5000,
+        "photoStyles": [
+          "waterside"
+        ]
+      },
+      "expected": {
+        "locationContains": "Venice Beach",
+        "queryAny": [
+          [
+            "coffee",
+            "cafe"
+          ]
+        ],
+        "geo": []
+      },
+      "plan": {
+        "searchProgram": {
+          "steps": [
+            {
+              "id": "places",
+              "tool": "search_places",
+              "inputs": [],
+              "queries": [
+                "coffee shops"
+              ],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": ""
+            },
+            {
+              "id": "images",
+              "tool": "collect_images",
+              "inputs": [
+                "places"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": ""
+            },
+            {
+              "id": "assessments",
+              "tool": "score_images",
+              "inputs": [
+                "images"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": ""
+            },
+            {
+              "id": "ranked",
+              "tool": "rank_results",
+              "inputs": [
+                "assessments"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": ""
+            }
+          ],
+          "output": "ranked"
+        },
+        "searchBranches": [],
+        "geographicCombination": "all",
+        "featureCombination": "all",
+        "osmFeatures": [],
+        "geographicKinds": [],
+        "scoringIntent": "Coffee shops",
+        "poiQueries": [],
+        "locationQuery": "Venice Beach, Los Angeles, California",
+        "useMapCenter": false,
+        "photoStyles": [],
+        "radiusMeters": 5000,
+        "preferences": "",
+        "explanation": "Search for coffee shops in Venice Beach, Los Angeles, then collect, assess, and rank imagery within a 5,000-meter radius.",
+        "clarification": null
+      },
+      "failures": [],
+      "seconds": 5.865
+    },
+    {
+      "case": "wedding-purpose",
+      "repeat": 1,
+      "input": {
+        "query": "找适合情侣婚纱照的开阔地方，不要拥挤，不要求靠水",
+        "lat": 41.8827,
+        "lon": -87.6233,
+        "radius": 5000,
+        "photoStyles": [
+          "waterside"
+        ]
+      },
+      "expected": {
+        "moodsForbidden": [
+          "waterside"
+        ],
+        "visualRequired": [
+          [
+            "wedding",
+            "bridal"
+          ],
+          [
+            "open",
+            "spacious"
+          ],
+          [
+            "uncrowded",
+            "not crowd",
+            "avoid crowd",
+            "without crowd",
+            "no crowd"
+          ]
+        ]
+      },
+      "plan": {
+        "searchProgram": {
+          "steps": [
+            {
+              "id": "area",
+              "tool": "area_imagery",
+              "inputs": [],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Find spacious, open settings suitable for couple's wedding photography. Prefer scenes that appear uncrowded; proximity to water is not required."
+            },
+            {
+              "id": "images",
+              "tool": "collect_images",
+              "inputs": [
+                "area"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": ""
+            },
+            {
+              "id": "assessments",
+              "tool": "score_images",
+              "inputs": [
+                "images"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": ""
+            },
+            {
+              "id": "ranked",
+              "tool": "rank_results",
+              "inputs": [
+                "assessments"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": ""
+            }
+          ],
+          "output": "ranked"
+        },
+        "searchBranches": [],
+        "geographicCombination": "all",
+        "featureCombination": "all",
+        "osmFeatures": [],
+        "geographicKinds": [],
+        "scoringIntent": "Spacious, open settings suitable for couple's wedding photography, with uncrowded-looking scenes. Water proximity is not required.",
+        "poiQueries": [],
+        "locationQuery": null,
+        "useMapCenter": true,
+        "photoStyles": [],
+        "radiusMeters": 5000,
+        "preferences": "Suitable for couple's wedding photos; favor spacious, open places that appear uncrowded. No need for the location to be beside water.",
+        "explanation": "Explore regional imagery around the selected map location for open, uncrowded-looking wedding-photo settings within a 5,000-meter radius.",
+        "clarification": null
+      },
+      "failures": [],
+      "seconds": 7.456
+    },
+    {
+      "case": "wedding-purpose",
+      "repeat": 2,
+      "input": {
+        "query": "找适合情侣婚纱照的开阔地方，不要拥挤，不要求靠水",
+        "lat": 41.8827,
+        "lon": -87.6233,
+        "radius": 5000,
+        "photoStyles": [
+          "waterside"
+        ]
+      },
+      "expected": {
+        "moodsForbidden": [
+          "waterside"
+        ],
+        "visualRequired": [
+          [
+            "wedding",
+            "bridal"
+          ],
+          [
+            "open",
+            "spacious"
+          ],
+          [
+            "uncrowded",
+            "not crowd",
+            "avoid crowd",
+            "without crowd",
+            "no crowd"
+          ]
+        ]
+      },
+      "plan": {
+        "searchProgram": {
+          "steps": [
+            {
+              "id": "area",
+              "tool": "area_imagery",
+              "inputs": [],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Open, spacious places suitable for couples' wedding photography; avoid crowded scenes. Water proximity is not required."
+            },
+            {
+              "id": "images",
+              "tool": "collect_images",
+              "inputs": [
+                "area"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": ""
+            },
+            {
+              "id": "assessments",
+              "tool": "score_images",
+              "inputs": [
+                "images"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": ""
+            },
+            {
+              "id": "ranked",
+              "tool": "rank_results",
+              "inputs": [
+                "assessments"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": ""
+            }
+          ],
+          "output": "ranked"
+        },
+        "searchBranches": [],
+        "geographicCombination": "all",
+        "featureCombination": "all",
+        "osmFeatures": [],
+        "geographicKinds": [],
+        "scoringIntent": "Open, spacious places suitable for couples' wedding photography, with uncrowded scenes. Water proximity is not required.",
+        "poiQueries": [],
+        "locationQuery": null,
+        "useMapCenter": true,
+        "photoStyles": [],
+        "radiusMeters": 5000,
+        "preferences": "Open, spacious settings for couples' wedding photos; avoid crowded scenes. No waterfront setting is necessary.",
+        "explanation": "Explore the selected map area for spacious, uncrowded wedding-photo settings within a 5 km radius, then assess and rank imagery.",
+        "clarification": null
+      },
+      "failures": [],
+      "seconds": 9.058
+    }
+  ]
+}
