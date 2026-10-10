@@ -268,7 +268,7 @@ INSTRUCTIONS += """
 ROUTE SEARCH:
 If request.route exists, or the user explicitly asks for photos along a journey from A
 to B, output route with origin/destination addresses (query) or user-provided coordinates,
-travelMode walk (default) or drive, corridorMeters 300 by default (100..2000).
+travelMode walk (default) or drive, corridorMeters 50 by default (50..2000).
 Use only supplied coordinates; never invent endpoint coordinates. origin=null uses the
 selected map point. Text overrides route controls only when it explicitly supplies an
 endpoint, travel mode or corridor width; retain every other existing route control.

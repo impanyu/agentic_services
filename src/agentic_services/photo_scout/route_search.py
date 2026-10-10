@@ -32,7 +32,7 @@ class RouteRequest(BaseModel):
     origin: RouteEndpoint | None = None
     destination: RouteEndpoint
     travelMode: Literal['walk','drive'] = 'walk'
-    corridorMeters: int = Field(default=300,ge=100,le=2000,description='Maximum distance from the route, not the circle search radius.')
+    corridorMeters: int = Field(default=50,ge=50,le=2000,description='Maximum distance from the route, not the circle search radius.')
 
 async def resolve_endpoints(route,lat,lon,geocode):
     async def resolve(endpoint):

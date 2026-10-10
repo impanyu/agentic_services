@@ -1,6 +1,6 @@
 # Photo Scout: along-route photography
 
-The existing circle search remains available. In Search settings choose **Along a route**, enter From/To (From can use the selected map pin), choose walking or driving, and set a corridor width. Walking and a 300 m corridor are the defaults. The prompt and photo moods specify what to photograph along the journey.
+The existing circle search remains available. In Search settings choose **Along a route**, enter From/To (From can use the selected map pin), choose walking or driving, and set a corridor width. Walking and a 50 m corridor are the defaults. The prompt and photo moods specify what to photograph along the journey.
 
 The same `route` argument is accepted by the website's durable jobs, REST discovery and MCP `discover_photo_spots`:
 
@@ -12,7 +12,7 @@ The same `route` argument is accepted by the website's durable jobs, REST discov
     "origin": {"query": "Fisherman's Wharf, San Francisco"},
     "destination": {"query": "Ferry Building, San Francisco"},
     "travelMode": "walk",
-    "corridorMeters": 300
+    "corridorMeters": 50
   },
   "query": "Scenic waterfront views and interesting architecture",
   "photoStyles": ["waterside", "urban"]
@@ -25,4 +25,4 @@ Retrieval uses at most six windows along the returned road polyline, queries the
 
 Results include `route.geometry` (GeoJSON LineString; longitude first), endpoints, travel mode, route distance, duration, provider warnings, corridor and coverage/sample metadata. Result views also include route progress and offset meters. Ranking remains by photographic score; progress metadata permits ordering by travel sequence. The map shows the route plus the existing clickable result pins and Take a selfie actions. Route geometry and results are retained with the durable search/history under the existing signed-in/guest retention rules.
 
-The first release supports routes up to 200 km, corridor widths of 100–2,000 m, and automatic candidate selection. Manual signed POI catalogs remain limited to circle searches. Coverage is a bounded sample, not every scene or the most scenic possible route. The computed route is a walking/driving route between the chosen endpoints; photographic ranking does not reroute the journey. Street imagery availability, safe access and permission to stop are not guaranteed. Google walking warnings are displayed with results.
+The first release supports routes up to 200 km, corridor widths of 50–2,000 m, and automatic candidate selection. Manual signed POI catalogs remain limited to circle searches. Coverage is a bounded sample, not every scene or the most scenic possible route. The computed route is a walking/driving route between the chosen endpoints; photographic ranking does not reroute the journey. Street imagery availability, safe access and permission to stop are not guaranteed. Google walking warnings are displayed with results.
