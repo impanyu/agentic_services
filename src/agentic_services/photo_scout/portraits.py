@@ -24,7 +24,7 @@ class PortraitRequest(BaseModel):
     style: Literal['natural','street','cinematic','vacation','editorial'] = 'natural'
     framing: Literal['auto','90','60','45'] = 'auto'
     posture: Literal['auto','standing','walking','sitting','looking_back','playful'] = 'auto'
-    weather: Literal['original','sunny','golden_hour','overcast','rainy','snowy'] = 'original'
+    weather: Literal['original','daytime','night','sunny','golden_hour','overcast','rainy','snowy'] = 'original'
     expression: Literal['auto','soft_smile','big_smile','thoughtful','serious','surprised'] = 'auto'
 
 
@@ -132,6 +132,8 @@ POSTURES={
 }
 WEATHERS={
     'original':'Preserve the original scene weather, time of day and lighting.',
+    'daytime':'Natural daytime: a daylight sky, balanced exposure, realistic ambient daylight and physically consistent daytime shadows. Transform a nighttime source into a believable daytime scene while preserving the actual location.',
+    'night':'Natural nighttime: a dark night sky and plausible light from existing street lights, windows and illuminated signs where present. Relight the subjects with scene-consistent ambient and practical light, retaining readable facial features, realistic exposure and shadows. Transform a daytime source into a believable nighttime scene; do not merely darken the image or invent buildings, neon signs or a different location.',
     'sunny':'Clear sunny daylight, physically consistent sun direction and natural shadows.',
     'golden_hour':'Warm golden-hour light with a low sun, soft warm highlights and consistent long shadows.',
     'overcast':'Soft overcast daylight with diffused lighting and subdued natural shadows.',

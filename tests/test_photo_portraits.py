@@ -24,7 +24,8 @@ def test_portrait_validation_and_background_allowlist():
 
 
 @pytest.mark.parametrize('image_model',['gpt-image-2.5-sunburst','gpt-image-1.5'])
-def test_private_job_edits_both_images_and_removes_upload(tmp_path,monkeypatch,image_model):
+@pytest.mark.parametrize('weather,lighting_phrase',[('golden_hour','golden-hour light'),('daytime','Natural daytime'),('night','Natural nighttime')])
+def test_private_job_edits_both_images_and_removes_upload(tmp_path,monkeypatch,image_model,weather,lighting_phrase):
     monkeypatch.setenv('PHOTO_SCOUT_IMAGE_MODEL',image_model)
     calls=[];raw=photo()
     class Client:
@@ -44,7 +45,7 @@ def test_private_job_edits_both_images_and_removes_upload(tmp_path,monkeypatch,i
     assert client.post('/photo-scout/v1/portraits',json=body|{'style':'unsupported'},headers=auth).status_code==422
     for field in ['posture','weather','expression','framing']:
         assert client.post('/photo-scout/v1/portraits',json=body|{field:'unsupported'},headers=auth).status_code==422
-    body.update(posture='walking',weather='golden_hour',expression='big_smile')
+    body.update(posture='walking',weather=weather,expression='big_smile')
     result=client.post('/photo-scout/v1/portraits',json=body,headers=auth);assert result.status_code==202
     job=result.json();path='/photo-scout/v1/portraits/'+job['id'];owned=auth|{'X-Report-Token':job['token']}
     assert TestClient(app,base_url='https://api.test').get(path,headers=auth).status_code==404
@@ -57,14 +58,14 @@ def test_private_job_edits_both_images_and_removes_upload(tmp_path,monkeypatch,i
         assert 'input_fidelity' not in calls[0];assert calls[0]['quality']=='max'
     assert 'keep the original clothing' in calls[0]['prompt']
     assert 'mid-step walking' in calls[0]['prompt']
-    assert 'golden-hour light' in calls[0]['prompt']
+    assert lighting_phrase in calls[0]['prompt']
     assert 'cheerful broad smile' in calls[0]['prompt']
     assert 'relight the entire scene and subjects together' in calls[0]['prompt']
     completed=client.get(path,headers=owned).json();assert completed['state']=='complete'
     assert completed['context']['viewHeadingDegrees']==90 and completed['context']['viewPitchDegrees']==0
     assert completed['context']['viewFovDegrees']==90
     assert completed['context']['backgroundPreparation']['comparedFovDegrees']==[90,60,45]
-    assert completed['context']['generation']=={'style':'natural','posture':'walking','weather':'golden_hour','expression':'big_smile','framing':'auto','directions':''}
+    assert completed['context']['generation']=={'style':'natural','posture':'walking','weather':weather,'expression':'big_smile','framing':'auto','directions':''}
     history=client.get('/photo-scout/v1/tasks',headers=auth).json()
     assert history['items'][0]['context']['generation']==completed['context']['generation']
     image=client.get(path+'/image',headers=owned);assert image.content==raw;assert image.headers['cache-control']=='private, no-store'
