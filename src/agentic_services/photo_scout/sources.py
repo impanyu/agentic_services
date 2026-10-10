@@ -314,19 +314,23 @@ def diverse_sample(rows,limit=12):
     return selected
 
 
-async def candidates(lat,lon,radius,pois=None,visual_exploration=False):
+async def candidates(lat,lon,radius,pois=None,visual_exploration=False,point_only=False):
     import asyncio
     statuses={}; rows=[]
+    if point_only:
+        # Resolve one nearest panorama at the address, not a grid of nearby spots.
+        radius=50
+        pois=[{'id':f'address:{lat:.6f}:{lon:.6f}','name':'Selected address','lat':lat,'lon':lon}]
     if pois == [] and not visual_exploration: return [],statuses
     async with httpx.AsyncClient(timeout=25,headers=HEADERS,follow_redirects=False) as client:
-        providers=[('wikimedia-commons',commons)]
+        providers=[] if point_only else [('wikimedia-commons',commons)]
         if google_enabled():
             async def google(client,lat,lon,radius):
-                return await google_streetview(client,lat,lon,radius,targets=pois,**({'area_sampling':True} if visual_exploration else {}))
+                return await google_streetview(client,lat,lon,radius,targets=pois,**({'area_sampling':True} if visual_exploration and not point_only else {}))
             providers.append(('google-street-view',google))
-        if os.getenv('PHOTO_SCOUT_PANORAMAX_ENABLED','1')=='1':
+        if not point_only and os.getenv('PHOTO_SCOUT_PANORAMAX_ENABLED','1')=='1':
             providers.append(('panoramax',panoramax))
-        if os.getenv('PHOTO_SCOUT_MAPILLARY_TOKEN'):
+        if not point_only and os.getenv('PHOTO_SCOUT_MAPILLARY_TOKEN'):
             providers.append(('mapillary',mapillary))
         results=await asyncio.gather(*(fn(client,lat,lon,radius) for _,fn in providers),return_exceptions=True)
         for (name,_),result in zip(providers,results):
@@ -335,8 +339,8 @@ async def candidates(lat,lon,radius,pois=None,visual_exploration=False):
             else:
                 statuses[name]={'status':'ok','eligibleImages':len(result)}; rows+=result
                 if name=='google-street-view':
-                    statuses[name].update(samplingSpacingMeters=google_sampling_spacing(radius) if visual_exploration or pois is None else None,maxViewsPerLocation=VIEWS_PER_PANORAMA,
-                        queriedLocations=(min(50,len(google_query_points(lat,lon,radius))+min(5,len(pois or []))) if visual_exploration else len(pois) if pois is not None else len(google_query_points(lat,lon,radius))),samplingMode='area-and-poi' if visual_exploration else 'poi' if pois is not None else 'area')
+                    statuses[name].update(samplingSpacingMeters=google_sampling_spacing(radius) if (visual_exploration and not point_only) or pois is None else None,maxViewsPerLocation=VIEWS_PER_PANORAMA,
+                        queriedLocations=1 if point_only else (min(50,len(google_query_points(lat,lon,radius))+min(5,len(pois or []))) if visual_exploration else len(pois) if pois is not None else len(google_query_points(lat,lon,radius))),samplingMode='point' if point_only else 'area-and-poi' if visual_exploration else 'poi' if pois is not None else 'area')
     valid=[]
     for row in rows:
         d=distance((lat,lon),(row['lat'],row['lon']))

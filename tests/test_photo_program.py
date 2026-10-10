@@ -216,7 +216,7 @@ def test_resolve_and_human_workflow_execute_generated_program(tmp_path,monkeypat
             assert len(response.json()['sources']['google-places']['executionTrace'])==(10 if complete else 7)
             if complete:assert [s['tool'] for s in response.json()['executionTrace'][-3:]]==['collect_images','score_images','rank_results']
         tool=client.get('/photo-scout/v1/search-tools',headers=h)
-        assert tool.status_code==200 and len(tool.json()['tools'])==13
+        assert tool.status_code==200 and len(tool.json()['tools'])==14
         catalog=client.post('/photo-scout/v1/pois',headers=h,json=parameters).json()
         selected={**parameters,'selectedPoiIds':['cafe-lake'],'poiCatalogToken':catalog['poiCatalogToken']}
         assert client.post('/photo-scout/v1/preview',headers=h,json=selected).status_code==200
@@ -316,3 +316,21 @@ def test_image_geographic_checks_prepare_each_region_once(monkeypatch):
     assert first<=4  # named place filters plus two prepared image constraints
     assert len(result.program_execution.filter_images(rows))==400
     assert len(counts)==first
+
+
+def test_address_point_program_collects_one_location_without_area_sampling():
+    from agentic_services.photo_scout.program import PipelineHooks
+    from agentic_services.photo_scout.scoring import ScoringOutput
+    retrieval=SearchProgram(steps=[{'id':'address','tool':'point_imagery'}],output='address')
+    result=run(retrieval.model_dump())
+    assert len(result.imagery_targets)==1
+    assert result.program_execution.output.point_only
+    p=SearchParameters(lat=0,lon=0,radius=5000,searchProgram=retrieval.with_delivery())
+    async def collect(lat,lon,radius,pois,**kwargs):
+        assert (lat,lon,radius,pois)==(0,0,5000,[])
+        assert kwargs=={'visual_exploration':True,'point_only':True}
+        return [],{}
+    async def before(images):pass
+    async def score(*args):return ScoringOutput([],[],[],[],[],'test')
+    asyncio.run(execute_program(p.searchProgram,p,providers(),Path('/unused'),'google-places',
+        PipelineHooks(p,collect,score,lambda *args:{'spots':[]},before)))

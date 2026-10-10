@@ -43,7 +43,7 @@ const searchBranchSchema={type:'object',additionalProperties:false,properties:{
  osmFeatures:{type:'array',maxItems:6,items:osmFeatureSchema},featureCombination:{enum:['all','any'],default:'all'},
  visualIntent:{type:'string',maxLength:1000},
 }}
-const searchTools=['search_places','search_geography','search_features','sample_geography','feature_points','filter_geography','filter_features','union','intersection','area_imagery','collect_images','score_images','rank_results'] as const
+const searchTools=['search_places','search_geography','search_features','sample_geography','feature_points','filter_geography','filter_features','union','intersection','area_imagery','point_imagery','collect_images','score_images','rank_results'] as const
 const searchStep=z.object({
  id:z.string().regex(/^[a-zA-Z][a-zA-Z0-9_]{0,39}$/),tool:z.enum(searchTools),
  inputs:z.array(z.string().max(40)).max(6).optional(),queries:z.array(z.string().min(1).max(200)).max(4).optional(),

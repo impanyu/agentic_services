@@ -93,7 +93,7 @@ def branch_parameters(parameters,branch):
 def compile_search(parameters: SearchParameters) -> SearchPlan:
     if parameters.searchProgram is not None:
         program=parameters.searchProgram.retrieval()
-        area=program.steps[-1].tool=='area_imagery'
+        area=program.steps[-1].tool in ('area_imagery','point_imagery')
         return SearchPlan(parameters=parameters,placesQueries=[],placesRole='not-requested',geographicKinds=[],
             mergeStrategy='area-imagery' if area else 'tool-program',
             rawPlacesLimit=sum(60 for s in program.steps if s.tool=='search_places'),geographicProximityMeters={})
@@ -141,6 +141,8 @@ class SearchResult:
     def imagery_targets(self):
         if self.plan.mergeStrategy=='area-imagery':
             p=self.plan.parameters
+            if p.searchProgram and p.searchProgram.retrieval().steps[-1].tool=='point_imagery':
+                return [{'lat':p.lat,'lon':p.lon,'kind':'address-point'}]
             return [{'lat':lat,'lon':lon,'kind':'area-sample'} for lat,lon in google_query_points(p.lat,p.lon,p.radius)]
         return [{'lat':p['lat'],'lon':p['lon'],'kind':'poi','poiId':p['id'],'name':p.get('name','')} for p in self.places]
 

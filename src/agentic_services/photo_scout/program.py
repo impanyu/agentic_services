@@ -16,7 +16,7 @@ from .geography import GeographicKind,filter_places,geographic_places,Geographic
 from .osm_features import OSMFeatureQuery,matches_features
 
 Tool=Literal['search_places','search_geography','search_features','sample_geography',
-             'feature_points','filter_geography','filter_features','union','intersection','area_imagery','collect_images','score_images','rank_results']
+             'feature_points','filter_geography','filter_features','union','intersection','area_imagery','point_imagery','collect_images','score_images','rank_results']
 
 class SearchStep(BaseModel):
     model_config=ConfigDict(extra='forbid')
@@ -52,7 +52,7 @@ CONTRACTS={
  'search_features':([], 'features'), 'sample_geography':(['geography'],'places'),
  'feature_points':(['features'],'places'), 'filter_geography':(['places','geography'],'places'),
  'filter_features':(['places','features'],'places'), 'union':('places','places'),
- 'intersection':('places','places'), 'area_imagery':([],'area'),
+ 'intersection':('places','places'), 'area_imagery':([],'area'), 'point_imagery':([],'area'),
  'collect_images':(['locations'],'images'),'score_images':(['images'],'assessments'),
  'rank_results':(['assessments'],'report'),
 }
@@ -139,7 +139,7 @@ class Features:
 
 @dataclass
 class Area:
-    pass
+    point_only: bool = False
 
 
 def unique_paths(paths):
@@ -258,6 +258,8 @@ class Tools:
 
     async def area_imagery(self,s,inputs):return Area()
 
+    async def point_imagery(self,s,inputs):return Area(point_only=True)
+
     async def collect_images(self,s,inputs):
         if self.pipeline is None:raise ValueError('Image tools require the full discovery execution context')
         locations=inputs[0]
@@ -267,7 +269,7 @@ class Tools:
             locations=Places([p for p in locations.rows if p['id'] in self.pipeline.selected_ids],locations.paths)
         pois=locations.rows[:50] if isinstance(locations,Places) else []
         rows,statuses=await self.pipeline.collect(self.p.lat,self.p.lon,self.p.radius,pois,
-            **({'visual_exploration':True} if isinstance(locations,Area) else {}))
+            **({'visual_exploration':True, **({'point_only':True} if locations.point_only else {})} if isinstance(locations,Area) else {}))
         eligible=self.execution.filter_images(rows,locations)
         for provider,status in statuses.items():
             status['geographicallyExcludedImages']=sum(r['provider']==provider for r in rows)-sum(r['provider']==provider for r in eligible)

@@ -1023,3 +1023,23 @@ def test_larger_parallel_batches_score_all_views_without_dropping_last_batch(tmp
     assert 16<peak_downloads<=32 and 8<peak_models<=12
     assert result['inspectedImages']==count and result['scoring']['scoringFailedImages']==0
     assert len(result['spots'])==count and result['spots'][0]['image_id']==str(count-1)
+
+
+def test_address_point_queries_only_nearest_google_panorama(monkeypatch):
+    from agentic_services.photo_scout import sources
+    monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_ENABLED','1')
+    monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_API_KEY','secret-fixture')
+    calls=[]
+    async def metadata(client,url,params):
+        calls.append(params)
+        assert params['location']=='0,0' and params['radius']==50
+        return {'status':'OK','pano_id':'fixture','location':{'lat':0,'lng':0}}
+    async def unexpected(*args):raise AssertionError('No regional image sources for a pure address')
+    monkeypatch.setattr(sources,'get_json',metadata)
+    monkeypatch.setattr(sources,'commons',unexpected)
+    monkeypatch.setattr(sources,'panoramax',unexpected)
+    rows,statuses=asyncio.run(sources.candidates(0,0,5000,[],visual_exploration=True,point_only=True))
+    assert len(calls)==1 and len(rows)==8
+    assert set(statuses)=={'google-street-view'}
+    assert statuses['google-street-view']['queriedLocations']==1
+    assert statuses['google-street-view']['samplingMode']=='point'
