@@ -4,6 +4,7 @@ import asyncio
 import json
 import logging
 import os
+from dataclasses import dataclass
 from typing import Literal
 
 from openai import AsyncOpenAI
@@ -141,18 +142,25 @@ def validate_result(result,rows,inspected,limit):
     return out
 
 
-async def explore(settings,payload,rows,statuses):
-    """Fixed download -> batched model scoring -> deterministic ranking; no tools."""
+@dataclass
+class ScoringOutput:
+    rows: list
+    assessments: list
+    cached: list
+    fresh: list
+    batches: list
+    model: str
+
+
+async def assess_images(settings,payload,rows,statuses=None):
+    """Download, visually match and score batches; ranking is a separate tool."""
     rows=rows[:MAX_SCORED_IMAGES]
     # Visual request matching determines eligibility for every search. Named POI
     # identity only determines the label; a matching image with a real camera
     # location can stand on its own without claiming the nearby POI's identity.
     rows=[{**r,'allowUnlistedPlace':True} for r in rows]
     model=os.getenv('PHOTO_SCOUT_MODEL','gpt-6-luna')
-    if not rows:
-        return {'spots':[],'summary':'No eligible geolocated images were found in this sampled area.',
-            'sources':statuses,'inspectedImages':0,'imageAssessments':[],
-            'analysisMethod':'fixed-batch-scoring','coverage':'Bounded sample; not complete nearby coverage.'}
+    if not rows:return ScoringOutput(rows,[],[],[],[],model)
     cache=ScoreCache(settings.database_path)
     keys={r['id']:cache.key(r,payload,model,INSTRUCTIONS) for r in rows}
     cached=[];missing=[]
@@ -211,6 +219,16 @@ async def explore(settings,payload,rows,statuses):
     fresh=[a for result in results for a in result['assessments']]
     assessments=cached+fresh
     if not assessments: raise ValueError('No images could be scored; retry the search')
+    return ScoringOutput(rows,assessments,cached,fresh,results,model)
+
+
+def rank_assessments(payload,output,statuses):
+    """Deterministic best view per place and panorama; no model calls."""
+    rows,assessments,cached,fresh,results,model=(output.rows,output.assessments,output.cached,output.fresh,output.batches,output.model)
+    if not rows:
+        return {'spots':[],'summary':'No eligible geolocated images were found in this sampled area.',
+            'sources':statuses,'inspectedImages':0,'imageAssessments':[],
+            'analysisMethod':'fixed-batch-scoring','coverage':'Bounded sample; not complete nearby coverage.'}
     scored={a.image_id for a in assessments if a.matches_request}
     filtered_out=sum(not a.matches_request for a in assessments)
     eligible=[a for a in assessments if a.matches_request and validate_result(
@@ -250,7 +268,12 @@ async def explore(settings,payload,rows,statuses):
         'inspectedImages':len(assessments),'inspectedImageSources':sorted({by_id[a.image_id]['provider'] for a in assessments}),
         'imageAssessments':audit,'analysisMethod':'fixed-batch-scoring',
         'scoring':{'checkedImages':len(assessments),'filteredOutImages':filtered_out,'matchedImages':len(scored),'candidateImages':len(rows),'downloadedImages':downloaded,'scoredImages':len(scored),'cachedImages':len(cached),'newlyScoredImages':sum(a.matches_request for a in fresh),
-            'downloadFailedImages':failed_downloads,'scoringFailedImages':failed_scoring,'batches':len(batches)},
+            'downloadFailedImages':failed_downloads,'scoringFailedImages':failed_scoring,'batches':len(results)},
         'coverage':f'Checked {len(assessments)} of {len(rows)} sampled images; {filtered_out} excluded for not matching your request; {len(scored)} scored ({len(cached)} cached checks);  {failed_downloads} downloads failed; {failed_scoring} images could not be scored. Subjective scores, not complete nearby coverage.',
         'model':model,'usage':{'requests':sum(bool(r['downloaded']) for r in results),
             'inputTokens':sum(u.input_tokens for u in usages),'outputTokens':sum(u.output_tokens for u in usages)}}
+
+
+async def explore(settings,payload,rows,statuses):
+    """Compatibility wrapper around the independent assessment/ranking tools."""
+    return rank_assessments(payload,await assess_images(settings,payload,rows,statuses),statuses)

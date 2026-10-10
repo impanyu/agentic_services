@@ -21,10 +21,10 @@ from pydantic import BaseModel, Field, model_validator
 
 from .tasks import TaskStore, SEARCH_RETENTION, prune_records
 from .styles import PHOTO_STYLES, mapped_categories, style_briefs
-from .scoring import explore
+from .scoring import explore, assess_images, rank_assessments
 from .geography import GeographicKind, fetch_region, filter_places
 from .search import branch_contexts, filter_branch_images, branch_parameters
-from .program import SearchProgram, CONTRACTS
+from .program import SearchProgram, CONTRACTS, PipelineHooks, execute_program
 from .conditions import SearchBranch,validate_branch_scope
 from .osm_features import OSMFeatureQuery,fetch_features
 from .intent import IntentRequest, PoiQuery, resolve_intent
@@ -413,23 +413,46 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
                     'searchProgram':plan.get('searchProgram'),'searchBranches':plan.get('searchBranches') or [],'poiQueries':plan.get('poiQueries') or [], 'scoringIntent':plan.get('scoringIntent') or plan['preferences'],
                     'geographicKinds':plan.get('geographicKinds') or [], 'osmFeatures':plan.get('osmFeatures') or [], 'geographicCombination':plan.get('geographicCombination','all'),'featureCombination':plan.get('featureCombination','all'), 'categories':None,'selectedPoiIds':None,'poiCatalogToken':None})
             retrieval_started=time.monotonic()
-            rows,statuses,pois=await catalog(payload,allow_expired)
-            retrieval_seconds=time.monotonic()-retrieval_started
-            if task_id:
-                context=tasks.context('search',task_id) or payload.model_dump()
-                context['nearbyPois']=pois
-                if visual_exploration(payload):
-                    points={}
-                    for row in rows:
-                        key=(round(row['lat'],5),round(row['lon'],5))
-                        points.setdefault(key,{'lat':row['lat'],'lon':row['lon'],'name':row.get('poi',{}).get('name') or 'Photo viewpoint'})
-                    context['sampledViewLocations']=list(points.values())
-                context['stage']='scoring';tasks.update_context('search',task_id,context)
-            if rows and not any(s['status']=='ok' for n,s in statuses.items() if n not in ('openstreetmap','google-places','openstreetmap-features')):
-                raise HTTPException(503,'Image sources are temporarily unavailable')
-            store.reserve_run()
-            scoring_started=time.monotonic()
-            result=await explore(settings,payload,rows,statuses)
+            async def before_score(images):
+                nonlocal retrieval_seconds,scoring_started
+                rows,statuses,pois=images.rows,images.statuses,images.places
+                retrieval_seconds=time.monotonic()-retrieval_started
+                if task_id:
+                    context=tasks.context('search',task_id) or payload.model_dump()
+                    context['nearbyPois']=pois
+                    if images.area:
+                        points={}
+                        for row in rows:
+                            key=(round(row['lat'],5),round(row['lon'],5))
+                            points.setdefault(key,{'lat':row['lat'],'lon':row['lon'],'name':row.get('poi',{}).get('name') or 'Photo viewpoint'})
+                        context['sampledViewLocations']=list(points.values())
+                    context['stage']='scoring';tasks.update_context('search',task_id,context)
+                if rows and not any(s['status']=='ok' for n,s in statuses.items() if n not in ('openstreetmap','google-places','openstreetmap-features')):
+                    raise HTTPException(503,'Image sources are temporarily unavailable')
+                store.reserve_run()
+                scoring_started=time.monotonic()
+            retrieval_seconds=0;scoring_started=retrieval_started
+            if payload.searchProgram is not None and payload.searchProgram.complete:
+                # A signed selection must be verified before any image/model work.
+                if payload.selectedPoiIds is not None:await chosen_pois(payload,allow_expired)
+                async def score(p,rows,statuses):return await assess_images(settings,p,rows,statuses)
+                hooks=PipelineHooks(payload,candidates,score,rank_assessments,before_score,payload.selectedPoiIds)
+                execution=await execute_program(payload.searchProgram,search_parameters(payload),
+                    SearchProviders(nearby_places,nearby_pois,fetch_region),settings.database_path,
+                    os.getenv('PHOTO_SCOUT_POI_PROVIDER','openstreetmap'),pipeline=hooks)
+                report=execution.output
+                rows,statuses,pois=report.images.rows,report.images.statuses,report.images.places
+                result=report.result
+                source_name='google-places' if os.getenv('PHOTO_SCOUT_POI_PROVIDER')=='google-places' else 'openstreetmap'
+                statuses[source_name]={'status':'ok','searchPlan':compile_search(search_parameters(payload)).model_dump(),
+                    'executionTrace':execution.trace,'searchCounts':{'returnedCandidates':len(pois),
+                        'programSteps':len(execution.trace),'sourceSearches':sum(s.tool.startswith('search_') for s in payload.searchProgram.steps)}}
+                result['executionTrace']=execution.trace
+            else:
+                from .program import Images
+                rows,statuses,pois=await catalog(payload,allow_expired)
+                await before_score(Images(rows,statuses,pois,visual_exploration(payload)))
+                result=await explore(settings,payload,rows,statuses)
             result['timings']={'retrievalSeconds':round(retrieval_seconds,3),'scoringSeconds':round(time.monotonic()-scoring_started,3),'totalSeconds':round(time.monotonic()-started,3)}
             assessed={p['poi']['id'] for p in result.get('poiResults',[]) if p.get('poi')}
             result.setdefault('poiResults',[]).extend({'poi':p,'name':p['name'],'score':None,

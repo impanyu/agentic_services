@@ -175,7 +175,8 @@ def test_source_query_budget_is_checked_before_execution():
     with pytest.raises(ValidationError,match='eight source'):SearchProgram(steps=steps,output='out')
 
 
-def test_resolve_and_human_workflow_execute_generated_program(tmp_path,monkeypatch):
+@pytest.mark.parametrize('complete',[False,True])
+def test_resolve_and_human_workflow_execute_generated_program(tmp_path,monkeypatch,complete):
     from fastapi.testclient import TestClient
     from agentic_services.config import Settings
     from agentic_services.main import create_app
@@ -184,7 +185,7 @@ def test_resolve_and_human_workflow_execute_generated_program(tmp_path,monkeypat
     monkeypatch.setenv('PHOTO_SCOUT_POI_PROVIDER','google-places')
     settings=Settings(openai_api_key='fixture',openai_model='test',database_path=tmp_path/'db',base_url='https://api.test',service_api_key='private')
     async def parse(*args):return intent.PhotoIntent(locationQuery=None,useMapCenter=True,
-        searchProgram=mixed(),photoStyles=[],radiusMeters=3000,preferences='Vintage cafes OR quiet restaurants',
+        searchProgram=SearchProgram.model_validate(mixed()).with_delivery() if complete else mixed(),photoStyles=[],radiusMeters=3000,preferences='Vintage cafes OR quiet restaurants',
         scoringIntent='(Vintage lake cafes) OR (quiet woodland restaurants)',explanation='Composed search tools',clarification=None)
     ps=providers()
     async def images(lat,lon,radius,pois,**kwargs):return [
@@ -195,6 +196,13 @@ def test_resolve_and_human_workflow_execute_generated_program(tmp_path,monkeypat
         assert [r['id'] for r in rows]==['good']
         assert rows[0]['eligibleSearchPaths'][0]['targetQueries']==[['coffee shops']]
         return {'spots':[],'poiResults':[],'summary':'Verified','sources':statuses}
+    if complete:
+        from agentic_services.photo_scout.scoring import ScoringOutput
+        async def assess(settings,payload,rows,statuses):
+            await score(settings,payload,rows,statuses)
+            return ScoringOutput(rows,[],[],[],[],'test')
+        monkeypatch.setattr(routes,'assess_images',assess)
+        monkeypatch.setattr(routes,'rank_assessments',lambda p,output,statuses:{'spots':[],'poiResults':[],'summary':'Verified','sources':statuses})
     monkeypatch.setattr(intent,'parse_intent',parse);monkeypatch.setattr(routes,'nearby_places',ps.places)
     monkeypatch.setattr(routes,'fetch_region',ps.geography);monkeypatch.setattr(routes,'candidates',images);monkeypatch.setattr(routes,'explore',score)
     with TestClient(create_app(settings=settings)) as client:
@@ -205,9 +213,10 @@ def test_resolve_and_human_workflow_execute_generated_program(tmp_path,monkeypat
         for values in [parameters,{'lat':0,'lon':0,'query':'lake cafes or forest restaurants'}]:
             response=client.post('/photo-scout/v1/preview',headers=h,json=values)
             assert response.status_code==200,response.text
-            assert len(response.json()['sources']['google-places']['executionTrace'])==7
+            assert len(response.json()['sources']['google-places']['executionTrace'])==(10 if complete else 7)
+            if complete:assert [s['tool'] for s in response.json()['executionTrace'][-3:]]==['collect_images','score_images','rank_results']
         tool=client.get('/photo-scout/v1/search-tools',headers=h)
-        assert tool.status_code==200 and len(tool.json()['tools'])==10
+        assert tool.status_code==200 and len(tool.json()['tools'])==13
         catalog=client.post('/photo-scout/v1/pois',headers=h,json=parameters).json()
         selected={**parameters,'selectedPoiIds':['cafe-lake'],'poiCatalogToken':catalog['poiCatalogToken']}
         assert client.post('/photo-scout/v1/preview',headers=h,json=selected).status_code==200
@@ -224,3 +233,53 @@ def test_source_geography_alternative_expression_is_carried_into_filter():
     result=run(plan,ps)
     assert [p['id'] for p in result.places]==['park-lake']
     assert result.program_execution.filter_images([{'lat':0,'lon':-.005,'poi':{'id':'park-lake'}}])
+
+
+@pytest.mark.parametrize('retrieval',[scenic(),mixed(),{'steps':[{'id':'area','tool':'area_imagery'}],'output':'area'}])
+def test_complete_program_retains_retrieval_projection(retrieval):
+    original=SearchProgram.model_validate(retrieval)
+    complete=original.with_delivery()
+    assert complete.complete and complete.retrieval()==original
+    assert complete.with_delivery()==complete
+    assert run(complete).plan.mergeStrategy==run(original).plan.mergeStrategy
+
+
+def test_partial_or_duplicate_delivery_is_rejected():
+    program=SearchProgram.model_validate(mixed()).with_delivery().model_dump()
+    for length in (1,2):
+        bad={**program,'steps':program['steps'][:7+length],'output':program['steps'][6+length]['id']}
+        with pytest.raises(ValidationError):SearchProgram.model_validate(bad)
+    program['steps'][8]['inputs']=['result']
+    with pytest.raises(ValidationError,match='input types'):SearchProgram.model_validate(program)
+
+
+def test_full_program_collects_filters_scores_and_ranks_once():
+    from agentic_services.photo_scout.program import PipelineHooks,Report
+    from agentic_services.photo_scout.scoring import ScoringOutput
+    calls=[]
+    async def collect(lat,lon,radius,pois,**kwargs):
+        calls.append('collect');assert len(pois)==2
+        return [{'id':'good','provider':'google-street-view','lat':0,'lon':-.005,'poi':{'id':'cafe-lake'}},
+                {'id':'wrong','provider':'google-street-view','lat':0,'lon':.015,'poi':{'id':'cafe-lake'}}],{'google-street-view':{'status':'ok'}}
+    async def before(images):calls.append('before');assert len(images.rows)==1
+    async def score(payload,rows,statuses):
+        calls.append('score');assert rows[0]['eligibleSearchPaths'][0]['targetQueries']==[['coffee shops']]
+        return ScoringOutput(rows,[],[],[],[],'test')
+    def rank(payload,output,statuses):calls.append('rank');return {'spots':[{'name':'Chosen'}],'sources':statuses}
+    program=SearchProgram.model_validate(mixed()).with_delivery()
+    parameters=SearchParameters(lat=0,lon=0,radius=3000,searchProgram=program)
+    execution=asyncio.run(execute_program(program,parameters,providers(),Path('/unused'),'google-places',
+        PipelineHooks(parameters,collect,score,rank,before)))
+    assert calls==['collect','before','score','rank']
+    assert isinstance(execution.output,Report)
+    assert execution.output.images.statuses['google-street-view']['geographicallyExcludedImages']==1
+    assert [s['count'] for s in execution.trace[-3:]]==[1,0,1]
+
+
+def test_terminal_program_steps_do_not_invalidate_existing_visual_cache():
+    from agentic_services.photo_scout.routes import ExploreRequest
+    from agentic_services.photo_scout.score_cache import ScoreCache
+    program=SearchProgram.model_validate(mixed())
+    old=ExploreRequest(lat=0,lon=0,searchProgram=program)
+    full=old.model_copy(update={'searchProgram':program.with_delivery()})
+    assert ScoreCache.key({'id':'image'},old,'model','prompt')==ScoreCache.key({'id':'image'},full,'model','prompt')

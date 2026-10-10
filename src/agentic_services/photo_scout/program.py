@@ -1,4 +1,4 @@
-"""Validated search programs composed from a small, typed tool registry.
+"""Validated discovery programs composed from a small, typed tool registry.
 
 Models write a bounded data-flow program, never executable Python. Tools own
 provider I/O and spatial operations; the executor only resolves dependencies.
@@ -16,7 +16,7 @@ from .geography import GeographicKind,filter_places,geographic_places
 from .osm_features import OSMFeatureQuery,matches_features
 
 Tool=Literal['search_places','search_geography','search_features','sample_geography',
-             'feature_points','filter_geography','filter_features','union','intersection','area_imagery']
+             'feature_points','filter_geography','filter_features','union','intersection','area_imagery','collect_images','score_images','rank_results']
 
 class SearchStep(BaseModel):
     model_config=ConfigDict(extra='forbid')
@@ -39,6 +39,8 @@ class SearchStep(BaseModel):
         if bool(self.queries)!=(self.tool=='search_places'):raise ValueError('Only search_places accepts nonempty queries')
         if bool(self.geographicKinds)!=(self.tool=='search_geography'):raise ValueError('Only search_geography accepts nonempty geographicKinds')
         if bool(self.osmFeatures)!=(self.tool=='search_features'):raise ValueError('Only search_features accepts nonempty osmFeatures')
+        if self.visualIntent and self.tool in ('collect_images','score_images','rank_results'):
+            raise ValueError('Visual requirements belong to retrieval paths or global scoringIntent')
         if self.exclude and self.tool not in ('filter_geography','filter_features'):raise ValueError('Exclusion requires a spatial filter')
         if self.discoveryHints and self.tool!='search_places':raise ValueError('Hints apply only to search_places')
         if self.combination!='all' and self.tool not in ('search_geography','search_features','sample_geography','feature_points','filter_geography','filter_features'):raise ValueError('This tool has no combination argument')
@@ -53,6 +55,8 @@ CONTRACTS={
  'feature_points':(['features'],'places'), 'filter_geography':(['places','geography'],'places'),
  'filter_features':(['places','features'],'places'), 'union':('places','places'),
  'intersection':('places','places'), 'area_imagery':([],'area'),
+ 'collect_images':(['locations'],'images'),'score_images':(['images'],'assessments'),
+ 'rank_results':(['assessments'],'report'),
 }
 
 class SearchProgram(BaseModel):
@@ -70,11 +74,11 @@ class SearchProgram(BaseModel):
             actual=[types[x] for x in s.inputs]
             if isinstance(expected,str):
                 if len(actual)<2 or any(t!=expected for t in actual):raise ValueError('Set operations need at least two place sets')
-            elif actual!=expected:raise ValueError(f'Invalid input types for {s.tool}')
+            elif not (actual==expected or expected==['locations'] and len(actual)==1 and actual[0] in ('places','area')):raise ValueError(f'Invalid input types for {s.tool}')
             if s.tool.startswith('search_'):source_count+=1
             types[s.id]=out;by_id[s.id]=s
         if source_count>8:raise ValueError('At most eight source searches per program')
-        if types.get(self.output) not in ('places','area'):raise ValueError('Output must be places or area imagery')
+        if types.get(self.output) not in ('places','area','report'):raise ValueError('Output must be places, area imagery, or a final report')
         reached=set()
         def visit(ref):
             if ref in reached:return
@@ -83,7 +87,36 @@ class SearchProgram(BaseModel):
         visit(self.output)
         if len(reached)!=len(self.steps):raise ValueError('Unused steps are invalid')
         if types[self.output]=='area' and len(self.steps)!=1:raise ValueError('Area imagery is a standalone plan')
+        pipeline=[s for s in self.steps if s.tool in ('collect_images','score_images','rank_results')]
+        if pipeline and (types[self.output]!='report' or [s.tool for s in pipeline]!=['collect_images','score_images','rank_results']):
+            raise ValueError('Image delivery requires exactly one collect -> score -> rank chain ending in a report')
         return self
+
+    @property
+    def complete(self):return self.steps[-1].tool=='rank_results'
+
+    def retrieval(self):
+        if not self.complete:return self
+        output=next(s.inputs[0] for s in self.steps if s.tool=='collect_images')
+        by_id={s.id:s for s in self.steps};seen=set()
+        def visit(ref):
+            if ref in seen:return
+            seen.add(ref)
+            for dependency in by_id[ref].inputs:visit(dependency)
+        visit(output)
+        return SearchProgram(steps=[s for s in self.steps if s.id in seen],output=output)
+
+    def with_delivery(self):
+        if self.complete:return self
+        used={s.id for s in self.steps}
+        def label(base):
+            while base in used:base+='x'
+            used.add(base);return base
+        images,scored,report=label('images'),label('scored'),label('report')
+        return SearchProgram(steps=self.steps+[
+            SearchStep(id=images,tool='collect_images',inputs=[self.output]),
+            SearchStep(id=scored,tool='score_images',inputs=[images]),
+            SearchStep(id=report,tool='rank_results',inputs=[scored])],output=report)
 
 
 @dataclass
@@ -129,9 +162,10 @@ def append_condition(value,step,condition):
 
 class Tools:
     """Small independently callable tools; no tool chooses the search strategy."""
-    def __init__(self,parameters,providers,database_path,poi_provider):
+    def __init__(self,parameters,providers,database_path,poi_provider,pipeline=None):
         self.p=parameters;self.providers=providers;self.database=database_path;self.poi_provider=poi_provider
         self.memo={};self.statuses={}
+        self.pipeline=pipeline;self.execution=None
 
     async def provider(self,fn,*args,**kwargs):
         key=(id(fn),json.dumps([args,kwargs],sort_keys=True,default=lambda v:v.model_dump() if isinstance(v,BaseModel) else str(v)))
@@ -218,17 +252,72 @@ class Tools:
 
     async def area_imagery(self,s,inputs):return Area()
 
+    async def collect_images(self,s,inputs):
+        if self.pipeline is None:raise ValueError('Image tools require the full discovery execution context')
+        locations=inputs[0]
+        if self.pipeline.selected_ids is not None:
+            if not isinstance(locations,Places) or not set(self.pipeline.selected_ids).issubset(locations.paths):
+                raise ValueError('Selected places changed; search again')
+            locations=Places([p for p in locations.rows if p['id'] in self.pipeline.selected_ids],locations.paths)
+        pois=locations.rows[:50] if isinstance(locations,Places) else []
+        rows,statuses=await self.pipeline.collect(self.p.lat,self.p.lon,self.p.radius,pois,
+            **({'visual_exploration':True} if isinstance(locations,Area) else {}))
+        eligible=self.execution.filter_images(rows,locations)
+        for provider,status in statuses.items():
+            status['geographicallyExcludedImages']=sum(r['provider']==provider for r in rows)-sum(r['provider']==provider for r in eligible)
+            status['sampledImages']=sum(r['provider']==provider for r in eligible)
+        return Images(eligible,statuses,pois,isinstance(locations,Area))
+
+    async def score_images(self,s,inputs):
+        images=inputs[0]
+        await self.pipeline.before_score(images)
+        output=await self.pipeline.score(self.pipeline.payload,images.rows,images.statuses)
+        return Assessments(output,images)
+
+    async def rank_results(self,s,inputs):
+        assessed=inputs[0]
+        result=self.pipeline.rank(self.pipeline.payload,assessed.output,assessed.images.statuses)
+        return Report(result,assessed.images)
+
+
+@dataclass
+class PipelineHooks:
+    payload: object
+    collect: object
+    score: object
+    rank: object
+    before_score: object
+    selected_ids: list[str] | None = None
+
+@dataclass
+class Images:
+    rows:list
+    statuses:dict
+    places:list
+    area:bool
+
+@dataclass
+class Assessments:
+    output:object
+    images:Images
+
+@dataclass
+class Report:
+    result:dict
+    images:Images
+
 
 @dataclass
 class ProgramExecution:
     program:SearchProgram
     tools:Tools
     values:dict
-    output:Places|Area
+    output:Places|Area|Report
     trace:list[dict]
 
-    def filter_images(self,rows):
-        if isinstance(self.output,Area):return rows
+    def filter_images(self,rows,locations=None):
+        locations=self.output if locations is None else locations
+        if isinstance(locations,Area):return rows
         by_id={s.id:s for s in self.program.steps};retained=[]
         for row in rows:
             identities={p['id'] for p in row.get('poiCandidates',[])}
@@ -236,8 +325,8 @@ class ProgramExecution:
             eligible=[]
             # Sample-only candidates may use other geolocated sources without a
             # POI identity; explicit targets require association with their POI.
-            for candidate in self.output.rows[:50]:
-                for path in self.output.paths[candidate['id']]:
+            for candidate in locations.rows[:50]:
+                for path in locations.paths[candidate['id']]:
                     if path['targets'] and candidate['id'] not in identities:continue
                     if not all(self.tools.matches(row,by_id[f],self.values[by_id[f].inputs[-1]]) for f in path['filters']):continue
                     public={**path,'targetQueries':[by_id[t].queries for t in path['targets']]}
@@ -246,8 +335,10 @@ class ProgramExecution:
         return retained
 
 
-async def execute_program(program,parameters,providers,database_path,poi_provider):
-    tools=Tools(parameters,providers,database_path,poi_provider);tasks={};values={};trace=[]
+async def execute_program(program,parameters,providers,database_path,poi_provider,pipeline=None):
+    tools=Tools(parameters,providers,database_path,poi_provider,pipeline);tasks={};values={};trace=[]
+    execution=ProgramExecution(program,tools,values,None,trace)
+    tools.execution=execution
     steps_by_id={s.id:s for s in program.steps}
     async def run(step):
         inputs=await asyncio.gather(*(tasks[x] for x in step.inputs))
@@ -261,7 +352,7 @@ async def execute_program(program,parameters,providers,database_path,poi_provide
                         if intent not in path['visualIntents']:path['visualIntents'].append(intent)
         values[step.id]=value
         trace.append({'id':step.id,'tool':step.tool,'inputs':step.inputs,'durationSeconds':round(time.monotonic()-started,3),
-            'count':len(value.rows) if isinstance(value,Places) else len(value.features) if isinstance(value,Geography) else sum(len(g) for g in value.groups) if isinstance(value,Features) else 0,
+            'count':len(value.rows) if isinstance(value,Places) else len(value.features) if isinstance(value,Geography) else sum(len(g) for g in value.groups) if isinstance(value,Features) else len(value.rows) if isinstance(value,Images) else len(value.output.assessments) if isinstance(value,Assessments) else len(value.result.get('spots',[])) if isinstance(value,Report) else 0,
             'source':tools.statuses.get(step.id)})
         return value
     try:
@@ -272,4 +363,5 @@ async def execute_program(program,parameters,providers,database_path,poi_provide
             if not task.done():task.cancel()
         await asyncio.gather(*tasks.values(),*tools.memo.values(),return_exceptions=True)
     order={s.id:i for i,s in enumerate(program.steps)}
-    return ProgramExecution(program,tools,values,output,sorted(trace,key=lambda s:order[s['id']]))
+    execution.output=output;execution.trace=sorted(trace,key=lambda s:order[s['id']])
+    return execution

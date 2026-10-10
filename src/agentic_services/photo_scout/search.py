@@ -92,7 +92,7 @@ def branch_parameters(parameters,branch):
 
 def compile_search(parameters: SearchParameters) -> SearchPlan:
     if parameters.searchProgram is not None:
-        program=parameters.searchProgram
+        program=parameters.searchProgram.retrieval()
         area=program.steps[-1].tool=='area_imagery'
         return SearchPlan(parameters=parameters,placesQueries=[],placesRole='not-requested',geographicKinds=[],
             mergeStrategy='area-imagery' if area else 'tool-program',
@@ -183,7 +183,7 @@ async def search_locations(parameters: SearchParameters, *, database_path: Path,
         providers=SearchProviders(nearby_places,nearby_pois,fetch_region)
     plan=compile_search(parameters)
     if parameters.searchProgram is not None:
-        try:execution=await execute_program(parameters.searchProgram,parameters,providers,database_path,poi_provider)
+        try:execution=await execute_program(parameters.searchProgram.retrieval(),parameters,providers,database_path,poi_provider)
         except ValueError as error:raise SearchUnavailable(str(error)) from error
         rows=[] if isinstance(execution.output,Area) else execution.output.rows[:plan.candidateLimit]
         places=[{**p,'searchPathCount':len(execution.output.paths[p['id']])} for p in rows]

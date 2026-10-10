@@ -109,7 +109,7 @@ Nested positive AND/OR conditions are normalized into these bounded groups. Nega
 
 ### Model-written search programs
 
-New text searches produce `searchProgram`: a bounded, typed data-flow program. It is executable tool composition, not arbitrary Python, SQL, HTTP URLs or Overpass source. Legacy flat parameters and searchBranches continue to work when no program is supplied; combining those retrieval fields with a program is rejected. Location geocoding remains separate; all tools share the resolved center and radius. Image acquisition and batch scoring stay downstream.
+New text searches produce `searchProgram`: a bounded, typed data-flow program. It is executable tool composition, not arbitrary Python, SQL, HTTP URLs or Overpass source. Legacy flat parameters and searchBranches continue to work when no program is supplied; combining those retrieval fields with a program is rejected. Location geocoding remains separate; all tools share the resolved center and radius. The same program now also collects imagery, visually matches/scores image batches, and ranks the final report.
 
 Small tools live in `photo_scout/program.py` and can be tested independently:
 
@@ -125,6 +125,9 @@ Small tools live in `photo_scout/program.py` and can be tested independently:
 | union | Two or more place sets | Deduplicated OR |
 | intersection | Two or more place sets | Shared POI IDs (AND by identity, not proximity) |
 | area_imagery | No inputs | Surrounding imagery targets |
+| collect_images | Place set or area | Collected imagery, with camera-position filtering |
+| score_images | Images | Cached and fresh visual matching plus quality assessments |
+| rank_results | Assessments | Final ranked report |
 
 Example lakeside scenery program:
 
@@ -135,13 +138,16 @@ Example lakeside scenery program:
     {"id":"parks","tool":"search_places","queries":["lakeside parks","lake viewpoints"],"discoveryHints":true},
     {"id":"shore_parks","tool":"filter_geography","inputs":["parks","lake"]},
     {"id":"shore_points","tool":"sample_geography","inputs":["lake"]},
-    {"id":"result","tool":"union","inputs":["shore_parks","shore_points"],"weights":[1,4]}
+    {"id":"result","tool":"union","inputs":["shore_parks","shore_points"],"weights":[1,4]},
+    {"id":"images","tool":"collect_images","inputs":["result"]},
+    {"id":"scored","tool":"score_images","inputs":["images"]},
+    {"id":"report","tool":"rank_results","inputs":["scored"]}
   ],
-  "output":"result"
+  "output":"report"
 }
 ```
 
-The executor validates known tool names, argument usage, input/output types, unique step IDs, earlier dependencies, complete reachability and an output place set/standalone area plan. Limits: 24 steps, 8 source-search steps, 50 combined imagery candidate targets, 64 logical paths per candidate. Independent source tools run concurrently and identical provider calls share an in-flight task. Union supports weights 1..4 per input for dense spatial sampling without losing named discoveries. Required source failures fail the search; explicitly marked scenic discovery hints may fail while other required paths still supply samples. No model loop runs during execution.
+The executor validates known tool names, argument usage, input/output types, unique step IDs, earlier dependencies, complete reachability and a final report. Retrieval-only place/area programs remain compatible for existing callers. Full delivery requires exactly one collect_images -> score_images -> rank_results chain. Limits: 24 steps, 8 source-search steps, 50 combined imagery candidate targets, 64 logical paths per candidate. Independent source tools run concurrently and identical provider calls share an in-flight task. Union supports weights 1..4 per input for dense spatial sampling without losing named discoveries. Required source failures fail the search; explicitly marked scenic discovery hints may fail while other required paths still supply samples. There is one planning call; no model loop runs during execution. score_images performs matching and scoring together, reuses existing score caches, and downloads/scores batches concurrently. rank_results is deterministic and never calls a model. /v1/search and /v1/pois project only the retrieval portion; preview/jobs/paid discovery execute the full program and return its complete trace. Signed selections still validate the entire plan and limit image collection to selected places.
 
 Every returned candidate retains its successful source/filter/visual paths internally. Actual panorama coordinates are rechecked against those paths; explicit targets also require POI association. Eligible paths are supplied to multimodal evaluation, preserving target groups, spatial AND/OR/exclusions and branch-specific visual requirements. Program content enters the score-cache key and signed catalog validation. `executionTrace` records each step's tool, dependencies, output count, provider status and execution time. `GET /photo-scout/v1/search-tools` exposes tool contracts, the full program schema and limits. HTTP API and MCP accept `searchProgram` as structured input; website and paid natural-language requests use the same program executor.
 
