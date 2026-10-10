@@ -226,3 +226,5 @@ html:has(body.photo-app),body.photo-app{height:100%;overflow:hidden}.photo-app m
 .studio-person-frame>img:not(.studio-person-placeholder){position:absolute;inset:0}
 .studio-image-card figcaption{text-align:center;font-size:12px;font-weight:650;color:#6c557d;padding-top:8px}
 @media(max-width:600px){.studio-intro{font-size:13px;margin:10px 0}.studio-inputs{gap:8px}.studio-inputs .studio-image-card>img,.studio-inputs .studio-person-frame>img,.studio-person-frame{height:130px}.studio-image-card figcaption{font-size:11px;padding-top:6px}}
+
+.photo-sharing{margin-top:12px}.photo-sharing>summary{display:block;list-style:none;cursor:pointer;width:100%;padding:14px;border:1px solid #c9b5e0;border-radius:14px;background:#f2eafa;color:#684793;font-size:14px;font-weight:600;text-align:center}.photo-share-body{padding:12px 0;display:grid;gap:10px}.photo-share-body .studio-save{margin:0;min-height:46px;text-align:center;text-decoration:none}.photo-social-links{display:grid;grid-template-columns:1fr 1fr;gap:10px}.photo-share-body .small{margin:2px 0;overflow-wrap:anywhere}@media(max-width:380px){.photo-social-links{grid-template-columns:1fr}}

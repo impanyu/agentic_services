@@ -626,7 +626,7 @@ async function viewPortraitProgress(task){
  portraitProgressTimer=setTimeout(refresh,4000);};await refresh();
 }
 async function viewSavedPhoto(task){
- delete savedPhoto.dataset.publication;savedPhotoTitle.textContent='Your saved selfie';
+ delete savedPhoto.dataset.publication;savedPhoto.dataset.photoId=task.id;savedPhotoSharing.hidden=true;savedPhotoTitle.textContent='Your saved selfie';
  savedPhotoPublish.replaceChildren(publishButton('photo',task.id));
  if(['queued','checking','running'].includes(task.state)){await viewPortraitProgress(task);return;}
  if(studio.open)studio.close();if(portraitProgress.open)portraitProgress.close();
@@ -637,7 +637,7 @@ async function viewSavedPhoto(task){
   renderSavedPhotoParams(report.context||task.context,task.created);
   if(report.state==='complete'){
    const response=await fetch(api+'/photo-scout/v1/portraits/'+encodeURIComponent(task.id)+'/image',{credentials:'include'});if(!response.ok)throw Error('Could not load your saved photo');const blob=await response.blob(),preview=await readPhoto(blob);if(generation!==savedPhotoGeneration)return;
-   savedPhotoFile=new File([blob],'photo-scout-ai-photo.png',{type:'image/png'});savedPhotoUrl=URL.createObjectURL(blob);savedPhotoImage.src=preview;savedPhotoImage.hidden=false;savedPhotoSave.hidden=false;savedPhotoDownload.href=savedPhotoUrl;savedPhotoDownload.hidden=false;savedPhotoStatus.textContent=task.expiresAt===null||authUser?'AI-generated photo · Saved permanently to your account.':'AI-generated photo · Guest photo kept until 7 days after your last visit.';savedPhotoHint.textContent='On iPhone, use Save to Photos or press and hold the photo to save it.';return;
+   savedPhotoFile=new File([blob],'photo-scout-ai-photo.png',{type:'image/png'});savedPhotoUrl=URL.createObjectURL(blob);savedPhotoImage.src=preview;savedPhotoImage.hidden=false;savedPhotoSave.hidden=false;savedPhotoDownload.href=savedPhotoUrl;savedPhotoDownload.hidden=false;savedPhotoStatus.textContent=task.expiresAt===null||authUser?'AI-generated photo · Saved permanently to your account.':'AI-generated photo · Guest photo kept until 7 days after your last visit.';savedPhotoHint.textContent='On iPhone, use Save to Photos or press and hold the photo to save it.';renderPhotoSharing(report.context||task.context);return;
   }
   if(report.state==='failed'){savedPhotoStatus.textContent=report.error||'This photo could not be created.';return;}
   savedPhotoStatus.textContent=report.state==='queued'?'Your selfie is queued…':'Your selfie is being created…';savedPhotoTimer=setTimeout(refresh,4000);
@@ -720,6 +720,46 @@ if(window.ResizeObserver)new window.ResizeObserver(refreshMapViewport).observe(e
 const publicationLayer=L.layerGroup().addTo(map);
 overlayControl.addOverlay(publicationLayer,'Published places & selfies');
 const savedPhotoPublish=node('div',null,'publication-actions');savedPhoto.append(savedPhotoPublish);
+const savedPhotoSharing=node('details',null,'photo-sharing');savedPhotoSharing.hidden=true;savedPhoto.append(savedPhotoSharing);
+function photoSocialLinks(url,text){
+ return [['Facebook','https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(url)],['X','https://twitter.com/intent/tweet?url='+encodeURIComponent(url)+'&text='+encodeURIComponent(text)]];
+}
+function renderPhotoSharing(context){
+ const generation=savedPhotoGeneration,photoId=savedPhoto.dataset.photoId,publicId=savedPhoto.dataset.publication;
+ const text='My AI-generated selfie at '+(context?.name||'a photo spot')+' · Photo Scout';
+ const summary=node('summary','Share to social media'),body=node('div',null,'photo-share-body'),status=node('p',null,'small');status.setAttribute('role','status');
+ const native=node('button','Share photo · More apps','studio-save'),wechat=node('button','WeChat / 微信','studio-save');native.type=wechat.type='button';
+ const sharePhoto=async(weChat=false)=>{
+  if(generation!==savedPhotoGeneration)return;
+  const file=savedPhotoFile;
+  let filesSupported=false;try{filesSupported=!!file&&typeof navigator.canShare==='function'&&navigator.canShare({files:[file]});}catch{}
+  const item=publicId?{url:location.origin+'/photo-scout/?published='+encodeURIComponent(publicId)}:ownPublications.get(publicationKey('photo',photoId));
+  if(typeof navigator.share!=='function'||(!filesSupported&&!item)){
+   status.textContent=weChat?'Save or download the photo, then open WeChat to send it to a chat or post it to Moments.':'Download the photo to upload it to any social app, or publish a shareable link below.';return;
+  }
+  try{await navigator.share(filesSupported?{files:[file],title:'Photo Scout selfie'}:{url:item.url,title:'Photo Scout selfie',text});
+   if(generation===savedPhotoGeneration)status.textContent='Share menu opened. Finish sharing in your chosen app.';
+  }catch(error){if(generation===savedPhotoGeneration&&error.name!=='AbortError')status.textContent='Could not open the share menu. Download the photo and share it from your social app.';}
+ };
+ native.onclick=()=>sharePhoto();wechat.onclick=()=>sharePhoto(true);
+ const links=node('div',null,'photo-social-links'),copy=node('button','Copy share link','studio-save'),publish=node('button','Publish a shareable link','studio-save');copy.type=publish.type='button';
+ const note=node('p','Share the image directly with installed apps. For WeChat, choose WeChat in the share menu, or save the image and send it from WeChat.','small');
+ function refresh(){
+  const item=publicId?{url:location.origin+'/photo-scout/?published='+encodeURIComponent(publicId)}:ownPublications.get(publicationKey('photo',photoId));
+  links.replaceChildren();copy.hidden=!item;publish.hidden=!!item||!photoId;
+  if(item){for(const [label,url] of photoSocialLinks(item.url,text)){const a=link('Share on '+label+' ↗',url);a.className='studio-save';links.append(a);}note.textContent='Facebook and X share your public photo link. To attach the image itself, use More apps or download it. WeChat: choose WeChat in the share menu, or save and send the image.';}
+  else note.textContent='Sharing the image does not publish it. Facebook and X link sharing requires a public photo. “Publish a shareable link” makes this photo and its background info visible to anyone.';
+  copy.onclick=async()=>{try{await navigator.clipboard.writeText(item.url);if(generation===savedPhotoGeneration)status.textContent='Link copied. Paste it into WeChat or any social app.';}catch{if(generation===savedPhotoGeneration){status.replaceChildren(node('span','Copy this public link: '),link(item.url,item.url));}}};
+ }
+ publish.onclick=async()=>{publish.disabled=true;status.textContent='Creating your public photo link…';try{
+  const item=await json('/photo-scout/v1/publications',{method:'POST',headers:{'Content-Type':'application/json',...(csrfToken?{'X-CSRF-Token':csrfToken}:{})},body:JSON.stringify({kind:'photo',id:photoId})});
+  ownPublications.set(publicationKey('photo',photoId),item);syncPublishButtons();
+  if(generation===savedPhotoGeneration){refresh();status.textContent='Public link ready. Choose Facebook, X, or Copy share link.';}
+ }catch(error){if(generation===savedPhotoGeneration)status.textContent=error.message;}finally{publish.disabled=false;}};
+ body.append(native,wechat,links,copy,publish,note,status);savedPhotoSharing.replaceChildren(summary,body);savedPhotoSharing.open=false;savedPhotoSharing.hidden=false;
+ savedPhotoSharing.refresh=refresh;savedPhotoSharing.ontoggle=()=>{if(savedPhotoSharing.open)refresh();};refresh();
+}
+
 const publicationDialog=node('dialog',null,'photo-studio publication-dialog');publicationDialog.setAttribute('aria-label','Publication link');document.body.append(publicationDialog);
 function showPublicationLink(item){
  const heading=node('div',null,'studio-heading'),close=node('button','Close ×');close.type='button';close.addEventListener('click',()=>publicationDialog.close());heading.append(node('h2','Published'),close);
@@ -728,7 +768,7 @@ function showPublicationLink(item){
  publicationDialog.replaceChildren(heading,node('p','Anyone can view this publication, including visitors who are not signed in.','small'),url,copy);if(!publicationDialog.open)publicationDialog.showModal();
 }
 function publicationKey(kind,id,poi=''){return JSON.stringify([kind,id,poi]);}
-function syncPublishButtons(){for(const button of document.querySelectorAll('button[data-publication-key]')){const published=ownPublications.has(button.dataset.publicationKey);button.textContent=published?'Published ✓ · Unpublish':button.dataset.publishLabel;button.setAttribute('aria-pressed',String(published));}}
+function syncPublishButtons(){for(const button of document.querySelectorAll('button[data-publication-key]')){const published=ownPublications.has(button.dataset.publicationKey);button.textContent=published?'Published ✓ · Unpublish':button.dataset.publishLabel;button.setAttribute('aria-pressed',String(published));}savedPhotoSharing.refresh?.();}
 function publishButton(kind,id,spot){
  const label='Publish'+(kind==='place'?' place':kind==='photo'?' photo':''),button=node('button',label,'publish-button');button.type='button';button.hidden=!id||id.startsWith('public:');button.dataset.publishLabel=label;button.dataset.publicationKey=publicationKey(kind,id,spot?poiHistoryKey(spot):'');button.setAttribute('aria-pressed',String(ownPublications.has(button.dataset.publicationKey)));if(ownPublications.has(button.dataset.publicationKey))button.textContent='Published ✓ · Unpublish';
  button.onclick=async()=>{const existing=ownPublications.get(button.dataset.publicationKey);button.disabled=true;button.textContent=existing?'Unpublishing…':'Publishing…';try{
@@ -760,7 +800,7 @@ function drawPublications(){
 async function openPublication(item){
  el('published-menu').open=false;for(const menu of mapMenus)menu.open=false;
  try{const data=await json('/photo-scout/v1/publications/'+encodeURIComponent(item.id));
-  if(data.kind==='photo'){if(studio.open)studio.close();if(portraitProgress.open)portraitProgress.close();++savedPhotoGeneration;clearTimeout(savedPhotoTimer);if(savedPhotoUrl)URL.revokeObjectURL(savedPhotoUrl);savedPhotoUrl=null;savedPhotoTitle.textContent='Published selfie';renderSavedPhotoParams(data.context,data.created);savedPhoto.dataset.publication=data.id;savedPhotoPublish.replaceChildren();savedPhotoSave.hidden=true;savedPhotoDownload.hidden=false;savedPhotoDownload.href=data.imageUrl;savedPhotoImage.src=data.imageUrl;savedPhotoImage.hidden=false;savedPhotoHint.textContent='Press and hold the photo to save it, or use Download PNG.';savedPhotoStatus.textContent='Published AI-generated selfie';savedPhotoFile=null;if(!savedPhoto.open)savedPhoto.showModal();if(data.context?.poi)map.setView([data.context.poi.lat,data.context.poi.lon],16);}
+  if(data.kind==='photo'){if(studio.open)studio.close();if(portraitProgress.open)portraitProgress.close();++savedPhotoGeneration;clearTimeout(savedPhotoTimer);if(savedPhotoUrl)URL.revokeObjectURL(savedPhotoUrl);savedPhotoUrl=null;savedPhotoTitle.textContent='Published selfie';renderSavedPhotoParams(data.context,data.created);savedPhoto.dataset.publication=data.id;delete savedPhoto.dataset.photoId;savedPhotoPublish.replaceChildren();savedPhotoSave.hidden=true;savedPhotoDownload.hidden=false;savedPhotoDownload.href=data.imageUrl;savedPhotoImage.src=data.imageUrl;savedPhotoImage.hidden=false;savedPhotoHint.textContent='Press and hold the photo to save it, or use Download PNG.';savedPhotoStatus.textContent='Published AI-generated selfie';savedPhotoFile=null;renderPhotoSharing(data.context);if(!savedPhoto.open)savedPhoto.showModal();if(data.context?.poi)map.setView([data.context.poi.lat,data.context.poi.lon],16);}
   else{render(data.result,{save:false,mapUpdate:false,historyId:'public:'+data.id});const spots=data.result.spots||[],coords=spots.filter(s=>s.poi).map(s=>[s.poi.lat,s.poi.lon]);if(coords.length)map.fitBounds(L.latLngBounds(coords).pad(.25),{paddingTopLeft:[30,80],paddingBottomRight:[30,160],maxZoom:16});if(!spots.length)message('This published search has no photo places.');}
   const existing=publicationItems.find(p=>p.id===data.id);if(existing)existing.checked=true;else publicationItems.push(data);publicationLayer.addTo(map);renderPublications();drawPublications();
  }catch(error){message(error.message);}

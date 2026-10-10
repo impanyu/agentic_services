@@ -429,3 +429,7 @@ retain a concise pixel observation. Distant, cropped or secondary identifiable
 subjects remain eligible; composition affects scores rather than adding requirements.
 The changed review instructions invalidate previous assessments through the existing
 cache key. This reduces known failure modes; it does not guarantee visual accuracy.
+
+### Photo sharing
+
+Saved and published photo viewers include a full-width **Share to social media** control. Native sharing sends the prepared image file when supported, without publishing private photos. WeChat uses the device share menu when available, with save/download instructions as a fallback. Facebook and X open link-sharing composers for public photos; a private photo requires the explicit **Publish a shareable link** action first. Copy link is also available. Social links do not upload the image as a platform attachment, and opening a composer/share sheet does not imply a post was published. Withdrawing a Photo Scout publication disables its public link but cannot retract images or posts already shared externally.
