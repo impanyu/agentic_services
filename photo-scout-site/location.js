@@ -1,5 +1,12 @@
 'use strict';
-window.PhotoScoutLocation={request({geolocation,onState,onPosition,timeoutMs=35000}){
+window.PhotoScoutLocation={
+ // A remembered preference is not permission. Only a fresh browser permission
+ // check can authorize a silent location request; never reuse old coordinates.
+ remember(storage){try{storage.setItem('photo-scout-location-enabled','1');}catch{}},
+ async canAutoLocate(permissions){
+  try{return (await permissions.query({name:'geolocation'})).state==='granted';}catch{return false;}
+ },
+ request({geolocation,onState,onPosition,timeoutMs=35000}){
  let finished=false,retried=false;
  const finish=(state,position)=>{if(finished)return;finished=true;clearTimeout(timer);onState(state);if(position)onPosition(position);};
  const timer=setTimeout(()=>finish({status:'error',message:'No device location received. The map has not been located. On iPhone: Settings → Privacy & Security → Location Services → Safari Websites → While Using. Also allow location for this website, then retry.'}),timeoutMs);

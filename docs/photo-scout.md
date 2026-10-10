@@ -403,3 +403,15 @@ Publish is an explicit action in Search history, a place card/map popup, or the 
 `POST /photo-scout/v1/publications` accepts `{kind: "search" | "place" | "photo", id, poiId?}`. Publication and withdrawal require the existing website gateway, a valid owner cookie, same origin, and account CSRF when signed in. `POST /photo-scout/v1/publications/withdraw` accepts the publication id and only the publisher can withdraw it. Public GET endpoints list publications (50 per page, `before` cursor), fetch a snapshot, and serve a generated photo or its thumbnail. Withdrawn publications return 404.
 
 Snapshots and generated-photo copies live independently of automatic private task retention. Uploaded originals, task tokens and internal image-fetch references are excluded. Deleting a search history item also withdraws that search and its individually published places. Deleting a photo history item withdraws that photo. Removing a place withdraws its individual publication and removes it from the published search snapshot. Undo restores private history only; publishing again is explicit. Publish controls are reversible toggles, and Unpublish is also available in Published. Guest publications transfer to the account on sign-in while the guest session is valid. An expired/cleared guest cookie loses management access, so signing in before publication is advisable for long-term management.
+
+
+### Remembered device location permission
+
+On page load, Photo Scout checks the browser's current geolocation permission.
+If it remains granted, the map automatically centers on a fresh device location
+without starting a search. Successful location use stores a local preference,
+not coordinates. A prompt, denial or unsupported Permissions API never triggers
+an automatic permission dialog; the location button remains available. Browser
+and OS settings control whether permission persists between visits. Shared
+publication links keep their own map view, and a late automatic fix never
+replaces a point or search history the visitor has selected in the meantime.

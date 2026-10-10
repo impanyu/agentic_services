@@ -127,10 +127,11 @@ selected.on('dragend',()=>{const p=selected.getLatLng();pick(p.lat,p.lng);});
 
 function coordinates(){const styles=[...el('style-options').querySelectorAll('input:checked')].map(i=>i.value).filter(s=>s!=='any');return {lat:Number(el('lat').value),lon:Number(el('lon').value),radius:Number(el('radius').value),photoStyles:styles.length?styles:null}}
 function invalidatePois(){stopPoiScan();catalogGeneration++;candidatePoiLayer.clearLayers();poiCatalog=null;}
-function pick(lat,lon){invalidatePois();el('lat').value=lat.toFixed(6);el('lon').value=lon.toFixed(6);selected.setLatLng([lat,lon]);syncMapSelection();}
+function pick(lat,lon){locationSelectionRevision++;invalidatePois();el('lat').value=lat.toFixed(6);el('lon').value=lon.toFixed(6);selected.setLatLng([lat,lon]);syncMapSelection();}
 const locationStatus=(s,status)=>{el('location-status').textContent=s;if(status)el('location-status').dataset.state=status};
-let locationPending=false;
-function locateCurrentPosition(){
+let locationPending=false,locationSelectionRevision=0,automaticLocationOwnsMap=false;
+function locateCurrentPosition({automatic=false}={}){
+ const revision=locationSelectionRevision;
  if(locationPending)return;
  if(!window.isSecureContext||!navigator.geolocation){locationStatus('Location is unavailable in this browser. Open the HTTPS website, or choose a point on the map.');return;}
  const button=el('locate'),mapButton=el('center-pin');
@@ -141,6 +142,9 @@ function locateCurrentPosition(){
   mapButton.textContent=locationPending?'…':'⌖';locationStatus(state.message,state.status);
   el('map-notice').textContent=state.message;
  },onPosition:position=>{
+  window.PhotoScoutLocation.remember(localStorage);
+  if(automatic&&(revision!==locationSelectionRevision||sharedPublicationId))return;
+  automaticLocationOwnsMap=automatic;
   const {latitude:lat,longitude:lon,accuracy}=position.coords;
   pick(lat,lon);map.fitBounds(searchArea.getBounds(),{padding:[32,32],maxZoom:16});
   locationStatus(`Device location selected${Number.isFinite(accuracy)?` (accuracy ±${Math.ceil(accuracy)} m)`:''}. Click ↑ or press Enter to search.`);
@@ -148,8 +152,16 @@ function locateCurrentPosition(){
   el('map-heading').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
  }});
 }
-for(const id of ['locate','center-pin'])el(id).addEventListener('click',locateCurrentPosition);
+for(const id of ['locate','center-pin'])el(id).addEventListener('click',()=>locateCurrentPosition());
+async function restoreDeviceLocation(){
+ const revision=locationSelectionRevision;
+ if(sharedPublicationId||!window.isSecureContext||!navigator.geolocation)return;
+ if(await window.PhotoScoutLocation.canAutoLocate(navigator.permissions)){
+  if(revision===locationSelectionRevision&&!sharedPublicationId)locateCurrentPosition({automatic:true});
+ }
+}
 map.on('click',e=>pick(e.latlng.lat,e.latlng.lng));
+map.on('dragstart',()=>{locationSelectionRevision++;});
 el('radius').addEventListener('change',()=>{invalidatePois();syncMapSelection();updateParameterSummary();});
 function updateParameterSummary(){const moods=[...el('style-options').querySelectorAll('input:checked')].filter(i=>i.value!=='any');el('parameter-summary').textContent=el('radius').selectedOptions[0].textContent+' · '+(moods.length?moods.map(i=>i.parentElement.querySelector('strong').textContent).join(' + '):'Any mood');}
 function styleChanged(){updateParameterSummary();invalidatePois();message('Photo mood updated. Submit to explore around the selected pin.');}
@@ -353,7 +365,7 @@ function directionDot(spot){const b=photoBearing(spot);return L.divIcon({classNa
 function storedHistory(){return searchHistory.map(h=>({...h,result:{...h.result,imageAssessments:[],spots:(h.result.spots||[]).map(stripHistoryImage),poiResults:(h.result.poiResults||[]).map(stripHistoryImage)}}));}
 function persistHistory(){const records=storedHistory();if(authUser){queueHistory(records);return;}try{sessionStorage.setItem(HISTORY_KEY,JSON.stringify(records));}catch{el('history-note').textContent='Session storage is unavailable; history stays in this page.';}}
 async function queueHistory(records){for(const h of records)pendingHistory.set(h.id,h);if(syncingHistory)return;syncingHistory=true;try{while(pendingHistory.size&&authUser){const [id,item]=pendingHistory.entries().next().value;await json('/photo-scout/v1/history',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-Token':csrfToken},body:JSON.stringify(item)});if(pendingHistory.get(id)===item)pendingHistory.delete(id);}}catch{el('history-note').textContent='Account history could not sync. Keep this page open and try again.';}finally{syncingHistory=false;}}
-async function loadAccount(){try{const state=await json('/photo-scout/v1/auth/me');authUser=state.user;csrfToken=state.csrfToken;el('account-login').disabled=!state.configured;el('account-login').textContent='Sign in';el('account-login').title=state.configured?'Sign in with Google':'Google sign-in is not configured yet';el('account-login').hidden=Boolean(authUser);el('account-logout').hidden=!authUser;el('account-name').textContent=authUser?authUser.name:'Guest session';if(authUser){const guest=searchHistory,remote=await json('/photo-scout/v1/history');const merged=new Map(remote.items.map(h=>[h.id,h]));for(const h of guest)merged.set(h.id,h);searchHistory=[...merged.values()].sort((a,b)=>b.created-a.created);if(guest.length){await queueHistory(guest.map(h=>({...h,result:{...h.result,imageAssessments:[],spots:(h.result.spots||[]).map(stripHistoryImage),poiResults:(h.result.poiResults||[]).map(stripHistoryImage)}})));if(!pendingHistory.size)sessionStorage.removeItem(HISTORY_KEY);}el('history-note').textContent='Your searches and generated photos are saved permanently to your account.';renderHistory();drawHistoryMap({fit:true});}else el('history-note').textContent='Guest searches and photos are deleted after 7 days without a visit. Sign in to keep them permanently.';}catch{el('account-name').textContent='Guest session';el('account-login').disabled=true;el('history-note').textContent='Sign-in is temporarily unavailable. Guest history stays in this session.';}}
+async function loadAccount(){try{const state=await json('/photo-scout/v1/auth/me');authUser=state.user;csrfToken=state.csrfToken;el('account-login').disabled=!state.configured;el('account-login').textContent='Sign in';el('account-login').title=state.configured?'Sign in with Google':'Google sign-in is not configured yet';el('account-login').hidden=Boolean(authUser);el('account-logout').hidden=!authUser;el('account-name').textContent=authUser?authUser.name:'Guest session';if(authUser){const guest=searchHistory,remote=await json('/photo-scout/v1/history');const merged=new Map(remote.items.map(h=>[h.id,h]));for(const h of guest)merged.set(h.id,h);searchHistory=[...merged.values()].sort((a,b)=>b.created-a.created);if(guest.length){await queueHistory(guest.map(h=>({...h,result:{...h.result,imageAssessments:[],spots:(h.result.spots||[]).map(stripHistoryImage),poiResults:(h.result.poiResults||[]).map(stripHistoryImage)}})));if(!pendingHistory.size)sessionStorage.removeItem(HISTORY_KEY);}el('history-note').textContent='Your searches and generated photos are saved permanently to your account.';renderHistory();drawHistoryMap({fit:!locationPending&&!automaticLocationOwnsMap});}else el('history-note').textContent='Guest searches and photos are deleted after 7 days without a visit. Sign in to keep them permanently.';}catch{el('account-name').textContent='Guest session';el('account-login').disabled=true;el('history-note').textContent='Sign-in is temporarily unavailable. Guest history stays in this session.';}}
 el('account-login').addEventListener('click',()=>{persistHistory();location.href=api+'/photo-scout/v1/auth/login';});
 el('account-logout').addEventListener('click',async()=>{try{await json('/photo-scout/v1/auth/logout',{method:'POST',headers:{'X-CSRF-Token':csrfToken}});authUser=null;csrfToken=null;pendingHistory.clear();searchHistory=[];sessionStorage.removeItem(HISTORY_KEY);el('results').hidden=true;el('toggle-results').disabled=true;renderHistory();drawHistoryMap();resetTaskRecovery();await loadAccount();await restoreTasks();await loadPublications();}catch{el('history-note').textContent='Sign-out failed. Please try again.';}});
 function stripHistoryImage(s){const copy={...s};delete copy.imageUrl;delete copy.streetViewReference;return copy;}
@@ -526,6 +538,7 @@ function fitSearchRange(context){
  map.fitBounds(bounds,{paddingTopLeft:[24,80],paddingBottomRight:[24,Math.ceil(dockHeight)+24],maxZoom:18});
 }
 function applyTaskContext(context){
+ locationSelectionRevision++;
  if(!Number.isFinite(context.lat)||!Number.isFinite(context.lon))return;
  const moved=Number(el('lat').value)!==context.lat||Number(el('lon').value)!==context.lon||(context.radius&&Number(el('radius').value)!==context.radius);
  el('lat').value=String(context.lat);el('lon').value=String(context.lon);selected.setLatLng([context.lat,context.lon]);
@@ -750,3 +763,6 @@ async function openPublication(item){
 }
 el('published-menu').addEventListener('toggle',()=>{if(el('published-menu').open)loadPublications();});el('published-more').addEventListener('click',()=>loadPublications(true));
 loadPublications().then(()=>{if(sharedPublicationId)openPublication({id:sharedPublicationId});});
+
+// Run after share-link parsing and initial history rendering.
+restoreDeviceLocation();

@@ -7,7 +7,7 @@ const source=readFileSync('photo-scout-site/app.js','utf8');
 test('a text search followed by a blank search sends only current visible inputs',async()=>{
  const requests=[],styles=[{value:'any',checked:true},{value:'urban',checked:false}];
  const inputs={lat:{value:'41.89'},lon:{value:'-87.63'},radius:{value:'2000',options:[{value:'2000'}]},'prompt-query':{value:'high rise buildings with glass wall'},'style-options':{querySelectorAll:selector=>selector==='input:checked'?styles.filter(i=>i.checked):styles},'prompt-status':{textContent:''}};
- const context={el:id=>{assert.notEqual(id,'preferences','never read the old hidden input');return inputs[id];},tasksReady:true,searchBusy:false,activeSearch:null,poiCatalog:null,
+ const context={el:id=>{assert.notEqual(id,'preferences','never read the old hidden input');return inputs[id];},locationSelectionRevision:0,tasksReady:true,searchBusy:false,activeSearch:null,poiCatalog:null,
   crypto:{randomUUID:()=> '12345678-1234-1234-1234-123456789012'},
   invalidatePois(){context.poiCatalog=null;},updateSubmitState(){},setProgress(){},message(){},addSubmittedTask(){},poll:async()=>{},
   json:async(path,options)=>{requests.push(JSON.parse(options.body));return {jobId:'job-'+requests.length};},
