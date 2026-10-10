@@ -60,3 +60,6 @@
 @media(max-width:600px){.camera-dialog video{max-height:45dvh}.camera-actions{grid-template-columns:1fr}.camera-dialog .studio-heading{margin-bottom:0}}
 
 .history-row-open{cursor:pointer;border-radius:12px;transition:background .15s}.history-row-open:hover{background:#f5effa}.history-row-open .history-copy{padding:0 4px}.history-row-open:has(.history-open:focus-visible){outline:2px solid #9272c9;outline-offset:2px}
+
+/* One row of social destinations; file export remains in the photo viewer. */
+.social-destinations:before{display:none}.social-destinations .social-tile{min-height:108px;padding:12px 4px}.photo-share-body>p:empty{display:none}
