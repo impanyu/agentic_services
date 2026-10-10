@@ -47,3 +47,9 @@
 @media(max-width:760px){.map-overlay-controls #published-menu>summary{height:40px;min-height:40px;border-radius:11px;font-size:11px;padding:8px 10px;gap:5px}}
 .map-overlay-controls #published-menu{width:152px}
 @media(max-width:760px){.map-overlay-controls #published-menu{width:132px}}
+
+/* The selfie preview is also an accessible native upload button. */
+.studio-person-frame{display:block;width:100%;padding:0;border:1px dashed #c5b2db;background:#f1ecf5;color:inherit;cursor:pointer;transition:border-color .15s,box-shadow .15s}
+.studio-person-frame:hover:not(:disabled){border-color:#8860ad;box-shadow:0 0 0 3px #9272c914}
+.studio-person-frame:focus-visible{outline:3px solid #9272c9;outline-offset:3px}
+.studio-person-frame:disabled{cursor:wait}
