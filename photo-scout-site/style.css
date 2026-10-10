@@ -247,3 +247,6 @@ html:has(body.photo-app),body.photo-app{height:100%;overflow:hidden}.photo-app m
 .route-settings input,.route-settings select,.search-mode-picker select{width:100%;min-width:0;border:1px solid #ddd7e4;border-radius:12px;background:#fff;padding:.65rem;font:inherit;color:#36313d}
 .route-options{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:.65rem}.route-settings p{grid-column:1/-1;margin:0;font-weight:400}
 @media(max-width:600px){.route-settings{grid-template-columns:1fr;gap:.5rem}.route-settings input{padding:.55rem}.route-settings p{font-size:.75rem}.map-controls[open]{max-height:55dvh;overflow-y:auto}}
+
+/* Navigation actions remain symmetric on every surface. */
+.place-navigation{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.place-navigation a{margin:0!important;min-width:0}.photo-popup .place-navigation a{padding:8px 6px;font-size:11px}

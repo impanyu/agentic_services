@@ -361,3 +361,13 @@ test('history navigation remains selected without an automatic device fix',async
  f.focusRecorded({lat:40,lon:-96,radius:1000},{spots:[]});
  assert.equal(f.element('lat').value,'40');assert.equal(f.element('lon').value,'-96');
 });
+
+test('navigation preserves travel mode and route endpoints without a stale map origin',()=>{
+ const f=pageFixture(),dest={lat:37.808,lon:-122.409},origin={lat:37.795,lon:-122.393};
+ for(const mode of ['walk','drive']){
+  const links=f.navigation(dest,mode,origin),g=new URL(links[0][1]),a=new URL(links[1][1]);
+  assert.equal(g.searchParams.get('travelmode'),mode==='walk'?'walking':'driving');assert.equal(a.searchParams.get('dirflg'),mode==='walk'?'w':'d');
+  assert.equal(g.searchParams.get('origin'),'37.795,-122.393');assert.equal(a.searchParams.get('saddr'),'37.795,-122.393');assert.equal(g.searchParams.get('dir_action'),'navigate');
+ }
+ const links=f.navigation({poi:dest});assert.equal(new URL(links[0][1]).searchParams.get('origin'),null);assert.equal(new URL(links[1][1]).searchParams.get('saddr'),null);
+});
