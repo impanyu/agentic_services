@@ -207,6 +207,8 @@ html:has(body.photo-app),body.photo-app{height:100%;overflow:hidden}.photo-app m
 .scout-dock .prompt-panel{position:sticky;top:0;z-index:2;background:#fff;border-radius:14px}
 
 .publish-button{padding:8px 11px;border:1px solid #c9b5e0;border-radius:10px;background:#f2eafa;color:#684793;font-size:11px;cursor:pointer;margin:6px 0}
+#results .publish-button,.photo-studio .publication-actions>.publish-button{display:block;width:100%;min-height:48px;padding:14px;border-radius:14px;font-size:14px;font-weight:600;text-align:center;margin:12px 0}
+#results .publish-button:hover,.photo-studio .publication-actions>.publish-button:hover{background:#e8dcf5;border-color:#aa8acb}
 .publication-actions{margin-top:12px}.publication-url{display:block;overflow-wrap:anywhere;margin:18px 0;color:#674498}.publication-dialog{width:min(520px,calc(100vw - 24px))}
 #published-menu{width:148px}#published-menu>summary{width:100%;height:44px;display:flex;align-items:center;justify-content:center;padding:9px 10px;border-radius:14px;font-size:12px}
 #published-items .history-entry-actions{flex-shrink:0;gap:5px}#published-items .history-entry-actions a{font-size:11px;padding:5px}
