@@ -400,18 +400,31 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
                 headers={'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff'})
         except Exception as e: raise HTTPException(503,'Street View image is temporarily unavailable') from e
 
-    async def run(payload,allow_expired=False,task_id=None):
+    async def interpret_search(payload,website=False):
+        store.reserve_intent()
+        inputs=payload.model_dump(include=set(IntentRequest.model_fields))
+        inputs['photoStyles']=payload.photoStyles or []
+        if website:inputs['preferences']=''
+        plan=await resolve_intent(settings,IntentRequest.model_validate(inputs))
+        location=plan['locations'][0]
+        parsed=ExploreRequest.model_validate({**payload.model_dump(),'query':'',
+            'lat':location['lat'],'lon':location['lon'],'radius':plan['radiusMeters'],
+            'photoStyles':plan['photoStyles'] or None,'preferences':plan['preferences'],
+            'searchProgram':plan.get('searchProgram'),'searchBranches':plan.get('searchBranches') or [],
+            'poiQueries':plan.get('poiQueries') or [],'scoringIntent':plan.get('scoringIntent') or plan['preferences'],
+            'geographicKinds':plan.get('geographicKinds') or [],'osmFeatures':plan.get('osmFeatures') or [],
+            'geographicCombination':plan.get('geographicCombination','all'),'featureCombination':plan.get('featureCombination','all'),
+            'categories':plan.get('categories'),'selectedPoiIds':None,'poiCatalogToken':None})
+        return parsed,plan
+
+    async def run(payload,allow_expired=False,task_id=None,parsed=False):
         enabled()
         async with lock, asyncio.timeout(660):
             started=time.monotonic()
-            if payload.query.strip():
-                store.reserve_intent()
-                plan=await resolve_intent(settings,IntentRequest(query=payload.query,lat=payload.lat,lon=payload.lon,radius=payload.radius,photoStyles=payload.photoStyles or [],preferences=payload.preferences))
-                location=plan['locations'][0]
-                payload=ExploreRequest.model_validate({**payload.model_dump(), 'query':'', 'lat':location['lat'], 'lon':location['lon'],
-                    'radius':plan['radiusMeters'], 'photoStyles':plan['photoStyles'] or None, 'preferences':plan['preferences'],
-                    'searchProgram':plan.get('searchProgram'),'searchBranches':plan.get('searchBranches') or [],'poiQueries':plan.get('poiQueries') or [], 'scoringIntent':plan.get('scoringIntent') or plan['preferences'],
-                    'geographicKinds':plan.get('geographicKinds') or [], 'osmFeatures':plan.get('osmFeatures') or [], 'geographicCombination':plan.get('geographicCombination','all'),'featureCombination':plan.get('featureCombination','all'), 'categories':None,'selectedPoiIds':None,'poiCatalogToken':None})
+            # Raw text and UI-only requests share one interpretation entry.
+            # Already compiled programs/catalog selections are execution inputs.
+            if not parsed and (payload.query.strip() or not (payload.searchProgram or payload.searchBranches or payload.selectedPoiIds is not None)):
+                payload,_=await interpret_search(payload)
             retrieval_started=time.monotonic()
             async def before_score(images):
                 nonlocal retrieval_seconds,scoring_started
@@ -566,21 +579,16 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
         if not job: return False
         try:
             submitted=current_website_task(SearchTaskRequest.model_validate_json(job['payload']))
-            values=submitted.model_dump(exclude={'query'})
             context=tasks.context('search',job['id']) or submitted.model_dump()
-            if submitted.query.strip():
-                store.reserve_intent()
-                # The website has no editable preferences control. Old clients
-                # may submit a previous report's generated, hidden preferences;
-                # only this query plus the visible current controls are defaults.
-                plan=await resolve_intent(settings,IntentRequest(query=submitted.query,lat=submitted.lat,lon=submitted.lon,radius=submitted.radius,photoStyles=submitted.photoStyles or [],preferences=''))
-                place=plan['locations'][0]
-                values.update(lat=place['lat'],lon=place['lon'],radius=plan['radiusMeters'],photoStyles=plan['photoStyles'] or None,preferences=plan['preferences'],scoringIntent=plan.get('scoringIntent') or plan['preferences'],categories=None,searchProgram=plan.get('searchProgram'),searchBranches=plan.get('searchBranches') or [],poiQueries=plan.get('poiQueries') or [],geographicKinds=plan.get('geographicKinds') or [],osmFeatures=plan.get('osmFeatures') or [],geographicCombination=plan.get('geographicCombination','all'),featureCombination=plan.get('featureCombination','all'),selectedPoiIds=None,poiCatalogToken=None)
-                context['locationLabel']=place['label'];context['explanation']=plan['explanation']
-            payload=ExploreRequest.model_validate(values)
+            if submitted.selectedPoiIds is None:
+                context['stage']='planning';tasks.update_context('search',job['id'],context)
+                payload,plan=await interpret_search(submitted,website=True)
+                context['locationLabel']=plan['locations'][0]['label'];context['explanation']=plan['explanation']
+            else:
+                payload=ExploreRequest.model_validate(submitted.model_dump())
             context.update(payload.model_dump(exclude={'query'}));context['query']=submitted.query
             context['stage']='sources';tasks.update_context('search',job['id'],context)
-            result=await run(payload,allow_expired=True,task_id=job['id'])
+            result=await run(payload,allow_expired=True,task_id=job['id'],parsed=True)
             store.update(job['id'],state='complete',result=json.dumps(result),error=None,lease_until=0)
         except Exception as error:
             logging.getLogger(__name__).warning('Photo Scout background search failed: %s',type(error).__name__)
@@ -595,7 +603,9 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
         if free_preview(): raise HTTPException(409,'Website testing is free; use the preview endpoint')
         enabled(); source_limit(); cents=price()
         if cents<50: raise HTTPException(503,'Checkout pricing has not been enabled')
-        # Verify imagery coverage before accepting payment; no model calls here.
+        # Freeze the interpreted plan before coverage checking/payment.
+        if payload.query.strip() or not (payload.searchProgram or payload.searchBranches or payload.selectedPoiIds is not None):
+            payload,_=await interpret_search(payload)
         rows,statuses,pois=await catalog(payload)
         if not rows: raise HTTPException(422,'No eligible imagery found here. Choose another location.')
         job,token=store.create(payload,cents)

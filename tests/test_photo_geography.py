@@ -1,6 +1,7 @@
 import asyncio
 from types import SimpleNamespace
 
+import pytest
 import httpx
 from fastapi.testclient import TestClient
 from shapely.geometry import Point
@@ -63,6 +64,7 @@ def test_successful_geometry_is_cached_and_source_query_keeps_full_geometry(tmp_
     asyncio.run(run());assert len(calls)==1
 
 
+@pytest.mark.usefixtures("stub_photo_route_intent")
 def test_fixed_search_keeps_lakeside_cafes_and_excludes_displaced_panorama(tmp_path,monkeypatch):
     monkeypatch.setenv('PHOTO_SCOUT_ENABLED','1');monkeypatch.setenv('PHOTO_SCOUT_HUMAN_FREE_PREVIEW','1')
     monkeypatch.setenv('PHOTO_SCOUT_POI_PROVIDER','google-places')

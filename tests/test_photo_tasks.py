@@ -1,3 +1,5 @@
+import pytest
+pytestmark = pytest.mark.usefixtures("stub_photo_route_intent")
 import asyncio,base64,hashlib,io,json,sqlite3,time
 from types import SimpleNamespace
 from fastapi.testclient import TestClient
@@ -359,6 +361,11 @@ def test_removed_account_photo_requires_csrf_and_stays_out_of_tasks(tmp_path,mon
 def test_blank_search_after_text_search_does_not_inherit_hidden_preferences(tmp_path,monkeypatch):
     settings,app,client=setup(tmp_path,monkeypatch);seen=[]
     async def resolve(settings,payload):
+        if not payload.query:
+            assert payload.preferences=='' and payload.photoStyles==[] and payload.radius==2000
+            return {'locations':[{'lat':payload.lat,'lon':payload.lon,'label':'Selected map location'}],
+                'radiusMeters':payload.radius,'photoStyles':[],'preferences':routes.DEFAULT_PHOTO_PREFERENCES,
+                'scoringIntent':'','explanation':'Current controls'}
         assert payload.query=='high rise buildings with glass wall' and payload.preferences==''
         return {'locations':[{'lat':41.89,'lon':-87.63,'label':'Map location'}],
             'radiusMeters':2000,'photoStyles':['urban'],'preferences':'Show glass facades.',
@@ -383,7 +390,7 @@ def test_blank_search_after_text_search_does_not_inherit_hidden_preferences(tmp_
     assert asyncio.run(app.state.process_photo_preview())
     assert seen[0]['scoringIntent']=='High-rise buildings with glass facades'
     assert seen[1]['query']=='' and seen[1]['preferences']==routes.DEFAULT_PHOTO_PREFERENCES
-    assert seen[1]['scoringIntent']=='' and seen[1]['poiQueries']==[] and seen[1]['geographicKinds']==[]
+    assert seen[1]['scoringIntent']==routes.DEFAULT_PHOTO_PREFERENCES and seen[1]['poiQueries']==[] and seen[1]['geographicKinds']==[]
     assert seen[1]['photoStyles'] is None and seen[1]['radius']==2000
     saved=client.get('/photo-scout/v1/report/'+second.json()['jobId']).json()['context']
     assert saved['preferences']==routes.DEFAULT_PHOTO_PREFERENCES and saved['query']==''

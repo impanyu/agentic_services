@@ -120,3 +120,20 @@ def test_logic_is_preserved_from_parser_to_shared_search_plan(monkeypatch):
     assert result['searchPlan']['geographicCombination']=='any'
     assert result['searchPlan']['mergeStrategy']=='spatial-intersection'
     assert 'without crowds' in result['scoringIntent']
+
+
+@pytest.mark.parametrize('query',['','   '])
+def test_ui_only_requests_are_planned_without_relocating_or_changing_controls(monkeypatch,query):
+    from agentic_services.photo_scout.program import SearchProgram
+    calls=[]
+    async def parsed(settings,payload):
+        calls.append(payload.model_dump())
+        return plan(locationQuery='Chicago',useMapCenter=False,radiusMeters=100,
+            photoStyles=['urban'],searchProgram=SearchProgram(steps=[{'id':'area','tool':'area_imagery'}],output='area').with_delivery())
+    async def geocode(*args):pytest.fail('UI-only search must retain the selected map location')
+    monkeypatch.setattr(intent,'parse_intent',parsed);monkeypatch.setattr(intent,'geocode',geocode)
+    result=asyncio.run(intent.resolve_intent(None,intent.IntentRequest(query=query,lat=37.8,lon=-122.4,radius=5000,photoStyles=['nature'])))
+    assert len(calls)==1 and calls[0]['query']==query
+    assert result['locations'][0]['lat']==37.8 and result['locations'][0]['lon']==-122.4
+    assert result['radiusMeters']==5000 and result['photoStyles']==['nature']
+    assert result['searchParameters']['searchProgram']['steps'][-1]['tool']=='rank_results'

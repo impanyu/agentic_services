@@ -1,8 +1,9 @@
+import pytest
+pytestmark = pytest.mark.usefixtures("stub_photo_route_intent")
 import asyncio
 from pathlib import Path
 
 import httpx
-import pytest
 from fastapi.testclient import TestClient
 
 from agentic_services.config import Settings

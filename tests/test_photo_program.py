@@ -210,7 +210,7 @@ def test_resolve_and_human_workflow_execute_generated_program(tmp_path,monkeypat
         resolved=client.post('/photo-scout/v1/resolve',headers=h,json={'lat':0,'lon':0,'query':'lake cafes or forest restaurants'}).json()
         assert resolved['searchPlan']['mergeStrategy']=='tool-program'
         parameters=resolved['searchParameters']
-        for values in [parameters,{'lat':0,'lon':0,'query':'lake cafes or forest restaurants'}]:
+        for values in [parameters,{'lat':0,'lon':0,'query':'lake cafes or forest restaurants'}, {'lat':0,'lon':0,'radius':3000,'query':''}]:
             response=client.post('/photo-scout/v1/preview',headers=h,json=values)
             assert response.status_code==200,response.text
             assert len(response.json()['sources']['google-places']['executionTrace'])==(10 if complete else 7)
