@@ -24,7 +24,7 @@ def test_plan_routes_conditions_without_turning_style_into_a_business(queries,ki
     p=SearchParameters(lat=0,lon=0,poiQueries=queries,geographicKinds=kinds,
                        photoStyles=['vintage'],scoringIntent='Quiet vintage outdoor seating')
     plan=compile_search(p)
-    assert plan.mergeStrategy==strategy and plan.candidateLimit==30
+    assert plan.mergeStrategy==strategy and plan.candidateLimit==50
     if queries:assert plan.placesQueries==queries
     assert plan.parameters.scoringIntent=='Quiet vintage outdoor seating'
     assert 'vintage' not in plan.placesQueries
@@ -65,7 +65,7 @@ def test_geographic_union_can_keep_unnamed_road_points_without_named_source(name
         return [lake()],paths,{'status':'ok'}
     result=asyncio.run(search_locations(SearchParameters(lat=0,lon=0,radius=2000,geographicKinds=['lake']),
         database_path=Path('/unused'),providers=SearchProviders(places,None,geometry)))
-    assert len(result.places)>1 and len(result.places)<=30
+    assert len(result.places)>1 and len(result.places)<=50
     assert any(p['id'].startswith('geo:') for p in result.places)
     assert result.status['namedSourceStatus']==('ok' if named_ok else 'unavailable')
     if named_ok:assert result.places[0]['id']=='park'
@@ -115,7 +115,7 @@ def test_resolved_address_parameters_invoke_shared_tool_and_workflow(tmp_path,mo
         return [{'lat':40,'lon':-96,'label':'123 Main Street'}]
     calls=[]
     async def places(lat,lon,radius,terms,*,limit):
-        calls.append('places');assert (lat,lon,radius,limit)==(40,-96,2000,30) and terms==queries
+        calls.append('places');assert (lat,lon,radius,limit)==(40,-96,2000,50) and terms==queries
         return [{'id':'bakery','name':'Bakery','lat':40,'lon':-96}],{'status':'ok'}
     async def geometry(*args):return [],[],{'status':'not_requested'}
     async def images(lat,lon,radius,pois,**kwargs):
@@ -138,3 +138,12 @@ def test_resolved_address_parameters_invoke_shared_tool_and_workflow(tmp_path,mo
     preview=client.post('/photo-scout/v1/preview',headers=headers,json=parameters)
     assert preview.status_code==200 and preview.json()['searchPlan']==resolved['searchPlan']
     if not queries:assert calls==['images']
+
+
+def test_fifty_candidates_prioritize_spatial_coverage_for_geography_only():
+    from agentic_services.photo_scout.search import merge_candidates
+    plan=compile_search(SearchParameters(lat=0,lon=0,radius=20000,geographicKinds=['lake']))
+    named=[{'id':f'n{i}','lat':.1,'lon':i*.001} for i in range(50)]
+    generated=[{'id':f'g{i}','lat':0,'lon':i*.001} for i in range(50)]
+    rows=merge_candidates(named,generated,plan)
+    assert len(rows)==50 and sum(p['id'].startswith('g') for p in rows)==40

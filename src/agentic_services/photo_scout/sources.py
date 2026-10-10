@@ -13,7 +13,7 @@ PANORAMAX_IMAGE_HOSTS = frozenset({
     'panoramax-storage-public-fast.s3.gra.perf.cloud.ovh.net',
 })
 
-MAX_SCORED_IMAGES = 264
+MAX_SCORED_IMAGES = 424
 VIEWS_PER_PANORAMA = 8
 
 HEADERS = {'User-Agent': 'AISoupPhotoScout/0.1 (https://aisoup.net/contact/)'}
@@ -207,12 +207,12 @@ def bearing(origin, target):
 
 def google_query_points(lat,lon,radius):
     """Bounded circular grid, spread over the whole requested area."""
-    step=max(80,radius/3)
+    step=max(80,radius/5)
     count=math.ceil(radius/step)
     offsets=[(x*step,y*step) for x in range(-count,count+1) for y in range(-count,count+1)
         if math.hypot(x*step,y*step)<=radius]
     chosen=[(0,0)]; offsets.remove((0,0))
-    while offsets and len(chosen)<25:
+    while offsets and len(chosen)<50:
         point=max(offsets,key=lambda p:min(math.hypot(p[0]-q[0],p[1]-q[1]) for q in chosen))
         chosen.append(point); offsets.remove(point)
     result=[]
@@ -223,7 +223,7 @@ def google_query_points(lat,lon,radius):
 
 
 async def google_streetview(client, lat, lon, radius, targets=None, area_sampling=False):
-    """Bounded outdoor panorama discovery. Never put the credential in candidate URLs."""
+    """Bounded panorama discovery, including provider-supported indoor views. Never put the credential in candidate URLs."""
     import asyncio
     import re
     from urllib.parse import urlencode
@@ -231,7 +231,7 @@ async def google_streetview(client, lat, lon, radius, targets=None, area_samplin
     if area_sampling:
         # Reserve most samples for the region, plus a few named POI anchors.
         anchors=list(targets or [])[:5]
-        area_points=google_query_points(lat,lon,radius)[:25-len(anchors)]
+        area_points=google_query_points(lat,lon,radius)[:50-len(anchors)]
         points=area_points+[(p['lat'],p['lon']) for p in anchors]
         target_rows=[None]*len(area_points)+anchors
     else:
@@ -241,7 +241,7 @@ async def google_streetview(client, lat, lon, radius, targets=None, area_samplin
     async def search(p):
         async with slots:
             return await get_json(client,'https://maps.googleapis.com/maps/api/streetview/metadata',
-                {'location':f'{p[0]},{p[1]}','radius':min(200,max(50,radius//3)), 'source':'outdoor','key':key})
+                {'location':f'{p[0]},{p[1]}','radius':min(200,max(50,radius//3)),'key':key})
     responses=await asyncio.gather(*(search(p) for p in points),return_exceptions=True)
     rows=[]; seen=set(); locations=[]; successful=False
     spacing=google_sampling_spacing(radius)
@@ -335,8 +335,8 @@ async def candidates(lat,lon,radius,pois=None,visual_exploration=False):
             else:
                 statuses[name]={'status':'ok','eligibleImages':len(result)}; rows+=result
                 if name=='google-street-view':
-                    statuses[name].update(samplingSpacingMeters=google_sampling_spacing(radius),maxViewsPerLocation=VIEWS_PER_PANORAMA,
-                        queriedLocations=(min(25,len(google_query_points(lat,lon,radius))+min(5,len(pois or []))) if visual_exploration else len(pois) if pois is not None else len(google_query_points(lat,lon,radius))),samplingMode='area-and-poi' if visual_exploration else 'poi' if pois is not None else 'area')
+                    statuses[name].update(samplingSpacingMeters=google_sampling_spacing(radius) if visual_exploration or pois is None else None,maxViewsPerLocation=VIEWS_PER_PANORAMA,
+                        queriedLocations=(min(50,len(google_query_points(lat,lon,radius))+min(5,len(pois or []))) if visual_exploration else len(pois) if pois is not None else len(google_query_points(lat,lon,radius))),samplingMode='area-and-poi' if visual_exploration else 'poi' if pois is not None else 'area')
     valid=[]
     for row in rows:
         d=distance((lat,lon),(row['lat'],row['lon']))
@@ -498,7 +498,7 @@ async def nearby_pois(lat,lon,radius,categories=None):
     for p in sorted(result,key=lambda p:(p['category']!='viewpoint',p['distanceMeters'])):
         region=min(range(len(points)),key=lambda i:distance(points[i],(p['lat'],p['lon'])))
         groups.setdefault((region,p['category']),[]).append(p)
-    selected=[p for batch in zip_longest(*groups.values()) for p in batch if p][:30]
+    selected=[p for batch in zip_longest(*groups.values()) for p in batch if p][:50]
     return selected,{'status':'ok','count':len(selected),'foundPois':len(result),
         'endpoint':urlsplit(endpoint).hostname,'attempts':errors,
         'sampledAreas':len(points),'areaRadiusMeters':sample_radius,'coverage':'bounded-area-sample'}

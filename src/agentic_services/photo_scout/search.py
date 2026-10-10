@@ -7,6 +7,7 @@ to the downstream image evaluator.
 from __future__ import annotations
 
 import asyncio
+import math
 from dataclasses import dataclass
 from itertools import zip_longest
 from pathlib import Path
@@ -53,10 +54,12 @@ class SearchPlan(BaseModel):
     geographicKinds: list[GeographicKind]
     mergeStrategy: Literal['places-only', 'spatial-intersection', 'spatial-union', 'area-imagery', 'feature-search']
     rawPlacesLimit: int
-    candidateLimit: int = 30
+    candidateLimit: int = 50
     dedupDistanceMeters: int = 50
     geographicProximityMeters: dict[str, int]
     geographicCombination: Literal['all'] = 'all'
+    geographicSamplingSpacingMeters: int | None = None
+    spatialSampleShare: float = 0
 
 
 GEOGRAPHIC_QUERIES = {
@@ -81,8 +84,9 @@ def compile_search(parameters: SearchParameters) -> SearchPlan:
         if not explicit:queries=[]
     if strategy=='area-imagery':queries=[]
     return SearchPlan(parameters=parameters,placesQueries=queries,placesRole='not-requested' if not queries else 'target' if explicit else 'discovery-hints',
-        geographicKinds=kinds,mergeStrategy=strategy,rawPlacesLimit=60 if kinds else 30,
-        geographicProximityMeters={k:PROXIMITY[k] for k in kinds})
+        geographicKinds=kinds,mergeStrategy=strategy,rawPlacesLimit=60 if kinds or parameters.osmFeatures else 50,
+        geographicProximityMeters={k:PROXIMITY[k] for k in kinds},
+        geographicSamplingSpacingMeters=75 if kinds else None,spatialSampleShare=.8 if strategy=='spatial-union' else 0)
 
 
 @dataclass
@@ -120,7 +124,14 @@ def merge_candidates(named,generated,plan):
     for p in generated:
         if not any(nearby(p,q) for q in named+points):points.append(p)
     result=[];seen=set()
-    for pair in zip_longest(named,points):
+    # Feature-only exploration reserves four out of five slots for spatial
+    # samples; named POIs supplement rather than consume half the coverage.
+    if plan.mergeStrategy=='spatial-union':
+        groups=[]
+        for i in range(max(len(named),math.ceil(len(points)/4))):
+            groups.append(([named[i]] if i<len(named) else [])+points[i*4:i*4+4])
+    else:groups=zip_longest(named,points)
+    for pair in groups:
         for p in pair:
             if p and p['id'] not in seen:
                 result.append(p);seen.add(p['id'])

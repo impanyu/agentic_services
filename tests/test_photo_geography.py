@@ -18,7 +18,7 @@ def lake():
 def test_lakeside_candidates_use_paths_and_shore_not_lake_centroid():
     paths=[{'id':'road','name':'Shore Trail','geometry':{'type':'LineString','coordinates':[[-.005,-.005],[-.005,.005]]}}]
     rows=geo.geographic_places(0,0,2000,[lake()],paths,['lake'])
-    assert len(rows)>1 and len(rows)<=30
+    assert len(rows)>1 and len(rows)<=50
     assert all(abs(p['lon']+.005)<.000001 for p in rows)
     assert all(geo.matches_position(p['lat'],p['lon'],[lake()],['lake']) for p in rows)
     assert not geo.matches_position(0,0,[lake()],['lake'])
@@ -151,3 +151,12 @@ def test_overpass_failure_uses_vector_fallback_and_preserves_provenance_in_cache
         assert first[2]['provider']==second[2]['provider']=='openfreemap-osm-vector'
         assert second[2]['cached'] and first[0]==second[0]
     asyncio.run(run());assert calls==[1]
+
+
+def test_feature_adjacent_paths_are_sampled_at_denser_spacing():
+    paths=[{'id':'trail','name':'Trail','geometry':{'type':'LineString','coordinates':[[-.005,-.004],[-.005,.004]]}}]
+    rows=geo.geographic_places(0,0,2000,[lake()],paths,['lake'])
+    # This 890 m path used to produce about seven positions at 150 m spacing.
+    assert len(rows)>=12
+    ys=sorted(p['lat']*111320 for p in rows)
+    assert max(b-a for a,b in zip(ys,ys[1:]))<=76

@@ -39,7 +39,7 @@ def test_single_query_paginates_and_returns_30_candidates(monkeypatch):
             {'id':str(i),'displayName':{'text':f'Cafe {i}'},'location':{'latitude':40+i*.00001,'longitude':-96}}
             for i in range(start,start+20)],'nextPageToken':'second' if start==0 else 'third'})
     monkeypatch.setattr(places.httpx,'AsyncClient',lambda **kw:real(transport=httpx.MockTransport(handler)))
-    rows,status=asyncio.run(places.nearby_places(40,-96,1000,['coffee shops']))
+    rows,status=asyncio.run(places.nearby_places(40,-96,1000,['coffee shops'],limit=30))
     assert len(rows)==30 and len(calls)==2 and rows[-1]['id']=='google:29'
     assert {k:v for k,v in calls[1].items() if k!='pageToken'}==calls[0]
     assert status['count']==30

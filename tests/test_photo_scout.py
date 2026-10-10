@@ -176,8 +176,11 @@ def test_google_candidates_keep_angles_without_credentials(monkeypatch):
     from agentic_services.photo_scout.sources import google_streetview,diverse_sample
     monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_API_KEY','secret-fixture')
     data={'status':'OK','pano_id':'pano_fixture','location':{'lat':0,'lng':0},'date':'2025-10','copyright':'Google'}
+    def handler(request):
+        assert 'source' not in request.url.params, 'provider-supported indoor views must not be excluded'
+        return httpx.Response(200,json=data)
     async def run():
-        async with httpx.AsyncClient(transport=httpx.MockTransport(lambda r:httpx.Response(200,json=data))) as c:
+        async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as c:
             return await google_streetview(c,0,0,1000)
     rows=asyncio.run(run())
     assert len(rows)==8 and {r['viewHeadingDegrees'] for r in rows}==set(range(0,360,45))
@@ -261,7 +264,7 @@ def test_google_sampling_deduplicates_nearby_camera_points(monkeypatch):
 def test_google_query_grid_covers_area_and_limits_concurrency(monkeypatch):
     from agentic_services.photo_scout.sources import google_query_points,google_streetview
     points=google_query_points(0,0,1000)
-    assert len(points)==25 and points[0]==(0,0)
+    assert len(points)==50 and points[0]==(0,0)
     assert all(distance((0,0),p)<1010 for p in points)
     assert any(p[0]>0 and p[1]>0 for p in points)
     assert any(p[0]<0 and p[1]<0 for p in points)
@@ -278,7 +281,7 @@ def test_google_query_grid_covers_area_and_limits_concurrency(monkeypatch):
         async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as c:
             return await google_streetview(c,0,0,1000)
     assert asyncio.run(run())==[]
-    assert requests==25 and peak<=24
+    assert requests==50 and peak<=24
 
 
 def test_free_website_mode_auth_payment_and_budget(tmp_path,monkeypatch):
@@ -978,14 +981,14 @@ def test_google_visual_sampling_covers_area_and_poi_anchors_with_eight_headings(
         async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
             return await google_streetview(client,0,0,1000,targets,area_sampling=True)
     rows=asyncio.run(run())
-    assert len(requests)==25 and len(rows)<=200
+    assert len(requests)==50 and len(rows)<=400
     assert any(abs(float(p.split(',')[0]))>.003 for p in requests)
     assert {r['poi']['id'] for r in rows if r.get('poi')}=={str(i) for i in range(5)}
     panoramas={r['imageUrl'].split('/')[2] for r in rows}
     assert all({r['viewHeadingDegrees'] for r in rows if r['imageUrl'].split('/')[2]==p}==set(range(0,360,45)) for p in panoramas)
 
 
-@pytest.mark.parametrize("count",[224,264])
+@pytest.mark.parametrize("count",[224,424])
 def test_larger_parallel_batches_score_all_views_without_dropping_last_batch(tmp_path,monkeypatch,count):
     import json
     from types import SimpleNamespace
@@ -1006,7 +1009,7 @@ def test_larger_parallel_batches_score_all_views_without_dropping_last_batch(tmp
         batch=[json.loads(c['text'])['image'] for c in kwargs['input'][0]['content'][1:] if c['type']=='input_text']
         assert kwargs['max_output_tokens']>=len(batch)*900
         sizes.append(len(batch));started+=1;models+=1;peak_models=max(peak_models,models)
-        if started==(count+23)//24:gate.set()
+        if started==min(12,(count+23)//24):gate.set()
         await asyncio.wait_for(gate.wait(),2)
         models-=1
         return SimpleNamespace(output_parsed=visual.VisualBatch(assessments=[visual.ImageAssessment(

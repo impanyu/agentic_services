@@ -50,7 +50,7 @@ async def geocode_address(query):
                           'source':'google-places'})
     return locations
 
-async def nearby_places(lat,lon,radius,queries,*,limit=30):
+async def nearby_places(lat,lon,radius,queries,*,limit=50):
     limit=max(1,min(60,limit))
     queries=list(dict.fromkeys(q.strip() for q in queries if q.strip()))[:4]
     if not queries:queries=['scenic places and tourist attractions']

@@ -27,7 +27,7 @@ FILTERS = {
 }
 # Discovery proximity is only a hypothesis; the vision scorer verifies visibility.
 PROXIMITY = {'lake': 150, 'sea': 150, 'river': 100, 'peak': 300, 'forest': 0, 'waterside': 150}
-MAX_PLACES = 30
+MAX_PLACES = 50
 
 class Region:
     def __init__(self, lat, lon):
@@ -173,17 +173,17 @@ def geographic_places(lat,lon,radius,features,paths,kinds,limit=MAX_PLACES):
         if line.is_empty:return
         if line.geom_type=='LineString':
             # Candidate spacing is independent of total feature size; cap work per path.
-            count=min(80,max(1,math.ceil(line.length/150)))
+            count=min(300,max(1,math.ceil(line.length/75)))
             for i in range(count+1):
                 p=line.interpolate(i/count,normalized=True)
-                cell=(round(p.x/70),round(p.y/70))
-                if cell not in cells and len(choices)<1200:
+                cell=(round(p.x/35),round(p.y/35))
+                if cell not in cells and len(choices)<2400:
                     cells.add(cell);choices.append((p,path))
         elif hasattr(line,'geoms'):
             for part in line.geoms:collect(part,path)
     for path in paths:
         collect(region.project(shape(path['geometry'])).intersection(allowed),path)
-        if len(choices)>=1200:break
+        if len(choices)>=2400:break
     choices=[(p,path,p.x,p.y) for p,path in choices]
     selected=[]
     while choices and len(selected)<limit:
