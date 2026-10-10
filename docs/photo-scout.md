@@ -433,3 +433,5 @@ cache key. This reduces known failure modes; it does not guarantee visual accura
 ### Photo sharing
 
 Saved and published photo viewers include a full-width **Share to social media** control. Native sharing sends the prepared image file when supported, without publishing private photos. WeChat uses the device share menu when available, with save/download instructions as a fallback. Facebook and X open link-sharing composers for public photos; a private photo requires the explicit **Publish a shareable link** action first. Copy link is also available. Social links do not upload the image as a platform attachment, and opening a composer/share sheet does not imply a post was published. Withdrawing a Photo Scout publication disables its public link but cannot retract images or posts already shared externally.
+
+The **Share** button opens a focused dialog with labeled platform icons, rather than an inline accordion. Each platform indicates image sharing versus public-link sharing. Unpublished photos still display Facebook/X options, which explain the required explicit publication step. **Send to** remains the separate native file-sharing entry point.
