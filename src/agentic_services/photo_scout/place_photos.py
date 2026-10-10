@@ -12,7 +12,7 @@ import json
 from urllib.parse import urlsplit
 
 from .sources import get_json, text
-from .costs import record, reuse_request
+from .costs import record, reuse_request, reserve_photo_request
 
 
 def photo_media_host(url):
@@ -53,6 +53,7 @@ async def place_photos(client, place_id, *, limit=3, width=800, selector=None):
     limit=max(1,min(10,limit));width=max(1,min(1600,width))
     headers={'X-Goog-Api-Key':key}
     async def details():
+        reserve_photo_request('places-details-pro')
         record('places-details-pro', status='attempted')
         return await get_json(client,'https://places.googleapis.com/v1/places/'+place_id,
             headers={**headers,'X-Goog-FieldMask':'id,displayName,googleMapsUri,photos'})
@@ -62,6 +63,7 @@ async def place_photos(client, place_id, *, limit=3, width=800, selector=None):
         name=photo.get('name','')
         if not re.fullmatch(r'places/'+re.escape(place_id)+r'/photos/[A-Za-z0-9_-]{1,2000}',name):return None
         async def fetch_media():
+            reserve_photo_request('places-photo')
             record('places-photo', status='attempted')
             return await get_json(client,'https://places.googleapis.com/v1/'+name+'/media',
                 {'maxWidthPx':width,'skipHttpRedirect':'true'},headers)

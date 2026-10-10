@@ -615,3 +615,8 @@ fields ($0.017 per attempt) and photo media ($0.007) before allowances. Reuse fr
 details and media responses within the job so scoring does not repeat discovery's
 paid requests. No photo names/media URLs are persisted across tasks. The text
 search cap is separate from these bounded (up to eight POIs, two photos each) calls.
+
+The whole job, including every route anchor, shares a separate Places photo cap
+of eight Details Pro and sixteen photo media requests (potential $0.248 before
+allowances). Reaching it can reduce contributor-photo coverage and sets
+`placesPhotoBudgetReached`; Street View and open-image retrieval still proceed.

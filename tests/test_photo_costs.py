@@ -91,3 +91,18 @@ def test_places_photos_discovery_and_scoring_do_not_repeat_paid_calls(tmp_path,m
         assert costs.summary()['estimatedKnownUsd']==pytest.approx(.031)
     asyncio.run(run());assert len(calls)==3
     asyncio.run(run());assert len(calls)==6
+
+
+def test_route_anchors_share_global_places_photo_cap(tmp_path):
+    @costs.tracked_task(tmp_path/'db','search')
+    async def run():
+        async def anchor():
+            try:
+                costs.reserve_photo_request('places-details-pro')
+                costs.record('places-details-pro')
+            except ValueError:return False
+            return True
+        outcomes=await asyncio.gather(*(anchor() for _ in range(24)))
+        assert sum(outcomes)==8
+        assert costs.summary()['placesPhotoBudgetReached']
+    asyncio.run(run())

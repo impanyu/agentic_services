@@ -98,6 +98,17 @@ def reserve_places_request():
     context.counts['places-text'] = count+1
 
 
+def reserve_photo_request(stage):
+    context=current.get()
+    if context is None:return
+    limits={'places-details-pro':8,'places-photo':16}
+    count=context.counts.get(stage,0)
+    if count>=limits[stage]:
+        context.counts['places-photo-budget-reached']=True
+        raise ValueError('Places photo request budget reached for this task')
+    context.counts[stage]=count+1
+
+
 async def reuse_request(key, operation):
     """Coalesce identical calls only within one task; never leak previous inputs."""
     context = current.get()
@@ -120,6 +131,7 @@ def summary():
                 'estimatedKnownUsd':round(sum(r[2] or 0 for r in rows),6),
                 'unknownCostEvents':sum(r[3] for r in rows),
                 'placesBudgetReached':bool(context.counts.get('places-budget-reached')),
+                'placesPhotoBudgetReached':bool(context.counts.get('places-photo-budget-reached')),
                 'stages':[{'stage':s,'requests':n,'estimatedUsd':None if unknown else round(cost or 0,6),
                            'unknownCostEvents':unknown} for s,n,cost,unknown in rows]}
     except sqlite3.Error:
