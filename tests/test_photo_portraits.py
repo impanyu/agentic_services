@@ -157,7 +157,8 @@ def test_background_selector_uses_provider_zoom_not_warped_pixels(monkeypatch,fo
             requests.append(kwargs)
             return SimpleNamespace(output_parsed=portraits.BackgroundChoice(index=len(expected)-1,distortion='minimal',reason='Straight lines and clear foreground'))
     image,ref,meta=asyncio.run(portraits.prepare_background(Client(),f'google-streetview://pano/135/-20/{fov}','vision'))
-    assert refs==[f'google-streetview://pano/135/0/{angle}' for angle in expected]
+    assert refs==[f'google-streetview://pano/135/-20/{angle}' for angle in expected]
+    assert meta['pitchDegrees']==-20
     assert image==raw and ref==refs[-1] and meta['fovDegrees']==expected[-1]
     assert requests[0]['store'] is False
     assert sum(v['type']=='input_image' for v in requests[0]['input'][0]['content'])==len(expected)
@@ -190,3 +191,20 @@ def test_explicit_framing_is_not_overridden(monkeypatch,framing):
     _,ref,meta=asyncio.run(portraits.prepare_background(Client(),'google-streetview://pano/135/0/120','vision',framing))
     assert refs==[f'google-streetview://pano/135/0/{framing}']
     assert ref==refs[0] and meta['fovDegrees']==int(framing) and meta['requestedFraming']==framing
+
+
+def test_current_background_framing_preserves_user_heading_pitch_and_zoom(monkeypatch):
+    refs=[]
+    async def background(ref):
+        refs.append(ref)
+        return 'data:image/png;base64,'+base64.b64encode(photo()).decode()
+    monkeypatch.setattr(portraits,'image_data',background)
+    class Client:
+        def __init__(self):self.responses=self
+        async def parse(self,**kwargs):
+            return SimpleNamespace(output_parsed=portraits.BackgroundChoice(index=0,distortion='minimal',reason='User-selected composition'))
+    _,ref,meta=asyncio.run(portraits.prepare_background(Client(),'google-streetview://pano/285/30/70','vision','current'))
+    assert refs==['google-streetview://pano/285/30/70']
+    assert ref==refs[0]
+    assert meta['headingDegrees']==285 and meta['pitchDegrees']==30 and meta['fovDegrees']==70
+    assert meta['requestedFraming']=='current'

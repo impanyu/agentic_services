@@ -443,3 +443,9 @@ Selfie background cleanup also directs the image model to repair panorama stitch
 Weather & light offers explicit **Daytime** (`daytime`) and **Night** (`night`) choices in both the selfie UI and portrait API. Both relight the background and subjects together; Night uses plausible existing practical lights without changing the location. The selected choice is retained in saved-photo background info. Keep original remains the default.
 
 Portrait inputs have strict separate roles: image 1 supplies only intended primary portrait/group subjects; image 2 is the sole scene reference. Incidental source crowds, decorative statues and old landmarks must not transfer into the new background, including when the upload is a previous travel composite. Switching a studio background clears the old portrait draft and invalidates pending upload preparation. Reopening the same background retains its draft.
+
+### Adjustable Street View previews
+
+Google Street View previews in POI popups, Shortlist cards, and the selfie background share `street-view.js`. Drag with a pointer or touch to change heading/pitch; focused previews accept arrow keys and `+`/`-`. Mouse wheel and visible zoom buttons change the provider field of view from 30° to 120°. Drag updates commit when released; keyboard/wheel bursts are debounced. User view overrides update the directional map marker and matching Shortlist/popup previews without changing the original image score. Ordinary Commons/Panoramax images remain static.
+
+Adjusting the selfie preview selects `framing=current`, preserving the submitted heading, pitch, and FOV through background preparation. `auto` and explicit 90°/60°/45° framing remain available; all modes preserve the selected pitch. Current framing still performs the existing distortion assessment without choosing a different zoom.

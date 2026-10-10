@@ -22,7 +22,7 @@ class PortraitRequest(BaseModel):
     lat: float | None = Field(default=None,ge=-85,le=85,allow_inf_nan=False)
     lon: float | None = Field(default=None,ge=-180,le=180,allow_inf_nan=False)
     style: Literal['natural','street','cinematic','vacation','editorial'] = 'natural'
-    framing: Literal['auto','90','60','45'] = 'auto'
+    framing: Literal['auto','current','90','60','45'] = 'auto'
     posture: Literal['auto','standing','walking','sitting','looking_back','playful'] = 'auto'
     weather: Literal['original','daytime','night','sunny','golden_hour','overcast','rainy','snowy'] = 'original'
     expression: Literal['auto','soft_smile','big_smile','thoughtful','serious','surprised'] = 'auto'
@@ -75,9 +75,9 @@ async def prepare_background(client,reference,model,framing='auto'):
         return base64.b64decode(data.split(',',1)[1]),reference,None
     match=re.fullmatch(r'google-streetview://([A-Za-z0-9_-]+)/([0-9]+)(?:/(-?[0-9]+))?(?:/([0-9]+))?',reference)
     if not match:raise ValueError('Invalid background reference')
-    pano,heading=match[1],int(match[2]);original_fov=int(match[4] or 120)
-    fovs=list(dict.fromkeys([min(original_fov,fov) for fov in (90,60,45)])) if framing=='auto' else [int(framing)]
-    refs=[f'google-streetview://{pano}/{heading}/0/{fov}' for fov in fovs]
+    pano,heading=match[1],int(match[2]);pitch=int(match[3] or 0);original_fov=int(match[4] or 120)
+    fovs=list(dict.fromkeys([min(original_fov,fov) for fov in (90,60,45)])) if framing=='auto' else [original_fov if framing=='current' else int(framing)]
+    refs=[f'google-streetview://{pano}/{heading}/{pitch}/{fov}' for fov in fovs]
     images=[];available=[]
     for ref in refs:
         try:
@@ -97,7 +97,7 @@ async def prepare_background(client,reference,model,framing='auto'):
     if choice.distortion=='severe':raise HTTPException(422,'This Street View still has strong panorama distortion. Choose another direction or place; no composite was created.')
     ref=available[choice.index]
     return base64.b64decode(images[choice.index].split(',',1)[1]),ref,{'method':'narrow-streetview-projection','originalFovDegrees':original_fov,
-        'fovDegrees':int(ref.rsplit('/',1)[1]),'headingDegrees':heading,'pitchDegrees':0,
+        'fovDegrees':int(ref.rsplit('/',1)[1]),'headingDegrees':heading,'pitchDegrees':pitch,
         'distortion':choice.distortion,'reason':choice.reason,'requestedFraming':framing,'comparedFovDegrees':[int(r.rsplit('/',1)[1]) for r in available]}
 
 

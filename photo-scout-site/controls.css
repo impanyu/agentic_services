@@ -74,3 +74,15 @@
 .saved-photo-actions>.publication-actions:empty{display:none}
 .saved-photo-actions>.publication-actions{min-height:0}
 .saved-photo-actions>.publication-actions>.publish-button{padding:11px 14px;line-height:20px}
+
+/* Shared heading, tilt and zoom controls for live Street View projections. */
+.street-view-preview{position:relative;display:block;overflow:hidden;outline:none}
+.street-view-active{cursor:grab;touch-action:none}.street-view-active:focus-visible{outline:3px solid #9272c9;outline-offset:2px}.street-view-dragging{cursor:grabbing}
+.street-view-preview img{display:block;width:100%;user-select:none;-webkit-user-drag:none}
+.street-view-tools{position:absolute;left:8px;right:8px;bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:6px;pointer-events:none}
+.street-view-tools[hidden],.street-view-gesture-hint[hidden]{display:none}
+.street-view-caption{color:#fff;font-size:10px;line-height:1.3;padding:5px 7px;background:#241c33b8;border-radius:7px;backdrop-filter:blur(8px)}
+.street-view-zoom{display:flex;gap:3px;pointer-events:auto}.street-view-zoom button{display:grid;place-items:center;width:32px;min-height:32px;padding:0;border:1px solid #ffffff80;border-radius:8px;background:#fffef4ed;color:#514164;font-size:22px;line-height:1;cursor:pointer}
+.street-view-gesture-hint{position:absolute;top:8px;left:8px;pointer-events:none;color:white;font-size:10px;padding:5px 7px;background:#241c3399;border-radius:7px}
+.studio-scene-view{height:190px;border-radius:18px}.studio-scene-view>img{height:100%;object-fit:cover}.studio-scene-view .street-view-caption{font-size:9px;padding:4px}.studio-scene-view .street-view-tools{left:5px;right:5px;bottom:5px}.studio-scene-view .street-view-zoom button{width:28px;min-height:30px}
+@media(max-width:600px){.studio-scene-view{height:160px}.studio-inputs .studio-person-frame,.studio-inputs .studio-person-frame>img{height:160px}.studio-scene-view .street-view-tools{flex-wrap:wrap}.studio-scene-view .street-view-gesture-hint{font-size:9px}.street-view-zoom button{min-height:36px;width:36px}}
