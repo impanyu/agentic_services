@@ -625,19 +625,24 @@ async function viewPortraitProgress(task){
  }catch(error){if(generation!==portraitProgressGeneration)return;portraitProgressStatus.textContent='Could not refresh progress. Reconnecting…';}
  portraitProgressTimer=setTimeout(refresh,4000);};await refresh();
 }
-async function viewSavedPhoto(task){
- delete savedPhoto.dataset.publication;savedPhoto.dataset.photoId=task.id;savedPhotoSharing.hidden=true;savedPhotoTitle.textContent='Your saved selfie';
- savedPhotoPublish.replaceChildren(publishButton('photo',task.id));
- if(['queued','checking','running'].includes(task.state)){await viewPortraitProgress(task);return;}
+async function viewSavedPhoto(task,publication=null){
+ if(!publication&&['queued','checking','running'].includes(task.state)){await viewPortraitProgress(task);return;}
+ delete savedPhoto.dataset.publication;delete savedPhoto.dataset.photoId;
+ const owned=publication?[...ownPublications.values()].find(p=>p.id===publication.id):null;
+ const sourceId=publication?owned?.sourceId:task.id;
+ if(publication)savedPhoto.dataset.publication=publication.id;
+ if(sourceId)savedPhoto.dataset.photoId=sourceId;
+ savedPhotoSharing.hidden=true;savedPhotoTitle.textContent='Photo';
+ savedPhotoPublish.replaceChildren(...(sourceId?[publishButton('photo',sourceId)]:[]));
  if(studio.open)studio.close();if(portraitProgress.open)portraitProgress.close();
  const generation=++savedPhotoGeneration;clearTimeout(savedPhotoTimer);if(savedPhotoUrl)URL.revokeObjectURL(savedPhotoUrl);savedPhotoUrl=null;savedPhotoFile=null;
  savedPhotoImage.hidden=true;savedPhotoImage.removeAttribute('src');savedPhotoSave.hidden=true;savedPhotoDownload.hidden=true;savedPhotoHint.textContent='';savedPhotoStatus.textContent='Loading your saved photo…';renderSavedPhotoParams(task.context,task.created);if(!savedPhoto.open)savedPhoto.showModal();
  const refresh=async()=>{try{
-  const report=await json('/photo-scout/v1/portraits/'+encodeURIComponent(task.id));if(generation!==savedPhotoGeneration)return;
+  const report=publication?{state:'complete',context:publication.context}:await json('/photo-scout/v1/portraits/'+encodeURIComponent(task.id));if(generation!==savedPhotoGeneration)return;
   renderSavedPhotoParams(report.context||task.context,task.created);
   if(report.state==='complete'){
-   const response=await fetch(api+'/photo-scout/v1/portraits/'+encodeURIComponent(task.id)+'/image',{credentials:'include'});if(!response.ok)throw Error('Could not load your saved photo');const blob=await response.blob(),preview=await readPhoto(blob);if(generation!==savedPhotoGeneration)return;
-   savedPhotoFile=new File([blob],'photo-scout-ai-photo.png',{type:'image/png'});savedPhotoUrl=URL.createObjectURL(blob);savedPhotoImage.src=preview;savedPhotoImage.hidden=false;savedPhotoSave.hidden=false;savedPhotoDownload.href=savedPhotoUrl;savedPhotoDownload.hidden=false;savedPhotoStatus.textContent=task.expiresAt===null||authUser?'AI-generated photo · Saved permanently to your account.':'AI-generated photo · Guest photo kept until 7 days after your last visit.';savedPhotoHint.textContent='Use Send to to choose an app or save the image. You can also press and hold the photo to save it.';renderPhotoSharing(report.context||task.context);return;
+   const response=await fetch(publication?publication.imageUrl:api+'/photo-scout/v1/portraits/'+encodeURIComponent(task.id)+'/image',{credentials:'include'});if(!response.ok)throw Error('Could not load your saved photo');const blob=await response.blob(),preview=await readPhoto(blob);if(generation!==savedPhotoGeneration)return;
+   savedPhotoFile=new File([blob],'photo-scout-ai-photo.png',{type:'image/png'});savedPhotoUrl=URL.createObjectURL(blob);savedPhotoImage.src=preview;savedPhotoImage.hidden=false;savedPhotoSave.hidden=false;savedPhotoDownload.href=savedPhotoUrl;savedPhotoDownload.hidden=false;savedPhotoStatus.textContent=publication?'AI-generated photo · Published publicly.':task.expiresAt===null||authUser?'AI-generated photo · Saved permanently to your account.':'AI-generated photo · Guest photo kept until 7 days after your last visit.';savedPhotoHint.textContent='Use Send to to choose an app or save the image. You can also press and hold the photo to save it.';renderPhotoSharing(report.context||task.context);return;
   }
   if(report.state==='failed'){savedPhotoStatus.textContent=report.error||'This photo could not be created.';return;}
   savedPhotoStatus.textContent=report.state==='queued'?'Your selfie is queued…':'Your selfie is being created…';savedPhotoTimer=setTimeout(refresh,4000);
@@ -800,7 +805,7 @@ function drawPublications(){
 async function openPublication(item){
  el('published-menu').open=false;for(const menu of mapMenus)menu.open=false;
  try{const data=await json('/photo-scout/v1/publications/'+encodeURIComponent(item.id));
-  if(data.kind==='photo'){if(studio.open)studio.close();if(portraitProgress.open)portraitProgress.close();++savedPhotoGeneration;clearTimeout(savedPhotoTimer);if(savedPhotoUrl)URL.revokeObjectURL(savedPhotoUrl);savedPhotoUrl=null;savedPhotoTitle.textContent='Published selfie';renderSavedPhotoParams(data.context,data.created);savedPhoto.dataset.publication=data.id;delete savedPhoto.dataset.photoId;savedPhotoPublish.replaceChildren();savedPhotoSave.hidden=true;savedPhotoDownload.hidden=false;savedPhotoDownload.href=data.imageUrl;savedPhotoImage.src=data.imageUrl;savedPhotoImage.hidden=false;savedPhotoHint.textContent='Press and hold the photo to save it, or use Download PNG.';savedPhotoStatus.textContent='Published AI-generated selfie';savedPhotoFile=null;renderPhotoSharing(data.context);if(!savedPhoto.open)savedPhoto.showModal();if(data.context?.poi)map.setView([data.context.poi.lat,data.context.poi.lon],16);}
+  if(data.kind==='photo'){await viewSavedPhoto({id:data.id,state:'complete',context:data.context,created:data.created},data);if(data.context?.poi)map.setView([data.context.poi.lat,data.context.poi.lon],16);}
   else{render(data.result,{save:false,mapUpdate:false,historyId:'public:'+data.id});const spots=data.result.spots||[],coords=spots.filter(s=>s.poi).map(s=>[s.poi.lat,s.poi.lon]);if(coords.length)map.fitBounds(L.latLngBounds(coords).pad(.25),{paddingTopLeft:[30,80],paddingBottomRight:[30,160],maxZoom:16});if(!spots.length)message('This published search has no photo places.');}
   const existing=publicationItems.find(p=>p.id===data.id);if(existing)existing.checked=true;else publicationItems.push(data);publicationLayer.addTo(map);renderPublications();drawPublications();
  }catch(error){message(error.message);}
