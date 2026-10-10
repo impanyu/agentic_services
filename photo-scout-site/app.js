@@ -454,7 +454,27 @@ function directionDot(spot){const b=photoBearing(spot);return L.divIcon({classNa
 function storedHistory(){return searchHistory.map(h=>({...h,result:{...h.result,imageAssessments:[],spots:(h.result.spots||[]).map(stripHistoryImage),poiResults:(h.result.poiResults||[]).map(stripHistoryImage)}}));}
 function persistHistory(){const records=storedHistory();if(authUser){queueHistory(records);return;}try{sessionStorage.setItem(HISTORY_KEY,JSON.stringify(records));}catch{el('history-note').textContent='Session storage is unavailable; history stays in this page.';}}
 async function queueHistory(records){for(const h of records)pendingHistory.set(h.id,h);if(syncingHistory)return;syncingHistory=true;try{while(pendingHistory.size&&authUser){const [id,item]=pendingHistory.entries().next().value;await json('/photo-scout/v1/history',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-Token':csrfToken},body:JSON.stringify(item)});if(pendingHistory.get(id)===item)pendingHistory.delete(id);}}catch{el('history-note').textContent='Account history could not sync. Keep this page open and try again.';}finally{syncingHistory=false;}}
-async function loadAccount(){try{const state=await json('/photo-scout/v1/auth/me');authUser=state.user;csrfToken=state.csrfToken;el('account-login').disabled=!state.configured;el('account-login').textContent='Sign in';el('account-login').title=state.configured?'Sign in with Google':'Google sign-in is not configured yet';el('account-login').hidden=Boolean(authUser);el('account-logout').hidden=!authUser;el('account-name').textContent=authUser?authUser.name:'Guest session';if(authUser){const guest=searchHistory,remote=await json('/photo-scout/v1/history');const merged=new Map(remote.items.map(h=>[h.id,h]));for(const h of guest)merged.set(h.id,h);searchHistory=[...merged.values()].sort((a,b)=>b.created-a.created);if(guest.length){await queueHistory(guest.map(h=>({...h,result:{...h.result,imageAssessments:[],spots:(h.result.spots||[]).map(stripHistoryImage),poiResults:(h.result.poiResults||[]).map(stripHistoryImage)}})));if(!pendingHistory.size)sessionStorage.removeItem(HISTORY_KEY);}el('history-note').textContent='Your searches and generated photos are saved permanently to your account.';renderHistory();drawHistoryMap();}else el('history-note').textContent='Guest searches and photos are deleted after 7 days without a visit. Sign in to keep them permanently.';}catch{el('account-name').textContent='Guest session';el('account-login').disabled=true;el('history-note').textContent='Sign-in is temporarily unavailable. Guest history stays in this session.';}refreshComments();refreshPhotoLibraryIfOpen();}
+async function loadAccount(){
+ try{
+  const state=await json('/photo-scout/v1/auth/me');authUser=state.user;csrfToken=state.csrfToken;
+  el('account-login').disabled=!state.configured;el('account-login').textContent='Sign in';el('account-login').title=state.configured?'Sign in with Google':'Google sign-in is not configured yet';el('account-login').hidden=Boolean(authUser);el('account-logout').hidden=!authUser;el('account-name').textContent=authUser?authUser.name:'Guest session';
+  if(authUser){
+   const guest=searchHistory,remote=await json('/photo-scout/v1/history'),merged=new Map(remote.items.map(h=>[h.id,h]));
+   for(const h of guest)merged.set(h.id,h);
+   searchHistory=[...merged.values()].sort((a,b)=>b.created-a.created);
+   el('history-note').textContent='Your searches and generated photos are saved permanently to your account.';
+   renderHistory();drawHistoryMap();
+   // Show saved places before waiting for background guest-history uploads.
+   if(guest.length){
+    const userId=authUser.id;
+    queueHistory(guest.map(h=>({...h,result:{...h.result,imageAssessments:[],spots:(h.result.spots||[]).map(stripHistoryImage),poiResults:(h.result.poiResults||[]).map(stripHistoryImage)}}))).then(()=>{
+     if(authUser?.id===userId&&!pendingHistory.size)sessionStorage.removeItem(HISTORY_KEY);
+    });
+   }
+  }else el('history-note').textContent='Guest searches and photos are deleted after 7 days without a visit. Sign in to keep them permanently.';
+ }catch{el('account-name').textContent='Guest session';el('account-login').disabled=true;el('history-note').textContent='Sign-in is temporarily unavailable. Guest history stays in this session.';}
+ refreshComments();refreshPhotoLibraryIfOpen();
+}
 el('account-login').addEventListener('click',()=>{persistHistory();location.href=api+'/photo-scout/v1/auth/login';});
 el('account-logout').addEventListener('click',async()=>{try{await json('/photo-scout/v1/auth/logout',{method:'POST',headers:{'X-CSRF-Token':csrfToken}});authUser=null;csrfToken=null;pendingHistory.clear();searchHistory=[];sessionStorage.removeItem(HISTORY_KEY);el('results').hidden=true;el('toggle-results').disabled=true;renderHistory();drawHistoryMap();resetTaskRecovery();await loadAccount();await restoreTasks();await loadPublications();}catch{el('history-note').textContent='Sign-out failed. Please try again.';}});
 function stripHistoryImage(s){const copy={...s};delete copy.imageUrl;delete copy.streetViewReference;return copy;}
@@ -811,6 +831,28 @@ function resetTaskRecovery(){
  if(savedPhoto.open)savedPhoto.close();if(portraitProgress.open)portraitProgress.close();
  focusedSearchId=null;selectedPoiView=null;lastRemovedPoi=null;lastRemovedHistory=null;removedHistoryItems.clear();poiViewOverrides.clear();selfieViewOverrides.clear();for(const save of cameraSaves.values()){clearTimeout(save.timer);save.payload=null;}cameraSaves.clear();for(const timer of cameraRefreshes.values())clearTimeout(timer);cameraRefreshes.clear();studioSearchId=null;taskRecoveryGeneration++;hydratedSearches.clear();clearTimeout(taskRefreshTimer);taskRecords=[];hiddenPoisBySearch.clear();displayedResult=null;displayedSearchId=null;tasksReady=false;activeSearch=null;pollGeneration++;searchBusy=false;studioBusy=false;studioJob=null;clearTimeout(studioTimer);clearStudioOutput();studioPrepared=null;studioFile=null;studioInputPlaceKey=null;studioUploadGeneration++;studioUpload.value='';studioCameraButton.disabled=studioPersonFrame.disabled=studioUpload.disabled=false;studioPose.disabled=false;studioStyles.disabled=false;studioOptions.disabled=false;studioGenerate.disabled=true;personPreview.hidden=true;personPreview.removeAttribute('src');studioTask.hidden=true;selfieActivityLayer.clearLayers();renderHistory();updateSubmitState();
 }
+// Bounded parallel recovery; paint each available group without waiting for a slow report.
+async function restoreCompletedSearches(tasks,generation){
+ const pending=tasks.filter(t=>t.kind==='search'&&t.state==='complete'&&!hydratedSearches.has(t.id));
+ let next=0,changed=false,paintTimer=null;
+ const paint=()=>{paintTimer=null;if(generation!==taskRecoveryGeneration)return;searchHistory.sort((a,b)=>b.created-a.created);drawHistoryMap();renderHistory();};
+ async function worker(){
+  while(next<pending.length&&generation===taskRecoveryGeneration){
+   const task=pending[next++];
+   try{
+    const report=await json('/photo-scout/v1/report/'+encodeURIComponent(task.id));
+    if(generation!==taskRecoveryGeneration)return;
+    if(!report.result||removedHistoryItems.has('search:'+task.id))continue;
+    const existing=searchHistory.find(h=>h.id===task.id),record={id:task.id,created:task.created*1000,label:task.context.query||task.context.locationLabel||`Around ${task.context.lat}, ${task.context.lon}`,radius:task.context.radius||1000,checked:existing?.checked??true,result:{...report.result,searchContext:task.context}};
+    if(existing)Object.assign(existing,record);else searchHistory.push(record);
+    hydratedSearches.add(task.id);changed=true;
+    if(paintTimer===null)paintTimer=setTimeout(paint,50);
+   }catch{/* Retry this report on the next refresh; other saved places can still appear. */}
+  }
+ }
+ await Promise.allSettled(Array.from({length:Math.min(4,pending.length)},()=>worker()));
+ clearTimeout(paintTimer);if(changed)paint();return changed&&generation===taskRecoveryGeneration;
+}
 async function restoreTasks(){
  if(taskRefreshBusy)return;taskRefreshBusy=true;const generation=taskRecoveryGeneration,initial=!tasksReady;let changed=false;
  try{
@@ -818,11 +860,7 @@ async function restoreTasks(){
   const incomingHidden=new Map(Object.entries(data.hiddenPois||{}).map(([id,keys])=>[id,new Set(keys)]));
   if(JSON.stringify([...incomingHidden].map(([id,keys])=>[id,[...keys]]))!==JSON.stringify([...hiddenPoisBySearch].map(([id,keys])=>[id,[...keys]]))){hiddenPoisBySearch=incomingHidden;changed=true;refreshDisplayedShortlist();}
   const returned=new Set(data.items.map(t=>t.kind+':'+t.id));taskRecords=[...data.items,...taskRecords.filter(t=>t.localPending&&!returned.has(t.kind+':'+t.id))].sort((a,b)=>b.created-a.created);renderHistory();refreshVisiblePlaceSelfies();
-  for(const task of taskRecords.filter(t=>t.kind==='search'&&t.state==='complete')){
-   if(hydratedSearches.has(task.id))continue;
-   const report=await json('/photo-scout/v1/report/'+encodeURIComponent(task.id));if(generation!==taskRecoveryGeneration)return;
-   if(report.result&&!removedHistoryItems.has('search:'+task.id)){changed=true;hydratedSearches.add(task.id);const existing=searchHistory.find(h=>h.id===task.id),record={id:task.id,created:task.created*1000,label:task.context.query||task.context.locationLabel||`Around ${task.context.lat}, ${task.context.lon}`,radius:task.context.radius||1000,checked:existing?.checked??true,result:{...report.result,searchContext:task.context}};if(existing)Object.assign(existing,record);else searchHistory.push(record);}
-  }
+  changed=(await restoreCompletedSearches(taskRecords,generation))||changed;if(generation!==taskRecoveryGeneration)return;
   searchHistory.sort((a,b)=>b.created-a.created);if(changed){persistHistory();drawHistoryMap();}renderHistory();syncPortraitActivities();refreshVisiblePlaceSelfies();
   if(initial&&!activeSearch){const task=taskRecords.find(t=>t.kind==='search'&&['queued','running'].includes(t.state));if(task){activeSearch={jobId:task.id,context:task.context};applyTaskContext(task.context);activeSearch.draft=searchDraft();}}
   const focus=taskRecords.find(t=>t.kind==='search'&&t.id===activeSearch?.jobId);
