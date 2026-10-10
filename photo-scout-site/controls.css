@@ -197,3 +197,6 @@
 .avatar-count{margin:6px 0 12px;color:#82738d}
 .avatar-card[hidden]{display:none}
 @media(max-width:600px){.avatar-filters input,.avatar-filters select{font-size:16px}.avatar-filters{grid-template-columns:1fr}.avatar-library .avatar-pick img,.avatar-picker .avatar-pick img{height:115px}}
+
+/* The portrait preview opens the same three photo sources as the studio controls. */
+.studio-person-choice{position:relative}.studio-photo-source{position:absolute;z-index:20;top:8px;right:8px;width:min(230px,calc(100% - 16px));padding:6px;border:1px solid #ded2ec;border-radius:14px;background:#fff;box-shadow:0 10px 35px #38234530;display:grid;gap:4px}.studio-photo-source[hidden]{display:none}.studio-photo-source button{width:100%;min-height:44px;padding:9px 10px;border:0;border-radius:9px;background:#f4eef9;color:#64467f;text-align:left;font:inherit;font-size:13px;font-weight:600;cursor:pointer}.studio-photo-source button:hover,.studio-photo-source button:focus-visible{background:#e7daf3;outline:2px solid #b293cc;outline-offset:-2px}
