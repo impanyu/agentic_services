@@ -82,9 +82,10 @@ def test_portrait_validation_and_background_allowlist():
         with pytest.raises(HTTPException):portraits.background_reference('google-street-view','https://www.google.com/maps/@?map_action=pano&pano=abc&'+params)
 
 
+@pytest.mark.parametrize('composition',['auto','full_body','half_body','close_up'])
 @pytest.mark.parametrize('image_model',['gpt-image-2.5-sunburst','gpt-image-1.5'])
 @pytest.mark.parametrize('weather,lighting_phrase',[('golden_hour','golden-hour light'),('daytime','Natural daytime'),('night','Natural nighttime')])
-def test_private_job_edits_both_images_and_removes_upload(tmp_path,monkeypatch,image_model,weather,lighting_phrase):
+def test_private_job_edits_both_images_and_removes_upload(tmp_path,monkeypatch,image_model,weather,lighting_phrase,composition):
     monkeypatch.setenv('PHOTO_SCOUT_IMAGE_MODEL',image_model)
     calls=[];raw=photo()
     class Client:
@@ -102,9 +103,9 @@ def test_private_job_edits_both_images_and_removes_upload(tmp_path,monkeypatch,i
     body={'portrait':'data:image/png;base64,'+base64.b64encode(raw).decode(),'background':'https://www.google.com/maps/@?map_action=pano&pano=abc&heading=90.0&pitch=-20.0','provider':'google-street-view','place':'Test park'}
     assert client.post('/photo-scout/v1/portraits',json=body).status_code==401
     assert client.post('/photo-scout/v1/portraits',json=body|{'style':'unsupported'},headers=auth).status_code==422
-    for field in ['posture','weather','expression','framing']:
+    for field in ['posture','weather','expression','framing','composition']:
         assert client.post('/photo-scout/v1/portraits',json=body|{field:'unsupported'},headers=auth).status_code==422
-    body.update(posture='walking',weather=weather,expression='big_smile')
+    body.update(posture='walking',weather=weather,expression='big_smile',composition=composition)
     result=client.post('/photo-scout/v1/portraits',json=body,headers=auth);assert result.status_code==202
     job=result.json();path='/photo-scout/v1/portraits/'+job['id'];owned=auth|{'X-Report-Token':job['token']}
     assert TestClient(app,base_url='https://api.test').get(path,headers=auth).status_code==404
@@ -117,6 +118,8 @@ def test_private_job_edits_both_images_and_removes_upload(tmp_path,monkeypatch,i
         assert 'input_fidelity' not in calls[0];assert calls[0]['quality']=='max'
     assert 'fixed statue at left' in calls[0]['prompt']
     assert 'Test park' in calls[0]['prompt']
+    assert portraits.COMPOSITIONS[composition] in calls[0]['prompt']
+    assert 'same ground depth' in calls[0]['prompt']
     assert 'keep the original clothing' in calls[0]['prompt']
     assert 'mid-step walking' in calls[0]['prompt']
     assert lighting_phrase in calls[0]['prompt']
@@ -127,7 +130,7 @@ def test_private_job_edits_both_images_and_removes_upload(tmp_path,monkeypatch,i
     assert completed['context']['viewFovDegrees']==90
     assert completed['context']['backgroundPreparation']['comparedFovDegrees']==[90,60,45]
     assert completed['context']['backgroundPreparation']['scene']['core_landmarks']==['fixed statue at left']
-    assert completed['context']['generation']=={'style':'natural','posture':'walking','weather':weather,'expression':'big_smile','framing':'auto','directions':''}
+    assert completed['context']['generation']=={'style':'natural','composition':composition,'posture':'walking','weather':weather,'expression':'big_smile','framing':'auto','directions':''}
     history=client.get('/photo-scout/v1/tasks',headers=auth).json()
     assert history['items'][0]['context']['generation']==completed['context']['generation']
     image=client.get(path+'/image',headers=owned);assert image.content==raw;assert image.headers['cache-control']=='private, no-store'
@@ -279,7 +282,9 @@ def test_scene_inventory_is_selected_view_specific_and_reaches_composition(monke
         fixed_elements=['glass railing across foreground','building at right'],
         core_landmarks=['large seated panda sculpture at left'],
         transient_elements=['walking pedestrians in foreground'],
-        uncertain_elements=['parked cart near railing'])
+        uncertain_elements=['parked cart near railing'],
+        scale_references=['adult beside foreground railing, feet on paved ground'],
+        perspective_guidance='Eye-level camera; foreground adult supplies a same-depth scale reference')
     async def background(ref):return 'data:image/png;base64,'+base64.b64encode(raw).decode()
     monkeypatch.setattr(portraits,'image_data',background)
     class Client:
@@ -294,6 +299,8 @@ def test_scene_inventory_is_selected_view_specific_and_reaches_composition(monke
     prompt=portraits.portrait_prompt('vacation','Make room for four characters',place='Panda plaza',scene=meta['scene'])
     assert 'large seated panda sculpture at left' in prompt
     assert 'parked cart near railing' in prompt
+    assert 'adult beside foreground railing' in prompt
+    assert 'Eye-level camera' in prompt
     assert '"Panda plaza"' in prompt
     assert 'adjust subject scale, placement or pose instead' in prompt
     assert 'source-subject extraction/removal rules apply ONLY to image 1' in prompt

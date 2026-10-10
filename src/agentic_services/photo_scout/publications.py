@@ -195,7 +195,7 @@ def create_publications_router(settings,require_api):
                 context=store.context(kind,payload.id) or {};title=context.get('name') or 'Selfie'
                 spot=public_spot(context)
                 generation=context.get('generation') or {}
-                if generation:spot['generation']={k:generation[k] for k in ('style','posture','weather','expression','framing') if k in generation}
+                if generation:spot['generation']={k:generation[k] for k in ('style','composition','posture','weather','expression','framing') if k in generation}
                 snapshot={'context':spot};image=row['output']
             else:
                 row=db.execute('SELECT state,result FROM photo_scout_jobs WHERE id=?',(payload.id,)).fetchone()
