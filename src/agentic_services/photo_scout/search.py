@@ -8,13 +8,14 @@ from __future__ import annotations
 
 import asyncio
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from itertools import zip_longest
 from pathlib import Path
 from typing import Callable, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from .conditions import SearchBranch, validate_branch_scope
 from .geography import GeographicKind, PROXIMITY, filter_places, geographic_places
 from .sources import distance, google_query_points
 from .osm_features import OSMFeatureQuery, fetch_features, matches_features
@@ -26,6 +27,7 @@ class SearchParameters(BaseModel):
     lat: float = Field(ge=-85, le=85, allow_inf_nan=False)
     lon: float = Field(ge=-180, le=180, allow_inf_nan=False)
     radius: int = Field(default=5000, ge=100, le=20000)
+    searchBranches: list[SearchBranch] = Field(default_factory=list,max_length=6)
     poiQueries: list[str] = Field(default_factory=list, max_length=4)
     geographicKinds: list[GeographicKind] = Field(default_factory=list, max_length=6)
     geographicCombination: Literal['all','any'] = 'all'
@@ -46,7 +48,7 @@ class SearchParameters(BaseModel):
             raise ValueError('POI queries must be nonempty and at most 200 characters')
         self.poiQueries=list(dict.fromkeys(q.strip() for q in self.poiQueries))
         self.geographicKinds=list(dict.fromkeys(self.geographicKinds))
-        return self
+        return validate_branch_scope(self)
 
 
 class SearchPlan(BaseModel):
@@ -54,7 +56,8 @@ class SearchPlan(BaseModel):
     placesQueries: list[str]
     placesRole: Literal['target', 'discovery-hints', 'not-requested']
     geographicKinds: list[GeographicKind]
-    mergeStrategy: Literal['places-only', 'spatial-intersection', 'spatial-union', 'area-imagery', 'feature-search']
+    mergeStrategy: Literal['places-only', 'spatial-intersection', 'spatial-union', 'area-imagery', 'feature-search', 'branch-union']
+    branches: list[SearchPlan] = Field(default_factory=list)
     rawPlacesLimit: int
     candidateLimit: int = 50
     dedupDistanceMeters: int = 50
@@ -75,7 +78,22 @@ GEOGRAPHIC_QUERIES = {
 }
 
 
+def branch_parameters(parameters,branch):
+    values={**parameters.model_dump(),**branch.model_dump(exclude={'visualIntent'}),
+            'searchBranches':[], 'categories':None}
+    # Branch geometry is explicit. A global visual mood must not invent another
+    # branch-local spatial requirement.
+    if not branch.geographicKinds:
+        values['photoStyles']=[s for s in (parameters.photoStyles or []) if s!='waterside'] or None
+    return SearchParameters.model_validate(values)
+
+
 def compile_search(parameters: SearchParameters) -> SearchPlan:
+    if parameters.searchBranches:
+        branches=[compile_search(branch_parameters(parameters,b)) for b in parameters.searchBranches]
+        return SearchPlan(parameters=parameters,placesQueries=[],placesRole='not-requested',
+            geographicKinds=[],mergeStrategy='branch-union',branches=branches,
+            rawPlacesLimit=sum(b.rawPlacesLimit for b in branches),geographicProximityMeters={})
     kinds=parameters.geographicKinds or (['waterside'] if 'waterside' in (parameters.photoStyles or []) else [])
     explicit=bool(parameters.poiQueries or parameters.categories)
     queries=discovery_queries(parameters.poiQueries,parameters.photoStyles,parameters.categories)
@@ -107,6 +125,8 @@ class SearchResult:
     features: list[dict]
     status: dict
     plan: SearchPlan
+    branch_results: list[SearchResult] = field(default_factory=list)
+    feature_groups: list[list[dict]] = field(default_factory=list)
 
     @property
     def imagery_targets(self):
@@ -153,6 +173,49 @@ async def search_locations(parameters: SearchParameters, *, database_path: Path,
         from .geography import fetch_region
         providers=SearchProviders(nearby_places,nearby_pois,fetch_region)
     plan=compile_search(parameters)
+    if plan.mergeStrategy=='branch-union':
+        # Share identical in-flight provider lookups between branches. A branch
+        # failure aborts the union instead of silently claiming complete coverage.
+        memo={}
+        def shared(fn):
+            async def call(*args,**kwargs):
+                import json
+                def encode(v):
+                    if isinstance(v,BaseModel):return v.model_dump()
+                    return str(v)
+                key=(id(fn),json.dumps([args,kwargs],default=encode,sort_keys=True))
+                if key not in memo:memo[key]=asyncio.create_task(fn(*args,**kwargs))
+                return await memo[key]
+            return call
+        pooled=SearchProviders(*(shared(fn) for fn in (providers.places,providers.osm_places,providers.geography,providers.osm_features)))
+        tasks=[asyncio.create_task(search_locations(branch_parameters(parameters,b),database_path=database_path,
+            providers=pooled,poi_provider=poi_provider)) for b in parameters.searchBranches]
+        try:results=await asyncio.gather(*tasks)
+        finally:
+            for t in tasks:
+                if not t.done():t.cancel()
+            await asyncio.gather(*tasks,return_exceptions=True)
+            for t in memo.values():
+                if not t.done():t.cancel()
+            await asyncio.gather(*memo.values(),return_exceptions=True)
+        by_id={}
+        for i,result in enumerate(results):
+            for p in result.places:
+                row=by_id.setdefault(p['id'],{**p,'searchBranchIndexes':[]})
+                if i not in row['searchBranchIndexes']:row['searchBranchIndexes'].append(i)
+        selected=[];seen=set()
+        # Fair round-robin before the global cap; one large branch cannot starve others.
+        for group in zip_longest(*(r.places for r in results)):
+            for p in group:
+                if p and p['id'] not in seen and len(selected)<plan.candidateLimit:
+                    selected.append(by_id[p['id']]);seen.add(p['id'])
+        counts={'branchCount':len(results),'returnedCandidates':len(selected),
+                'branchCandidatesBeforeDedup':sum(len(r.places) for r in results)}
+        status={'status':'ok','provider':poi_provider,'count':len(selected),
+                'searchPlan':plan.model_dump(),'searchCounts':counts,
+                'branchSearches':[{'index':i,**r.status} for i,r in enumerate(results)]}
+        features=list({f['id']:f for r in results for f in r.features}.values())
+        return SearchResult(selected,features,status,plan,branch_results=results)
     if plan.mergeStrategy=='area-imagery':
         return SearchResult([],[],{'status':'ok','provider':poi_provider,'count':0,'role':'area-imagery',
             'searchPlan':plan.model_dump(),'searchCounts':{'rawNamedPlaces':0,'spatiallyMatchedNamedPlaces':0,
@@ -193,4 +256,28 @@ async def search_locations(parameters: SearchParameters, *, database_path: Path,
         status['osmFeatureSearch']=feature_status
         status['searchCounts']['osmFeatureCandidates']=sum(len(g) for g in feature_groups)
     if plan.geographicKinds:status['geographicSearch']=geo_status
-    return SearchResult(places,features,status,plan)
+    return SearchResult(places,features,status,plan,feature_groups=feature_groups)
+
+
+def branch_contexts(result):
+    return [{'parameters':r.plan.parameters.model_dump(), 'features':r.features,
+             'featureGroups':r.feature_groups,
+             'poiIds':[p['id'] for p in result.places if i in p.get('searchBranchIndexes',[])]}
+            for i,r in enumerate(result.branch_results)]
+
+
+def filter_branch_images(rows,contexts):
+    """Retain a panorama only under the branch that supplied its target."""
+    retained=[]
+    for row in rows:
+        eligible=[]
+        identities={p['id'] for p in row.get('poiCandidates',[])}
+        if row.get('poi'):identities.add(row['poi']['id'])
+        for i,context in enumerate(contexts):
+            p=SearchParameters.model_validate(context['parameters'])
+            if p.poiQueries and not identities.intersection(context['poiIds']):continue
+            if p.geographicKinds and not filter_places([row],context['features'],p.geographicKinds,p.lat,p.lon,combination=p.geographicCombination):continue
+            if p.osmFeatures and not matches_features(row,context['featureGroups'],p.osmFeatures,combination=p.featureCombination):continue
+            eligible.append(i)
+        if eligible:retained.append({**row,'eligibleSearchBranchIndexes':eligible})
+    return retained

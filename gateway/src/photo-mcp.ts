@@ -29,7 +29,22 @@ const osmFeatureSchema={type:'object',additionalProperties:false,required:['labe
  numericFilters:{type:'array',maxItems:4,items:{type:'object',additionalProperties:false,required:['key'],properties:{key:{type:'string',minLength:1,maxLength:80,pattern:'^[A-Za-z0-9_:.-]+$'},minimum:{type:['number','null']},maximum:{type:['number','null']}}}},
  proximityMeters:{type:'integer',minimum:0,maximum:500,default:150},
 }}
+const searchBranch=z.object({
+ poiQueries:z.array(z.string().min(1).max(200)).max(4).optional(),
+ geographicKinds:z.array(z.enum(geographicKinds)).max(6).optional(),
+ geographicCombination:z.enum(['all','any']).optional(),
+ osmFeatures:z.array(osmFeature).max(6).optional(),featureCombination:z.enum(['all','any']).optional(),
+ visualIntent:z.string().max(1000).optional(),
+}).strict()
+const searchBranchSchema={type:'object',additionalProperties:false,properties:{
+ poiQueries:{type:'array',maxItems:4,items:{type:'string',minLength:1,maxLength:200}},
+ geographicKinds:{type:'array',maxItems:6,items:{enum:geographicKinds}},
+ geographicCombination:{enum:['all','any'],default:'all'},
+ osmFeatures:{type:'array',maxItems:6,items:osmFeatureSchema},featureCombination:{enum:['all','any'],default:'all'},
+ visualIntent:{type:'string',maxLength:1000},
+}}
 const photoArguments={
+  searchBranches:z.array(searchBranch).max(6).optional().describe('OR across independently constrained target groups; AND between target, geography and features inside a group. When set, leave top-level poiQueries/geographicKinds/osmFeatures empty.'),
   query:z.string().max(1000).optional().describe('Natural-language request. Explicit text overrides conflicting structured parameters.'),
   poiQueries:z.array(z.string().min(1).max(200)).max(4).optional().describe('Arbitrary POI categories or business names, e.g. coffee shops.'),
   osmFeatures:z.array(osmFeature).max(6).optional().describe('OSM physical features and attributes; combined using featureCombination. Tagged features use exact/existence filters; intersections use road topology.'),
@@ -45,6 +60,7 @@ const photoArguments={
   preferences:z.string().max(500).optional().describe('Additional photography preferences.'),
 }
 export const photoInputSchema={type:'object',additionalProperties:false,required:['lat','lon'],properties:{
+ searchBranches:{type:'array',maxItems:6,items:searchBranchSchema},
  query:{type:'string',maxLength:1000},poiQueries:{type:'array',maxItems:4,items:{type:'string',minLength:1,maxLength:200}},
  osmFeatures:{type:'array',maxItems:6,items:osmFeatureSchema},
  geographicCombination:{enum:['all','any'],default:'all'},featureCombination:{enum:['all','any'],default:'all'},

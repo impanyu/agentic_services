@@ -37,7 +37,7 @@ class ScoreCache:
                 'photoStyles': sorted(payload.photoStyles or []), 'preferences': payload.preferences.strip(),
                 'geographicKinds': sorted(getattr(payload,'geographicKinds',[])),
                 'geographicCombination':getattr(payload,'geographicCombination','all'),'featureCombination':getattr(payload,'featureCombination','all'),
-                'osmFeatures': [q.model_dump() for q in getattr(payload,'osmFeatures',[])],
+                'searchBranches':[b.model_dump() for b in getattr(payload,'searchBranches',[])],'osmFeatures': [q.model_dump() for q in getattr(payload,'osmFeatures',[])],
                 'poiQueries': sorted(payload.poiQueries), 'scoringIntent': payload.scoringIntent.strip()}
         return hashlib.sha256(json.dumps(data, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
 

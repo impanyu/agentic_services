@@ -184,3 +184,116 @@ def test_alternative_mapped_features_and_score_cache_do_not_collapse_to_and(tmp_
     a=ExploreRequest(lat=0,lon=0,osmFeatures=qs,featureCombination='all')
     b=a.model_copy(update={'featureCombination':'any'})
     assert ScoreCache.key(place,a,'model','prompt')!=ScoreCache.key(place,b,'model','prompt')
+
+
+def forest():
+    return {'id':'forest','name':'Forest','sourceUrl':'https://www.openstreetmap.org/way/2',
+        'kinds':['forest'],'geometry':{'type':'Polygon','coordinates':[[[.01,-.004],[.02,-.004],[.02,.004],[.01,.004],[.01,-.004]]]}}
+
+
+def mixed_branches():
+    return [{'poiQueries':['coffee shops'],'geographicKinds':['lake'],'visualIntent':'Vintage lakeside cafes'},
+            {'poiQueries':['restaurants'],'geographicKinds':['forest'],'visualIntent':'Quiet woodland restaurants'}]
+
+
+def test_grouped_union_keeps_correlated_subjects_and_filters_panorama_under_its_own_branch():
+    from agentic_services.photo_scout.search import branch_contexts,filter_branch_images
+    async def places(lat,lon,radius,queries,**kwargs):
+        subject='cafe' if queries==['coffee shops'] else 'restaurant'
+        return [{'id':subject+'-lake','lat':0,'lon':-.005},
+                {'id':subject+'-forest','lat':0,'lon':.015}],{'status':'ok'}
+    async def geometry(lat,lon,radius,kinds,path):return ([lake()] if kinds==['lake'] else [forest()]),[],{'status':'ok'}
+    p=SearchParameters(lat=0,lon=0,radius=3000,searchBranches=mixed_branches())
+    result=asyncio.run(search_locations(p,database_path=Path('/unused'),providers=SearchProviders(places,None,geometry)))
+    assert result.plan.mergeStrategy=='branch-union'
+    assert [r['id'] for r in result.places]==['cafe-lake','restaurant-forest']
+    assert [r['searchBranchIndexes'] for r in result.places]==[[0],[1]]
+    assert len(result.imagery_targets)==2
+    rows=[{'id':'lake-cafe-view','lat':0,'lon':-.005,'poi':{'id':'cafe-lake'}},
+          {'id':'forest-restaurant-view','lat':0,'lon':.015,'poi':{'id':'restaurant-forest'}},
+          {'id':'wrong-restaurant-at-lake','lat':0,'lon':-.005,'poi':{'id':'restaurant-forest'}},
+          {'id':'wrong-cafe-in-forest','lat':0,'lon':.015,'poi':{'id':'cafe-lake'}}]
+    eligible=filter_branch_images(rows,branch_contexts(result))
+    assert [r['id'] for r in eligible]==['lake-cafe-view','forest-restaurant-view']
+    assert [r['eligibleSearchBranchIndexes'] for r in eligible]==[[0],[1]]
+
+
+def test_branch_union_is_fair_capped_and_deduplicates_shared_provider_work():
+    calls=[]
+    async def places(lat,lon,radius,queries,**kwargs):
+        calls.append(tuple(queries))
+        return [{'id':queries[0]+str(i),'lat':0,'lon':i/10000} for i in range(50)],{'status':'ok'}
+    async def geometry(*args):return [],[],{'status':'not_requested'}
+    branches=[{'poiQueries':['cafes']},{'poiQueries':['motels']},{'poiQueries':['cafes']}]
+    result=asyncio.run(search_locations(SearchParameters(lat=0,lon=0,searchBranches=branches),
+        database_path=Path('/unused'),providers=SearchProviders(places,None,geometry)))
+    assert len(calls)==2 and len(result.places)==50
+    assert len([p for p in result.places if p['id'].startswith('cafes')])==25
+    assert len([p for p in result.places if p['id'].startswith('motels')])==25
+    assert result.places[0]['searchBranchIndexes']==[0,2]
+
+
+def test_branch_failure_is_explicit_instead_of_silently_losing_an_alternative():
+    async def places(*args,**kwargs):return [],{'status':'ok'}
+    async def geometry(lat,lon,radius,kinds,path):return [],[],{'status':'unavailable' if kinds==['forest'] else 'ok'}
+    with pytest.raises(SearchUnavailable):
+        asyncio.run(search_locations(SearchParameters(lat=0,lon=0,searchBranches=mixed_branches()),
+            database_path=Path('/unused'),providers=SearchProviders(places,None,geometry)))
+
+
+@pytest.mark.parametrize('extra',[{'poiQueries':['cafes']},{'geographicKinds':['lake']},{'categories':['park']}])
+def test_ambiguous_branch_and_top_level_constraints_fail_instead_of_being_ignored(extra):
+    with pytest.raises(ValidationError):SearchParameters(lat=0,lon=0,searchBranches=mixed_branches(),**extra)
+    with pytest.raises(ValidationError):SearchParameters(lat=0,lon=0,searchBranches=[{}])
+
+
+def test_grouped_conditions_survive_resolve_and_website_image_pipeline(tmp_path,monkeypatch):
+    from fastapi.testclient import TestClient
+    from agentic_services.config import Settings
+    from agentic_services.main import create_app
+    from agentic_services.photo_scout import intent,routes
+    monkeypatch.setenv('PHOTO_SCOUT_ENABLED','1');monkeypatch.setenv('PHOTO_SCOUT_HUMAN_FREE_PREVIEW','1')
+    monkeypatch.setenv('PHOTO_SCOUT_POI_PROVIDER','google-places')
+    settings=Settings(openai_api_key='fixture',openai_model='test',database_path=tmp_path/'db',base_url='https://api.test',service_api_key='private')
+    async def parse(*args):return intent.PhotoIntent(locationQuery=None,useMapCenter=True,
+        searchBranches=mixed_branches(),photoStyles=[],radiusMeters=3000,preferences='Vintage cafe OR quiet restaurant',
+        scoringIntent='(Vintage cafes by a lake) OR (quiet restaurants in a forest)',explanation='Two alternative groups',clarification=None)
+    async def places(lat,lon,radius,queries,**kwargs):
+        p={'id':'cafe','name':'Cafe','lat':0,'lon':-.005} if queries==['coffee shops'] else {'id':'restaurant','name':'Restaurant','lat':0,'lon':.015}
+        return [p],{'status':'ok'}
+    async def geometry(lat,lon,radius,kinds,path):return ([lake()] if kinds==['lake'] else [forest()]),[],{'status':'ok'}
+    async def images(lat,lon,radius,pois,**kwargs):return [
+        {'id':'good','lat':0,'lon':-.005,'provider':'google-street-view','poi':{'id':'cafe'}},
+        {'id':'wrong','lat':0,'lon':-.005,'provider':'google-street-view','poi':{'id':'restaurant'}}],{'google-street-view':{'status':'ok'}}
+    async def score(settings,payload,rows,statuses):
+        assert len(payload.searchBranches)==2 and payload.poiQueries==[]
+        assert [r['id'] for r in rows]==['good'] and rows[0]['eligibleSearchBranchIndexes']==[0]
+        return {'spots':[],'poiResults':[],'summary':'Verified','sources':statuses}
+    monkeypatch.setattr(intent,'parse_intent',parse);monkeypatch.setattr(routes,'nearby_places',places)
+    monkeypatch.setattr(routes,'fetch_region',geometry);monkeypatch.setattr(routes,'candidates',images);monkeypatch.setattr(routes,'explore',score)
+    with TestClient(create_app(settings=settings)) as client:
+        headers={'Authorization':'Bearer private'}
+        resolved=client.post('/photo-scout/v1/resolve',headers=headers,json={'lat':0,'lon':0,'query':'lake cafes or forest restaurants'}).json()
+        assert len(resolved['searchParameters']['searchBranches'])==2
+        for parameters in [resolved['searchParameters'],{'lat':0,'lon':0,'query':'lake cafes or forest restaurants'}]:
+            r=client.post('/photo-scout/v1/preview',headers=headers,json=parameters)
+            assert r.status_code==200,r.text
+            assert r.json()['searchPlan']['mergeStrategy']=='branch-union'
+        search=client.post('/photo-scout/v1/search',headers=headers,json=resolved['searchParameters'])
+        assert search.status_code==200 and search.json()['searchCounts']['returnedCandidates']==2
+        # A catalog may not be reused with edited branch semantics.
+        catalog=client.post('/photo-scout/v1/pois',headers=headers,json=resolved['searchParameters']).json()
+        selected={**resolved['searchParameters'],'selectedPoiIds':['cafe'],'poiCatalogToken':catalog['poiCatalogToken']}
+        assert client.post('/photo-scout/v1/preview',headers=headers,json=selected).status_code==200
+        changed={**resolved['searchParameters'],'selectedPoiIds':['cafe'],'poiCatalogToken':catalog['poiCatalogToken']}
+        changed['searchBranches'][0]['geographicKinds']=['forest']
+        assert client.post('/photo-scout/v1/preview',headers=headers,json=changed).status_code==422
+
+
+def test_branch_visual_requirements_are_part_of_score_cache_identity():
+    from agentic_services.photo_scout.score_cache import ScoreCache
+    from agentic_services.photo_scout.routes import ExploreRequest
+    a=ExploreRequest(lat=0,lon=0,searchBranches=mixed_branches())
+    changed=mixed_branches();changed[0]['visualIntent']='Modern lakeside cafes'
+    b=ExploreRequest(lat=0,lon=0,searchBranches=changed)
+    assert ScoreCache.key({'id':'view'},a,'model','prompt')!=ScoreCache.key({'id':'view'},b,'model','prompt')

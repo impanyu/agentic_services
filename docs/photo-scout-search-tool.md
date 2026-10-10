@@ -86,4 +86,23 @@ Successful OSM queries are cached for 24 hours. Overpass output is bounded to 1,
 
 Examples: cafes near a lake OR the sea => coffee-shop target, lake/sea, geographicCombination=any; lake AND forest => both geographic constraints, all; benches OR fountains => two feature queries, featureCombination=any. Negations and visual predicates remain explicitly grouped in scoringIntent for image verification, not positive geometry queries.
 
-This is a flat grouped predicate model, not an arbitrary Boolean AST. Mixed nested expressions should retrieve a broad superset and retain their exact grouping for visual verification. Exclusions are checked visually rather than guaranteed by geometry subtraction.
+`searchBranches` supports up to six alternative constrained target groups (bounded disjunctive normal form). Each branch owns `poiQueries`, `geographicKinds`, `geographicCombination`, `osmFeatures`, `featureCombination` and `visualIntent`. Target, geographic and mapped-feature groups are intersected inside a branch; branch results are unioned. Top-level target/spatial fields must be empty when branches are supplied; ambiguous mixing fails validation instead of silently dropping conditions. Global center/radius/styles/preferences remain shared.
+
+For `(lake cafes) OR (forest restaurants)`:
+```json
+{
+  "lat": 41.88,
+  "lon": -87.63,
+  "radius": 5000,
+  "searchBranches": [
+    {"poiQueries": ["coffee shops"], "geographicKinds": ["lake"]},
+    {"poiQueries": ["restaurants"], "geographicKinds": ["forest"]}
+  ]
+}
+```
+
+Branches run concurrently; identical in-flight provider lookups are shared. Each branch is spatially filtered before merging. A fair round-robin merge deduplicates POI IDs and caps the combined candidate list at 50, with `searchBranchIndexes` preserving provenance. `branchSearches` and branch-local plans expose retrieval diagnostics. A required branch-provider failure fails the request explicitly rather than reporting incomplete alternatives as complete.
+
+Panorama coordinates are checked under their originating branch, with `eligibleSearchBranchIndexes` passed to the evaluator. Named targets must be associated with a candidate from that branch; geography/features must hold for the actual camera location. Scoring evaluates one complete eligible branch, its visualIntent and shared requirements, never a subject/environment mix from different branches. Score-cache keys and signed catalogs bind the full branch parameters. This behavior is shared by the website, structured HTTP API, and MCP.
+
+Nested positive AND/OR conditions are normalized into these bounded groups. Negations and image-only requirements are checked visually rather than guaranteed by geometry subtraction. Searches beyond the six-group representation remain a limitation; this is not an unbounded logical query language.
