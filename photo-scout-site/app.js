@@ -340,7 +340,7 @@ function loadPopupPhoto(popup,force=false){
   }
   if(!force&&box.dataset.loaded&&box.dataset.source===spot.sourceUrl)continue;
   box.dataset.retries='0';box.dataset.source=spot.sourceUrl;image.hidden=false;
-  if(spot.provider==='google-street-view')refresh();
+  if(spot.provider==='google-street-view'||spot.imageReference)refresh();
   else if(spot.imageUrl)image.src=spot.imageUrl;
  }
 }
