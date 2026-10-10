@@ -1,0 +1,1893 @@
+{
+  "summary": {
+    "model": "gpt-6-astra",
+    "reasoningEffort": "low",
+    "promptSha256": "9be4b63c9529841b2f155055eafd8fcd2fbf8ce58db07fafdd656e6b73f35bad",
+    "generatedAt": "2026-10-10T16:48:13.687283+00:00",
+    "cases": 15,
+    "runs": 15,
+    "passed": 14,
+    "failed": 1,
+    "medianSeconds": 10.093,
+    "p95Seconds": 40.093,
+    "wallSeconds": 74.405,
+    "failureTypes": {
+      "runtime:APITimeoutError": 1
+    },
+    "scope": "Synthetic planner-only checks plus saved plans for human review; not provider execution, geocoding or visual scoring."
+  },
+  "results": [
+    {
+      "case": "cafe-highrise",
+      "repeat": 1,
+      "input": {
+        "query": "café among high-rise buildings",
+        "lat": 41.8827,
+        "lon": -87.6233,
+        "radius": 5000,
+        "photoStyles": [
+          "waterside"
+        ]
+      },
+      "expected": {
+        "geo": [],
+        "queryAny": [
+          [
+            "coffee",
+            "cafe",
+            "café"
+          ]
+        ],
+        "visualRequired": [
+          [
+            "high-rise",
+            "high rise",
+            "tall building"
+          ]
+        ]
+      },
+      "failures": [
+        "runtime:APITimeoutError"
+      ],
+      "seconds": 40.093
+    },
+    {
+      "case": "existing-woman",
+      "repeat": 1,
+      "input": {
+        "query": "Find street-view images containing a beautiful woman",
+        "lat": 41.8827,
+        "lon": -87.6233,
+        "radius": 5000,
+        "photoStyles": [
+          "waterside"
+        ]
+      },
+      "expected": {
+        "subjectRole": "existing-subject",
+        "visualRequired": [
+          [
+            "woman"
+          ]
+        ]
+      },
+      "plan": {
+        "action": "search",
+        "normalizedQuery": "Find street-view images containing a beautiful woman",
+        "intentSummary": "Find street-view imagery with a visible woman matching the requested subjective beauty preference.",
+        "subjectRole": "existing-subject",
+        "assumptions": [
+          "Beauty is subjective and will be assessed as a visual preference.",
+          "Historical street-view coverage may obscure faces or lack suitable images."
+        ],
+        "feedback": "",
+        "requirements": [
+          {
+            "expression": "Street-view imagery containing a visible woman",
+            "strength": "required",
+            "route": "visual",
+            "evidence": "visual",
+            "stepIds": []
+          },
+          {
+            "expression": "The visible woman matches the requested subjective impression of beauty",
+            "strength": "required",
+            "route": "visual",
+            "evidence": "visual",
+            "stepIds": []
+          }
+        ],
+        "sourceCoverage": [],
+        "searchProgram": {
+          "steps": [
+            {
+              "id": "area",
+              "tool": "area_imagery",
+              "inputs": [],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Discover regional street-view imagery that may contain the requested visible subject, without imposing a mapped environment."
+            },
+            {
+              "id": "images",
+              "tool": "collect_images",
+              "inputs": [
+                "area"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Collect street-view images for visible-subject review."
+            },
+            {
+              "id": "assessments",
+              "tool": "score_images",
+              "inputs": [
+                "images"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Require an actually visible woman and assess the requested subjective beauty impression; empty portrait backgrounds do not qualify."
+            },
+            {
+              "id": "ranked",
+              "tool": "rank_results",
+              "inputs": [
+                "assessments"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Rank all matching street-view images by subject visibility and fit to the requested visual description."
+            }
+          ],
+          "output": "ranked"
+        },
+        "searchBranches": [],
+        "geographicCombination": "all",
+        "featureCombination": "all",
+        "osmFeatures": [],
+        "geographicKinds": [],
+        "scoringIntent": "Find street-view images actually containing a visible woman matching the subjective description of beautiful. Do not substitute empty portrait settings or require waterfront scenery.",
+        "poiQueries": [],
+        "locationQuery": null,
+        "useMapCenter": true,
+        "photoStyles": [],
+        "radiusMeters": 5000,
+        "preferences": "Assess the requested beauty impression subjectively, without identifying the person.",
+        "explanation": "Explore street-view imagery within 5,000 meters of the map center, review visible subjects, and rank matching views. The explicit subject replaces the Waterside mood; mapped features and business searches cannot retrieve individual people.",
+        "clarification": null
+      },
+      "failures": [],
+      "seconds": 10.093
+    },
+    {
+      "case": "feature-question",
+      "repeat": 1,
+      "input": {
+        "query": "How do I share my selfie?",
+        "lat": 41.8827,
+        "lon": -87.6233,
+        "radius": 5000,
+        "photoStyles": [
+          "waterside"
+        ]
+      },
+      "expected": {
+        "action": "help"
+      },
+      "plan": {
+        "action": "help",
+        "normalizedQuery": "How do I share my selfie?",
+        "intentSummary": "Explain how to share an existing selfie.",
+        "subjectRole": "scene",
+        "assumptions": [],
+        "feedback": "Open your selfie in your phone’s Photos or Gallery app, tap Share, and choose a messaging app, social app, or contact. For example, choose Messages, select a recipient, and tap Send.",
+        "requirements": [],
+        "sourceCoverage": [],
+        "searchProgram": null,
+        "searchBranches": [],
+        "geographicCombination": "all",
+        "featureCombination": "all",
+        "osmFeatures": [],
+        "geographicKinds": [],
+        "scoringIntent": "",
+        "poiQueries": [],
+        "locationQuery": null,
+        "useMapCenter": true,
+        "photoStyles": [
+          "waterside"
+        ],
+        "radiusMeters": 5000,
+        "preferences": "",
+        "explanation": "This is a sharing-help request, so no location or image search is needed.",
+        "clarification": null
+      },
+      "failures": [],
+      "seconds": 4.296
+    },
+    {
+      "case": "gibberish",
+      "repeat": 1,
+      "input": {
+        "query": "qzxv @@@ brrzzq",
+        "lat": 41.8827,
+        "lon": -87.6233,
+        "radius": 5000,
+        "photoStyles": [
+          "waterside"
+        ]
+      },
+      "expected": {
+        "action": "uninterpretable"
+      },
+      "plan": {
+        "action": "uninterpretable",
+        "normalizedQuery": "qzxv @@@ brrzzq",
+        "intentSummary": "No interpretable photographic subject or location could be identified.",
+        "subjectRole": "scene",
+        "assumptions": [],
+        "feedback": "I couldn’t understand that search. Try a subject or place, such as “waterfront views” or “cafes near Millennium Park.”",
+        "requirements": [],
+        "sourceCoverage": [],
+        "searchProgram": null,
+        "searchBranches": [],
+        "geographicCombination": "all",
+        "featureCombination": "all",
+        "osmFeatures": [],
+        "geographicKinds": [],
+        "scoringIntent": "",
+        "poiQueries": [],
+        "locationQuery": null,
+        "useMapCenter": true,
+        "photoStyles": [
+          "waterside"
+        ],
+        "radiusMeters": 5000,
+        "preferences": "",
+        "explanation": "No search is planned because the text could not be interpreted.",
+        "clarification": null
+      },
+      "failures": [],
+      "seconds": 3.804
+    },
+    {
+      "case": "great-lake-view",
+      "repeat": 1,
+      "input": {
+        "query": "great lake view",
+        "lat": 41.8827,
+        "lon": -87.6233,
+        "radius": 5000,
+        "photoStyles": [
+          "waterside"
+        ]
+      },
+      "expected": {
+        "geo": [
+          "lake"
+        ],
+        "toolsRequired": [
+          "sample_geography"
+        ],
+        "visualRequired": [
+          [
+            "lake"
+          ]
+        ]
+      },
+      "plan": {
+        "action": "search",
+        "normalizedQuery": "great lake view",
+        "intentSummary": "Find scenic viewpoints with a visible lake.",
+        "subjectRole": "scene",
+        "assumptions": [
+          "Interpreting “great” as a scenic-quality preference, not a reference to a particular Great Lake."
+        ],
+        "feedback": "",
+        "requirements": [
+          {
+            "expression": "A lake is visible from the photographic viewpoint.",
+            "strength": "required",
+            "route": "geography",
+            "evidence": "combined",
+            "stepIds": [
+              "lake_geometry",
+              "lakeside_places",
+              "shore_viewpoints"
+            ]
+          },
+          {
+            "expression": "The lake view is scenic and visually appealing.",
+            "strength": "preferred",
+            "route": "visual",
+            "evidence": "visual",
+            "stepIds": []
+          }
+        ],
+        "sourceCoverage": [
+          {
+            "subject": "Lake-view locations",
+            "usefulTools": [
+              "search_places",
+              "search_geography"
+            ],
+            "stepIds": [
+              "named_places",
+              "lake_geometry"
+            ],
+            "reason": "Places can discover named lakeside parks and viewpoints, while lake geometry enables shoreline sampling and constrains named candidates to lake-adjacent locations. Imagery must establish the actual lake view."
+          }
+        ],
+        "searchProgram": {
+          "steps": [
+            {
+              "id": "named_places",
+              "tool": "search_places",
+              "inputs": [],
+              "queries": [
+                "lakeside parks",
+                "lake viewpoints"
+              ],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": true,
+              "weights": [],
+              "visualIntent": "Discover named parks and viewpoints that may offer lake scenery."
+            },
+            {
+              "id": "lake_geometry",
+              "tool": "search_geography",
+              "inputs": [],
+              "queries": [],
+              "geographicKinds": [
+                "lake"
+              ],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Locate lake geometry for shoreline discovery and spatial filtering."
+            },
+            {
+              "id": "lakeside_places",
+              "tool": "filter_geography",
+              "inputs": [
+                "named_places",
+                "lake_geometry"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Keep named candidates adjacent to a lake; confirm actual water visibility in imagery."
+            },
+            {
+              "id": "shore_viewpoints",
+              "tool": "sample_geography",
+              "inputs": [
+                "lake_geometry"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Sample road and path viewpoints along lake shores."
+            },
+            {
+              "id": "lake_candidates",
+              "tool": "union",
+              "inputs": [
+                "lakeside_places",
+                "shore_viewpoints"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [
+                1,
+                4
+              ],
+              "visualIntent": "Combine named lakeside places and shoreline samples, emphasizing shoreline coverage."
+            },
+            {
+              "id": "images",
+              "tool": "collect_images",
+              "inputs": [
+                "lake_candidates"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Collect candidate viewpoints and directional imagery."
+            },
+            {
+              "id": "assessments",
+              "tool": "score_images",
+              "inputs": [
+                "images"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Verify a lake is visible and score scenic quality and composition."
+            },
+            {
+              "id": "results",
+              "tool": "rank_results",
+              "inputs": [
+                "assessments"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Rank all matching places by their best lake-view image."
+            }
+          ],
+          "output": "results"
+        },
+        "searchBranches": [],
+        "geographicCombination": "all",
+        "featureCombination": "all",
+        "osmFeatures": [],
+        "geographicKinds": [],
+        "scoringIntent": "Require a visible lake; favor expansive, scenic lake views with appealing composition and a clear view of the water.",
+        "poiQueries": [],
+        "locationQuery": null,
+        "useMapCenter": true,
+        "photoStyles": [
+          "waterside"
+        ],
+        "radiusMeters": 5000,
+        "preferences": "Scenic lake views and appealing composition.",
+        "explanation": "Within 5,000 meters of the map center, combine lake-adjacent named viewpoints and parks with sampled shoreline viewpoints, then review imagery for visible lake scenery.",
+        "clarification": null
+      },
+      "failures": [],
+      "seconds": 13.644
+    },
+    {
+      "case": "greeting",
+      "repeat": 1,
+      "input": {
+        "query": "Hi, thank you!",
+        "lat": 41.8827,
+        "lon": -87.6233,
+        "radius": 5000,
+        "photoStyles": [
+          "waterside"
+        ]
+      },
+      "expected": {
+        "action": "help"
+      },
+      "plan": {
+        "action": "help",
+        "normalizedQuery": "Hi, thank you!",
+        "intentSummary": "A greeting and expression of thanks.",
+        "subjectRole": "scene",
+        "assumptions": [],
+        "feedback": "Hi! You're welcome. Tell me what kind of photo location you'd like to find—for example, “cafes beside a lake.”",
+        "requirements": [],
+        "sourceCoverage": [],
+        "searchProgram": null,
+        "searchBranches": [],
+        "geographicCombination": "all",
+        "featureCombination": "all",
+        "osmFeatures": [],
+        "geographicKinds": [],
+        "scoringIntent": "",
+        "poiQueries": [],
+        "locationQuery": null,
+        "useMapCenter": true,
+        "photoStyles": [
+          "waterside"
+        ],
+        "radiusMeters": 5000,
+        "preferences": "",
+        "explanation": "No search is needed for a greeting or thanks.",
+        "clarification": null
+      },
+      "failures": [],
+      "seconds": 3.216
+    },
+    {
+      "case": "height",
+      "repeat": 1,
+      "input": {
+        "query": "buildings taller than 30 meters",
+        "lat": 41.8827,
+        "lon": -87.6233,
+        "radius": 5000,
+        "photoStyles": [
+          "waterside"
+        ]
+      },
+      "expected": {
+        "toolsRequired": [
+          "search_features",
+          "feature_points"
+        ],
+        "visualRequired": [
+          [
+            "30"
+          ]
+        ],
+        "numericRequired": [
+          [
+            "height",
+            30
+          ]
+        ]
+      },
+      "plan": {
+        "action": "search",
+        "normalizedQuery": "Buildings taller than 30 meters",
+        "intentSummary": "Find photographic views of buildings whose documented height exceeds 30 meters.",
+        "subjectRole": "scene",
+        "assumptions": [
+          "The building request replaces the Waterside mood; water is not required.",
+          "Height must be established from mapped or documented building information, not appearance or approximate floor counts. Unknown heights remain unconfirmed."
+        ],
+        "feedback": "",
+        "requirements": [
+          {
+            "expression": "Buildings",
+            "strength": "required",
+            "route": "places",
+            "evidence": "provider",
+            "stepIds": [
+              "building_places"
+            ]
+          },
+          {
+            "expression": "Building height strictly greater than 30 meters, with documented height tied to the actual candidate building",
+            "strength": "required",
+            "route": "features",
+            "evidence": "spatial",
+            "stepIds": [
+              "building_features"
+            ]
+          },
+          {
+            "expression": "The qualifying building is visible in the photograph",
+            "strength": "required",
+            "route": "visual",
+            "evidence": "visual",
+            "stepIds": []
+          }
+        ],
+        "sourceCoverage": [
+          {
+            "subject": "Buildings taller than 30 meters",
+            "usefulTools": [
+              "search_places",
+              "search_features"
+            ],
+            "stepIds": [
+              "building_places",
+              "building_features"
+            ],
+            "reason": "Places can discover named tall buildings, while mapped building and height attributes can identify additional buildings. Neither keyword matches nor visual estimates replace documented height evidence."
+          }
+        ],
+        "searchProgram": {
+          "steps": [
+            {
+              "id": "building_places",
+              "tool": "search_places",
+              "inputs": [],
+              "queries": [
+                "tall buildings",
+                "skyscrapers"
+              ],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Discover named buildings as an independent candidate source. A tall-building search match is not proof of height; require documented height greater than 30 meters for the actual building before confirming eligibility."
+            },
+            {
+              "id": "building_features",
+              "tool": "search_features",
+              "inputs": [],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [
+                {
+                  "label": "Buildings with documented height greater than 30 meters",
+                  "kind": "tagged",
+                  "filters": [
+                    {
+                      "key": "building",
+                      "value": null,
+                      "required": true
+                    }
+                  ],
+                  "numericFilters": [
+                    {
+                      "key": "height",
+                      "minimum": 30.000001,
+                      "maximum": null
+                    }
+                  ],
+                  "proximityMeters": 150
+                }
+              ],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Discover mapped buildings and their height attributes in meters. Apply the required strict condition height > 30 meters. Exactly 30 meters and missing height do not establish eligibility."
+            },
+            {
+              "id": "building_points",
+              "tool": "feature_points",
+              "inputs": [
+                "building_features"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Generate photographic candidate locations for mapped buildings, retaining each building's identity and height evidence."
+            },
+            {
+              "id": "buildings",
+              "tool": "union",
+              "inputs": [
+                "building_places",
+                "building_points"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [
+                1,
+                1
+              ],
+              "visualIntent": "Combine independent named-building and mapped-building candidates. Preserve height evidence and do not transfer eligibility between neighboring buildings."
+            },
+            {
+              "id": "images",
+              "tool": "collect_images",
+              "inputs": [
+                "buildings"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Collect available photographic views of candidate buildings with their associated identity and height evidence."
+            },
+            {
+              "id": "assessments",
+              "tool": "score_images",
+              "inputs": [
+                "images"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Require the candidate building to be visible and its documented height to exceed 30 meters. Leave candidates without adequate height evidence unconfirmed; pixels alone cannot establish exact height. Score visibility and composition."
+            },
+            {
+              "id": "results",
+              "tool": "rank_results",
+              "inputs": [
+                "assessments"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Rank all confirmed matching buildings by their best photographic view."
+            }
+          ],
+          "output": "results"
+        },
+        "searchBranches": [],
+        "geographicCombination": "all",
+        "featureCombination": "all",
+        "osmFeatures": [],
+        "geographicKinds": [],
+        "scoringIntent": "Find photographs showing buildings with documented heights strictly greater than 30 meters. Exactly 30 meters does not qualify. Require height evidence for the actual depicted building, not a nearby building; do not infer eligibility from apparent height or floor count. Rank confirmed matches for building visibility and photographic composition.",
+        "poiQueries": [],
+        "locationQuery": null,
+        "useMapCenter": true,
+        "photoStyles": [],
+        "radiusMeters": 5000,
+        "preferences": "",
+        "explanation": "Search named and mapped buildings within 5,000 meters of the map center, combine candidates, and review their imagery. Only buildings with documented height greater than 30 meters qualify.",
+        "clarification": null
+      },
+      "failures": [],
+      "seconds": 37.086
+    },
+    {
+      "case": "lake-visible",
+      "repeat": 1,
+      "input": {
+        "query": "Coffee shops with a visible lake view",
+        "lat": 41.8827,
+        "lon": -87.6233,
+        "radius": 5000,
+        "photoStyles": [
+          "waterside"
+        ]
+      },
+      "expected": {
+        "evidence": "combined"
+      },
+      "plan": {
+        "action": "search",
+        "normalizedQuery": "Coffee shops with a visible lake view",
+        "intentSummary": "Find coffee shops with lake water visibly present in the photographic view.",
+        "subjectRole": "scene",
+        "assumptions": [
+          "Available imagery will be used to verify the lake view; proximity alone does not establish visibility."
+        ],
+        "feedback": "",
+        "requirements": [
+          {
+            "expression": "Coffee shops",
+            "strength": "required",
+            "route": "places",
+            "evidence": "provider",
+            "stepIds": [
+              "coffee"
+            ]
+          },
+          {
+            "expression": "Coffee shops with a visible lake view",
+            "strength": "required",
+            "route": "geography",
+            "evidence": "combined",
+            "stepIds": [
+              "lakes",
+              "lake_coffee"
+            ]
+          },
+          {
+            "expression": "Lake water is visible in a view associated with the coffee shop, not merely nearby on the map",
+            "strength": "required",
+            "route": "visual",
+            "evidence": "visual",
+            "stepIds": []
+          }
+        ],
+        "sourceCoverage": [
+          {
+            "subject": "Coffee shops",
+            "usefulTools": [
+              "search_places"
+            ],
+            "stepIds": [
+              "coffee"
+            ],
+            "reason": "Places directly retrieves the requested business category; a separate mapped-feature branch adds no necessary subject coverage."
+          },
+          {
+            "subject": "Lake context for coffee-shop views",
+            "usefulTools": [
+              "search_geography"
+            ],
+            "stepIds": [
+              "lakes"
+            ],
+            "reason": "Lake geometry supports spatial candidate filtering. Named lakeside attractions would not retrieve the required coffee shops, and actual lake visibility must be verified in imagery."
+          }
+        ],
+        "searchProgram": {
+          "steps": [
+            {
+              "id": "coffee",
+              "tool": "search_places",
+              "inputs": [],
+              "queries": [
+                "coffee shops"
+              ],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Discover coffee shops as the required venue category."
+            },
+            {
+              "id": "lakes",
+              "tool": "search_geography",
+              "inputs": [],
+              "queries": [],
+              "geographicKinds": [
+                "lake"
+              ],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Locate lakes that could provide a lake view from coffee shops."
+            },
+            {
+              "id": "lake_coffee",
+              "tool": "filter_geography",
+              "inputs": [
+                "coffee",
+                "lakes"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Retain coffee shops near lake geometry as candidates for subsequent visual verification."
+            },
+            {
+              "id": "images",
+              "tool": "collect_images",
+              "inputs": [
+                "lake_coffee"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Collect available views associated with candidate coffee shops."
+            },
+            {
+              "id": "assessments",
+              "tool": "score_images",
+              "inputs": [
+                "images"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Verify the coffee-shop setting and actual visible lake water; proximity without a lake view is insufficient."
+            },
+            {
+              "id": "ranked",
+              "tool": "rank_results",
+              "inputs": [
+                "assessments"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Rank matching coffee-shop views by lake visibility and photographic quality."
+            }
+          ],
+          "output": "ranked"
+        },
+        "searchBranches": [],
+        "geographicCombination": "all",
+        "featureCombination": "all",
+        "osmFeatures": [],
+        "geographicKinds": [],
+        "scoringIntent": "Require coffee shops with an actual visible lake view. Verify lake water in imagery associated with the shop; do not treat mapped lake proximity as sufficient. Favor clear lake visibility and strong photographic composition.",
+        "poiQueries": [],
+        "locationQuery": null,
+        "useMapCenter": true,
+        "photoStyles": [
+          "waterside"
+        ],
+        "radiusMeters": 5000,
+        "preferences": "Favor clear lake visibility and strong photographic composition.",
+        "explanation": "Search coffee shops and mapped lakes within 5,000 meters of the map center, retain lake-adjacent shops, then review available imagery for an actual lake view and rank matching views.",
+        "clarification": null
+      },
+      "failures": [],
+      "seconds": 14.555
+    },
+    {
+      "case": "live-crowd",
+      "repeat": 1,
+      "input": {
+        "query": "Show me places with no people there right now, verified live",
+        "lat": 41.8827,
+        "lon": -87.6233,
+        "radius": 5000,
+        "photoStyles": [
+          "waterside"
+        ]
+      },
+      "expected": {
+        "action": "unsupported"
+      },
+      "plan": {
+        "action": "unsupported",
+        "normalizedQuery": "Show me places with no people there right now, verified live.",
+        "intentSummary": "Find places verified live to have no people present.",
+        "subjectRole": "scene",
+        "assumptions": [],
+        "feedback": "I can’t verify live crowd levels or guarantee that a place is empty right now. I can instead search for places that appear uncrowded in available historical imagery, but that would not establish current conditions.",
+        "requirements": [],
+        "sourceCoverage": [],
+        "searchProgram": null,
+        "searchBranches": [],
+        "geographicCombination": "all",
+        "featureCombination": "all",
+        "osmFeatures": [],
+        "geographicKinds": [],
+        "scoringIntent": "",
+        "poiQueries": [],
+        "locationQuery": null,
+        "useMapCenter": true,
+        "photoStyles": [],
+        "radiusMeters": 5000,
+        "preferences": "",
+        "explanation": "Verified live absence of people is essential to this request and cannot be established using historical imagery or maps.",
+        "clarification": null
+      },
+      "failures": [],
+      "seconds": 4.801
+    },
+    {
+      "case": "near-lake-indoor",
+      "repeat": 1,
+      "input": {
+        "query": "Indoor coffee shops near a lake; the water does not need to be visible",
+        "lat": 41.8827,
+        "lon": -87.6233,
+        "radius": 5000,
+        "photoStyles": [
+          "waterside"
+        ]
+      },
+      "expected": {
+        "evidence": "spatial",
+        "toolsRequired": [
+          "filter_geography"
+        ]
+      },
+      "plan": {
+        "action": "search",
+        "normalizedQuery": "Indoor coffee shops near a lake; the water does not need to be visible",
+        "intentSummary": "Find indoor coffee-shop settings near a lake, without requiring a visible water view.",
+        "subjectRole": "scene",
+        "assumptions": [
+          "Indoor settings will be checked in available imagery; interior coverage may be limited."
+        ],
+        "feedback": "",
+        "requirements": [
+          {
+            "expression": "Coffee shops",
+            "strength": "required",
+            "route": "places",
+            "evidence": "provider",
+            "stepIds": [
+              "coffee_shops"
+            ]
+          },
+          {
+            "expression": "Coffee shops near a lake, without requiring the lake to be visible",
+            "strength": "required",
+            "route": "geography",
+            "evidence": "spatial",
+            "stepIds": [
+              "lakes",
+              "near_lake"
+            ]
+          },
+          {
+            "expression": "An indoor coffee-shop setting is visible",
+            "strength": "required",
+            "route": "visual",
+            "evidence": "visual",
+            "stepIds": []
+          }
+        ],
+        "sourceCoverage": [
+          {
+            "subject": "Coffee shops",
+            "usefulTools": [
+              "search_places"
+            ],
+            "stepIds": [
+              "coffee_shops"
+            ],
+            "reason": "Places retrieves the explicit business category; indoor appearance is verified in imagery rather than inferred from geographic features."
+          },
+          {
+            "subject": "Nearby lakes",
+            "usefulTools": [
+              "search_geography"
+            ],
+            "stepIds": [
+              "lakes"
+            ],
+            "reason": "Mapped lake geometry establishes spatial proximity. Named lake listings are not needed to establish this relation."
+          }
+        ],
+        "searchProgram": {
+          "steps": [
+            {
+              "id": "coffee_shops",
+              "tool": "search_places",
+              "inputs": [],
+              "queries": [
+                "coffee shops"
+              ],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Discover coffee-shop venues whose available imagery can be checked for indoor settings."
+            },
+            {
+              "id": "lakes",
+              "tool": "search_geography",
+              "inputs": [],
+              "queries": [],
+              "geographicKinds": [
+                "lake"
+              ],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Locate lakes for spatial proximity only; no visible water is required."
+            },
+            {
+              "id": "near_lake",
+              "tool": "filter_geography",
+              "inputs": [
+                "coffee_shops",
+                "lakes"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Retain coffee shops near a mapped lake without requiring lake views."
+            },
+            {
+              "id": "images",
+              "tool": "collect_images",
+              "inputs": [
+                "near_lake"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Collect available imagery of the qualifying coffee shops, including interiors where available."
+            },
+            {
+              "id": "assessments",
+              "tool": "score_images",
+              "inputs": [
+                "images"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Require a visible indoor coffee-shop setting. Use spatial evidence for lake proximity; do not require or reward water visibility as a requested condition."
+            },
+            {
+              "id": "results",
+              "tool": "rank_results",
+              "inputs": [
+                "assessments"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Rank matching indoor coffee-shop views at venues near a lake."
+            }
+          ],
+          "output": "results"
+        },
+        "searchBranches": [],
+        "geographicCombination": "all",
+        "featureCombination": "all",
+        "osmFeatures": [],
+        "geographicKinds": [],
+        "scoringIntent": "Match indoor coffee-shop settings at venues spatially near a lake. Water visibility is not required, and a lack of water in the image must not reduce the match.",
+        "poiQueries": [],
+        "locationQuery": null,
+        "useMapCenter": true,
+        "photoStyles": [],
+        "radiusMeters": 5000,
+        "preferences": "",
+        "explanation": "Search coffee shops within 5,000 meters of the map center, filter them by mapped lake proximity, and review available images for indoor settings. The Waterside mood is superseded by the explicit request.",
+        "clarification": null
+      },
+      "failures": [],
+      "seconds": 14.206
+    },
+    {
+      "case": "near-signals",
+      "repeat": 1,
+      "input": {
+        "query": "cafes near traffic lights",
+        "lat": 41.8827,
+        "lon": -87.6233,
+        "radius": 5000,
+        "photoStyles": [
+          "waterside"
+        ]
+      },
+      "expected": {
+        "queryRequired": [],
+        "toolsRequired": [
+          "search_features",
+          "filter_features"
+        ],
+        "queryAny": [
+          [
+            "coffee",
+            "cafe",
+            "café"
+          ]
+        ],
+        "tagsRequired": [
+          [
+            "highway",
+            "traffic_signals"
+          ]
+        ]
+      },
+      "plan": {
+        "action": "search",
+        "normalizedQuery": "cafes near traffic lights",
+        "intentSummary": "Find cafes near mapped traffic lights around the current map center.",
+        "subjectRole": "scene",
+        "assumptions": [
+          "Near means within approximately 150 meters of mapped traffic lights.",
+          "Traffic lights need not be visible in the cafe photographs."
+        ],
+        "feedback": "",
+        "requirements": [
+          {
+            "expression": "Cafes",
+            "strength": "required",
+            "route": "places",
+            "evidence": "provider",
+            "stepIds": [
+              "cafes"
+            ]
+          },
+          {
+            "expression": "Cafes near traffic lights",
+            "strength": "required",
+            "route": "features",
+            "evidence": "spatial",
+            "stepIds": [
+              "signals",
+              "near_signals"
+            ]
+          }
+        ],
+        "sourceCoverage": [
+          {
+            "subject": "Cafes",
+            "usefulTools": [
+              "search_places"
+            ],
+            "stepIds": [
+              "cafes"
+            ],
+            "reason": "Places retrieves the requested business category; a separate mapped cafe branch is unnecessary for this business search."
+          },
+          {
+            "subject": "Traffic lights",
+            "usefulTools": [
+              "search_features"
+            ],
+            "stepIds": [
+              "signals"
+            ],
+            "reason": "OSM traffic-signal tags support proximity checks; Places cannot meaningfully retrieve individual traffic lights."
+          }
+        ],
+        "searchProgram": {
+          "steps": [
+            {
+              "id": "cafes",
+              "tool": "search_places",
+              "inputs": [],
+              "queries": [
+                "cafes"
+              ],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Discover cafes as the requested photographic locations."
+            },
+            {
+              "id": "signals",
+              "tool": "search_features",
+              "inputs": [],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [
+                {
+                  "label": "Traffic lights",
+                  "kind": "tagged",
+                  "filters": [
+                    {
+                      "key": "highway",
+                      "value": "traffic_signals",
+                      "required": true
+                    }
+                  ],
+                  "numericFilters": [],
+                  "proximityMeters": 150
+                }
+              ],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Locate mapped traffic lights for a spatial proximity check."
+            },
+            {
+              "id": "near_signals",
+              "tool": "filter_features",
+              "inputs": [
+                "cafes",
+                "signals"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Keep cafes within approximately 150 meters of mapped traffic lights without requiring the lights to be visible."
+            },
+            {
+              "id": "images",
+              "tool": "collect_images",
+              "inputs": [
+                "near_signals"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Collect photographic views associated with qualifying cafes."
+            },
+            {
+              "id": "scores",
+              "tool": "score_images",
+              "inputs": [
+                "images"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Evaluate cafe imagery for photographic usefulness without imposing water scenery or visible traffic lights."
+            },
+            {
+              "id": "ranked",
+              "tool": "rank_results",
+              "inputs": [
+                "scores"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Rank all matching cafe views."
+            }
+          ],
+          "output": "ranked"
+        },
+        "searchBranches": [],
+        "geographicCombination": "all",
+        "featureCombination": "all",
+        "osmFeatures": [],
+        "geographicKinds": [],
+        "scoringIntent": "Rank photographic views of cafes that are spatially near mapped traffic lights. Traffic lights do not have to appear in the images.",
+        "poiQueries": [],
+        "locationQuery": null,
+        "useMapCenter": true,
+        "photoStyles": [],
+        "radiusMeters": 5000,
+        "preferences": "",
+        "explanation": "Search for cafes within 5000 meters of the map center, filter them by proximity to mapped traffic lights, then collect and rank their imagery. The explicit cafe request replaces the Waterside mood.",
+        "clarification": null
+      },
+      "failures": [],
+      "seconds": 12.273
+    },
+    {
+      "case": "override",
+      "repeat": 1,
+      "input": {
+        "query": "modern city architecture in Paris within 20 km",
+        "lat": 41.8827,
+        "lon": -87.6233,
+        "radius": 1000,
+        "photoStyles": [
+          "nature"
+        ]
+      },
+      "expected": {
+        "locationContains": "Paris",
+        "radius": 20000,
+        "moods": [
+          "urban"
+        ],
+        "geo": []
+      },
+      "plan": {
+        "action": "search",
+        "normalizedQuery": "Modern city architecture in Paris within 20 km",
+        "intentSummary": "Find photographic views of modern urban architecture in Paris.",
+        "subjectRole": "scene",
+        "assumptions": [
+          "Paris refers to Paris, France.",
+          "Modern urban architecture replaces the selected Nature mood."
+        ],
+        "feedback": "",
+        "requirements": [
+          {
+            "expression": "Architecture",
+            "strength": "required",
+            "route": "features",
+            "evidence": "combined",
+            "stepIds": [
+              "architecture_places",
+              "mapped_buildings"
+            ]
+          },
+          {
+            "expression": "Visible modern architecture in an urban setting",
+            "strength": "required",
+            "route": "visual",
+            "evidence": "visual",
+            "stepIds": []
+          }
+        ],
+        "sourceCoverage": [
+          {
+            "subject": "Modern city architecture",
+            "usefulTools": [
+              "search_places",
+              "search_features"
+            ],
+            "stepIds": [
+              "architecture_places",
+              "mapped_buildings"
+            ],
+            "reason": "Places can discover named architectural destinations, while mapped buildings provide independent coverage of unnamed structures. Image review establishes modern appearance and urban context."
+          }
+        ],
+        "searchProgram": {
+          "steps": [
+            {
+              "id": "architecture_places",
+              "tool": "search_places",
+              "inputs": [],
+              "queries": [
+                "architecture",
+                "architectural landmarks"
+              ],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Discover named architectural places and buildings; verify modern appearance in imagery."
+            },
+            {
+              "id": "mapped_buildings",
+              "tool": "search_features",
+              "inputs": [],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [
+                {
+                  "label": "Buildings",
+                  "kind": "tagged",
+                  "filters": [
+                    {
+                      "key": "building",
+                      "value": null,
+                      "required": true
+                    }
+                  ],
+                  "numericFilters": [],
+                  "proximityMeters": 150
+                }
+              ],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Discover mapped buildings as an independent source of architectural subjects."
+            },
+            {
+              "id": "building_points",
+              "tool": "feature_points",
+              "inputs": [
+                "mapped_buildings"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Generate candidate locations for views of mapped buildings."
+            },
+            {
+              "id": "architecture_candidates",
+              "tool": "union",
+              "inputs": [
+                "architecture_places",
+                "building_points"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [
+                1,
+                1
+              ],
+              "visualIntent": "Combine named architectural places and mapped building candidates without requiring both sources to identify the same building."
+            },
+            {
+              "id": "images",
+              "tool": "collect_images",
+              "inputs": [
+                "architecture_candidates"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Collect candidate architectural views."
+            },
+            {
+              "id": "assessments",
+              "tool": "score_images",
+              "inputs": [
+                "images"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Require visible modern architecture in an urban setting and assess architectural composition."
+            },
+            {
+              "id": "results",
+              "tool": "rank_results",
+              "inputs": [
+                "assessments"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Rank matching views of modern urban architecture."
+            }
+          ],
+          "output": "results"
+        },
+        "searchBranches": [],
+        "geographicCombination": "all",
+        "featureCombination": "all",
+        "osmFeatures": [],
+        "geographicKinds": [],
+        "scoringIntent": "Find views showing modern city architecture. Favor strong architectural composition and clearly visible contemporary building forms in an urban setting.",
+        "poiQueries": [],
+        "locationQuery": "Paris, France",
+        "useMapCenter": false,
+        "photoStyles": [
+          "urban"
+        ],
+        "radiusMeters": 20000,
+        "preferences": "Strong architectural composition and clear views of modern building forms.",
+        "explanation": "Search named architectural places and mapped buildings within 20 km of Paris, combine candidates, and review imagery for modern urban architecture.",
+        "clarification": null
+      },
+      "failures": [],
+      "seconds": 13.273
+    },
+    {
+      "case": "portrait-purpose",
+      "repeat": 1,
+      "input": {
+        "query": "Find a place for a woman portrait near Chicago",
+        "lat": 41.8827,
+        "lon": -87.6233,
+        "radius": 5000,
+        "photoStyles": [
+          "waterside"
+        ]
+      },
+      "expected": {
+        "subjectRole": "portrait-background",
+        "noRequiredPerson": true
+      },
+      "plan": {
+        "action": "search",
+        "normalizedQuery": "Find a place for a woman's portrait near Chicago",
+        "intentSummary": "Find suitable settings near Chicago for photographing a woman.",
+        "subjectRole": "portrait-background",
+        "assumptions": [
+          "You want a setting for a future portrait, not images already containing a woman.",
+          "The portrait request replaces the selected Waterside mood; waterfront settings are not required."
+        ],
+        "feedback": "",
+        "requirements": [
+          {
+            "expression": "A setting suitable for photographing a woman, without requiring a person to appear in existing imagery",
+            "strength": "required",
+            "route": "visual",
+            "evidence": "visual",
+            "stepIds": []
+          }
+        ],
+        "sourceCoverage": [],
+        "searchProgram": {
+          "steps": [
+            {
+              "id": "area",
+              "tool": "area_imagery",
+              "inputs": [],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Explore varied settings suitable for a portrait without imposing a venue category or requiring existing people."
+            },
+            {
+              "id": "images",
+              "tool": "collect_images",
+              "inputs": [
+                "area"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Collect candidate views for portrait-background assessment."
+            },
+            {
+              "id": "scores",
+              "tool": "score_images",
+              "inputs": [
+                "images"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Assess suitability for photographing a woman, emphasizing composition, background quality and usable subject space rather than people already visible."
+            },
+            {
+              "id": "ranked",
+              "tool": "rank_results",
+              "inputs": [
+                "scores"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Rank matching portrait settings by their best available view."
+            }
+          ],
+          "output": "ranked"
+        },
+        "searchBranches": [],
+        "geographicCombination": "all",
+        "featureCombination": "all",
+        "osmFeatures": [],
+        "geographicKinds": [],
+        "scoringIntent": "Find settings suitable for a woman's portrait, assessing usable composition, background quality and space for the subject without requiring a woman in the source imagery.",
+        "poiQueries": [],
+        "locationQuery": "Chicago, Illinois, USA",
+        "useMapCenter": false,
+        "photoStyles": [],
+        "radiusMeters": 5000,
+        "preferences": "",
+        "explanation": "Explore imagery within 5,000 meters of Chicago, then assess portrait-background suitability and rank matching views. No waterfront or indoor/outdoor restriction is imposed.",
+        "clarification": null
+      },
+      "failures": [],
+      "seconds": 9.192
+    },
+    {
+      "case": "typo-portrait",
+      "repeat": 1,
+      "input": {
+        "query": "beautidul woman",
+        "lat": 41.8827,
+        "lon": -87.6233,
+        "radius": 5000,
+        "photoStyles": [
+          "waterside"
+        ]
+      },
+      "expected": {
+        "subjectRole": "portrait-background",
+        "noRequiredPerson": true,
+        "moods": []
+      },
+      "plan": {
+        "action": "search",
+        "normalizedQuery": "beautiful woman",
+        "intentSummary": "Find suitable settings for photographing a woman.",
+        "subjectRole": "portrait-background",
+        "assumptions": [
+          "Interpreted as finding a background for a future portrait, not images already containing a woman.",
+          "The portrait request replaces the selected Waterside mood; water is not required."
+        ],
+        "feedback": "",
+        "requirements": [
+          {
+            "expression": "A suitable background for a portrait of a woman, without requiring a person to appear in existing imagery",
+            "strength": "required",
+            "route": "visual",
+            "evidence": "visual",
+            "stepIds": []
+          }
+        ],
+        "sourceCoverage": [],
+        "searchProgram": {
+          "steps": [
+            {
+              "id": "area",
+              "tool": "area_imagery",
+              "inputs": [],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Explore potential portrait settings without restricting venue category or requiring existing people."
+            },
+            {
+              "id": "images",
+              "tool": "collect_images",
+              "inputs": [
+                "area"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Collect available views of candidate portrait settings."
+            },
+            {
+              "id": "assessments",
+              "tool": "score_images",
+              "inputs": [
+                "images"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Evaluate backgrounds for photographing a woman, considering composition and suitable space rather than the presence or appearance of existing people."
+            },
+            {
+              "id": "results",
+              "tool": "rank_results",
+              "inputs": [
+                "assessments"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Rank matching portrait settings and their best views."
+            }
+          ],
+          "output": "results"
+        },
+        "searchBranches": [],
+        "geographicCombination": "all",
+        "featureCombination": "all",
+        "osmFeatures": [],
+        "geographicKinds": [],
+        "scoringIntent": "Find suitable backgrounds for a beautiful portrait of a woman. Assess background composition and space for the intended portrait without requiring women to be present in source imagery.",
+        "poiQueries": [],
+        "locationQuery": null,
+        "useMapCenter": true,
+        "photoStyles": [],
+        "radiusMeters": 5000,
+        "preferences": "",
+        "explanation": "Explore imagery within 5,000 meters of the map center and rank settings for portrait suitability, without imposing a waterfront or venue category.",
+        "clarification": null
+      },
+      "failures": [],
+      "seconds": 8.698
+    },
+    {
+      "case": "unrelated",
+      "repeat": 1,
+      "input": {
+        "query": "Write me a Python sorting program",
+        "lat": 41.8827,
+        "lon": -87.6233,
+        "radius": 5000,
+        "photoStyles": [
+          "waterside"
+        ]
+      },
+      "expected": {
+        "action": "unsupported"
+      },
+      "plan": {
+        "action": "unsupported",
+        "normalizedQuery": "Write me a Python sorting program",
+        "intentSummary": "Request for programming assistance rather than photographic location discovery.",
+        "subjectRole": "scene",
+        "assumptions": [],
+        "feedback": "Photo Scout helps find photographic locations and cannot write programs. Try a location search such as “waterfront photo spots near me.”",
+        "requirements": [],
+        "sourceCoverage": [],
+        "searchProgram": null,
+        "searchBranches": [],
+        "geographicCombination": "all",
+        "featureCombination": "all",
+        "osmFeatures": [],
+        "geographicKinds": [],
+        "scoringIntent": "",
+        "poiQueries": [],
+        "locationQuery": null,
+        "useMapCenter": true,
+        "photoStyles": [
+          "waterside"
+        ],
+        "radiusMeters": 5000,
+        "preferences": "",
+        "explanation": "This request is outside the photo-location service; no search will run.",
+        "clarification": null
+      },
+      "failures": [],
+      "seconds": 4.433
+    }
+  ]
+}

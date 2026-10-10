@@ -475,3 +475,11 @@ After visual matching and best-view selection, center Google views receive a 20-
 ### Planner typo and repair tolerance
 
 The planner interprets obvious spelling/transcription mistakes while preserving proper names, addresses and the actual requested subject. Transient subjects and appearance stay in visual matching rather than invented Places categories or OSM tags. Source coverage lists only executable source steps. A malformed plan receives one bounded repair with its rejected root plan and precise validation diagnostics; required user conditions are retained. Invalid planning is reported separately from later search failures. The request-wide 45-second deadline and provider failure policy remain unchanged.
+
+### Intent actions and evidence
+
+One planner call now returns the chosen `action` (`search`, `help`, `unsupported`, or `uninterpretable`), a normalized query, intent summary, short assumptions and subject role. Only search actions carry a complete executable program; other actions return useful English feedback without geocoding, provider retrieval or image scoring. Missing geocoder results produce a location-specific response rather than a generic job crash. Empty input remains a UI-driven search. Website jobs persist feedback as completed responses; their viewer does not move the map or offer publication. The resolve API exposes this action before execution; the existing paid gateway billing protocol is unchanged.
+
+`subjectRole` distinguishes ordinary scenes, backgrounds for future portrait subjects, and subjects explicitly requested to be visible in historical imagery. It reaches search, image scoring and score-cache keys. Condition `evidence` distinguishes spatial proximity, factual provider evidence, pixels and combined evidence. A cafe near a lake does not need visible water; an explicitly requested lake view does. Interpretation summaries and assumptions are retained in job context/results and displayed on the website.
+
+Raw and manually reviewed October 10 planner-only evaluations are retained in `evals/photo-scout-intent/`. They test finite examples and partial semantic predicates, not universal correctness or end-to-end image quality. Model timeouts remain possible and receive stage-specific feedback. There is no new model loop or second mandatory parsing call.

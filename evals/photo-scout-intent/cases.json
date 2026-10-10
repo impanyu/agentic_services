@@ -111,7 +111,7 @@
     "expected": {
       "locationContains": "Amphitheatre",
       "toolsRequired": [
-        "point_imagery"
+        "center_imagery"
       ],
       "toolsForbidden": [
         "search_places",
@@ -418,7 +418,7 @@
     },
     "expected": {
       "toolsRequired": [
-        "point_imagery"
+        "center_imagery"
       ],
       "toolsForbidden": [
         "search_places",
@@ -894,6 +894,137 @@
         [
           "vintage",
           "preferred"
+        ]
+      ]
+    }
+  },
+  {
+    "id": "typo-portrait",
+    "text": "beautidul woman",
+    "input": {},
+    "expected": {
+      "subjectRole": "portrait-background",
+      "noRequiredPerson": true,
+      "moods": []
+    }
+  },
+  {
+    "id": "portrait-purpose",
+    "text": "Find a place for a woman portrait near Chicago",
+    "input": {},
+    "expected": {
+      "subjectRole": "portrait-background",
+      "noRequiredPerson": true
+    }
+  },
+  {
+    "id": "existing-woman",
+    "text": "Find street-view images containing a beautiful woman",
+    "input": {},
+    "expected": {
+      "subjectRole": "existing-subject",
+      "visualRequired": [
+        [
+          "woman"
+        ]
+      ]
+    }
+  },
+  {
+    "id": "near-lake-indoor",
+    "text": "Indoor coffee shops near a lake; the water does not need to be visible",
+    "input": {},
+    "expected": {
+      "evidence": "spatial",
+      "toolsRequired": [
+        "filter_geography"
+      ]
+    }
+  },
+  {
+    "id": "lake-visible",
+    "text": "Coffee shops with a visible lake view",
+    "input": {},
+    "expected": {
+      "evidence": "combined"
+    }
+  },
+  {
+    "id": "greeting",
+    "text": "Hi, thank you!",
+    "input": {},
+    "expected": {
+      "action": "help"
+    }
+  },
+  {
+    "id": "feature-question",
+    "text": "How do I share my selfie?",
+    "input": {},
+    "expected": {
+      "action": "help"
+    }
+  },
+  {
+    "id": "gibberish",
+    "text": "qzxv @@@ brrzzq",
+    "input": {},
+    "expected": {
+      "action": "uninterpretable"
+    }
+  },
+  {
+    "id": "unrelated",
+    "text": "Write me a Python sorting program",
+    "input": {},
+    "expected": {
+      "action": "unsupported"
+    }
+  },
+  {
+    "id": "live-crowd",
+    "text": "Show me places with no people there right now, verified live",
+    "input": {},
+    "expected": {
+      "action": "unsupported"
+    }
+  },
+  {
+    "id": "great-lake-view",
+    "text": "great lake view",
+    "input": {},
+    "expected": {
+      "geo": [
+        "lake"
+      ],
+      "toolsRequired": [
+        "sample_geography"
+      ],
+      "visualRequired": [
+        [
+          "lake"
+        ]
+      ]
+    }
+  },
+  {
+    "id": "cafe-highrise",
+    "text": "café among high-rise buildings",
+    "input": {},
+    "expected": {
+      "geo": [],
+      "queryAny": [
+        [
+          "coffee",
+          "cafe",
+          "café"
+        ]
+      ],
+      "visualRequired": [
+        [
+          "high-rise",
+          "high rise",
+          "tall building"
         ]
       ]
     }

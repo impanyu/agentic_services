@@ -33,7 +33,7 @@ class ScoreCache:
         image = {k: v for k, v in row.items() if k not in ('distanceMeters', 'poiDistanceMeters', 'author', 'explorationReason')}
         if image.get('poiCandidates'):
             image['poiCandidates'] = sorted(image['poiCandidates'], key=lambda p: p['id'])
-        data = {'version': 2, 'requirements':[r.model_dump() for r in getattr(payload,'requirements',[])], 'image': image, 'model': model, 'instructions': instructions,
+        data = {'version': 2, 'subjectRole':getattr(payload,'subjectRole','scene'), 'requirements':[r.model_dump() for r in getattr(payload,'requirements',[])], 'image': image, 'model': model, 'instructions': instructions,
                 'photoStyles': sorted(payload.photoStyles or []), 'preferences': payload.preferences.strip(),
                 'geographicKinds': sorted(getattr(payload,'geographicKinds',[])),
                 'geographicCombination':getattr(payload,'geographicCombination','all'),'featureCombination':getattr(payload,'featureCombination','all'),

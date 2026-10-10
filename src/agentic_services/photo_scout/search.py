@@ -39,6 +39,7 @@ class SearchParameters(BaseModel):
     photoStyles: list[str] | None = Field(default=None, max_length=8)
     categories: list[str] | None = Field(default=None, max_length=8)
     requirements: list[Requirement] = Field(default_factory=list,max_length=16)
+    subjectRole: Literal['scene','portrait-background','existing-subject'] = 'scene'
     scoringIntent: str = Field(default='', max_length=1000)
     preferences: str = Field(default='', max_length=500)
 

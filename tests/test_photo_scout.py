@@ -529,6 +529,8 @@ def test_fixed_pipeline_scores_every_image_and_globally_ranks(tmp_path,monkeypat
         content=kw['input'][0]['content'];request=json.loads(content[0]['text'])
         assert request['photoStyleBriefs'][0]['label']=='Water & reflections'
         assert request['request']['poiQueries']==['coffee shops']
+        assert request['request']['subjectRole']=='portrait-background'
+        assert request['request']['requirements'][0]['evidence']=='spatial'
         assert request['request']['geographicKinds']==['lake']
         assert request['request']['scoringIntent']=='waterside coffee shops with outdoor seating'
         assert 'poiCatalogToken' not in request['request']
@@ -538,7 +540,7 @@ def test_fixed_pipeline_scores_every_image_and_globally_ranks(tmp_path,monkeypat
         await asyncio.sleep(0);active-=1
         return SimpleNamespace(output_parsed=visual.VisualBatch(assessments=[_scoring_assessment(visual,r) for r in rows]),usage=SimpleNamespace(input_tokens=10,output_tokens=20))
     _scoring_client(monkeypatch,parse);monkeypatch.setattr(visual,'image_data',image)
-    result=asyncio.run(visual.explore(settings,ExploreRequest(lat=0,lon=0,photoStyles=['waterside'],geographicKinds=['lake'],poiQueries=['coffee shops'],scoringIntent='waterside coffee shops with outdoor seating',poiCatalogToken='secret-token'),_scoring_rows(),{}))
+    result=asyncio.run(visual.explore(settings,ExploreRequest(lat=0,lon=0,photoStyles=['waterside'],geographicKinds=['lake'],poiQueries=['coffee shops'],scoringIntent='waterside coffee shops with outdoor seating',subjectRole='portrait-background',requirements=[{'expression':'near a lake','strength':'required','route':'geography','evidence':'spatial','stepIds':[]}],poiCatalogToken='secret-token'),_scoring_rows(),{}))
     assert set(downloaded)==set(seen)=={str(i) for i in range(13)}
     assert result['inspectedImages']==13 and len(result['imageAssessments'])==13
     assert [spot['image_id'] for spot in result['spots']]==[str(i) for i in range(12,-1,-1)]

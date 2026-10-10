@@ -10,6 +10,7 @@ class Requirement(BaseModel):
     expression: str = Field(min_length=1, max_length=400, description='English expression preserving AND/OR/NOT grouping')
     strength: Literal['required','preferred','forbidden']
     route: Literal['places','geography','features','visual']
+    evidence: Literal['visual','spatial','provider','combined'] = 'visual'
     stepIds: list[str] = Field(max_length=8, description='Retrieval steps implementing this condition; empty for shared visual requirements')
 
 class Step(BaseModel):
@@ -83,6 +84,12 @@ class SourceCoverage(BaseModel):
 
 class PlannerIntent(BaseModel):
     model_config = ConfigDict(extra='forbid')
+    action: Literal['search','help','unsupported','uninterpretable'] = 'search'
+    normalizedQuery: str = Field(default='',max_length=1000)
+    intentSummary: str = Field(default='',max_length=500)
+    subjectRole: Literal['scene','portrait-background','existing-subject'] = 'scene'
+    assumptions: list[str] = Field(default_factory=list,max_length=4)
+    feedback: str = Field(default='',max_length=1000)
     locationQuery: str | None = Field(max_length=200)
     useMapCenter: bool
     radiusMeters: int = Field(ge=100,le=20000)
@@ -91,20 +98,31 @@ class PlannerIntent(BaseModel):
     scoringIntent: str = Field(max_length=1000)
     preferences: str = Field(max_length=500)
     explanation: str = Field(max_length=400)
-    searchProgram: PlannerProgram
+    searchProgram: PlannerProgram | None = None
     sourceCoverage: list[SourceCoverage] = Field(default_factory=list,max_length=8)
 
     @model_validator(mode='after')
     def validate_requirements(self):
+        if self.action!='search':
+            if not self.feedback.strip():raise ValueError('Non-search actions require useful feedback')
+            if self.searchProgram is not None or self.requirements or self.sourceCoverage:
+                raise ValueError('Non-search actions must not execute a search or impose search conditions')
+            return self
+        if self.searchProgram is None:raise ValueError('Search actions require a complete executable program')
         steps={s.id:s for s in self.searchProgram.steps}
         retrieval={s.id for s in steps.values() if s.tool in ('search_places','search_features','search_geography')}
         covered={ref for c in self.sourceCoverage for ref in c.stepIds}
         if retrieval-covered:raise ValueError('Every retrieval source requires a sourceCoverage rationale and implementing step IDs')
         for coverage in self.sourceCoverage:
             if any(ref not in steps for ref in coverage.stepIds):raise ValueError('Source coverage references unknown step')
+            if any(ref not in retrieval for ref in coverage.stepIds):raise ValueError('Source coverage references source search steps only')
             selected={steps[ref].tool for ref in coverage.stepIds}
             if not set(coverage.usefulTools)<=selected:raise ValueError('Source coverage omits a declared useful retrieval tool; add its branch and combine candidates with the correct scope')
         for r in self.requirements:
+            if r.evidence=='spatial' and r.route not in ('geography','features'):
+                raise ValueError('Spatial evidence requires a mapped geography or feature condition')
+            if r.evidence=='provider' and r.route!='places':
+                raise ValueError('Provider evidence requires a Places condition')
             if any(ref not in steps for ref in r.stepIds):raise ValueError('Requirement references unknown step')
             if any(steps[ref].tool in ('collect_images','score_images','rank_results') for ref in r.stepIds):raise ValueError('Requirements reference retrieval steps, not delivery')
             if r.route!='visual' and not r.stepIds:raise ValueError('Retrieval conditions require implementing step IDs')

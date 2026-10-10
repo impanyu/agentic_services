@@ -2,6 +2,7 @@ from __future__ import annotations
 from .planner import Requirement
 
 import asyncio
+from openai import APITimeoutError
 import base64
 from urllib.parse import urlencode, urlsplit, parse_qs
 import hashlib
@@ -28,7 +29,7 @@ from .search import branch_contexts, filter_branch_images, branch_parameters
 from .program import SearchProgram, CONTRACTS, PipelineHooks, execute_program
 from .conditions import SearchBranch,validate_branch_scope
 from .osm_features import OSMFeatureQuery,fetch_features
-from .intent import IntentRequest, PoiQuery, resolve_intent
+from .intent import IntentRequest, PoiQuery, resolve_intent, intent_feedback
 from .places import nearby_places
 from .search import SearchParameters, SearchProviders, SearchUnavailable, compile_search, search_locations
 from .sources import candidates, nearby_pois, google_enabled, google_image_data, MAX_SCORED_IMAGES
@@ -57,6 +58,7 @@ class ExploreRequest(BaseModel):
     osmFeatures: list[OSMFeatureQuery] = Field(default_factory=list,max_length=6)
     geographicKinds: list[GeographicKind] = Field(default_factory=list,max_length=6)
     requirements: list[Requirement] = Field(default_factory=list,max_length=16)
+    subjectRole: Literal['scene','portrait-background','existing-subject'] = 'scene'
     scoringIntent: str = Field(default="",max_length=1000)
     selectedPoiIds: list[str] | None = Field(default=None,max_length=50)
     poiCatalogToken: str | None = Field(default=None,max_length=40000)
@@ -411,12 +413,13 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
         inputs['photoStyles']=payload.photoStyles or []
         if website:inputs['preferences']=''
         plan=await resolve_intent(settings,IntentRequest.model_validate(inputs))
+        if plan.get('action','search')!='search':return None,plan
         location=plan['locations'][0]
         parsed=ExploreRequest.model_validate({**payload.model_dump(),'query':'',
             'lat':location['lat'],'lon':location['lon'],'radius':plan['radiusMeters'],
             'photoStyles':plan['photoStyles'] or None,'preferences':plan['preferences'],
             'searchProgram':plan.get('searchProgram'),'searchBranches':plan.get('searchBranches') or [],
-            'requirements':plan.get('requirements') or [],'poiQueries':plan.get('poiQueries') or [],'scoringIntent':plan.get('scoringIntent') or plan['preferences'],
+            'subjectRole':plan.get('subjectRole','scene'),'requirements':plan.get('requirements') or [],'poiQueries':plan.get('poiQueries') or [],'scoringIntent':plan.get('scoringIntent') or plan['preferences'],
             'geographicKinds':plan.get('geographicKinds') or [],'osmFeatures':plan.get('osmFeatures') or [],
             'geographicCombination':plan.get('geographicCombination','all'),'featureCombination':plan.get('featureCombination','all'),
             'categories':plan.get('categories'),'selectedPoiIds':None,'poiCatalogToken':None})
@@ -425,11 +428,12 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
     async def run(payload,allow_expired=False,task_id=None,parsed=False):
         enabled()
         async with lock, asyncio.timeout(660):
-            started=time.monotonic()
+            started=time.monotonic();plan=None
             # Raw text and UI-only requests share one interpretation entry.
             # Already compiled programs/catalog selections are execution inputs.
             if not parsed and (payload.query.strip() or not (payload.searchProgram or payload.searchBranches or payload.selectedPoiIds is not None)):
-                payload,_=await interpret_search(payload)
+                payload,plan=await interpret_search(payload)
+                if payload is None:return intent_feedback(plan)
             retrieval_started=time.monotonic()
             async def before_score(images):
                 nonlocal retrieval_seconds,scoring_started
@@ -488,6 +492,8 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
             result['candidatePoiCount']=len(pois)
             result['poiProvider']='google-places' if os.getenv('PHOTO_SCOUT_POI_PROVIDER')=='google-places' else 'openstreetmap'
             result['photoStyles']=style_briefs(payload.photoStyles)
+            interpretation=plan or (tasks.context('search',task_id) if task_id else None)
+            if interpretation:result['interpretation']={k:interpretation.get(k) for k in ('normalizedQuery','intentSummary','subjectRole','assumptions')}
             return image_links(result)
 
     @router.get('/photo-scout/v1/status')
@@ -589,7 +595,12 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
             if submitted.selectedPoiIds is None:
                 context['stage']='planning';tasks.update_context('search',job['id'],context)
                 payload,plan=await interpret_search(submitted,website=True)
-                context['locationLabel']=plan['locations'][0]['label'];context['explanation']=plan['explanation']
+                context.update({k:plan.get(k) for k in ('action','normalizedQuery','intentSummary','subjectRole','assumptions','explanation')})
+                if payload is None:
+                    context['stage']='feedback';tasks.update_context('search',job['id'],context)
+                    store.update(job['id'],state='complete',result=json.dumps(intent_feedback(plan)),error=None,lease_until=0)
+                    return True
+                context['locationLabel']=plan['locations'][0]['label']
             else:
                 payload=ExploreRequest.model_validate(submitted.model_dump())
             context.update(payload.model_dump(exclude={'query'}));context['query']=submitted.query
@@ -598,7 +609,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
             store.update(job['id'],state='complete',result=json.dumps(result),error=None,lease_until=0)
         except Exception as error:
             logging.getLogger(__name__).warning('Photo Scout background search failed: %s fields=%s',type(error).__name__,[(e['loc'],e['type']) for e in error.errors(include_input=False,include_url=False)] if isinstance(error,ValidationError) else [])
-            store.update(job['id'],state='failed',lease_until=0,error=str(error.detail) if isinstance(error,HTTPException) else 'Could not prepare a valid search plan. Please try again.' if isinstance(error,ValidationError) and context.get('stage')=='planning' else 'Search could not be completed. Please try again later.')
+            store.update(job['id'],state='failed',lease_until=0,error=str(error.detail) if isinstance(error,HTTPException) else 'Could not prepare a valid search plan. Please try again.' if isinstance(error,ValidationError) and context.get('stage')=='planning' else 'Understanding this request took too long. Please try again.' if context.get('stage')=='planning' and isinstance(error,(TimeoutError,APITimeoutError)) else 'Search could not be completed. Please try again later.')
         return True
 
     router.process_preview=process_preview
@@ -611,7 +622,8 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
         if cents<50: raise HTTPException(503,'Checkout pricing has not been enabled')
         # Freeze the interpreted plan before coverage checking/payment.
         if payload.query.strip() or not (payload.searchProgram or payload.searchBranches or payload.selectedPoiIds is not None):
-            payload,_=await interpret_search(payload)
+            payload,plan=await interpret_search(payload)
+            if payload is None:return intent_feedback(plan)
         rows,statuses,pois=await catalog(payload)
         if not rows: raise HTTPException(422,'No eligible imagery found here. Choose another location.')
         job,token=store.create(payload,cents)

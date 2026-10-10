@@ -21,11 +21,15 @@ from agentic_services.photo_scout.intent import INSTRUCTIONS,IntentRequest,parse
 
 
 def checks(plan,expected):
+    action=plan.get('action','search')
+    if expected.get('action','search')!='search':
+        return ([ 'wrong_action' ] if action!=expected['action'] else [])+(['missing_feedback'] if not plan.get('feedback','').strip() else [])+(['unexpected_program'] if plan.get('searchProgram') else [])
+    if action!='search':return ['wrong_action']
     steps=plan['searchProgram']['steps'] if plan.get('searchProgram') else []
     tools=[s['tool'] for s in steps]
     queries=' | '.join(q.lower() for s in steps for q in s['queries'])
     geo=[k for s in steps if not (s['tool']=='search_geography' and all(n['tool']=='filter_geography' and n['exclude'] for n in steps if s['id'] in n['inputs'])) for k in s['geographicKinds']]
-    visual=' '.join([plan['scoringIntent'],plan['preferences'],*(s['visualIntent'] for s in steps)]).lower()
+    visual=' '.join([plan['scoringIntent'],plan['preferences'],*(s['visualIntent'] for s in steps),*(r['expression'] for r in plan.get('requirements',[]))]).lower()
     failures=[]
     def check(ok,name):
         if not ok:failures.append(name)
@@ -44,7 +48,11 @@ def checks(plan,expected):
         check(any(t['key']==key and t['minimum'] is not None and math.isclose(t['minimum'],minimum,rel_tol=1e-6,abs_tol=1e-6) for f in features for t in f['numericFilters']),'mapped_numeric_missing:'+key)
     for mood in expected.get('moodsForbidden',[]):check(mood not in plan['photoStyles'],'invented_mood:'+mood)
     for token in expected.get('queryForbidden',[]):check(token.lower() not in queries,'query_leaks:'+token)
-    for group in expected.get('visualRequired',[]):check(any(t.lower() in visual for t in group),'visual_missing:'+str(group))
+    for group in expected.get('visualRequired',[]):
+        match=any(t.lower() in visual for t in group)
+        if 'uncrowded' in group:
+            match=match or any(r['strength']=='forbidden' and 'crowd' in r['expression'].lower() for r in plan.get('requirements',[]))
+        check(match,'visual_missing:'+str(group))
     for tool in expected.get('toolsRequired',[]):check(tool in tools,'tool_missing:'+tool)
     for tool in expected.get('toolsForbidden',[]):check(tool not in tools,'unexpected_tool:'+tool)
     if 'moods' in expected:check(set(plan['photoStyles'])==set(expected['moods']),'mood_override')
@@ -82,6 +90,11 @@ def checks(plan,expected):
             values=[unconstrained(x) for x in st['inputs']]
             return any(values) if st['tool']=='union' else all(values)
         check(unconstrained(plan['searchProgram']['output']),'preference_became_hard_filter')
+    if 'subjectRole' in expected:check(plan.get('subjectRole')==expected['subjectRole'],'wrong_subject_role')
+    if 'evidence' in expected:check(any(r.get('evidence')==expected['evidence'] for r in plan.get('requirements',[])),'wrong_evidence_mode')
+    if expected.get('noRequiredPerson'):
+        positives=('woman is visible','visible woman','people are visible','person is visible','existing woman')
+        check(not any(r['strength']=='required' and any(w in r['expression'].lower() for w in positives) and not any(n in r['expression'].lower() for n in ('not require','without requiring','need not')) for r in plan.get('requirements',[])),'required_existing_person')
     return failures
 
 

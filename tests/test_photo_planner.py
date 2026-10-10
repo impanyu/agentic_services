@@ -168,3 +168,40 @@ def test_typo_plan_repair_receives_rejected_coverage_without_weakening_subject(m
     assert r.requirements[0].strength=='required'
     assert r.searchProgram.steps[0].tool=='area_imagery'
     assert not r.photoStyles and not r.sourceCoverage
+
+@pytest.mark.parametrize('action',['help','unsupported','uninterpretable'])
+def test_nonsearch_actions_require_feedback_and_no_executable_plan(action):
+    data=output();data.update(action=action,feedback='Try a photo search near Chicago.',searchProgram=None,requirements=[],sourceCoverage=[])
+    assert PlannerIntent.model_validate(data).searchProgram is None
+    with pytest.raises(ValidationError):PlannerIntent.model_validate(data|{'feedback':''})
+    with pytest.raises(ValidationError):PlannerIntent.model_validate(data|{'searchProgram':output()['searchProgram']})
+    with pytest.raises(ValidationError):PlannerIntent.model_validate(data|{'action':'search'})
+
+
+def test_evidence_mode_and_subject_role_flow_to_search_and_cache():
+    from agentic_services.photo_scout.routes import ExploreRequest
+    from agentic_services.photo_scout.search import SearchParameters
+    r={'expression':'near a lake','strength':'required','route':'geography','evidence':'spatial','stepIds':['g']}
+    a=ExploreRequest(lat=0,lon=0,subjectRole='portrait-background',requirements=[r])
+    b=a.model_copy(update={'subjectRole':'existing-subject'})
+    assert SearchParameters.model_validate(a.model_dump(include=set(SearchParameters.model_fields))).subjectRole=='portrait-background'
+    assert a.requirements[0].evidence=='spatial'
+    assert ScoreCache.key({'id':'image'},a,'model','prompt')!=ScoreCache.key({'id':'image'},b,'model','prompt')
+
+
+def test_empty_input_is_repaired_to_ui_search_not_conversational_feedback(monkeypatch):
+    calls=[]
+    class Client:
+        def __init__(self,**kw):self.responses=self
+        async def __aenter__(self):return self
+        async def __aexit__(self,*args):pass
+        async def parse(self,**kw):
+            calls.append(kw)
+            if len(calls)==1:
+                data=output();data.update(action='uninterpretable',searchProgram=None,sourceCoverage=[],feedback='Enter a query')
+                return SimpleNamespace(output_parsed=PlannerIntent.model_validate(data))
+            return SimpleNamespace(output_parsed=PlannerIntent.model_validate(output()))
+    monkeypatch.setattr(intent,'AsyncOpenAI',Client)
+    r=asyncio.run(intent.parse_intent(SimpleNamespace(openai_api_key='fixture',openai_model='test'),intent.IntentRequest(query='  ',lat=0,lon=0)))
+    assert r.action=='search' and r.searchProgram.complete and len(calls)==2
+    assert 'UI-driven search' in calls[1]['input']

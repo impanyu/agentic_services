@@ -17,6 +17,7 @@ from .osm_features import OSMFeatureQuery
 Mood=Literal['nature','urban','vintage','iconic','artistic','waterside','minimal','adventure']
 PoiQuery=Annotated[str,Field(min_length=1,max_length=200)]
 class IntentRequest(BaseModel):
+    subjectRole: Literal['scene','portrait-background','existing-subject'] = 'scene'
     query: str=Field(default="",max_length=1000)
     lat: float=Field(ge=-85,le=85,allow_inf_nan=False)
     lon: float=Field(ge=-180,le=180,allow_inf_nan=False)
@@ -32,6 +33,12 @@ class IntentRequest(BaseModel):
     featureCombination: Literal['all','any'] = 'all'
     scoringIntent: str = Field(default='',max_length=1000)
 class PhotoIntent(BaseModel):
+    action: Literal['search','help','unsupported','uninterpretable'] = 'search'
+    normalizedQuery: str = Field(default='',max_length=1000)
+    intentSummary: str = Field(default='',max_length=500)
+    subjectRole: Literal['scene','portrait-background','existing-subject'] = 'scene'
+    assumptions: list[str] = Field(default_factory=list,max_length=4)
+    feedback: str = Field(default='',max_length=1000)
     requirements: list[Requirement] = Field(default_factory=list,max_length=16)
     sourceCoverage: list[SourceCoverage] = Field(default_factory=list,max_length=8)
     searchProgram: SearchProgram | None = None
@@ -72,8 +79,11 @@ async def parse_intent(settings,payload):
                     response=await client.responses.parse(**request)
                     parsed=response.output_parsed
                     if not isinstance(parsed,PlannerIntent):raise ValueError('No parsed search intent')
+                    if not payload.query.strip() and parsed.action!='search':
+                        raise ValidationError.from_exception_data('PlannerIntent',[{'type':'value_error','loc':(),
+                            'input':parsed.model_dump(),'ctx':{'error':ValueError('Empty input is a UI-driven search; return a complete search program')}}])
                     values=parsed.model_dump(exclude={'searchProgram'})
-                    values.update(searchProgram=parsed.searchProgram.compile(),clarification=None)
+                    values.update(searchProgram=parsed.searchProgram.compile() if parsed.searchProgram else None,clarification=None)
                     return PhotoIntent.model_validate(values)
                 except ValidationError as error:
                     if attempt:raise
@@ -112,6 +122,8 @@ async def geocode(query):
     return result
 async def resolve_intent(settings,payload):
     intent=await parse_intent(settings,payload)
+    if intent.action!='search':
+        return {**intent.model_dump(),'locations':[],'visuallyAnalyzed':False,'clarification':None}
     if not payload.query.strip():
         # UI-only searches never relocate the user's pin or rewrite controls.
         intent=intent.model_copy(update={'locationQuery':None,'useMapCenter':True,
@@ -123,7 +135,7 @@ async def resolve_intent(settings,payload):
         out['locations']=await geocode(intent.locationQuery)
         if out['locations']:out['locations']=out['locations'][:1]
         else:
-            raise ValueError('Could not resolve the requested address or place')
+            return {**out,'action':'uninterpretable','searchProgram':None,'requirements':[],'sourceCoverage':[],'feedback':'Could not locate that address or place. Try a recognized place name with its city, or select a point on the map.'}
     elif intent.useMapCenter:
         out['locations']=[{'lat':payload.lat,'lon':payload.lon,'label':'Selected map location','source':'user-map-selection'}]
     else:
@@ -133,7 +145,14 @@ async def resolve_intent(settings,payload):
     place=out['locations'][0]
     parameters=SearchParameters(lat=place['lat'],lon=place['lon'],radius=intent.radiusMeters,
         poiQueries=intent.poiQueries,geographicKinds=intent.geographicKinds,osmFeatures=intent.osmFeatures,searchProgram=intent.searchProgram,searchBranches=intent.searchBranches,geographicCombination=intent.geographicCombination,featureCombination=intent.featureCombination,
-        requirements=intent.requirements,photoStyles=intent.photoStyles or None,scoringIntent=intent.scoringIntent,preferences=intent.preferences)
+        subjectRole=intent.subjectRole,requirements=intent.requirements,photoStyles=intent.photoStyles or None,scoringIntent=intent.scoringIntent,preferences=intent.preferences)
     out['searchParameters']=parameters.model_dump()
     out['searchPlan']=compile_search(parameters).model_dump()
     return out
+
+def intent_feedback(plan):
+    """A completed response, distinct from an executed search with zero matches."""
+    return {'responseType':'feedback','action':plan['action'],'summary':plan['feedback'],
+            'intentSummary':plan.get('intentSummary',''),'normalizedQuery':plan.get('normalizedQuery',''),
+            'assumptions':plan.get('assumptions',[]),'spots':[],'poiResults':[],
+            'inspectedImages':0,'visuallyAnalyzed':False}

@@ -53,6 +53,16 @@ class VisualBatch(BaseModel):
 
 INSTRUCTIONS='''You are a multimodal photography evaluator in a fixed scoring pipeline.
 Check EVERY supplied image exactly once in this single response.
+SUBJECT ROLE AND EVIDENCE
+When request.subjectRole='portrait-background', judge the location as a background for
+future uploaded subjects. Do not require those people/animals already in Street View.
+For 'existing-subject', the requested subject must actually be visible.
+Requirement.evidence='spatial' is established by the successful geometry path: do not
+require it also visible in pixels (a cafe near a lake may face away from the water).
+'provider' uses supplied factual Places identity/category/service evidence, never guess
+hidden services from pixels. 'visual' requires pixel evidence. 'combined' requires both
+its executed spatial/provider condition and corresponding visible scene. The explicit
+ledger evidence mode takes precedence over generic environment visibility instructions.
 FIRST judge whether the actual pixels match request.scoringIntent, poiQueries,
 preferences, geographicKinds, osmFeatures and photoStyleBriefs. When searchProgram is present, eligibleSearchPaths lists the actual successful logical paths for this image: satisfy one complete path, every targetQueries group (OR inside each group, AND between groups), its visualIntents, plus shared preferences and the grouped scoringIntent. Do not borrow a target or requirement from a different path. Filter references correspond to spatial constraints in the program; inspect pixels for the same environment. When searchBranches is nonempty, match at least one complete branch, including its visualIntent plus shared preferences. An image may only satisfy branches listed in its eligibleSearchBranchIndexes (when provided). Do not mix a target from one branch with the surroundings from another. Respect geographicCombination and featureCombination: any means one alternative is sufficient; all means every requirement. poiQueries are alternative complete target descriptions. Preserve AND/OR/NOT grouping in scoringIntent. Never demand every listed alternative. Spatial proximity is not proof of visual fit: lakeside/sea/river/waterside requests require visible relevant water or shore; forest requests require visible woodland; peak requests require a plausible summit/mountain-view setting. Reject directions facing away from the requested subject. Set matches_request and explain match_reason.
 When nonempty, request.requirements is the authoritative structured condition ledger;
@@ -214,7 +224,7 @@ async def assess_images(settings,payload,rows,statuses=None):
         async def score_loaded(usable,retry=True):
             from collections import Counter
             content=[{'type':'input_text','text':json.dumps({
-                'request':{'requirements':[r.model_dump() for r in getattr(payload,'requirements',[])],'scoringIntent':payload.scoringIntent.strip(),'poiQueries':payload.poiQueries,'geographicKinds':payload.geographicKinds,'geographicCombination':getattr(payload,'geographicCombination','all'),'featureCombination':getattr(payload,'featureCombination','all'),'searchProgram':payload.searchProgram.model_dump() if getattr(payload,'searchProgram',None) else None,'searchBranches':[b.model_dump() for b in getattr(payload,'searchBranches',[])],'osmFeatures':[q.model_dump() for q in payload.osmFeatures],'preferences':payload.preferences.strip(),'photoStyles':sorted(payload.photoStyles or [])},
+                'request':{'subjectRole':getattr(payload,'subjectRole','scene'),'requirements':[r.model_dump() for r in getattr(payload,'requirements',[])],'scoringIntent':payload.scoringIntent.strip(),'poiQueries':payload.poiQueries,'geographicKinds':payload.geographicKinds,'geographicCombination':getattr(payload,'geographicCombination','all'),'featureCombination':getattr(payload,'featureCombination','all'),'searchProgram':payload.searchProgram.model_dump() if getattr(payload,'searchProgram',None) else None,'searchBranches':[b.model_dump() for b in getattr(payload,'searchBranches',[])],'osmFeatures':[q.model_dump() for q in payload.osmFeatures],'preferences':payload.preferences.strip(),'photoStyles':sorted(payload.photoStyles or [])},
                 'photoStyleBriefs':style_briefs(payload.photoStyles)})}]
             for row,data in usable:
                 content.extend([{'type':'input_text','text':json.dumps({'image':{**{k:v for k,v in row.items() if k not in ('id','imageUrl','author','distanceMeters','poiDistanceMeters','explorationReason')},'id':aliases[row['id']]}})},

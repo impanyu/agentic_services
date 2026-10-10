@@ -399,3 +399,17 @@ def test_blank_search_after_text_search_does_not_inherit_hidden_preferences(tmp_
 def test_signed_current_catalog_keeps_its_own_resolved_preferences():
     request=routes.SearchTaskRequest(lat=0,lon=0,selectedPoiIds=['place-1'],poiCatalogToken='signed',preferences='Current catalog style')
     assert routes.current_website_task(request).preferences=='Current catalog style'
+
+@pytest.mark.parametrize('action',['help','unsupported','uninterpretable'])
+def test_background_task_returns_feedback_without_source_or_scoring_calls(tmp_path,monkeypatch,action):
+    settings,app,client=setup(tmp_path,monkeypatch)
+    async def resolve(settings,payload):return {'action':action,'feedback':'Try a scenic photo search near Chicago.','intentSummary':'Input response','normalizedQuery':payload.query,'assumptions':[],'explanation':'Respond directly','locations':[]}
+    async def forbidden(*args,**kwargs):raise AssertionError('Feedback must not retrieve or score')
+    monkeypatch.setattr(routes,'resolve_intent',resolve);monkeypatch.setattr(routes,'nearby_pois',forbidden);monkeypatch.setattr(routes,'candidates',forbidden);monkeypatch.setattr(routes,'explore',forbidden)
+    response=client.post('/photo-scout/v1/jobs',headers={'X-Request-Token':'f'*32},json={'lat':0,'lon':0,'query':'hi'})
+    assert response.status_code==202;job=response.json()['jobId']
+    assert asyncio.run(app.state.process_photo_preview())
+    report=client.get('/photo-scout/v1/report/'+job).json()
+    assert report['state']=='complete' and report['result']['responseType']=='feedback'
+    assert report['result']['action']==action and report['result']['inspectedImages']==0
+    assert client.get('/photo-scout/v1/tasks').json()['items'][0]['context']['stage']=='feedback'

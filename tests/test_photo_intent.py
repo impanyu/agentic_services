@@ -26,7 +26,7 @@ def test_best_effort_unresolved_place_uses_map_without_followup(monkeypatch):
     async def empty(query):return []
     monkeypatch.setattr(intent,'parse_intent',parsed);monkeypatch.setattr(intent,'geocode',empty)
     payload=intent.IntentRequest(query='any sentence',lat=41,lon=-87)
-    with pytest.raises(ValueError,match='Could not resolve'):asyncio.run(intent.resolve_intent(None,payload))
+    result=asyncio.run(intent.resolve_intent(None,payload));assert result['action']=='uninterpretable' and not result['locations'];assert 'Could not locate' in result['feedback']
 
 
 def test_geocoder_validates_and_deduplicates_coordinates(monkeypatch):
@@ -141,3 +141,12 @@ def test_ui_only_requests_are_planned_without_relocating_or_changing_controls(mo
     assert result['locations'][0]['lat']==37.8 and result['locations'][0]['lon']==-122.4
     assert result['radiusMeters']==5000 and result['photoStyles']==['nature']
     assert result['searchParameters']['searchProgram']['steps'][-1]['tool']=='rank_results'
+
+@pytest.mark.parametrize('action',['help','unsupported','uninterpretable'])
+def test_feedback_never_geocodes_or_compiles_search(monkeypatch,action):
+    async def parsed(settings,payload):return plan(action=action,feedback='Select a location and search for photo spots.',intentSummary='Respond to this message')
+    async def geocode(query):raise AssertionError('Feedback must not geocode')
+    monkeypatch.setattr(intent,'parse_intent',parsed);monkeypatch.setattr(intent,'geocode',geocode)
+    out=asyncio.run(intent.resolve_intent(None,intent.IntentRequest(query='hi',lat=0,lon=0)))
+    assert out['action']==action and out['locations']==[] and 'searchParameters' not in out
+    result=intent.intent_feedback(out);assert result['responseType']=='feedback' and result['inspectedImages']==0
