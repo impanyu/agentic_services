@@ -48,7 +48,8 @@ def provider(tmp_path, monkeypatch, request):
             return httpx.Response(200, json={'imageWidth':width*32,'imageHeight':height*32,'tileWidth':512,'tileHeight':512,'heading':90,'tilt':90,'roll':0,'copyright':'Fixture provider'})
         assert request.url.path.endswith('/tiles/0/0/0')
         native_zoom=math.ceil(math.log2(width*32/512))
-        return httpx.Response(200, content=fixture_tile(math.ceil(width*32/2**native_zoom),math.ceil(height*32/2**native_zoom)))
+        return httpx.Response(200, headers={'Cache-Control':'private, max-age=3600, must-revalidate, no-transform'},
+            content=fixture_tile(math.ceil(width*32/2**native_zoom),math.ceil(height*32/2**native_zoom)))
     real = httpx.AsyncClient
     monkeypatch.setattr(tiles.httpx, 'AsyncClient', lambda **kw: real(transport=httpx.MockTransport(handler)))
     return calls, tmp_path/'db'
@@ -94,16 +95,55 @@ def test_tile_failure_does_not_fall_back_to_expensive_static(provider, monkeypat
     assert not tiles._pending
 
 
-def test_expired_panorama_refetches_once_for_concurrent_views(provider):
+def test_expired_panorama_refetches_once_for_concurrent_views(provider, monkeypatch):
     calls, _ = provider
     asyncio.run(sources.google_image_data('google-streetview://fixture/90'))
-    key = next(iter(tiles._panoramas)); _, image = tiles._panoramas[key]
-    tiles._panoramas[key] = (0, image)
+    now = tiles.time.time()
+    monkeypatch.setattr(tiles.time, 'time', lambda: now + 3601)
     async def run():
         return await asyncio.gather(*(sources.google_image_data(f'google-streetview://fixture/{h}') for h in (0,45,90)))
     asyncio.run(run())
     assert sum(r.url.path.endswith('/tiles/0/0/0') for r in calls) == 2
     assert sum(r.url.path.endswith('/createSession') for r in calls) == 1
+
+
+def test_full_sphere_survives_ten_minutes_and_process_memory_reset(provider, monkeypatch):
+    calls, _ = provider
+    asyncio.run(sources.google_image_data('google-streetview://fixture/90'))
+    now = tiles.time.time()
+    monkeypatch.setattr(tiles.time, 'time', lambda: now + 1800)
+    # Simulate application restart and then a user choosing a new direction/FOV.
+    tiles._panoramas.clear(); tiles._sessions.clear(); tiles._session_tasks.clear()
+    asyncio.run(sources.google_image_data('google-streetview://fixture/225/15/45'))
+    assert len(calls) == 3  # no new provider session, metadata or paid image
+
+
+@pytest.mark.parametrize('header,age,remaining',[
+    ('private, max-age=3600, must-revalidate', '120', 3480),
+    ('max-age=3600, no-store', '0', 0),
+    ('max-age=3600, no-cache', '0', 0),
+    ('private', '0', 0),
+    ('max-age=10', '20', 0),
+])
+def test_provider_freshness_is_respected(header, age, remaining, monkeypatch):
+    monkeypatch.setattr(tiles.time, 'time', lambda: 1000)
+    expiry = tiles._fresh_until({'cache-control':header,'age':age})
+    assert max(0, expiry-1000) == remaining
+
+
+def test_no_store_response_is_not_persisted(provider):
+    _, db = provider
+    tiles._tile_store('key', 'pano', (b'fixture', {'_tileExpiresAt':0}))
+    assert tiles._tile_store('key', 'pano') is None
+
+
+def test_retention_store_evicts_by_bytes_not_ten_minute_timer(provider, monkeypatch):
+    monkeypatch.setattr(tiles, '_DISK_BYTES', 5)
+    expires = tiles.time.time()+3600
+    tiles._tile_store('key', 'a', (b'1234', {'_tileExpiresAt':expires}))
+    tiles._tile_store('key', 'b', (b'5678', {'_tileExpiresAt':expires}))
+    assert tiles._tile_store('key', 'a') is None
+    assert tiles._tile_store('key', 'b')[0] == b'5678'
 
 
 def test_projection_wraps_seam_and_handles_poles():

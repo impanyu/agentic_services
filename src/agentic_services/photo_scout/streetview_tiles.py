@@ -1,7 +1,7 @@
 """Lowest-resolution Google panorama, projected locally into any requested view.
 
-One zoom-0 tile covers the full sphere. Bytes live only in a bounded, short-lived
-in-process cache, including single-flight fetches for concurrent eight-view batches.
+One zoom-0 tile covers the full sphere. Retain original responses through their
+provider freshness deadline, including across application restarts.
 No static-image fallback: a provider failure must not silently increase spend.
 """
 from __future__ import annotations
@@ -13,6 +13,9 @@ import hashlib
 import io
 import math
 import os
+from pathlib import Path
+import re
+import sqlite3
 import time
 
 import httpx
@@ -20,12 +23,60 @@ import numpy as np
 from PIL import Image, ImageDraw
 
 BASE = 'https://tile.googleapis.com/v1'
-_CACHE_SECONDS = 600
-_CACHE_SIZE = 128
+_CACHE_SIZE = 512
+_DISK_BYTES = 64 * 1024 * 1024
 _sessions = {}
 _session_tasks = {}
 _panoramas = OrderedDict()
 _pending = {}
+
+
+def _fresh_until(headers):
+    directives = headers.get('cache-control', '').lower()
+    if re.search(r'(?:^|,)\s*(?:no-store|no-cache)(?:\s|,|$)', directives):
+        return 0
+    match = re.search(r'(?:^|,)\s*max-age\s*=\s*"?(\d+)', directives)
+    if not match:
+        return 0  # Do not invent a retention period absent provider permission.
+    try:
+        age = max(0, int(headers.get('age', '0')))
+    except ValueError:
+        age = 0
+    return time.time() + max(0, int(match[1]) - age)
+
+
+def _tile_store(identity, pano, value=None):
+    # This is the backend API client's private response store, never a public
+    # HTTP/CDN cache. Keep original bytes; projections are computed separately.
+    path = Path(os.getenv('WEB_EVIDENCE_DB', 'data/web-evidence.db'))
+    path.parent.mkdir(parents=True, exist_ok=True)
+    import json
+    with sqlite3.connect(path, timeout=15) as db:
+        db.execute('CREATE TABLE IF NOT EXISTS photo_scout_panorama_responses '
+                   '(identity TEXT, pano TEXT, expires REAL NOT NULL, used REAL NOT NULL, '
+                   'body BLOB NOT NULL, metadata TEXT NOT NULL, PRIMARY KEY(identity,pano))')
+        now = time.time()
+        db.execute('DELETE FROM photo_scout_panorama_responses WHERE expires<=?', (now,))
+        if value is not None:
+            blob, meta = value
+            expires = meta['_tileExpiresAt']
+            if expires > now:
+                db.execute('INSERT OR REPLACE INTO photo_scout_panorama_responses VALUES(?,?,?,?,?,?)',
+                           (identity, pano, expires, now, blob, json.dumps(meta)))
+                size = db.execute('SELECT coalesce(sum(length(body)),0) FROM photo_scout_panorama_responses').fetchone()[0]
+                if size > _DISK_BYTES:
+                    for old_identity, old_pano, length in db.execute(
+                            'SELECT identity,pano,length(body) FROM photo_scout_panorama_responses ORDER BY used').fetchall():
+                        db.execute('DELETE FROM photo_scout_panorama_responses WHERE identity=? AND pano=?', (old_identity, old_pano))
+                        size -= length
+                        if size <= _DISK_BYTES:
+                            break
+            return None
+        saved = db.execute('SELECT body,metadata FROM photo_scout_panorama_responses WHERE identity=? AND pano=?', (identity, pano)).fetchone()
+        if saved:
+            db.execute('UPDATE photo_scout_panorama_responses SET used=? WHERE identity=? AND pano=?', (now, identity, pano))
+            return saved[0], json.loads(saved[1])
+    return None
 
 
 def enabled():
@@ -74,6 +125,10 @@ async def _session(key, identity):
 
 
 async def _load_panorama(pano, key, identity):
+    saved = await asyncio.to_thread(_tile_store, identity, pano)
+    if saved:
+        blob, meta = saved
+        return _decode_panorama(blob, meta), meta
     session = await _session(key, identity)
     params = {'key': key, 'session': session['session'], 'panoId': pano}
     async with httpx.AsyncClient(timeout=25, follow_redirects=False) as client:
@@ -87,11 +142,19 @@ async def _load_panorama(pano, key, identity):
         async with client.stream('GET', BASE + '/streetview/tiles/0/0/0', params=params) as response:
             if response.status_code != 200:
                 raise ValueError(f'Street View tile unavailable ({response.status_code})')
+            meta['_tileExpiresAt'] = _fresh_until(response.headers)
             blob = bytearray()
             async for chunk in response.aiter_bytes():
                 blob.extend(chunk)
                 if len(blob) > 1_000_000:
                     raise ValueError('Street View tile exceeds limit')
+    panorama = _decode_panorama(blob, meta)
+    await asyncio.to_thread(_tile_store, identity, pano, (bytes(blob), meta))
+    return panorama, meta
+
+
+def _decode_panorama(blob, meta):
+    width, height = int(meta['imageWidth']), int(meta['imageHeight'])
     with Image.open(io.BytesIO(blob)) as tile:
         tile.load()
         if tile.width > 1024 or tile.height > 1024:
@@ -108,14 +171,14 @@ async def _load_panorama(pano, key, identity):
         if not 1 <= content_width <= tile.width or not 1 <= content_height <= tile.height:
             raise ValueError('Unsupported lowest-resolution panorama dimensions')
         panorama = tile.convert('RGB').crop((0, 0, content_width, content_height))
-    return panorama, meta
+    return panorama
 
 
 async def panorama(pano):
     key = os.getenv('PHOTO_SCOUT_GOOGLE_TILES_API_KEY') or os.environ['PHOTO_SCOUT_GOOGLE_API_KEY']
     identity = hashlib.sha256(key.encode()).hexdigest()
     cache_key = (identity, pano)
-    now = time.monotonic()
+    now = time.time()
     for expired in [k for k, (expiry, _) in _panoramas.items() if expiry <= now]:
         _panoramas.pop(expired, None)
     saved = _panoramas.get(cache_key)
@@ -128,7 +191,7 @@ async def panorama(pano):
         _pending[cache_key] = task
     try:
         result = await asyncio.shield(task)
-        _panoramas[cache_key] = (time.monotonic() + _CACHE_SECONDS, result)
+        _panoramas[cache_key] = (result[1]['_tileExpiresAt'], result)
         _panoramas.move_to_end(cache_key)
         while len(_panoramas) > _CACHE_SIZE:
             _panoramas.popitem(last=False)

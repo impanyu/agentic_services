@@ -539,9 +539,18 @@ Optionally supply `PHOTO_SCOUT_GOOGLE_TILES_API_KEY` as a separate restricted ke
 The actual street-view session response selects the image format; setting
 `imageFormat` on createSession returned Invalid Value in the live provider test.
 
-One concurrent fetch serves all eight directions. Raw panorama bytes are retained
-only in memory for ten minutes, with a maximum of 128 panoramas; they are not added
-to the persistent score database. Google assessment cache entries distinguish
+One concurrent fetch serves all eight directions. Original tile responses are retained
+in the backend API client's private SQLite response store through the provider's
+`Cache-Control: max-age` freshness deadline, subtracting `Age`. A live response
+returned `private, max-age=3600, must-revalidate, no-transform`. There is no
+artificial ten-minute expiry. Restarting the app or evicting a decoded in-memory
+sphere does not require another provider request while the original response is
+fresh. Direction, pitch and FOV changes reuse the full sphere. Missing freshness
+headers, `no-store` or `no-cache` do not enable retention. Expired responses are
+removed on access and re-fetched once for concurrent views. Original response
+bytes are bounded to 64 MiB, with 512 decoded spheres in memory; capacity eviction
+can require another request. These bytes are separate from persistent assessments
+and are never exposed through public/CDN HTTP caching. Google assessment cache entries distinguish
 image delivery profiles so old high-resolution scores cannot hide low-resolution
 quality. Other providers' score cache keys remain unchanged. Outgoing image attempts
 are counted by SKU in `photo_scout_google_image_usage`; local view renders do not
