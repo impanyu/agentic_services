@@ -903,9 +903,16 @@
     "text": "beautidul woman",
     "input": {},
     "expected": {
-      "subjectRole": "portrait-background",
-      "noRequiredPerson": true,
-      "moods": []
+      "subjectRole": "existing-subject",
+      "requiredVisualAny": [
+        [
+          "woman",
+          "women"
+        ]
+      ],
+      "moods": [
+        "waterside"
+      ]
     }
   },
   {
@@ -927,6 +934,15 @@
         [
           "woman"
         ]
+      ],
+      "requiredVisualAny": [
+        [
+          "woman",
+          "women"
+        ]
+      ],
+      "moods": [
+        "waterside"
       ]
     }
   },
@@ -1026,6 +1042,81 @@
           "high rise",
           "tall building"
         ]
+      ]
+    }
+  },
+  {
+    "id": "bare-women",
+    "text": "Beautiful Women",
+    "input": {},
+    "expected": {
+      "subjectRole": "existing-subject",
+      "requiredVisualAny": [
+        [
+          "woman",
+          "women"
+        ]
+      ],
+      "moods": [
+        "waterside"
+      ]
+    }
+  },
+  {
+    "id": "bare-dog",
+    "text": "a dog",
+    "input": {
+      "photoStyles": [
+        "nature"
+      ]
+    },
+    "expected": {
+      "subjectRole": "existing-subject",
+      "requiredVisualAny": [
+        [
+          "dog"
+        ]
+      ],
+      "moods": [
+        "nature"
+      ]
+    }
+  },
+  {
+    "id": "explicit-portrait-purpose",
+    "text": "Places suitable for photographing a woman, with a water backdrop",
+    "input": {},
+    "expected": {
+      "subjectRole": "portrait-background",
+      "noRequiredPerson": true,
+      "visualRequired": [
+        [
+          "water",
+          "waterside"
+        ]
+      ],
+      "moods": [
+        "waterside"
+      ]
+    }
+  },
+  {
+    "id": "subject-mood-conflict",
+    "text": "Women in urban streets instead of a waterside setting",
+    "input": {},
+    "expected": {
+      "subjectRole": "existing-subject",
+      "requiredVisualAny": [
+        [
+          "woman",
+          "women"
+        ]
+      ],
+      "moods": [
+        "urban"
+      ],
+      "moodsForbidden": [
+        "waterside"
       ]
     }
   }

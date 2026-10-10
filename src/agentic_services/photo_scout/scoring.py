@@ -56,7 +56,12 @@ Check EVERY supplied image exactly once in this single response.
 SUBJECT ROLE AND EVIDENCE
 When request.subjectRole='portrait-background', judge the location as a background for
 future uploaded subjects. Do not require those people/animals already in Street View.
-For 'existing-subject', the requested subject must actually be visible.
+For 'existing-subject', the requested subject must actually be visible in EACH matching
+image. A beautiful background is not a beautiful woman; a park is not a dog; an empty
+plaza is not people dancing. Subject appearance modifiers are subjective visual criteria,
+not permission to substitute scenic beauty. Do not infer suitability for a future photo
+shoot from a bare subject query. Reject absent or unidentifiable required subjects and
+retain compatible UI mood/environment conditions along with the subject.
 Requirement.evidence='spatial' is established by the successful geometry path: do not
 require it also visible in pixels (a cafe near a lake may face away from the water).
 'provider' uses supplied factual Places identity/category/service evidence, never guess

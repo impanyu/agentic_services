@@ -5,6 +5,22 @@ are historical and superseded by the fixed-pipeline section at the end.
 
 # Photo Scout
 
+## Search meaning and visible subjects
+
+Search text describes the requested imagery and/or its location properties. Bare subject
+queries (including corrected typos such as `beautidul woman`) use `existing-subject`:
+each accepted image must visibly contain that subject and satisfy its visual criteria.
+They must not be converted into hypothetical portrait backgrounds. Only explicit
+requests for places suitable for photographing a person/pet, or an explicit structured
+`portrait-background` role not contradicted by text, use the background interpretation.
+
+Text overrides only conflicting UI dimensions. `Beautiful Women` with Waterside keeps
+both the visible-subject requirement and the waterside condition. Compatible moods stay;
+explicit alternatives can replace them. If no image meets the conditions, return zero
+matches rather than unrelated scenic replacements. Scene content is historical, not a
+claim of live presence. The condition ledger carries these meanings into pixel scoring.
+
+
 Human URL: `https://aisoup.net/photo-scout/`. Agent endpoint:
 `POST https://api.aisoup.net/photo-scout/v1/discover`; OpenAPI and service manifest
 under `/photo-scout/`. English UI, click on a Leaflet map or enter coordinates.

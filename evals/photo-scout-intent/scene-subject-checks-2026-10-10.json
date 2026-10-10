@@ -1,0 +1,963 @@
+{
+  "summary": {
+    "model": "gpt-6-astra",
+    "reasoningEffort": "low",
+    "promptSha256": "aa54677a17f76dd7ed5b24a48f77be924344ccc3e9163a2d24a932eedee8af2d",
+    "generatedAt": "2026-10-10T19:42:10.164291+00:00",
+    "cases": 5,
+    "runs": 5,
+    "passed": 5,
+    "failed": 0,
+    "medianSeconds": 14.169,
+    "p95Seconds": 15.639,
+    "wallSeconds": 24.99,
+    "failureTypes": {},
+    "scope": "Synthetic planner-only checks plus saved plans for human review; not provider execution, geocoding or visual scoring."
+  },
+  "results": [
+    {
+      "case": "bare-dog",
+      "repeat": 1,
+      "input": {
+        "query": "a dog",
+        "lat": 41.8827,
+        "lon": -87.6233,
+        "radius": 5000,
+        "photoStyles": [
+          "nature"
+        ]
+      },
+      "expected": {
+        "subjectRole": "existing-subject",
+        "requiredVisualAny": [
+          [
+            "dog"
+          ]
+        ],
+        "moods": [
+          "nature"
+        ]
+      },
+      "plan": {
+        "action": "search",
+        "normalizedQuery": "a dog",
+        "intentSummary": "Find imagery with a visible dog, preferably in a natural setting.",
+        "subjectRole": "existing-subject",
+        "assumptions": [
+          "The dog must appear in the imagery; this is not a search for a future photo background.",
+          "Nature remains a preferred aesthetic, not a mandatory environment.",
+          "Historical imagery does not establish whether a dog is present now."
+        ],
+        "feedback": "",
+        "requirements": [
+          {
+            "expression": "A dog is visible",
+            "strength": "required",
+            "route": "visual",
+            "evidence": "visual",
+            "stepIds": []
+          },
+          {
+            "expression": "Natural scenery and a nature-oriented aesthetic",
+            "strength": "preferred",
+            "route": "visual",
+            "evidence": "visual",
+            "stepIds": []
+          }
+        ],
+        "sourceCoverage": [],
+        "searchProgram": {
+          "steps": [
+            {
+              "id": "area",
+              "tool": "area_imagery",
+              "inputs": [],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Explore regional imagery with Nature hints for images containing a visible dog; natural settings are preferred, not required."
+            },
+            {
+              "id": "images",
+              "tool": "collect_images",
+              "inputs": [
+                "area"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Collect candidate imagery for visual dog verification."
+            },
+            {
+              "id": "assessments",
+              "tool": "score_images",
+              "inputs": [
+                "images"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Require a visible dog and prefer natural scenery. Do not accept an empty setting merely suitable for photographing a dog."
+            },
+            {
+              "id": "results",
+              "tool": "rank_results",
+              "inputs": [
+                "assessments"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Rank all matching dog images, favoring natural settings."
+            }
+          ],
+          "output": "results"
+        },
+        "searchBranches": [],
+        "geographicCombination": "all",
+        "featureCombination": "all",
+        "osmFeatures": [],
+        "geographicKinds": [],
+        "scoringIntent": "Require a dog to be visible in each accepted image. Prefer natural scenery and a nature-oriented aesthetic without excluding otherwise matching dog imagery.",
+        "poiQueries": [],
+        "locationQuery": null,
+        "useMapCenter": true,
+        "photoStyles": [
+          "nature"
+        ],
+        "radiusMeters": 5000,
+        "preferences": "Prefer natural scenery and a nature-oriented aesthetic.",
+        "explanation": "Explore imagery within 5,000 meters of the map center using Nature discovery hints, then visually verify the dog and rank matching views. Individual dogs cannot be reliably retrieved through mapped features or place categories.",
+        "clarification": null
+      },
+      "failures": [],
+      "seconds": 9.891
+    },
+    {
+      "case": "bare-women",
+      "repeat": 1,
+      "input": {
+        "query": "Beautiful Women",
+        "lat": 41.8827,
+        "lon": -87.6233,
+        "radius": 5000,
+        "photoStyles": [
+          "waterside"
+        ]
+      },
+      "expected": {
+        "subjectRole": "existing-subject",
+        "requiredVisualAny": [
+          [
+            "woman",
+            "women"
+          ]
+        ],
+        "moods": [
+          "waterside"
+        ]
+      },
+      "plan": {
+        "action": "search",
+        "normalizedQuery": "Beautiful women",
+        "intentSummary": "Find waterside imagery with women visibly present, using beauty as a subjective visual criterion.",
+        "subjectRole": "existing-subject",
+        "assumptions": [
+          "The text requests women already visible in the imagery, rather than backgrounds for future portraits.",
+          "The selected Waterside mood remains applicable and requires visible water or shoreline.",
+          "Beauty is subjective; historical imagery does not establish anyone's current presence."
+        ],
+        "feedback": "",
+        "requirements": [
+          {
+            "expression": "Women are visibly present, with beauty evaluated as a subjective appearance criterion.",
+            "strength": "required",
+            "route": "visual",
+            "evidence": "visual",
+            "stepIds": []
+          },
+          {
+            "expression": "A waterside setting with visible water or shoreline.",
+            "strength": "required",
+            "route": "geography",
+            "evidence": "combined",
+            "stepIds": [
+              "water",
+              "waterfront_places",
+              "shore_points"
+            ]
+          }
+        ],
+        "sourceCoverage": [
+          {
+            "subject": "Waterside settings",
+            "usefulTools": [
+              "search_places",
+              "search_geography"
+            ],
+            "stepIds": [
+              "named_places",
+              "water"
+            ],
+            "reason": "Places discovers named waterfront destinations; mapped geography supplies shoreline coverage and spatial filtering. Neither source establishes visible women or beauty, which must be reviewed in imagery."
+          }
+        ],
+        "searchProgram": {
+          "steps": [
+            {
+              "id": "named_places",
+              "tool": "search_places",
+              "inputs": [],
+              "queries": [
+                "waterfront parks",
+                "waterfront promenades",
+                "beaches"
+              ],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": true,
+              "weights": [],
+              "visualIntent": "Discover candidate waterfront settings, not evidence of women's presence."
+            },
+            {
+              "id": "water",
+              "tool": "search_geography",
+              "inputs": [],
+              "queries": [],
+              "geographicKinds": [
+                "waterside"
+              ],
+              "osmFeatures": [],
+              "combination": "any",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Locate mapped waterfront geography."
+            },
+            {
+              "id": "waterfront_places",
+              "tool": "filter_geography",
+              "inputs": [
+                "named_places",
+                "water"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "any",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Keep named candidates near mapped water."
+            },
+            {
+              "id": "shore_points",
+              "tool": "sample_geography",
+              "inputs": [
+                "water"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "any",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Sample accessible shoreline viewpoints as additional waterside candidates."
+            },
+            {
+              "id": "candidates",
+              "tool": "union",
+              "inputs": [
+                "waterfront_places",
+                "shore_points"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [
+                1,
+                4
+              ],
+              "visualIntent": "Combine water-filtered named settings and shoreline samples."
+            },
+            {
+              "id": "images",
+              "tool": "collect_images",
+              "inputs": [
+                "candidates"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Collect available historical imagery from the waterside candidates."
+            },
+            {
+              "id": "assessments",
+              "tool": "score_images",
+              "inputs": [
+                "images"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Require actual visible women and visible water or shoreline; assess beauty subjectively without treating empty settings as matches."
+            },
+            {
+              "id": "ranked",
+              "tool": "rank_results",
+              "inputs": [
+                "assessments"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Rank matching views by requested subject appearance and photographic quality."
+            }
+          ],
+          "output": "ranked"
+        },
+        "searchBranches": [],
+        "geographicCombination": "all",
+        "featureCombination": "all",
+        "osmFeatures": [],
+        "geographicKinds": [],
+        "scoringIntent": "Require women visibly present in a waterside setting with visible water or shoreline. Evaluate the requested beauty subjectively from the image. Do not substitute empty portrait backgrounds or infer current presence.",
+        "poiQueries": [],
+        "locationQuery": null,
+        "useMapCenter": true,
+        "photoStyles": [
+          "waterside"
+        ],
+        "radiusMeters": 5000,
+        "preferences": "Favor appealing composition and a flattering presentation of the visible subjects.",
+        "explanation": "Explore waterfront places and mapped shore viewpoints within 5,000 meters of the map center, then review imagery for both visible women and the required waterside setting.",
+        "clarification": null
+      },
+      "failures": [],
+      "seconds": 15.639
+    },
+    {
+      "case": "explicit-portrait-purpose",
+      "repeat": 1,
+      "input": {
+        "query": "Places suitable for photographing a woman, with a water backdrop",
+        "lat": 41.8827,
+        "lon": -87.6233,
+        "radius": 5000,
+        "photoStyles": [
+          "waterside"
+        ]
+      },
+      "expected": {
+        "subjectRole": "portrait-background",
+        "noRequiredPerson": true,
+        "visualRequired": [
+          [
+            "water",
+            "waterside"
+          ]
+        ],
+        "moods": [
+          "waterside"
+        ]
+      },
+      "plan": {
+        "action": "search",
+        "normalizedQuery": "Places suitable for photographing a woman, with a water backdrop",
+        "intentSummary": "Find portrait settings with visible water behind a suitable subject position.",
+        "subjectRole": "portrait-background",
+        "assumptions": [
+          "The woman need not already appear in the imagery.",
+          "Any lake, river, or sea backdrop is suitable."
+        ],
+        "feedback": "",
+        "requirements": [
+          {
+            "expression": "Waterside setting with visible water as the portrait backdrop",
+            "strength": "required",
+            "route": "geography",
+            "evidence": "combined",
+            "stepIds": [
+              "water",
+              "waterfront_places",
+              "waterfront_filter",
+              "shore_points"
+            ]
+          },
+          {
+            "expression": "Composition and subject placement suitable for photographing a woman with water behind her; an existing person is not required",
+            "strength": "required",
+            "route": "visual",
+            "evidence": "visual",
+            "stepIds": []
+          }
+        ],
+        "sourceCoverage": [
+          {
+            "subject": "Waterside portrait settings",
+            "usefulTools": [
+              "search_places",
+              "search_geography"
+            ],
+            "stepIds": [
+              "waterfront_places",
+              "water"
+            ],
+            "reason": "Places can discover named waterfront settings, while geography supplies shoreline alternatives and spatial verification. Portrait suitability and visible water require image review rather than object tags."
+          }
+        ],
+        "searchProgram": {
+          "steps": [
+            {
+              "id": "waterfront_places",
+              "tool": "search_places",
+              "inputs": [],
+              "queries": [
+                "waterfront parks",
+                "waterfront promenades",
+                "waterfront viewpoints"
+              ],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": true,
+              "weights": [],
+              "visualIntent": "Discover waterfront parks, promenades, and viewpoints as optional portrait-setting candidates."
+            },
+            {
+              "id": "water",
+              "tool": "search_geography",
+              "inputs": [],
+              "queries": [],
+              "geographicKinds": [
+                "waterside"
+              ],
+              "osmFeatures": [],
+              "combination": "any",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Locate water and shoreline geometry for water-backdrop settings."
+            },
+            {
+              "id": "waterfront_filter",
+              "tool": "filter_geography",
+              "inputs": [
+                "waterfront_places",
+                "water"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "any",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Keep named candidates in waterside locations; confirm the actual water backdrop in imagery."
+            },
+            {
+              "id": "shore_points",
+              "tool": "sample_geography",
+              "inputs": [
+                "water"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "any",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Sample shoreline road and path viewpoints that may offer water-backed portrait compositions."
+            },
+            {
+              "id": "candidates",
+              "tool": "union",
+              "inputs": [
+                "waterfront_filter",
+                "shore_points"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [
+                1,
+                4
+              ],
+              "visualIntent": "Combine named waterside settings with broader shoreline viewpoints."
+            },
+            {
+              "id": "images",
+              "tool": "collect_images",
+              "inputs": [
+                "candidates"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Collect directional imagery of the candidate portrait settings."
+            },
+            {
+              "id": "assessments",
+              "tool": "score_images",
+              "inputs": [
+                "images"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Require a visible water backdrop and suitable portrait subject placement, without requiring an existing woman in the image."
+            },
+            {
+              "id": "results",
+              "tool": "rank_results",
+              "inputs": [
+                "assessments"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Rank matching settings by portrait composition and quality of the water backdrop."
+            }
+          ],
+          "output": "results"
+        },
+        "searchBranches": [],
+        "geographicCombination": "all",
+        "featureCombination": "all",
+        "osmFeatures": [],
+        "geographicKinds": [],
+        "scoringIntent": "Find settings suitable for photographing a woman with a clearly visible water backdrop. Verify room for subject placement and a composition that keeps water behind the intended subject. Existing people are not required. Prefer attractive shoreline compositions and unobstructed water views.",
+        "poiQueries": [],
+        "locationQuery": null,
+        "useMapCenter": true,
+        "photoStyles": [
+          "waterside"
+        ],
+        "radiusMeters": 5000,
+        "preferences": "Attractive shoreline compositions, unobstructed water views, and useful portrait framing.",
+        "explanation": "Within 5,000 meters of the map center, combine waterfront place suggestions filtered to water with sampled shoreline viewpoints, then review imagery for suitable portrait composition and visible water.",
+        "clarification": null
+      },
+      "failures": [],
+      "seconds": 14.9
+    },
+    {
+      "case": "subject-mood-conflict",
+      "repeat": 1,
+      "input": {
+        "query": "Women in urban streets instead of a waterside setting",
+        "lat": 41.8827,
+        "lon": -87.6233,
+        "radius": 5000,
+        "photoStyles": [
+          "waterside"
+        ]
+      },
+      "expected": {
+        "subjectRole": "existing-subject",
+        "requiredVisualAny": [
+          [
+            "woman",
+            "women"
+          ]
+        ],
+        "moods": [
+          "urban"
+        ],
+        "moodsForbidden": [
+          "waterside"
+        ]
+      },
+      "plan": {
+        "action": "search",
+        "normalizedQuery": "Women in urban streets instead of a waterside setting",
+        "intentSummary": "Find images showing women in urban streets, not waterside settings.",
+        "subjectRole": "existing-subject",
+        "assumptions": [
+          "The request for visible women overrides the supplied scene role.",
+          "Urban replaces the Waterside mood.",
+          "Historical imagery can show people but cannot establish who is present now."
+        ],
+        "feedback": "",
+        "requirements": [
+          {
+            "expression": "Women are visibly present",
+            "strength": "required",
+            "route": "visual",
+            "evidence": "visual",
+            "stepIds": []
+          },
+          {
+            "expression": "The women are in an urban street setting",
+            "strength": "required",
+            "route": "visual",
+            "evidence": "visual",
+            "stepIds": []
+          },
+          {
+            "expression": "A waterside setting",
+            "strength": "forbidden",
+            "route": "visual",
+            "evidence": "visual",
+            "stepIds": []
+          }
+        ],
+        "sourceCoverage": [],
+        "searchProgram": {
+          "steps": [
+            {
+              "id": "urban_imagery",
+              "tool": "area_imagery",
+              "inputs": [],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Explore urban street imagery for women already visible in the scene, without waterside discovery hints."
+            },
+            {
+              "id": "images",
+              "tool": "collect_images",
+              "inputs": [
+                "urban_imagery"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Collect candidate imagery and directional views."
+            },
+            {
+              "id": "assessments",
+              "tool": "score_images",
+              "inputs": [
+                "images"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Require visible women in an urban street setting; reject waterside settings and images lacking the requested people."
+            },
+            {
+              "id": "results",
+              "tool": "rank_results",
+              "inputs": [
+                "assessments"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Rank matching views by subject clarity and urban street photographic quality."
+            }
+          ],
+          "output": "results"
+        },
+        "searchBranches": [],
+        "geographicCombination": "all",
+        "featureCombination": "all",
+        "osmFeatures": [],
+        "geographicKinds": [],
+        "scoringIntent": "Require women visibly present in urban streets rather than a waterside setting. Favor clear subjects and compelling urban street compositions; do not accept empty streets merely suitable for future portraits.",
+        "poiQueries": [],
+        "locationQuery": null,
+        "useMapCenter": true,
+        "photoStyles": [
+          "urban"
+        ],
+        "radiusMeters": 5000,
+        "preferences": "Compelling urban street composition.",
+        "explanation": "Explore imagery within 5,000 meters of the map center using urban discovery hints, then review images for visible women in streets and exclude waterside settings.",
+        "clarification": null
+      },
+      "failures": [],
+      "seconds": 9.932
+    },
+    {
+      "case": "typo-portrait",
+      "repeat": 1,
+      "input": {
+        "query": "beautidul woman",
+        "lat": 41.8827,
+        "lon": -87.6233,
+        "radius": 5000,
+        "photoStyles": [
+          "waterside"
+        ]
+      },
+      "expected": {
+        "subjectRole": "existing-subject",
+        "requiredVisualAny": [
+          [
+            "woman",
+            "women"
+          ]
+        ],
+        "moods": [
+          "waterside"
+        ]
+      },
+      "plan": {
+        "action": "search",
+        "normalizedQuery": "beautiful woman",
+        "intentSummary": "Find waterside imagery showing a woman, with beauty assessed subjectively.",
+        "subjectRole": "existing-subject",
+        "assumptions": [
+          "Corrected “beautidul” to “beautiful.”",
+          "The wording requests a visible woman rather than a background for a future portrait.",
+          "Retained the compatible Waterside mood; historical imagery does not establish current presence."
+        ],
+        "feedback": "",
+        "requirements": [
+          {
+            "expression": "A woman is visibly present, with beauty assessed as a subjective visual criterion",
+            "strength": "required",
+            "route": "visual",
+            "evidence": "visual",
+            "stepIds": []
+          },
+          {
+            "expression": "Waterside setting with visible water or shoreline",
+            "strength": "required",
+            "route": "geography",
+            "evidence": "combined",
+            "stepIds": [
+              "water",
+              "waterfront_places",
+              "filter_waterfront",
+              "shore_points"
+            ]
+          }
+        ],
+        "sourceCoverage": [
+          {
+            "subject": "Waterside setting",
+            "usefulTools": [
+              "search_places",
+              "search_geography"
+            ],
+            "stepIds": [
+              "waterfront_places",
+              "water"
+            ],
+            "reason": "Places discovers named waterfront destinations, while geography provides independent shoreline coverage. Neither retrieves individual women or beauty; those conditions require pixel review."
+          }
+        ],
+        "searchProgram": {
+          "steps": [
+            {
+              "id": "waterfront_places",
+              "tool": "search_places",
+              "inputs": [],
+              "queries": [
+                "waterfront parks",
+                "waterfront promenades",
+                "waterfront viewpoints"
+              ],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": true,
+              "weights": [],
+              "visualIntent": "Discover optional named waterfront settings where relevant imagery may be available."
+            },
+            {
+              "id": "water",
+              "tool": "search_geography",
+              "inputs": [],
+              "queries": [],
+              "geographicKinds": [
+                "waterside"
+              ],
+              "osmFeatures": [],
+              "combination": "any",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Locate water and shoreline geometry."
+            },
+            {
+              "id": "filter_waterfront",
+              "tool": "filter_geography",
+              "inputs": [
+                "waterfront_places",
+                "water"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "any",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Keep named candidates adjacent to water."
+            },
+            {
+              "id": "shore_points",
+              "tool": "sample_geography",
+              "inputs": [
+                "water"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "any",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Sample accessible shoreline viewpoints independently of named places."
+            },
+            {
+              "id": "candidates",
+              "tool": "union",
+              "inputs": [
+                "filter_waterfront",
+                "shore_points"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [
+                1,
+                4
+              ],
+              "visualIntent": "Combine water-adjacent named places with broader shoreline coverage."
+            },
+            {
+              "id": "images",
+              "tool": "collect_images",
+              "inputs": [
+                "candidates"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Collect available imagery for waterside candidates."
+            },
+            {
+              "id": "assessments",
+              "tool": "score_images",
+              "inputs": [
+                "images"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Require a visibly present woman and visible water or shoreline; assess beauty subjectively without inferring current presence."
+            },
+            {
+              "id": "results",
+              "tool": "rank_results",
+              "inputs": [
+                "assessments"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Rank matching views without substituting empty settings when subject imagery is scarce."
+            }
+          ],
+          "output": "results"
+        },
+        "searchBranches": [],
+        "geographicCombination": "all",
+        "featureCombination": "all",
+        "osmFeatures": [],
+        "geographicKinds": [],
+        "scoringIntent": "Require a woman actually visible in a waterside setting with visible water or shoreline. Assess the requested beauty subjectively. Do not substitute empty portrait backgrounds for the requested subject.",
+        "poiQueries": [],
+        "locationQuery": null,
+        "useMapCenter": true,
+        "photoStyles": [
+          "waterside"
+        ],
+        "radiusMeters": 5000,
+        "preferences": "Favor aesthetically appealing compositions.",
+        "explanation": "Discover water-adjacent named places and sampled shoreline viewpoints within 5,000 meters of the map center, then review their imagery for the requested visible woman and waterside setting.",
+        "clarification": null
+      },
+      "failures": [],
+      "seconds": 14.169
+    }
+  ]
+}

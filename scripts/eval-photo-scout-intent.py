@@ -92,6 +92,8 @@ def checks(plan,expected):
         check(unconstrained(plan['searchProgram']['output']),'preference_became_hard_filter')
     if 'subjectRole' in expected:check(plan.get('subjectRole')==expected['subjectRole'],'wrong_subject_role')
     if 'evidence' in expected:check(any(r.get('evidence')==expected['evidence'] for r in plan.get('requirements',[])),'wrong_evidence_mode')
+    for group in expected.get('requiredVisualAny',[]):
+        check(any(r['strength']=='required' and r.get('evidence') in ('visual','combined') and any(token.lower() in r['expression'].lower() for token in group) for r in plan.get('requirements',[])),'required_visual_subject_missing:'+str(group))
     if expected.get('noRequiredPerson'):
         positives=('woman is visible','visible woman','people are visible','person is visible','existing woman')
         check(not any(r['strength']=='required' and any(w in r['expression'].lower() for w in positives) and not any(n in r['expression'].lower() for n in ('not require','without requiring','need not')) for r in plan.get('requirements',[])),'required_existing_person')
