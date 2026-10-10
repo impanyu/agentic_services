@@ -9,7 +9,7 @@ must disclose actual sampled sources; no claim of whole-world street-view covera
 | Wikimedia Commons | Geotagged landmark/scenic photos | Connected and live image/model test verified | Broaden regional quality tests; preserve file-level license, author and geotag caveat |
 | Panoramax federated catalog | Street-level camera imagery from public institutions and community instances | Deployed; Paris metadata + actual image retrieval verified on production VM; six-image multimodal comparison and live browser example verified; approved image hosts IGN and OSM France only | Broaden regional coverage/freshness tests |
 | Mapillary | Crowdsourced street-level imagery | Adapter exists; no token configured; not live-verified | Obtain developer token through secure configuration; verify real imagery and attribution |
-| KartaView | Crowdsourced street imagery | Official public API probed twice; timeouts; not connected | Resolve network/API availability before enabling |
+| KartaView | Crowdsourced street imagery | October 10 follow-up: nearby-photo metadata retrieved in Shanghai; Chengdu sample empty; not connected | Validate media retrieval, coverage and attribution before enabling |
 | Google Street View | Outdoor panorama discovery and agent image inspection | Deployed and enabled; actual Google images inspected in a production multimodal run alongside Panoramax and Commons; dedicated API/IP-restricted key and persistent daily image cap; commercial inference permission unverified | Verify real image/model path; request Google confirmation of commercial inference and downstream output scope |
 | Google Places Photos | Place-associated contributor photos | October 10: real retrieval verified; now integrated with POI image discovery, batch scoring, report previews and selfie backgrounds | Preserve Google Maps and author attribution; resolve downstream-use authorization separately |
 | Google Maps Grounding Lite | Official LLM place context | Not connected; not an image analysis substitute | Evaluate alongside a Google-compliant display and storage design |
@@ -129,3 +129,41 @@ functionality, not a conclusion about provider authorization. Authorization revi
 remains separate. No authorization gate was added to the existing Street View
 portrait API. Mapillary still needs a developer token; domestic providers remain
 unconnected as documented in the regional plan.
+
+## Non-Google coverage review (October 10, 2026)
+
+Priority is a combination of directional panoramas and ordinary real photographs,
+not a promise that one provider replaces Google everywhere.
+
+| Priority | Source | Evaluation outcome |
+|---|---|---|
+| China: first | AMap POI photos | Official POI Search 2.0 supports optional `photos` with title and image URL, alongside keyword/nearby searches. No credentials or real retrieval verified here. Place association does not establish camera location, heading or synthesis rights. |
+| China: panorama | Baidu Panorama static API | Official service supports directional images; advanced paid activation or an approved 15-day trial is required. No purchase or trial requested. Display access alone does not establish commercial image-editing permission. |
+| Global: next open source | KartaView | Official nearby-photo POST endpoint works for the Shanghai sample; coverage varies. Preserve CC BY-SA 4.0 requirements and credit Grab/KartaView contributors. |
+| Global: enable existing adapter | Mapillary | Existing fixed-photo adapter still requires a developer application/token. Regional coverage must be measured after configuration. |
+| Global: scenic photographs | Flickr | Official search supports latitude/longitude/radius plus text. Commercial API use requires prior arrangement; individual photo licenses still apply. |
+| China: partnerships | 720yun and tourism/photographer collections | 720yun's published APIs describe creation/editing of projects and a viewer SDK, not unrestricted geographic search of its entire public image library. Evaluate a specific licensed collection or partner agreement instead. |
+
+Bounded KartaView metadata probes from the development machine used
+`POST https://api.openstreetcam.org/1.0/list/nearby-photos/`, radius 2000 m,
+`ipp=20`, page 1:
+
+- Chengdu center 30.657, 104.066: HTTP 200 / API code 600, zero records.
+- Shanghai center 31.2304, 121.4737: HTTP 200 / API code 600, 20 records returned;
+  provider reported 981 total matching records. This is not a count of distinct
+  viewpoints or quality-approved photographs.
+- Jakarta center -6.2, 106.84: timed out within the 12-second probe bound.
+
+These probes establish metadata availability only. No source images were downloaded,
+no model calls were made, and no production provider was added or changed. They do
+not establish provider-wide outages, China-wide coverage or Mainland reachability.
+
+References:
+- [KartaView nearby-photo API](https://api.openstreetcam.org/api/doc.html)
+- [KartaView terms and image license](https://kartaview.org/terms)
+- [AMap POI Search 2.0](https://developer.amap.com/api/webservice/guide/api-advanced/newpoisearch)
+- [Baidu Panorama static API](https://lbs.baidu.com/docs/webapi?title=viewstatic/index)
+- [Mapillary FAQ](https://help.mapillary.com/hc/en-us/articles/8348198426396-Mapillary-FAQ)
+- [Flickr geographic/text search](https://www.flickr.com/services/api/flickr.photos.search.html)
+- [Flickr API terms](https://www.flickr.com/help/terms/api)
+- [720yun open platform](https://www.720yun.com/paidan/openplatform?targetId=api)
