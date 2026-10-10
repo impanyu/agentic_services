@@ -1,0 +1,4 @@
+const {test}=require('node:test'),assert=require('node:assert/strict'),vm=require('node:vm'),{readFileSync}=require('node:fs');
+function fixture(){const source=readFileSync('photo-scout-site/app.js','utf8'),ctx={},handlers={};vm.runInNewContext(source.slice(source.indexOf('function bindHistoryRow('),source.indexOf('function renderHistory(')),ctx);let opens=0;const row={classList:{add(){}},addEventListener:(name,handler)=>handlers[name]=handler};ctx.bindHistoryRow(row,()=>opens++);return {click:interactive=>handlers.click({target:{closest:()=>interactive}}),opens:()=>opens};}
+test('history row blank space and text open the record once',()=>{const f=fixture();f.click(null);assert.equal(f.opens(),1);});
+test('checkbox, View, publication and remove controls are not activated a second time by the row',()=>{const f=fixture();for(const control of ['input','button','a','label','select','textarea','summary'])f.click({tagName:control});assert.equal(f.opens(),0);});

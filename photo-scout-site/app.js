@@ -408,6 +408,9 @@ function removeHistoryButton(entry){
  });
  return button;
 }
+function bindHistoryRow(row,openEntry){
+ row.classList.add('history-row-open');row.addEventListener('click',event=>{if(event.target.closest('button,input,a,label,select,textarea,summary'))return;openEntry();});
+}
 function renderHistory(){
  el('photo-retention-note').textContent=authUser?'Photos are saved permanently to your account.':'Guest photos are deleted after 7 days without a visit. Sign in to keep them permanently.';
  const root=el('history-items'),photosRoot=el('photo-items'),entries=historyEntries(),searches=entries.filter(e=>e.kind==='search'),photos=entries.filter(e=>e.kind==='portrait');root.replaceChildren();photosRoot.replaceChildren();const active=taskRecords.filter(t=>['queued','checking','running'].includes(t.state)).length;root.append(node('p',active+' / 5 active tasks','small'));el('history-count').textContent=String(searches.length);el('photo-count').textContent=String(photos.length);
@@ -438,7 +441,7 @@ function renderHistory(){
   if(h){const check=node('input');check.type='checkbox';check.checked=h.checked;check.setAttribute('aria-label','Show search: '+entry.label);check.addEventListener('change',()=>{h.checked=check.checked;persistHistory();renderHistory();drawHistoryMap({fit:true});});label.append(check);}
   const text=node('span'),detail=h?`${h.radius/1000} km · ${allPoiViews(h.result).length} places`:(entry.kind==='portrait'?'Selfie · ':'')+(entry.state==='running'&&entry.kind==='search'?({sources:'Finding photos',exploring:'Exploring viewpoints',scoring:'Checking photos'}[entry.task?.context?.stage]||'Resolving location'):entry.state);
   const openEntry=()=>h?showHistorySearch(h.result,h.result.searchContext,h):viewSavedTask(entry.task);
-  text.setAttribute('role','button');text.tabIndex=0;text.className='history-open';text.addEventListener('click',openEntry);text.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();openEntry();}});
+  text.setAttribute('role','button');text.tabIndex=0;text.className='history-open';bindHistoryRow(row,openEntry);text.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();openEntry();}});
   text.append(node('strong',entry.label),node('small',`${new Date(entry.created).toLocaleString()} · ${detail}`));label.append(text);
   const pending=['queued','running','checking'].includes(entry.state),view=node('button',pending?'Progress':entry.state==='failed'?'Details':entry.kind==='portrait'?'View photo':'View');view.type='button';
   view.addEventListener('click',openEntry);
