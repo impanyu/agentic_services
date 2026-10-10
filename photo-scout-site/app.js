@@ -445,8 +445,12 @@ let studioBusy=false,studioActivityMarker=null;
 let studioJob=null,studioFile=null,studioSpot=null,studioUrl=null,studioPreviewUrl=null,studioTimer=null,studioPrepared=null,studioUploadGeneration=0,studioOutputFile=null,studioOutputGeneration=0;
 const studio=node('dialog',null,'photo-studio');studio.setAttribute('aria-label','Photo studio');
 const studioTop=node('div',null,'studio-heading'),studioTitle=node('h2','Take a selfie here'),studioClose=node('button','Close ×');studioClose.type='button';studioTop.append(studioTitle,studioClose);
-const studioPlace=node('p',null,'small'),studioImages=node('div',null,'studio-inputs'),scenePreview=node('img'),personPreview=node('img');scenePreview.alt='Selected background';personPreview.alt='Your uploaded photo';personPreview.hidden=true;studioImages.append(scenePreview,personPreview);
-const uploadLabel=node('label','Your photo · JPG, PNG, WebP or HEIC, up to 20 MB · automatically resized','studio-upload'),studioUpload=node('input');studioUpload.type='file';studioUpload.accept='image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif';uploadLabel.append(studioUpload);
+const studioPlace=node('p',null,'small'),studioImages=node('div',null,'studio-inputs'),scenePreview=node('img'),personPreview=node('img');scenePreview.alt='Selected background';personPreview.alt='Your uploaded photo';personPreview.hidden=true;
+const studioScene=node('figure',null,'studio-image-card'),studioPerson=node('figure',null,'studio-image-card'),studioPersonFrame=node('div',null,'studio-person-frame'),personPlaceholder=node('img',null,'studio-person-placeholder');
+personPlaceholder.src='./selfie-placeholder.svg';personPlaceholder.alt='A person silhouette showing where your selfie goes';
+studioScene.append(scenePreview,node('figcaption','Background'));studioPersonFrame.append(personPlaceholder,personPreview);studioPerson.append(studioPersonFrame,node('figcaption','Your selfie'));studioImages.append(studioScene,studioPerson);
+const studioIntro=node('p','Upload a selfie or portrait of yourself. We’ll combine your photo with the background on the left to create a natural-looking photo of you in this scene.','studio-intro');
+const uploadLabel=node('label','Upload your selfie · JPG, PNG, WebP or HEIC, up to 20 MB · automatically resized','studio-upload'),studioUpload=node('input');studioUpload.type='file';studioUpload.accept='image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif';uploadLabel.append(studioUpload);
 let studioStyle='natural';
 const studioStyles=node('fieldset',null,'studio-styles'),studioStyleLegend=node('legend','Photo style'),studioStyleGrid=node('div',null,'studio-style-grid'),studioStyleHint=node('p','Relaxed pose, soft smile, your original outfit.','small');
 const portraitStyles=[['natural','Natural','Relaxed pose, soft smile, your original outfit.'],['street','Street style','Confident pose, contemporary urban clothing, candid expression.'],['cinematic','Cinematic','Expressive pose, understated clothing, a thoughtful look.'],['vacation','Vacation','Relaxed holiday pose, comfortable clothing, a cheerful smile.'],['editorial','Editorial','Elegant pose, refined clothing, a polished magazine look.']];
@@ -468,7 +472,7 @@ const studioSave=node('button','Save to Photos','studio-save');studioSave.type='
 const studioSaveHint=node('p',null,'studio-save-hint small');studioSaveHint.setAttribute('role','status');studioSaveHint.hidden=true;
 const studioDownload=node('a','Download PNG','studio-download');studioDownload.hidden=true;studioDownload.download='photo-scout-ai-photo.png';
 const studioPending=node('div',null,'studio-job-progress');studioPending.hidden=true;studioPending.setAttribute('role','status');studioPending.setAttribute('aria-live','polite');
-studio.append(studioTop,studioPlace,studioPending,studioImages,uploadLabel,studioStyles,studioOptions,poseLabel,studioNote,studioGenerate,studioStatus,studioResult,studioSave,studioDownload,studioSaveHint);document.body.append(studio);
+studio.append(studioTop,studioPlace,studioPending,studioIntro,studioImages,uploadLabel,studioStyles,studioOptions,poseLabel,studioNote,studioGenerate,studioStatus,studioResult,studioSave,studioDownload,studioSaveHint);document.body.append(studio);
 // This separate map layer survives shortlist/history redraws and dialog closure.
 const selfieActivityLayer=L.layerGroup().addTo(map);
 const studioTask=node('button',null,'selfie-task');studioTask.type='button';studioTask.hidden=true;studioTask.setAttribute('aria-live','polite');

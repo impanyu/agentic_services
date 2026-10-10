@@ -214,3 +214,13 @@ html:has(body.photo-app),body.photo-app{height:100%;overflow:hidden}.photo-app m
 @media(max-width:760px){#published-menu{width:132px}#published-menu>summary{font-size:11px;border-radius:12px}.map-overlay-controls{gap:4px}.map-overlay-controls .map-account button,.map-overlay-controls .map-toolbar>summary,.map-overlay-controls .map-details>summary,.map-overlay-controls .search-history>summary,#published-menu>summary{height:38px;min-height:38px}.map-overlay-controls .center-map{width:34px;height:34px}.map-overlay-controls .leaflet-control-layers-toggle{width:34px;height:34px}}
 
 .studio-job-progress{display:flex;align-items:center;gap:12px;padding:16px;margin:14px 0;border:1px solid #bea2d7;border-radius:16px;background:linear-gradient(120deg,#f1e6fc,#f6f3ff);color:#563774}.studio-job-progress[hidden]{display:none}.studio-job-progress strong{font-size:17px}.studio-job-progress p{margin:5px 0 0}.studio-job-progress button{flex-shrink:0;border:1px solid #baa1d2;border-radius:10px;background:#fff;color:#654583;padding:9px}.studio-progress-icon{font-size:27px}.studio-job-progress[data-state=running] .studio-progress-icon,.studio-job-progress[data-state=queued] .studio-progress-icon,.studio-job-progress[data-state=checking] .studio-progress-icon{animation:selfie-twinkle 1.5s ease-in-out infinite}@media(max-width:760px){.studio-job-progress{flex-wrap:wrap;padding:12px}.studio-job-progress>div{flex:1;min-width:190px}.studio-job-progress button{margin-left:38px}}@media(prefers-reduced-motion:reduce){.studio-progress-icon{animation:none!important}}
+
+/* Keep the background and upload example side by side at every screen size. */
+.studio-intro{font-size:14px;line-height:1.55;margin:12px 0;color:#665b70}
+.studio-inputs{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+.studio-image-card{margin:0;min-width:0}
+.studio-inputs .studio-image-card>img,.studio-inputs .studio-person-frame>img{display:block;width:100%;height:180px;object-fit:contain;border-radius:15px;background:#f1ecf5}
+.studio-person-frame{position:relative;height:180px;border-radius:15px;overflow:hidden}
+.studio-person-frame>img:not(.studio-person-placeholder){position:absolute;inset:0}
+.studio-image-card figcaption{text-align:center;font-size:12px;font-weight:650;color:#6c557d;padding-top:8px}
+@media(max-width:600px){.studio-intro{font-size:13px;margin:10px 0}.studio-inputs{gap:8px}.studio-inputs .studio-image-card>img,.studio-inputs .studio-person-frame>img,.studio-person-frame{height:130px}.studio-image-card figcaption{font-size:11px;padding-top:6px}}
