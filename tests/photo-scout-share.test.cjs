@@ -17,7 +17,7 @@ test('clipboard failure provides manual link and does not open WeChat empty-hand
 test('publication failure closes the reserved tab and never navigates to a bad social link',async()=>{const f=fixture();f.c.json=async()=>{throw Error('Photo unavailable');};await f.buttons[2].onclick();assert.equal(f.target.closed,true);assert.equal(f.status.textContent,'Photo unavailable');assert.equal(f.destinations.length,0);});
 test('stale share controls cannot publish or share a newly opened photo',async()=>{const f=fixture();f.c.savedPhotoGeneration=2;await f.buttons[0].onclick();assert.equal(f.calls.length,0);assert.equal(f.destinations.length,0);});
 
-for(const [index,label] of [[0,'WeChat'],[1,'Facebook']]){
+for(const [index,label] of [[0,'WeChat'],[1,'Facebook'],[2,'X']]){
  test(label+' shares the prepared PNG inside the click without publishing or empty app navigation',async()=>{
   const f=fixture();let resolve,shared;
   f.c.navigator.canShare=data=>data.files?.[0]===f.c.savedPhotoFile;
@@ -42,4 +42,19 @@ test('file share failure does not claim a post succeeded or open an empty app',a
  const f=fixture();f.c.navigator.canShare=()=>true;f.c.navigator.share=async()=>{throw new Error('denied');};
  await f.buttons[1].onclick();assert.match(f.status.textContent,/Could not share/);
  assert.equal(f.calls.length,0);assert.equal(f.destinations.length,0);
+});
+
+test('X carries the photo and public link beneath its caption without republishing',async()=>{
+ const f=fixture();let shared;f.c.navigator.canShare=()=>true;f.c.navigator.share=async data=>{shared=data;};
+ f.c.ownPublications.set('photo:photo-1',{url:'https://aisoup.net/photo-scout/?published=existing'});
+ await f.buttons[2].onclick();assert.equal(shared.files[0],f.c.savedPhotoFile);
+ assert.match(shared.text,/AI-generated selfie at Lake & art/);
+ assert.ok(shared.text.endsWith('\nhttps://aisoup.net/photo-scout/?published=existing'));
+ assert.equal(f.calls.length,0);assert.equal(f.destinations.length,0);
+});
+test('X keeps photo sharing when image-plus-caption is unsupported',async()=>{
+ const f=fixture();let shared;f.c.navigator.canShare=data=>!data.text&&Boolean(data.files);
+ f.c.navigator.share=async data=>{shared=data;};
+ await f.buttons[2].onclick();assert.equal(shared.files[0],f.c.savedPhotoFile);assert.equal(shared.text,undefined);
+ assert.equal(f.calls.length,0);
 });

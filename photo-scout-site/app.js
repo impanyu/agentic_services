@@ -839,17 +839,24 @@ function renderPhotoSharing(context){
   ownPublications.set(publicationKey('photo',photoId),item);syncPublishButtons();return item;
  }
  function canSharePhoto(){try{return Boolean(savedPhotoFile&&typeof navigator.share==='function'&&typeof navigator.canShare==='function'&&navigator.canShare({files:[savedPhotoFile]}));}catch{return false;}}
- function refresh(){note.textContent=canSharePhoto()?'WeChat and Facebook share the actual photo. Choose the app in your device’s share menu, then finish sending there. X shares a public photo link.':publicItem()?'This browser cannot share photo files. WeChat copies your public link for pasting; Facebook and X open link-sharing pages.':'This browser cannot share photo files. Link sharing publishes this photo and its background info on Photo Scout. WeChat copies the link; Facebook and X open link-sharing pages.';}
+ function refresh(){note.textContent=canSharePhoto()?'All three destinations share the actual photo when supported. Choose the app in your device’s share menu, then finish sending there. X also receives a caption and link when supported.':publicItem()?'This browser cannot share photo files. WeChat copies your public link for pasting; Facebook and X open link-sharing pages.':'This browser cannot share photo files. Link sharing publishes this photo and its background info on Photo Scout. WeChat copies the link; Facebook and X open link-sharing pages.';}
  for(const [kind,label] of [['wechat','WeChat'],['facebook','Facebook'],['x','X']]){
-  const button=node('button',null,'social-tile');button.type='button';button.append(socialShareIcon(kind),node('strong',label),node('small',kind==='x'?'Share link':canSharePhoto()?'Choose app · photo':kind==='wechat'?'Copy photo link':'Share photo link'));buttons.push(button);destinations.append(button);
+  const button=node('button',null,'social-tile');button.type='button';button.append(socialShareIcon(kind),node('strong',label),node('small',canSharePhoto()?'Choose app · photo':kind==='wechat'?'Copy photo link':'Share photo link'));buttons.push(button);destinations.append(button);
   button.onclick=async()=>{
    if(!current()||busy)return;busy=true;buttons.forEach(b=>b.disabled=true);status.textContent='Preparing your photo link…';
-   if(kind!=='x'&&canSharePhoto()){
+   if(canSharePhoto()){
     // The PNG is already prepared. Invoke share before any asynchronous work
     // so iOS keeps the original button's user activation.
     const file=savedPhotoFile;status.textContent='Choose '+label+' in your device’s share menu.';
     try{
-     await navigator.share({files:[file]});
+     const data={files:[file]};
+     if(kind==='x'){
+      const caption=text+'\n'+(publicItem()?.url||location.origin+'/photo-scout/');
+      // Keep the image mandatory; append text only if the complete payload is
+      // supported. Receiving apps can still choose to ignore captions.
+      try{if(navigator.canShare({files:[file],text:caption}))data.text=caption;}catch{}
+     }
+     await navigator.share(data);
      if(current())status.textContent='Photo handed to the sharing app. Finish sending or posting there.';
     }catch(error){
      if(current())status.textContent=error.name==='AbortError'?'Sharing canceled. Your photo is still saved.':'Could not share the photo. Try Send to or download the PNG and attach it in '+label+'.';
