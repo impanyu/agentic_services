@@ -214,3 +214,11 @@ def test_selfie_framing_is_saved_separately_from_place_and_public_snapshots(publ
     result=restarted.get('/photo-scout/v1/report/search').json()['result']
     assert result['spots'][0]['viewHeadingDegrees']==180
     assert result['selfieViews']['poi1']['viewHeadingDegrees']==210
+
+
+def test_published_spots_keep_visual_score_separate_from_location_preference():
+    from agentic_services.photo_scout.publications import public_spot
+    result=public_spot({'name':'View','score':95,'visualScore':75,'locationPriorityBonus':20,'centerDistanceMeters':12,'internal':'private'})
+    assert result['score']==95 and result['visualScore']==75
+    assert result['locationPriorityBonus']==20 and result['centerDistanceMeters']==12
+    assert 'internal' not in result

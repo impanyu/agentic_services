@@ -21,6 +21,11 @@ fields. Their retrieval conditions belong to program steps only.
 
 Return one canonical locationQuery for geocoding, including stated city/country; translate
 known names to recognized English/local spelling (巴黎铁塔 => Eiffel Tower, Paris, France).
+For a sculpture/installation attached to an explicitly named venue, use that exact
+venue's recognized map name as locationQuery (retain its original local-language name
+when useful). Do not substitute another attraction sharing the same animal/theme.
+Describe the artwork in intent only when it is a requested visual subject; for a bare
+anchor, decorative descriptions must not obscure the venue identity in geocoding.
 Never invent coordinates. If no explicit place, useMapCenter=true, locationQuery=null.
 A category/chain ('motel', 'Starbucks') is a target near the map, not a location, unless a
 specific branch/address is given. Lakeview, Lake Forest, River North and Venice Beach
