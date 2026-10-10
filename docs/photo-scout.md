@@ -395,3 +395,11 @@ All local/public release checks passed, as did 60 backend tests and the gateway
 TypeScript check. These checks did not spend money and do not prove a settled payment.
 Smithery login requires GitHub email access plus gist/star/watch permissions and is
 awaiting the owner's action-time confirmation before authorization and submission.
+
+## Public searches, places and generated photos
+
+Publish is an explicit action in Search history, a place card/map popup, or the saved-photo viewer. Each publication has a share URL (`/photo-scout/?published=<id>`) and appears in the Published menu and map layer. Public search snapshots contain every visible, scored photo place in that search; a place publication contains only that place. Generated photos use a separate thumbnail pin. Visitors can read publications without signing in.
+
+`POST /photo-scout/v1/publications` accepts `{kind: "search" | "place" | "photo", id, poiId?}`. Publication and withdrawal require the existing website gateway, a valid owner cookie, same origin, and account CSRF when signed in. `POST /photo-scout/v1/publications/withdraw` accepts the publication id and only the publisher can withdraw it. Public GET endpoints list publications (50 per page, `before` cursor), fetch a snapshot, and serve a generated photo or its thumbnail. Withdrawn publications return 404.
+
+Snapshots and generated-photo copies live independently of private task retention. Uploaded originals, task tokens and internal image-fetch references are excluded. Deleting private history does not withdraw a publication: use Unpublish in Published. Guest publications transfer to the account on sign-in while the guest session is valid. An expired/cleared guest cookie loses management access, so signing in before publication is advisable for long-term management.

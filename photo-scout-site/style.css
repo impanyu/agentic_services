@@ -205,3 +205,10 @@ html:has(body.photo-app),body.photo-app{height:100%;overflow:hidden}.photo-app m
 
 /* Keep the input visible even when the settings panel has been scrolled. */
 .scout-dock .prompt-panel{position:sticky;top:0;z-index:2;background:#fff;border-radius:14px}
+
+.publish-button{padding:8px 11px;border:1px solid #c9b5e0;border-radius:10px;background:#f2eafa;color:#684793;font-size:11px;cursor:pointer;margin:6px 0}
+.publication-actions{margin-top:12px}.publication-url{display:block;overflow-wrap:anywhere;margin:18px 0;color:#674498}.publication-dialog{width:min(520px,calc(100vw - 24px))}
+#published-menu{width:148px}#published-menu>summary{width:100%;height:44px;display:flex;align-items:center;justify-content:center;padding:9px 10px;border-radius:14px;font-size:12px}
+#published-items .history-entry-actions{flex-shrink:0;gap:5px}#published-items .history-entry-actions a{font-size:11px;padding:5px}
+.published-selfie-pin{background:none;border:0}.published-selfie-pin>span{position:relative;display:block;width:46px;height:46px;border:3px solid #ae76da;border-radius:15px;background:#fff;box-shadow:0 4px 14px #41255155}.published-selfie-pin img{display:block;width:100%;height:100%;object-fit:cover;border-radius:11px}.published-selfie-pin b{position:absolute;right:-8px;top:-8px;color:#fff;background:#8850b5;border:2px solid #fff;border-radius:50%;width:22px;height:22px;text-align:center;font-size:13px}.published-selfie-pin>span:after{content:'';position:absolute;bottom:-10px;left:15px;border-top:8px solid #ae76da;border-left:6px solid transparent;border-right:6px solid transparent}
+@media(max-width:760px){#published-menu{width:132px}#published-menu>summary{font-size:11px;border-radius:12px}.map-overlay-controls{gap:4px}.map-overlay-controls .map-account button,.map-overlay-controls .map-toolbar>summary,.map-overlay-controls .map-details>summary,.map-overlay-controls .search-history>summary,#published-menu>summary{height:38px;min-height:38px}.map-overlay-controls .center-map{width:34px;height:34px}.map-overlay-controls .leaflet-control-layers-toggle{width:34px;height:34px}}
