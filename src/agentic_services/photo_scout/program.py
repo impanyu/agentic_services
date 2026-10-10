@@ -172,7 +172,7 @@ class Tools:
         return await self.memo[key]
 
     def empty_path(self,s,targets=None,filters=None):
-        return {'targets':targets or [],'filters':filters or [],'visualIntents':[s.visualIntent] if s.visualIntent else []}
+        return {'stepIds':[s.id],'targets':targets or [],'filters':filters or [],'visualIntents':[s.visualIntent] if s.visualIntent else []}
 
     async def search_places(self,s,inputs):
         if self.poi_provider!='google-places':raise ValueError('Free-text search_places requires Google Places')
@@ -184,18 +184,26 @@ class Tools:
             raise ValueError('Places search is temporarily unavailable')
         return Places(rows,{r['id']:[self.empty_path(s,targets=[] if s.discoveryHints else [s.id])] for r in rows})
 
+    def optional_source(self,s):
+        conditions=[r for r in getattr(self.p,'requirements',[]) if r.route!='visual' and s.id in r.stepIds]
+        return bool(conditions) and all(r.strength=='preferred' for r in conditions)
+
     async def search_geography(self,s,inputs):
         p=self.p
         fs,paths,status=await self.provider(self.providers.geography,p.lat,p.lon,p.radius,s.geographicKinds,self.database)
         self.statuses[s.id]=status
-        if status.get('status')!='ok':raise ValueError('Geographic search is temporarily unavailable')
+        if status.get('status')!='ok':
+            if self.optional_source(s):return Geography([],[],s.geographicKinds,s.combination)
+            raise ValueError('Geographic search is temporarily unavailable')
         return Geography(fs,paths,s.geographicKinds,s.combination)
 
     async def search_features(self,s,inputs):
         p=self.p
         groups,status=await self.provider(self.providers.osm_features,p.lat,p.lon,p.radius,s.osmFeatures,self.database)
         self.statuses[s.id]=status
-        if status.get('status')!='ok':raise ValueError('Mapped-feature search is temporarily unavailable')
+        if status.get('status')!='ok':
+            if self.optional_source(s):return Features([],s.osmFeatures,s.combination)
+            raise ValueError('Mapped-feature search is temporarily unavailable')
         return Features(groups,s.osmFeatures,s.combination)
 
     async def sample_geography(self,s,inputs):
@@ -251,8 +259,8 @@ class Tools:
             lists=[v.paths[row['id']] for v in inputs]
             if __import__('math').prod(len(x) for x in lists)>64:raise ValueError('Too many intersection paths')
             for group in product(*lists):
-                alternatives.append({key:list(dict.fromkeys(item for path in group for item in path[key]))
-                    for key in ('targets','filters','visualIntents')})
+                alternatives.append({key:list(dict.fromkeys(item for path in group for item in path.get(key,[])))
+                    for key in ('targets','filters','visualIntents','stepIds')})
             paths[row['id']]=unique_paths(alternatives)
         return Places(rows,paths)
 
@@ -346,7 +354,8 @@ class ProgramExecution:
                 for path in locations.paths[candidate['id']]:
                     if path['targets'] and candidate['id'] not in identities:continue
                     if not all(self.tools.matches(row,by_id[f],self.values[by_id[f].inputs[-1]]) for f in path['filters']):continue
-                    public={**path,'targetQueries':[by_id[t].queries for t in path['targets']]}
+                    public={**path,'targetQueries':[by_id[t].queries for t in path['targets']],
+                        'requirementIndexes':[i for i,r in enumerate(getattr(self.tools.p,'requirements',[])) if not r.stepIds or set(r.stepIds)&set(path.get('stepIds',[]))]}
                     eligible.append(public)
             if eligible:retained.append({**row,'eligibleSearchPaths':unique_paths(eligible)})
         return retained
@@ -365,6 +374,7 @@ async def execute_program(program,parameters,providers,database_path,poi_provide
             intents=([step.visualIntent] if step.visualIntent else [])+[steps_by_id[ref].visualIntent for ref,v in zip(step.inputs,inputs) if isinstance(v,(Geography,Features)) and steps_by_id[ref].visualIntent]
             for paths in value.paths.values():
                 for path in paths:
+                    path['stepIds']=list(dict.fromkeys(path.get('stepIds',[])+[step.id]+step.inputs))
                     for intent in intents:
                         if intent not in path['visualIntents']:path['visualIntents'].append(intent)
         values[step.id]=value

@@ -102,7 +102,11 @@ def test_legacy_count_does_not_reach_interpretation_model(monkeypatch):
             seen.append(kwargs)
             assert 'limit' not in json.loads(kwargs['input'])
             assert 'limit' not in kwargs['text_format'].model_fields
-            return SimpleNamespace(output_parsed=plan())
+            return SimpleNamespace(output_parsed=intent.PlannerIntent(locationQuery=None,useMapCenter=True,
+                radiusMeters=1000,photoStyles=['waterside'],requirements=[],scoringIntent='Water views',
+                preferences='Water views',explanation='Nearby',searchProgram={'steps':[
+                {'id':'a','tool':'area_imagery'},{'id':'i','tool':'collect_images','inputs':['a']},
+                {'id':'s','tool':'score_images','inputs':['i']},{'id':'r','tool':'rank_results','inputs':['s']}],'output':'r'}))
     monkeypatch.setattr(intent,'AsyncOpenAI',Client)
     payload=intent.IntentRequest(query='architecture',lat=40,lon=-96,radius=20000,limit=3)
     result=asyncio.run(intent.resolve_intent(SimpleNamespace(openai_api_key='fixture',openai_model='test'),payload))

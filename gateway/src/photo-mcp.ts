@@ -59,7 +59,10 @@ const searchProgramSchema={type:['object','null'],additionalProperties:false,req
  osmFeatures:{type:'array',maxItems:6,items:osmFeatureSchema},combination:{enum:['all','any'],default:'all'},exclude:{type:'boolean',default:false},discoveryHints:{type:'boolean',default:false},
  weights:{type:'array',maxItems:6,items:{type:'integer',minimum:1,maximum:4}},visualIntent:{type:'string',maxLength:1000},
  }}}}}
+const requirement=z.object({expression:z.string().min(1).max(400),strength:z.enum(['required','preferred','forbidden']),route:z.enum(['places','geography','features','visual']),stepIds:z.array(z.string()).max(8)}).strict()
+const requirementSchema={type:'object',additionalProperties:false,required:['expression','strength','route','stepIds'],properties:{expression:{type:'string',minLength:1,maxLength:400},strength:{enum:['required','preferred','forbidden']},route:{enum:['places','geography','features','visual']},stepIds:{type:'array',maxItems:8,items:{type:'string'}}}}
 const photoArguments={
+  requirements:z.array(requirement).max(16).optional().describe('Condition ledger for compiled programs: required, preferred or forbidden; retrieval step IDs scope conditions to each logical branch.'),
   searchProgram:searchProgram.nullable().optional().describe('Validated data-flow program over search/spatial/set, collect_images, score_images and rank_results tools. Leave all other target/spatial fields empty; global center/radius/styles are shared. Up to 24 steps and 8 source queries.'),
   searchBranches:z.array(searchBranch).max(6).optional().describe('OR across independently constrained target groups; AND between target, geography and features inside a group. When set, leave top-level poiQueries/geographicKinds/osmFeatures empty.'),
   query:z.string().max(1000).optional().describe('Natural-language request. Explicit text overrides conflicting structured parameters.'),
@@ -77,6 +80,7 @@ const photoArguments={
   preferences:z.string().max(500).optional().describe('Additional photography preferences.'),
 }
 export const photoInputSchema={type:'object',additionalProperties:false,required:['lat','lon'],properties:{
+ requirements:{type:'array',maxItems:16,items:requirementSchema},
  searchProgram:searchProgramSchema,
  searchBranches:{type:'array',maxItems:6,items:searchBranchSchema},
  query:{type:'string',maxLength:1000},poiQueries:{type:'array',maxItems:4,items:{type:'string',minLength:1,maxLength:200}},

@@ -30,3 +30,12 @@ plans with the improved checks without rerunning the models; raw campaigns are
 unchanged. It also detects a weakened pedestrian-bridge constraint that the
 original checks missed. Do not report either check percentage as production
 accuracy. See the human review for the findings and scope limits.
+
+The typed-planner campaigns use the new tool-specific model schema and condition
+ledger. `PHOTO_SCOUT_INTENT_REASONING=low` selects the reasoning setting for a
+comparison. The `typed-planner-*-2026-10-09.json` files are immutable raw runs;
+`typed-planner-reviewed-2026-10-09.json` rechecks them with the current predicates.
+Correctly grouped lake/sea/river OR is equivalent to generic Waterside. Exclusive
+negative spatial lookups must not count as positive geography. A tiny numeric
+boundary epsilon is equivalent for these mapped-height checks. An optional
+filtered source unioned with the original target source is not a hard filter.

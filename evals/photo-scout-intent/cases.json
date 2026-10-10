@@ -530,7 +530,8 @@
       "radius": 2000,
       "queryForbidden": [
         "brick",
-        "red"
+        "red",
+        "vegan"
       ],
       "visualRequired": [
         [
@@ -542,12 +543,12 @@
       ],
       "queryAny": [
         [
-          "vegetarian",
-          "vegan"
+          "vegetarian"
         ]
-      ]
+      ],
+      "moods": []
     },
-    "reviewNotes": "Generic Chinese 素食 is ambiguous. Automatic acceptance of either term does not establish semantic equivalence; review narrower vegan-only retrieval and inferred moods."
+    "reviewNotes": "Preserve generic vegetarian scope; vegan-only retrieval is too narrow."
   },
   {
     "id": "distant-water",
@@ -743,6 +744,156 @@
         ],
         [
           "brick"
+        ]
+      ]
+    }
+  },
+  {
+    "id": "ui-waterside",
+    "text": "",
+    "input": {
+      "photoStyles": [
+        "waterside"
+      ]
+    },
+    "expected": {
+      "mapCenter": true,
+      "moods": [
+        "waterside"
+      ],
+      "geo": [
+        "waterside"
+      ],
+      "toolsRequired": [
+        "search_geography",
+        "sample_geography",
+        "filter_geography",
+        "union"
+      ],
+      "toolsForbidden": [
+        "area_imagery"
+      ],
+      "conditions": [
+        [
+          "water",
+          "required"
+        ]
+      ],
+      "waterAlternatives": true
+    }
+  },
+  {
+    "id": "ui-nature",
+    "text": "",
+    "input": {
+      "photoStyles": [
+        "nature"
+      ]
+    },
+    "expected": {
+      "moods": [
+        "nature"
+      ],
+      "toolsRequired": [
+        "search_places",
+        "search_geography",
+        "sample_geography",
+        "union"
+      ],
+      "toolsForbidden": [
+        "filter_geography"
+      ]
+    }
+  },
+  {
+    "id": "ui-adventure",
+    "text": "",
+    "input": {
+      "photoStyles": [
+        "adventure"
+      ]
+    },
+    "expected": {
+      "moods": [
+        "adventure"
+      ],
+      "toolsRequired": [
+        "search_places",
+        "search_geography",
+        "sample_geography",
+        "union"
+      ],
+      "toolsForbidden": [
+        "filter_geography"
+      ]
+    }
+  },
+  {
+    "id": "preferred-lake",
+    "text": "cafes, ideally near a lake",
+    "expected": {
+      "queryAny": [
+        [
+          "cafe",
+          "coffee"
+        ]
+      ],
+      "noPositiveSpatialFilter": true,
+      "conditions": [
+        [
+          "lake",
+          "preferred"
+        ]
+      ]
+    }
+  },
+  {
+    "id": "roof-or",
+    "text": "motels with either a red roof or a blue roof",
+    "expected": {
+      "queryRequired": [
+        "motel"
+      ],
+      "queryForbidden": [
+        "red",
+        "blue"
+      ],
+      "visualRequired": [
+        [
+          "red"
+        ],
+        [
+          "blue"
+        ],
+        [
+          "or"
+        ]
+      ]
+    }
+  },
+  {
+    "id": "forbidden-crowds",
+    "text": "coffee shops with red walls, avoid crowds, ideally vintage",
+    "expected": {
+      "queryAny": [
+        [
+          "coffee",
+          "cafe"
+        ]
+      ],
+      "queryForbidden": [
+        "red",
+        "vintage",
+        "crowd"
+      ],
+      "conditions": [
+        [
+          "crowd",
+          "forbidden"
+        ],
+        [
+          "vintage",
+          "preferred"
         ]
       ]
     }

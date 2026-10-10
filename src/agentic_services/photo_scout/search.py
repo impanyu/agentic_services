@@ -5,6 +5,7 @@ constraints filter locations, while photographic requirements remain available
 to the downstream image evaluator.
 """
 from __future__ import annotations
+from .planner import Requirement
 
 import asyncio
 import math
@@ -37,6 +38,7 @@ class SearchParameters(BaseModel):
     osmFeatures: list[OSMFeatureQuery] = Field(default_factory=list,max_length=6)
     photoStyles: list[str] | None = Field(default=None, max_length=8)
     categories: list[str] | None = Field(default=None, max_length=8)
+    requirements: list[Requirement] = Field(default_factory=list,max_length=16)
     scoringIntent: str = Field(default='', max_length=1000)
     preferences: str = Field(default='', max_length=500)
 

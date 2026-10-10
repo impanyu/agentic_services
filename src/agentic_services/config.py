@@ -40,6 +40,8 @@ class Settings:
     contact_smtp_app_password: str | None = None
     contact_ip_hash_secret: str | None = None
     contact_rate_limit_per_hour: int = 5
+    photo_scout_intent_model: str | None = None
+    photo_scout_intent_reasoning: str | None = None
 
     @classmethod
     def from_environment(cls) -> "Settings":
@@ -57,6 +59,8 @@ class Settings:
 
         return cls(
             openai_api_key=os.getenv("OPENAI_API_KEY") or None,
+            photo_scout_intent_model=os.getenv("PHOTO_SCOUT_INTENT_MODEL", "gpt-6-astra") or None,
+            photo_scout_intent_reasoning=os.getenv("PHOTO_SCOUT_INTENT_REASONING", "low") or None,
             openai_model=os.getenv("OPENAI_MODEL", "gpt-6-luna"),
             database_path=database_path,
             base_url=os.getenv("WEB_EVIDENCE_BASE_URL", "http://localhost:8000").rstrip("/"),

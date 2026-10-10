@@ -1,4 +1,5 @@
 from __future__ import annotations
+from .planner import Requirement
 
 import asyncio
 import base64
@@ -55,6 +56,7 @@ class ExploreRequest(BaseModel):
     featureCombination: Literal['all','any'] = 'all'
     osmFeatures: list[OSMFeatureQuery] = Field(default_factory=list,max_length=6)
     geographicKinds: list[GeographicKind] = Field(default_factory=list,max_length=6)
+    requirements: list[Requirement] = Field(default_factory=list,max_length=16)
     scoringIntent: str = Field(default="",max_length=1000)
     selectedPoiIds: list[str] | None = Field(default=None,max_length=50)
     poiCatalogToken: str | None = Field(default=None,max_length=40000)
@@ -413,7 +415,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
             'lat':location['lat'],'lon':location['lon'],'radius':plan['radiusMeters'],
             'photoStyles':plan['photoStyles'] or None,'preferences':plan['preferences'],
             'searchProgram':plan.get('searchProgram'),'searchBranches':plan.get('searchBranches') or [],
-            'poiQueries':plan.get('poiQueries') or [],'scoringIntent':plan.get('scoringIntent') or plan['preferences'],
+            'requirements':plan.get('requirements') or [],'poiQueries':plan.get('poiQueries') or [],'scoringIntent':plan.get('scoringIntent') or plan['preferences'],
             'geographicKinds':plan.get('geographicKinds') or [],'osmFeatures':plan.get('osmFeatures') or [],
             'geographicCombination':plan.get('geographicCombination','all'),'featureCombination':plan.get('featureCombination','all'),
             'categories':plan.get('categories'),'selectedPoiIds':None,'poiCatalogToken':None})

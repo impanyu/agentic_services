@@ -11,6 +11,7 @@ from dataclasses import replace
 from datetime import datetime,timezone
 import hashlib
 import json
+import math
 from pathlib import Path
 import statistics
 import time
@@ -23,7 +24,7 @@ def checks(plan,expected):
     steps=plan['searchProgram']['steps'] if plan.get('searchProgram') else []
     tools=[s['tool'] for s in steps]
     queries=' | '.join(q.lower() for s in steps for q in s['queries'])
-    geo=[k for s in steps for k in s['geographicKinds']]
+    geo=[k for s in steps if not (s['tool']=='search_geography' and all(n['tool']=='filter_geography' and n['exclude'] for n in steps if s['id'] in n['inputs'])) for k in s['geographicKinds']]
     visual=' '.join([plan['scoringIntent'],plan['preferences'],*(s['visualIntent'] for s in steps)]).lower()
     failures=[]
     def check(ok,name):
@@ -40,14 +41,14 @@ def checks(plan,expected):
     if expected.get('pedestrianBridge'):
         check(any(any(t['key']=='bridge' and t['value']=='yes' for t in f['filters']) and any(t['key']=='highway' and t['value'] in ('footway','path','pedestrian','steps') and t['required'] for t in f['filters']) for f in features),'footbridge_broadened_to_any_bridge')
     for key,minimum in expected.get('numericRequired',[]):
-        check(any(t['key']==key and t['minimum']==minimum for f in features for t in f['numericFilters']),'mapped_numeric_missing:'+key)
+        check(any(t['key']==key and t['minimum'] is not None and math.isclose(t['minimum'],minimum,rel_tol=1e-6,abs_tol=1e-6) for f in features for t in f['numericFilters']),'mapped_numeric_missing:'+key)
     for mood in expected.get('moodsForbidden',[]):check(mood not in plan['photoStyles'],'invented_mood:'+mood)
     for token in expected.get('queryForbidden',[]):check(token.lower() not in queries,'query_leaks:'+token)
     for group in expected.get('visualRequired',[]):check(any(t.lower() in visual for t in group),'visual_missing:'+str(group))
     for tool in expected.get('toolsRequired',[]):check(tool in tools,'tool_missing:'+tool)
     for tool in expected.get('toolsForbidden',[]):check(tool not in tools,'unexpected_tool:'+tool)
     if 'moods' in expected:check(set(plan['photoStyles'])==set(expected['moods']),'mood_override')
-    if 'geo' in expected:check(set(geo)==set(expected['geo']),'geography_role')
+    if 'geo' in expected:check(set(geo)==set(expected['geo']) or expected.get('waterAlternatives') and set(geo)=={'lake','sea','river'} and any(s['tool']=='search_geography' and s['combination']=='any' for s in steps),'geography_role')
     if 'mapCenter' in expected:check(plan['useMapCenter']==expected['mapCenter'],'location_role')
     if 'locationContains' in expected:check(expected['locationContains'].lower() in (plan['locationQuery'] or '').lower(),'proper_location')
     if 'radius' in expected:check(abs(plan['radiusMeters']-expected['radius'])<=1,'radius_units')
@@ -69,12 +70,24 @@ def checks(plan,expected):
         check('union' in tools,'branch_union')
     if expected.get('excludedGeography'):
         check(any(s['tool']=='filter_geography' and s['exclude'] for s in steps) or any(t in visual for t in ['not near','away from','not beside','exclude','avoid']),'negation_lost')
+    for expression,strength in expected.get('conditions',[]):
+        check(any(expression.lower() in r['expression'].lower() and r['strength']==strength for r in plan.get('requirements',[])), 'condition_strength:'+expression+':'+strength)
+    if expected.get('noPositiveSpatialFilter'):
+        by_id={s['id']:s for s in steps}
+        def unconstrained(ref):
+            st=by_id[ref]
+            if st['tool'] in ('filter_geography','filter_features') and not st['exclude']:return False
+            if st['tool'] in ('sample_geography','feature_points'):return False
+            if not st['inputs']:return True
+            values=[unconstrained(x) for x in st['inputs']]
+            return any(values) if st['tool']=='union' else all(values)
+        check(unconstrained(plan['searchProgram']['output']),'preference_became_hard_filter')
     return failures
 
 
 async def main(args):
     settings=Settings.from_environment()
-    if args.model:settings=replace(settings,openai_model=args.model)
+    if args.model:settings=replace(settings,photo_scout_intent_model=args.model)
     cases=json.loads(Path(args.cases).read_text())
     if args.case_ids:cases=[c for c in cases if c['id'] in args.case_ids.split(',')]
     slots=asyncio.Semaphore(args.concurrency)
@@ -95,7 +108,7 @@ async def main(args):
             print(json.dumps({'case':entry['case'],'repeat':repeat,'failures':entry['failures'],'seconds':entry['seconds']}),flush=True)
     await asyncio.gather(*(one(c,r) for c in cases for r in range(1,args.repeats+1)))
     durations=sorted(r['seconds'] for r in results)
-    summary={'model':settings.openai_model,'promptSha256':hashlib.sha256(INSTRUCTIONS.encode()).hexdigest(),
+    summary={'model':settings.photo_scout_intent_model or settings.openai_model,'reasoningEffort':settings.photo_scout_intent_reasoning,'promptSha256':hashlib.sha256(INSTRUCTIONS.encode()).hexdigest(),
         'generatedAt':datetime.now(timezone.utc).isoformat(),'cases':len(cases),'runs':len(results),
         'passed':sum(not r['failures'] for r in results),'failed':sum(bool(r['failures']) for r in results),
         'medianSeconds':round(statistics.median(durations),3),'p95Seconds':durations[min(len(durations)-1,int(len(durations)*.95))],

@@ -1,0 +1,1006 @@
+[
+  {
+    "campaign": "luna",
+    "reasoningEffort": null,
+    "rawSummary": {
+      "model": "gpt-6-luna",
+      "promptSha256": "0c2eae3004016316b930cff10da9c90e7f6ecd93c34f29cd44f2e503afa6e2da",
+      "generatedAt": "2026-10-10T04:08:44.988423+00:00",
+      "cases": 41,
+      "runs": 41,
+      "passed": 39,
+      "failed": 2,
+      "medianSeconds": 7.534,
+      "p95Seconds": 16.087,
+      "wallSeconds": 95.891,
+      "failureTypes": {
+        "runtime:APITimeoutError": 1,
+        "preference_became_hard_filter": 1
+      },
+      "scope": "Synthetic planner-only checks plus saved plans for human review; not provider execution, geocoding or visual scoring."
+    },
+    "reviewedPassed": 40,
+    "reviewedChecks": [
+      {
+        "case": "address-nearby",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "bare-address",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "blank-ui",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "blue-walls",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "brand",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "checkerboard",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "chinese",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "courtyard-bridge",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "cross-branches",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "distant-water",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "forbidden-crowds",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "height",
+        "repeat": 1,
+        "failures": [
+          "runtime:APITimeoutError"
+        ]
+      },
+      {
+        "case": "junctions",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "lake-and-forest",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "lake-forest-name",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "lake-or-sea",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "lakeside-cafe",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "lakeview-name",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "location-only",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "miles",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "mountain-view-address",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "near-signals",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "override",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "preferred-lake",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "prompt-injection",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "river-north-name",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "roof",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "roof-or",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "signals",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "soft-preference",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "spatial-negation",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "subjects-or",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "ui-adventure",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "ui-nature",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "ui-waterside",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "vegan-brick",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "vegan-chinese",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "vegetarian",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "venice-beach-name",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "visual-negation",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "wedding-purpose",
+        "repeat": 1,
+        "failures": []
+      }
+    ]
+  },
+  {
+    "campaign": "sol",
+    "reasoningEffort": null,
+    "rawSummary": {
+      "model": "gpt-6.1-sol",
+      "promptSha256": "0c2eae3004016316b930cff10da9c90e7f6ecd93c34f29cd44f2e503afa6e2da",
+      "generatedAt": "2026-10-10T04:09:22.278768+00:00",
+      "cases": 41,
+      "runs": 41,
+      "passed": 37,
+      "failed": 4,
+      "medianSeconds": 10.694,
+      "p95Seconds": 20.908,
+      "wallSeconds": 132.042,
+      "failureTypes": {
+        "mapped_numeric_missing:height": 1,
+        "runtime:APITimeoutError": 1,
+        "geography_role": 1,
+        "preference_became_hard_filter": 1
+      },
+      "scope": "Synthetic planner-only checks plus saved plans for human review; not provider execution, geocoding or visual scoring."
+    },
+    "reviewedPassed": 40,
+    "reviewedChecks": [
+      {
+        "case": "address-nearby",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "bare-address",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "blank-ui",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "blue-walls",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "brand",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "checkerboard",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "chinese",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "courtyard-bridge",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "cross-branches",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "distant-water",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "forbidden-crowds",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "height",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "junctions",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "lake-and-forest",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "lake-forest-name",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "lake-or-sea",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "lakeside-cafe",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "lakeview-name",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "location-only",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "miles",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "mountain-view-address",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "near-signals",
+        "repeat": 1,
+        "failures": [
+          "runtime:APITimeoutError"
+        ]
+      },
+      {
+        "case": "override",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "preferred-lake",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "prompt-injection",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "river-north-name",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "roof",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "roof-or",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "signals",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "soft-preference",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "spatial-negation",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "subjects-or",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "ui-adventure",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "ui-nature",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "ui-waterside",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "vegan-brick",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "vegan-chinese",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "vegetarian",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "venice-beach-name",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "visual-negation",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "wedding-purpose",
+        "repeat": 1,
+        "failures": []
+      }
+    ]
+  },
+  {
+    "campaign": "sol-low",
+    "reasoningEffort": "low",
+    "rawSummary": {
+      "model": "gpt-6.1-sol",
+      "promptSha256": "0c2eae3004016316b930cff10da9c90e7f6ecd93c34f29cd44f2e503afa6e2da",
+      "generatedAt": "2026-10-10T04:10:09.248222+00:00",
+      "cases": 41,
+      "runs": 41,
+      "passed": 36,
+      "failed": 5,
+      "medianSeconds": 7.54,
+      "p95Seconds": 28.249,
+      "wallSeconds": 119.63,
+      "failureTypes": {
+        "runtime:APITimeoutError": 2,
+        "geography_role": 2,
+        "tool_missing:search_places": 1,
+        "tool_missing:search_geography": 1,
+        "tool_missing:sample_geography": 1,
+        "tool_missing:union": 1
+      },
+      "scope": "Synthetic planner-only checks plus saved plans for human review; not provider execution, geocoding or visual scoring."
+    },
+    "reviewedPassed": 38,
+    "reviewedChecks": [
+      {
+        "case": "address-nearby",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "bare-address",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "blank-ui",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "blue-walls",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "brand",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "checkerboard",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "chinese",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "courtyard-bridge",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "cross-branches",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "distant-water",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "forbidden-crowds",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "height",
+        "repeat": 1,
+        "failures": [
+          "runtime:APITimeoutError"
+        ]
+      },
+      {
+        "case": "junctions",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "lake-and-forest",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "lake-forest-name",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "lake-or-sea",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "lakeside-cafe",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "lakeview-name",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "location-only",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "miles",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "mountain-view-address",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "near-signals",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "override",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "preferred-lake",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "prompt-injection",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "river-north-name",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "roof",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "roof-or",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "signals",
+        "repeat": 1,
+        "failures": [
+          "runtime:APITimeoutError"
+        ]
+      },
+      {
+        "case": "soft-preference",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "spatial-negation",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "subjects-or",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "ui-adventure",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "ui-nature",
+        "repeat": 1,
+        "failures": [
+          "tool_missing:search_places",
+          "tool_missing:search_geography",
+          "tool_missing:sample_geography",
+          "tool_missing:union"
+        ]
+      },
+      {
+        "case": "ui-waterside",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "vegan-brick",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "vegan-chinese",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "vegetarian",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "venice-beach-name",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "visual-negation",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "wedding-purpose",
+        "repeat": 1,
+        "failures": []
+      }
+    ]
+  },
+  {
+    "campaign": "astra",
+    "reasoningEffort": "low",
+    "rawSummary": {
+      "model": "gpt-6-astra",
+      "promptSha256": "0c2eae3004016316b930cff10da9c90e7f6ecd93c34f29cd44f2e503afa6e2da",
+      "generatedAt": "2026-10-10T04:10:12.459216+00:00",
+      "cases": 8,
+      "runs": 8,
+      "passed": 7,
+      "failed": 1,
+      "medianSeconds": 10.865,
+      "p95Seconds": 32.756,
+      "wallSeconds": 32.756,
+      "failureTypes": {
+        "geography_role": 1
+      },
+      "scope": "Synthetic planner-only checks plus saved plans for human review; not provider execution, geocoding or visual scoring."
+    },
+    "reviewedPassed": 8,
+    "reviewedChecks": [
+      {
+        "case": "chinese",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "courtyard-bridge",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "cross-branches",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "forbidden-crowds",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "preferred-lake",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "ui-adventure",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "ui-nature",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "ui-waterside",
+        "repeat": 1,
+        "failures": []
+      }
+    ]
+  },
+  {
+    "campaign": "astra-full",
+    "reasoningEffort": "low",
+    "rawSummary": {
+      "model": "gpt-6-astra",
+      "reasoningEffort": "low",
+      "promptSha256": "0c2eae3004016316b930cff10da9c90e7f6ecd93c34f29cd44f2e503afa6e2da",
+      "generatedAt": "2026-10-10T04:12:36.736527+00:00",
+      "cases": 41,
+      "runs": 41,
+      "passed": 38,
+      "failed": 3,
+      "medianSeconds": 8.258,
+      "p95Seconds": 40.031,
+      "wallSeconds": 125.674,
+      "failureTypes": {
+        "runtime:APITimeoutError": 3
+      },
+      "scope": "Synthetic planner-only checks plus saved plans for human review; not provider execution, geocoding or visual scoring."
+    },
+    "reviewedPassed": 38,
+    "reviewedChecks": [
+      {
+        "case": "address-nearby",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "bare-address",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "blank-ui",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "blue-walls",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "brand",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "checkerboard",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "chinese",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "courtyard-bridge",
+        "repeat": 1,
+        "failures": [
+          "runtime:APITimeoutError"
+        ]
+      },
+      {
+        "case": "cross-branches",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "distant-water",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "forbidden-crowds",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "height",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "junctions",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "lake-and-forest",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "lake-forest-name",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "lake-or-sea",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "lakeside-cafe",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "lakeview-name",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "location-only",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "miles",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "mountain-view-address",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "near-signals",
+        "repeat": 1,
+        "failures": [
+          "runtime:APITimeoutError"
+        ]
+      },
+      {
+        "case": "override",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "preferred-lake",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "prompt-injection",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "river-north-name",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "roof",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "roof-or",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "signals",
+        "repeat": 1,
+        "failures": [
+          "runtime:APITimeoutError"
+        ]
+      },
+      {
+        "case": "soft-preference",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "spatial-negation",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "subjects-or",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "ui-adventure",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "ui-nature",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "ui-waterside",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "vegan-brick",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "vegan-chinese",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "vegetarian",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "venice-beach-name",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "visual-negation",
+        "repeat": 1,
+        "failures": []
+      },
+      {
+        "case": "wedding-purpose",
+        "repeat": 1,
+        "failures": []
+      }
+    ]
+  }
+]

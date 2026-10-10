@@ -1,0 +1,1506 @@
+{
+  "summary": {
+    "model": "gpt-6-astra",
+    "promptSha256": "0c2eae3004016316b930cff10da9c90e7f6ecd93c34f29cd44f2e503afa6e2da",
+    "generatedAt": "2026-10-10T04:10:12.459216+00:00",
+    "cases": 8,
+    "runs": 8,
+    "passed": 7,
+    "failed": 1,
+    "medianSeconds": 10.865,
+    "p95Seconds": 32.756,
+    "wallSeconds": 32.756,
+    "failureTypes": {
+      "geography_role": 1
+    },
+    "scope": "Synthetic planner-only checks plus saved plans for human review; not provider execution, geocoding or visual scoring."
+  },
+  "results": [
+    {
+      "case": "chinese",
+      "repeat": 1,
+      "input": {
+        "query": "巴黎铁塔附近两公里内，找有红砖外墙的素食咖啡馆",
+        "lat": 41.8827,
+        "lon": -87.6233,
+        "radius": 5000,
+        "photoStyles": [
+          "nature"
+        ]
+      },
+      "expected": {
+        "locationContains": "Eiffel",
+        "radius": 2000,
+        "queryForbidden": [
+          "brick",
+          "red",
+          "vegan"
+        ],
+        "visualRequired": [
+          [
+            "red"
+          ],
+          [
+            "brick"
+          ]
+        ],
+        "queryAny": [
+          [
+            "vegetarian"
+          ]
+        ],
+        "moods": []
+      },
+      "plan": {
+        "requirements": [
+          {
+            "expression": "Vegetarian coffee shops",
+            "strength": "required",
+            "route": "places",
+            "stepIds": [
+              "vegetarian_cafes"
+            ]
+          },
+          {
+            "expression": "Red brick exterior walls",
+            "strength": "required",
+            "route": "visual",
+            "stepIds": []
+          }
+        ],
+        "searchProgram": {
+          "steps": [
+            {
+              "id": "vegetarian_cafes",
+              "tool": "search_places",
+              "inputs": [],
+              "queries": [
+                "vegetarian coffee shops"
+              ],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Discover vegetarian coffee shops without narrowing the category to vegan."
+            },
+            {
+              "id": "images",
+              "tool": "collect_images",
+              "inputs": [
+                "vegetarian_cafes"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Collect candidate views showing the coffee shops and their exterior walls."
+            },
+            {
+              "id": "assessments",
+              "tool": "score_images",
+              "inputs": [
+                "images"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Check for visibly red brick exterior walls, not merely red paint or interior brick, while retaining the vegetarian coffee shop identity."
+            },
+            {
+              "id": "results",
+              "tool": "rank_results",
+              "inputs": [
+                "assessments"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Rank all matching vegetarian coffee shops by their best view of the required red brick exterior."
+            }
+          ],
+          "output": "results"
+        },
+        "searchBranches": [],
+        "geographicCombination": "all",
+        "featureCombination": "all",
+        "osmFeatures": [],
+        "geographicKinds": [],
+        "scoringIntent": "Find vegetarian coffee shops with visibly red brick exterior walls. Preserve vegetarian scope without narrowing to vegan, and confirm exterior brick material and red color in the images.",
+        "poiQueries": [],
+        "locationQuery": "Eiffel Tower, Paris, France",
+        "useMapCenter": false,
+        "photoStyles": [],
+        "radiusMeters": 2000,
+        "preferences": "",
+        "explanation": "Search for vegetarian coffee shops within 2,000 meters of the Eiffel Tower in Paris, then visually check for red brick exterior walls. The explicit subject replaces the selected Nature mood.",
+        "clarification": null
+      },
+      "failures": [],
+      "seconds": 7.904
+    },
+    {
+      "case": "courtyard-bridge",
+      "repeat": 1,
+      "input": {
+        "query": "a rustic courtyard with a turquoise gate near a footbridge",
+        "lat": 41.8827,
+        "lon": -87.6233,
+        "radius": 5000,
+        "photoStyles": [
+          "waterside"
+        ]
+      },
+      "expected": {
+        "toolsRequired": [
+          "search_places",
+          "search_features",
+          "filter_features"
+        ],
+        "queryForbidden": [
+          "turquoise",
+          "rustic"
+        ],
+        "visualRequired": [
+          [
+            "rustic"
+          ],
+          [
+            "turquoise"
+          ],
+          [
+            "gate"
+          ]
+        ],
+        "pedestrianBridge": true
+      },
+      "plan": {
+        "requirements": [
+          {
+            "expression": "A courtyard",
+            "strength": "required",
+            "route": "places",
+            "stepIds": [
+              "courtyards"
+            ]
+          },
+          {
+            "expression": "The courtyard is near a pedestrian footbridge",
+            "strength": "required",
+            "route": "features",
+            "stepIds": [
+              "footbridges",
+              "near_footbridge"
+            ]
+          },
+          {
+            "expression": "The courtyard has a rustic appearance AND a turquoise gate",
+            "strength": "required",
+            "route": "visual",
+            "stepIds": []
+          }
+        ],
+        "searchProgram": {
+          "steps": [
+            {
+              "id": "courtyards",
+              "tool": "search_places",
+              "inputs": [],
+              "queries": [
+                "courtyards"
+              ],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Discover courtyards; assess rustic character and gate color visually rather than through place-search wording."
+            },
+            {
+              "id": "footbridges",
+              "tool": "search_features",
+              "inputs": [],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [
+                {
+                  "label": "Footway bridge",
+                  "kind": "tagged",
+                  "filters": [
+                    {
+                      "key": "bridge",
+                      "value": "yes",
+                      "required": true
+                    },
+                    {
+                      "key": "highway",
+                      "value": "footway",
+                      "required": true
+                    }
+                  ],
+                  "numericFilters": [],
+                  "proximityMeters": 150
+                },
+                {
+                  "label": "Path bridge",
+                  "kind": "tagged",
+                  "filters": [
+                    {
+                      "key": "bridge",
+                      "value": "yes",
+                      "required": true
+                    },
+                    {
+                      "key": "highway",
+                      "value": "path",
+                      "required": true
+                    }
+                  ],
+                  "numericFilters": [],
+                  "proximityMeters": 150
+                },
+                {
+                  "label": "Pedestrian bridge",
+                  "kind": "tagged",
+                  "filters": [
+                    {
+                      "key": "bridge",
+                      "value": "yes",
+                      "required": true
+                    },
+                    {
+                      "key": "highway",
+                      "value": "pedestrian",
+                      "required": true
+                    }
+                  ],
+                  "numericFilters": [],
+                  "proximityMeters": 150
+                }
+              ],
+              "combination": "any",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Find pedestrian footbridges, not generic road bridges."
+            },
+            {
+              "id": "near_footbridge",
+              "tool": "filter_features",
+              "inputs": [
+                "courtyards",
+                "footbridges"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "any",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Retain courtyards within 150 m of any matching pedestrian footbridge."
+            },
+            {
+              "id": "images",
+              "tool": "collect_images",
+              "inputs": [
+                "near_footbridge"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Collect courtyard views that can reveal rustic character and a turquoise gate."
+            },
+            {
+              "id": "assessments",
+              "tool": "score_images",
+              "inputs": [
+                "images"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Require a visible rustic courtyard with a turquoise gate, preserving the mapped footbridge proximity condition."
+            },
+            {
+              "id": "ranked",
+              "tool": "rank_results",
+              "inputs": [
+                "assessments"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Rank all matching courtyards by visual match and photographic quality, choosing the best view of each."
+            }
+          ],
+          "output": "ranked"
+        },
+        "searchBranches": [],
+        "geographicCombination": "all",
+        "featureCombination": "all",
+        "osmFeatures": [],
+        "geographicKinds": [],
+        "scoringIntent": "Find a rustic courtyard with a turquoise gate near a pedestrian footbridge. Confirm the courtyard, rustic appearance, and turquoise gate in the imagery; do not treat missing mapped appearance attributes as evidence of a match.",
+        "poiQueries": [],
+        "locationQuery": null,
+        "useMapCenter": true,
+        "photoStyles": [],
+        "radiusMeters": 5000,
+        "preferences": "",
+        "explanation": "Search for courtyards within 5000 m of the current map center, retain those near mapped pedestrian footbridges, and visually check for rustic character and a turquoise gate. The explicit subject replaces the Waterside mood; water is not required. Footbridge proximity uses 150 m.",
+        "clarification": null
+      },
+      "failures": [],
+      "seconds": 13.946
+    },
+    {
+      "case": "cross-branches",
+      "repeat": 1,
+      "input": {
+        "query": "cafes beside a lake OR restaurants in a forest",
+        "lat": 41.8827,
+        "lon": -87.6233,
+        "radius": 5000,
+        "photoStyles": [
+          "waterside"
+        ]
+      },
+      "expected": {
+        "crossBranch": true,
+        "visualRequired": [
+          [
+            "lake"
+          ],
+          [
+            "forest",
+            "wood"
+          ]
+        ]
+      },
+      "plan": {
+        "requirements": [
+          {
+            "expression": "In the lake-cafe alternative, the subject must be a cafe.",
+            "strength": "required",
+            "route": "places",
+            "stepIds": [
+              "lake_cafes"
+            ]
+          },
+          {
+            "expression": "In the lake-cafe alternative, the cafe must be beside a lake.",
+            "strength": "required",
+            "route": "geography",
+            "stepIds": [
+              "lakes"
+            ]
+          },
+          {
+            "expression": "In the forest-restaurant alternative, the subject must be a restaurant.",
+            "strength": "required",
+            "route": "places",
+            "stepIds": [
+              "forest_restaurants"
+            ]
+          },
+          {
+            "expression": "In the forest-restaurant alternative, the restaurant must be in a forest.",
+            "strength": "required",
+            "route": "geography",
+            "stepIds": [
+              "forests"
+            ]
+          },
+          {
+            "expression": "For the lake-cafe alternative, the lake setting must be visible in the scored view.",
+            "strength": "required",
+            "route": "visual",
+            "stepIds": [
+              "cafes_beside_lakes"
+            ]
+          },
+          {
+            "expression": "For the forest-restaurant alternative, the forest setting must be visible in the scored view.",
+            "strength": "required",
+            "route": "visual",
+            "stepIds": [
+              "restaurants_in_forests"
+            ]
+          }
+        ],
+        "searchProgram": {
+          "steps": [
+            {
+              "id": "lake_cafes",
+              "tool": "search_places",
+              "inputs": [],
+              "queries": [
+                "cafes"
+              ],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Find cafes for the lakeside alternative."
+            },
+            {
+              "id": "lakes",
+              "tool": "search_geography",
+              "inputs": [],
+              "queries": [],
+              "geographicKinds": [
+                "lake"
+              ],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Locate lake geometry for the lakeside cafe condition."
+            },
+            {
+              "id": "cafes_beside_lakes",
+              "tool": "filter_geography",
+              "inputs": [
+                "lake_cafes",
+                "lakes"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Retain cafes beside a lake; require the lake setting to be visible during image review."
+            },
+            {
+              "id": "forest_restaurants",
+              "tool": "search_places",
+              "inputs": [],
+              "queries": [
+                "restaurants"
+              ],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Find restaurants for the forest alternative."
+            },
+            {
+              "id": "forests",
+              "tool": "search_geography",
+              "inputs": [],
+              "queries": [],
+              "geographicKinds": [
+                "forest"
+              ],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Locate forest geometry for the forest restaurant condition."
+            },
+            {
+              "id": "restaurants_in_forests",
+              "tool": "filter_geography",
+              "inputs": [
+                "forest_restaurants",
+                "forests"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Retain restaurants in a forest; require the forest setting to be visible during image review."
+            },
+            {
+              "id": "alternatives",
+              "tool": "union",
+              "inputs": [
+                "cafes_beside_lakes",
+                "restaurants_in_forests"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [
+                1,
+                1
+              ],
+              "visualIntent": "Combine lakeside cafes OR forest restaurants, retaining each alternative's conditions."
+            },
+            {
+              "id": "images",
+              "tool": "collect_images",
+              "inputs": [
+                "alternatives"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Collect directional images for the combined candidates and check camera positions against their qualifying alternatives."
+            },
+            {
+              "id": "assessments",
+              "tool": "score_images",
+              "inputs": [
+                "images"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Assess each view for either a cafe beside a visible lake OR a restaurant in a visible forest setting, without transferring conditions between alternatives."
+            },
+            {
+              "id": "ranked_results",
+              "tool": "rank_results",
+              "inputs": [
+                "assessments"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Rank all matching candidates using their best qualifying photographic view."
+            }
+          ],
+          "output": "ranked_results"
+        },
+        "searchBranches": [],
+        "geographicCombination": "all",
+        "featureCombination": "all",
+        "osmFeatures": [],
+        "geographicKinds": [],
+        "scoringIntent": "Match (cafes beside a lake with the lake setting visible) OR (restaurants in a forest with the forest setting visible). Evaluate each candidate against its own alternative; water is not required for the forest-restaurant alternative.",
+        "poiQueries": [],
+        "locationQuery": null,
+        "useMapCenter": true,
+        "photoStyles": [],
+        "radiusMeters": 5000,
+        "preferences": "",
+        "explanation": "Search within 5,000 meters of the current map center using two independently filtered alternatives, then merge them for image review and ranking. The explicit request replaces the UI Waterside mood, so forest restaurants do not need to be near water.",
+        "clarification": null
+      },
+      "failures": [],
+      "seconds": 32.756
+    },
+    {
+      "case": "forbidden-crowds",
+      "repeat": 1,
+      "input": {
+        "query": "coffee shops with red walls, avoid crowds, ideally vintage",
+        "lat": 41.8827,
+        "lon": -87.6233,
+        "radius": 5000,
+        "photoStyles": [
+          "waterside"
+        ]
+      },
+      "expected": {
+        "queryAny": [
+          [
+            "coffee",
+            "cafe"
+          ]
+        ],
+        "queryForbidden": [
+          "red",
+          "vintage",
+          "crowd"
+        ],
+        "conditions": [
+          [
+            "crowd",
+            "forbidden"
+          ],
+          [
+            "vintage",
+            "preferred"
+          ]
+        ]
+      },
+      "plan": {
+        "requirements": [
+          {
+            "expression": "Coffee shops",
+            "strength": "required",
+            "route": "places",
+            "stepIds": [
+              "coffee"
+            ]
+          },
+          {
+            "expression": "Visible red walls",
+            "strength": "required",
+            "route": "visual",
+            "stepIds": []
+          },
+          {
+            "expression": "Crowds",
+            "strength": "forbidden",
+            "route": "visual",
+            "stepIds": []
+          },
+          {
+            "expression": "Vintage aesthetic",
+            "strength": "preferred",
+            "route": "visual",
+            "stepIds": []
+          }
+        ],
+        "searchProgram": {
+          "steps": [
+            {
+              "id": "coffee",
+              "tool": "search_places",
+              "inputs": [],
+              "queries": [
+                "coffee shops"
+              ],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Discover coffee shops; assess wall color, crowds, and vintage styling in imagery rather than Places queries."
+            },
+            {
+              "id": "images",
+              "tool": "collect_images",
+              "inputs": [
+                "coffee"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Collect candidate coffee-shop imagery for directional visual review."
+            },
+            {
+              "id": "assessments",
+              "tool": "score_images",
+              "inputs": [
+                "images"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Require visible red walls and exclude views with crowds. Prefer vintage aesthetics."
+            },
+            {
+              "id": "ranked",
+              "tool": "rank_results",
+              "inputs": [
+                "assessments"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Rank all matching coffee shops by their best matching view, favoring vintage styling."
+            }
+          ],
+          "output": "ranked"
+        },
+        "searchBranches": [],
+        "geographicCombination": "all",
+        "featureCombination": "all",
+        "osmFeatures": [],
+        "geographicKinds": [],
+        "scoringIntent": "Find coffee shops with visible red walls AND no crowds; prefer a vintage aesthetic without making it mandatory.",
+        "poiQueries": [],
+        "locationQuery": null,
+        "useMapCenter": true,
+        "photoStyles": [
+          "vintage"
+        ],
+        "radiusMeters": 5000,
+        "preferences": "Visible red walls, no crowds, and ideally a vintage aesthetic.",
+        "explanation": "Search coffee shops within 5000 m of the map center, then check imagery for red walls and crowds and favor vintage styling. The explicit photographic intent replaces the Waterside mood; no water constraint is applied.",
+        "clarification": null
+      },
+      "failures": [],
+      "seconds": 7.969
+    },
+    {
+      "case": "preferred-lake",
+      "repeat": 1,
+      "input": {
+        "query": "cafes, ideally near a lake",
+        "lat": 41.8827,
+        "lon": -87.6233,
+        "radius": 5000,
+        "photoStyles": [
+          "waterside"
+        ]
+      },
+      "expected": {
+        "queryAny": [
+          [
+            "cafe",
+            "coffee"
+          ]
+        ],
+        "noPositiveSpatialFilter": true,
+        "conditions": [
+          [
+            "lake",
+            "preferred"
+          ]
+        ]
+      },
+      "plan": {
+        "requirements": [
+          {
+            "expression": "Cafes",
+            "strength": "required",
+            "route": "places",
+            "stepIds": [
+              "cafes"
+            ]
+          },
+          {
+            "expression": "Near a lake",
+            "strength": "preferred",
+            "route": "visual",
+            "stepIds": []
+          }
+        ],
+        "searchProgram": {
+          "steps": [
+            {
+              "id": "cafes",
+              "tool": "search_places",
+              "inputs": [],
+              "queries": [
+                "cafes"
+              ],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Discover cafes without restricting candidates to lakeside locations."
+            },
+            {
+              "id": "images",
+              "tool": "collect_images",
+              "inputs": [
+                "cafes"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Collect cafe imagery and available directional views."
+            },
+            {
+              "id": "assessments",
+              "tool": "score_images",
+              "inputs": [
+                "images"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Assess cafe matches and favor visible lake context as an optional preference, not an eligibility requirement."
+            },
+            {
+              "id": "results",
+              "tool": "rank_results",
+              "inputs": [
+                "assessments"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Rank all matching cafes, favoring lake context where supported by imagery."
+            }
+          ],
+          "output": "results"
+        },
+        "searchBranches": [],
+        "geographicCombination": "all",
+        "featureCombination": "all",
+        "osmFeatures": [],
+        "geographicKinds": [],
+        "scoringIntent": "Find cafes, favoring views with visible lake context. Lake proximity is optional; cafes without lake context remain eligible.",
+        "poiQueries": [],
+        "locationQuery": null,
+        "useMapCenter": true,
+        "photoStyles": [],
+        "radiusMeters": 5000,
+        "preferences": "Ideally near a lake.",
+        "explanation": "Search for cafes within 5000 m of the current map center and favor lake context during image review without requiring it. The explicit request replaces the Waterside mood, so cafes away from water remain eligible.",
+        "clarification": null
+      },
+      "failures": [],
+      "seconds": 13.351
+    },
+    {
+      "case": "ui-adventure",
+      "repeat": 1,
+      "input": {
+        "query": "",
+        "lat": 41.8827,
+        "lon": -87.6233,
+        "radius": 5000,
+        "photoStyles": [
+          "adventure"
+        ]
+      },
+      "expected": {
+        "moods": [
+          "adventure"
+        ],
+        "toolsRequired": [
+          "search_places",
+          "search_geography",
+          "sample_geography",
+          "union"
+        ],
+        "toolsForbidden": [
+          "filter_geography"
+        ]
+      },
+      "plan": {
+        "requirements": [
+          {
+            "expression": "Adventure-oriented photographic opportunities",
+            "strength": "preferred",
+            "route": "visual",
+            "stepIds": []
+          },
+          {
+            "expression": "Trails OR viewpoints as optional adventure discovery candidates",
+            "strength": "preferred",
+            "route": "places",
+            "stepIds": [
+              "adventure_places"
+            ]
+          },
+          {
+            "expression": "Peak OR forest viewpoints as optional adventure discovery candidates",
+            "strength": "preferred",
+            "route": "geography",
+            "stepIds": [
+              "adventure_geography",
+              "geography_points"
+            ]
+          }
+        ],
+        "searchProgram": {
+          "steps": [
+            {
+              "id": "adventure_places",
+              "tool": "search_places",
+              "inputs": [],
+              "queries": [
+                "trails",
+                "viewpoints"
+              ],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": true,
+              "weights": [],
+              "visualIntent": "Discover optional trails and viewpoints suited to adventure photography."
+            },
+            {
+              "id": "adventure_geography",
+              "tool": "search_geography",
+              "inputs": [],
+              "queries": [],
+              "geographicKinds": [
+                "peak",
+                "forest"
+              ],
+              "osmFeatures": [],
+              "combination": "any",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Find peaks or forests as alternative adventure discovery environments."
+            },
+            {
+              "id": "geography_points",
+              "tool": "sample_geography",
+              "inputs": [
+                "adventure_geography"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "any",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Sample road and path viewpoints around peaks or forests."
+            },
+            {
+              "id": "candidates",
+              "tool": "union",
+              "inputs": [
+                "adventure_places",
+                "geography_points"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [
+                1,
+                1
+              ],
+              "visualIntent": "Combine alternative adventure candidates without requiring trails or named viewpoints to be in forests or on peaks."
+            },
+            {
+              "id": "images",
+              "tool": "collect_images",
+              "inputs": [
+                "candidates"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Collect candidate imagery and directional views."
+            },
+            {
+              "id": "assessments",
+              "tool": "score_images",
+              "inputs": [
+                "images"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Evaluate photographic quality and preferred adventure mood without imposing mandatory scenery."
+            },
+            {
+              "id": "results",
+              "tool": "rank_results",
+              "inputs": [
+                "assessments"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Rank all matching candidates by their best photographic view."
+            }
+          ],
+          "output": "results"
+        },
+        "searchBranches": [],
+        "geographicCombination": "all",
+        "featureCombination": "all",
+        "osmFeatures": [],
+        "geographicKinds": [],
+        "scoringIntent": "Prefer adventure-oriented views with an exploratory outdoor feel. Trails, viewpoints, peaks and forests are alternative discovery hints, not mandatory subjects or environments.",
+        "poiQueries": [],
+        "locationQuery": null,
+        "useMapCenter": true,
+        "photoStyles": [
+          "adventure"
+        ],
+        "radiusMeters": 5000,
+        "preferences": "Prefer adventure-oriented photography and an exploratory outdoor feel.",
+        "explanation": "Keep the current map center, the supplied 5000 m radius and Adventure mood. Combine trail and viewpoint candidates with sampled peak or forest viewpoints, then collect imagery and rank the best views.",
+        "clarification": null
+      },
+      "failures": [],
+      "seconds": 11.111
+    },
+    {
+      "case": "ui-nature",
+      "repeat": 1,
+      "input": {
+        "query": "",
+        "lat": 41.8827,
+        "lon": -87.6233,
+        "radius": 5000,
+        "photoStyles": [
+          "nature"
+        ]
+      },
+      "expected": {
+        "moods": [
+          "nature"
+        ],
+        "toolsRequired": [
+          "search_places",
+          "search_geography",
+          "sample_geography",
+          "union"
+        ],
+        "toolsForbidden": [
+          "filter_geography"
+        ]
+      },
+      "plan": {
+        "requirements": [
+          {
+            "expression": "Natural scenery with greenery and appealing nature compositions",
+            "strength": "preferred",
+            "route": "visual",
+            "stepIds": []
+          },
+          {
+            "expression": "Parks OR gardens OR forest viewpoints as optional nature discovery candidates",
+            "strength": "preferred",
+            "route": "places",
+            "stepIds": [
+              "nature_places"
+            ]
+          },
+          {
+            "expression": "Forest surroundings as an optional discovery alternative",
+            "strength": "preferred",
+            "route": "geography",
+            "stepIds": [
+              "forests"
+            ]
+          }
+        ],
+        "searchProgram": {
+          "steps": [
+            {
+              "id": "nature_places",
+              "tool": "search_places",
+              "inputs": [],
+              "queries": [
+                "parks",
+                "gardens",
+                "forest viewpoints"
+              ],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": true,
+              "weights": [],
+              "visualIntent": "Discover optional named nature destinations."
+            },
+            {
+              "id": "forests",
+              "tool": "search_geography",
+              "inputs": [],
+              "queries": [],
+              "geographicKinds": [
+                "forest"
+              ],
+              "osmFeatures": [],
+              "combination": "any",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Find mapped forests for additional nature discovery."
+            },
+            {
+              "id": "forest_viewpoints",
+              "tool": "sample_geography",
+              "inputs": [
+                "forests"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "any",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Sample accessible road and path viewpoints around mapped forests."
+            },
+            {
+              "id": "nature_candidates",
+              "tool": "union",
+              "inputs": [
+                "nature_places",
+                "forest_viewpoints"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [
+                1,
+                1
+              ],
+              "visualIntent": "Combine named nature destinations and sampled forest viewpoints without requiring all destinations to be in a forest."
+            },
+            {
+              "id": "images",
+              "tool": "collect_images",
+              "inputs": [
+                "nature_candidates"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Collect candidate images and directional views once."
+            },
+            {
+              "id": "assessments",
+              "tool": "score_images",
+              "inputs": [
+                "images"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Evaluate visible natural scenery and photographic composition, treating Nature fit as a preference."
+            },
+            {
+              "id": "results",
+              "tool": "rank_results",
+              "inputs": [
+                "assessments"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Rank all matching candidates by their best photographic view."
+            }
+          ],
+          "output": "results"
+        },
+        "searchBranches": [],
+        "geographicCombination": "all",
+        "featureCombination": "all",
+        "osmFeatures": [],
+        "geographicKinds": [],
+        "scoringIntent": "Prefer natural scenery, greenery, and appealing nature compositions. Parks, gardens, and forest viewpoints are alternative discovery hints, not mandatory subject categories.",
+        "poiQueries": [],
+        "locationQuery": null,
+        "useMapCenter": true,
+        "photoStyles": [
+          "nature"
+        ],
+        "radiusMeters": 5000,
+        "preferences": "Prefer natural scenery, greenery, and appealing nature compositions.",
+        "explanation": "Preserve the current map center, 5000 m radius, and Nature mood. Combine named parks, gardens, and forest viewpoints with mapped forest sampling, then evaluate and rank the available photographic views.",
+        "clarification": null
+      },
+      "failures": [],
+      "seconds": 9.688
+    },
+    {
+      "case": "ui-waterside",
+      "repeat": 1,
+      "input": {
+        "query": "",
+        "lat": 41.8827,
+        "lon": -87.6233,
+        "radius": 5000,
+        "photoStyles": [
+          "waterside"
+        ]
+      },
+      "expected": {
+        "mapCenter": true,
+        "moods": [
+          "waterside"
+        ],
+        "geo": [
+          "waterside"
+        ],
+        "toolsRequired": [
+          "search_geography",
+          "sample_geography",
+          "filter_geography",
+          "union"
+        ],
+        "toolsForbidden": [
+          "area_imagery"
+        ],
+        "conditions": [
+          [
+            "water",
+            "required"
+          ]
+        ]
+      },
+      "plan": {
+        "requirements": [
+          {
+            "expression": "Waterside location beside a lake, sea, or river",
+            "strength": "required",
+            "route": "geography",
+            "stepIds": [
+              "water",
+              "waterfront_places",
+              "shore_points"
+            ]
+          },
+          {
+            "expression": "Water or shoreline visible in the scored direction",
+            "strength": "required",
+            "route": "visual",
+            "stepIds": []
+          },
+          {
+            "expression": "Waterfront parks or scenic waterfront viewpoints as optional discovery candidates",
+            "strength": "preferred",
+            "route": "places",
+            "stepIds": [
+              "named_places"
+            ]
+          }
+        ],
+        "searchProgram": {
+          "steps": [
+            {
+              "id": "named_places",
+              "tool": "search_places",
+              "inputs": [],
+              "queries": [
+                "waterfront parks",
+                "waterfront viewpoints"
+              ],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": true,
+              "weights": [],
+              "visualIntent": "Discover optional waterfront parks and scenic waterfront viewpoints."
+            },
+            {
+              "id": "water",
+              "tool": "search_geography",
+              "inputs": [],
+              "queries": [],
+              "geographicKinds": [
+                "lake",
+                "sea",
+                "river"
+              ],
+              "osmFeatures": [],
+              "combination": "any",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Locate suitable lake, sea, or river shores."
+            },
+            {
+              "id": "waterfront_places",
+              "tool": "filter_geography",
+              "inputs": [
+                "named_places",
+                "water"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "any",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Keep named candidates beside any suitable water body."
+            },
+            {
+              "id": "shore_points",
+              "tool": "sample_geography",
+              "inputs": [
+                "water"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "any",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Sample road or path viewpoints along suitable shorelines."
+            },
+            {
+              "id": "candidates",
+              "tool": "union",
+              "inputs": [
+                "waterfront_places",
+                "shore_points"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [
+                1,
+                4
+              ],
+              "visualIntent": "Combine named waterside places with shoreline samples, emphasizing shoreline coverage."
+            },
+            {
+              "id": "images",
+              "tool": "collect_images",
+              "inputs": [
+                "candidates"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Collect directional images at waterside candidates and verify camera positions against the spatial paths."
+            },
+            {
+              "id": "assessments",
+              "tool": "score_images",
+              "inputs": [
+                "images"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Require visible water or shoreline in each matching direction and evaluate waterside photographic quality."
+            },
+            {
+              "id": "ranked",
+              "tool": "rank_results",
+              "inputs": [
+                "assessments"
+              ],
+              "queries": [],
+              "geographicKinds": [],
+              "osmFeatures": [],
+              "combination": "all",
+              "exclude": false,
+              "discoveryHints": false,
+              "weights": [],
+              "visualIntent": "Rank all matching candidates by their best waterside photographic view."
+            }
+          ],
+          "output": "ranked"
+        },
+        "searchBranches": [],
+        "geographicCombination": "all",
+        "featureCombination": "all",
+        "osmFeatures": [],
+        "geographicKinds": [],
+        "scoringIntent": "Find waterside photographic views with water or shoreline visible in the scored direction; lake, sea, or river settings are equally suitable.",
+        "poiQueries": [],
+        "locationQuery": null,
+        "useMapCenter": true,
+        "photoStyles": [
+          "waterside"
+        ],
+        "radiusMeters": 5000,
+        "preferences": "Waterside photography with visible water or shoreline.",
+        "explanation": "Preserve the current map center, 5000 m radius, and Waterside mood. Combine water-filtered waterfront place hints with sampled shoreline viewpoints, then collect, assess, and rank their images.",
+        "clarification": null
+      },
+      "failures": [
+        "geography_role"
+      ],
+      "seconds": 10.619
+    }
+  ]
+}
