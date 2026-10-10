@@ -3,7 +3,7 @@
     {
       "name": "AgenticWiKi",
       "audience": "human",
-      "eyebrow": "Agent workspace",
+      "eyebrow": "Knowledge workspace",
       "description": "A question is an address. Explore, build, and return to durable knowledge in one browser-like workspace.",
       "url": "https://aisoup.net/wiki/",
       "domain": "aisoup.net/wiki/",
@@ -20,7 +20,7 @@
     {
       "name": "Web Evidence",
       "audience": "both",
-      "eyebrow": "Human + agent service",
+      "eyebrow": "Evidence & verification",
       "description": "Verify claims with cited evidence, complete source provenance, reproducible snapshots, and content hashes.",
       "url": "https://aisoup.net/web-evidence/",
       "domain": "aisoup.net/web-evidence/",
@@ -37,7 +37,7 @@
     {
       "name": "California C-10 Contractor Check",
       "audience": "both",
-      "eyebrow": "Human + agent service",
+      "eyebrow": "Contractor records",
       "description": "Review California electrical contractor license, bond, and workers' compensation records with a source-linked report.",
       "url": "https://aisoup.net/contractor-check/",
       "domain": "aisoup.net/contractor-check/",
@@ -54,7 +54,7 @@
     {
       "name": "Niche Discovery",
       "audience": "both",
-      "eyebrow": "Human + agent service",
+      "eyebrow": "Market intelligence",
       "description": "Turn collected source signals into reviewed, evidence-linked niche market evaluations.",
       "url": "https://aisoup.net/niche-discovery/",
       "domain": "aisoup.net/niche-discovery/",
@@ -72,7 +72,7 @@
     {
       "name": "Photo Scout",
       "audience": "both",
-      "eyebrow": "Human + agent service",
+      "eyebrow": "Visual discovery",
       "description": "Choose a location and discover nearby photo spots through real-image analysis, with coordinates, visual evidence and source attribution.",
       "url": "https://aisoup.net/photo-scout/",
       "domain": "aisoup.net/photo-scout/",

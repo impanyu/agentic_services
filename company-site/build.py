@@ -13,9 +13,6 @@ DIST = ROOT / "dist"
 
 
 def product_card(product: dict[str, object]) -> str:
-    audience = str(product["audience"])
-    human = "✓" if audience in {"human", "both"} else "—"
-    agent = "✓" if audience in {"agent", "both"} else "—"
     tags = "".join(
         f'<li>{html.escape(str(tag))}</li>' for tag in product["capabilities"]
     )
@@ -30,7 +27,6 @@ def product_card(product: dict[str, object]) -> str:
             <span class="product-number">{html.escape(str(product['number']))}</span>
             <h3>{html.escape(str(product['name']))}</h3>
             <p>{html.escape(str(product['description']))}</p>
-            <p class="product-audience"><span>{human} For people</span><span>{agent} For agents</span></p>
           </div>
           <div class="product-card__bottom">
             <ul>{tags}</ul>
