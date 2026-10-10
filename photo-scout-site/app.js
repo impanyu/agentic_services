@@ -9,7 +9,12 @@ const api=location.hostname==='localhost'||location.hostname==='127.0.0.1'?'': '
 const el=id=>document.getElementById(id), message=s=>{el('message').textContent=s;if(searchBusy||pipelineBusy||resolving)el('progress-detail').textContent=s};
 // Keep overlays in the same world copy as the repeating basemap when crossing the date line.
 const DEFAULT_LOCATION=[37.7749,-122.4194];
-const map=L.map('map',{zoomControl:false,worldCopyJump:true}).setView(DEFAULT_LOCATION,9);
+const MAP_VISIT_KEY='photo-scout-map-visit-v1';
+function validMapPoint(point){return Array.isArray(point)&&point.length===2&&point.every(Number.isFinite)&&Math.abs(point[0])<=85&&Math.abs(point[1])<=180;}
+let previousMapVisit=null;
+try{const saved=JSON.parse(localStorage.getItem(MAP_VISIT_KEY)||'null');if(saved&&validMapPoint(saved.center)&&validMapPoint(saved.selected)&&Number.isFinite(saved.zoom)&&saved.zoom>=1&&saved.zoom<=19)previousMapVisit=saved;}catch{}
+const INITIAL_LOCATION=previousMapVisit?.selected||DEFAULT_LOCATION;
+const map=L.map('map',{zoomControl:false,worldCopyJump:true}).setView(previousMapVisit?.center||DEFAULT_LOCATION,previousMapVisit?.zoom??9);
 L.control.zoom({position:'bottomright'}).addTo(map);
 const controls=el('map-controls');controls.open=false;L.DomEvent.disableClickPropagation(controls);L.DomEvent.disableScrollPropagation(controls);L.DomEvent.disableClickPropagation(document.querySelector('.map-toolbar'));L.DomEvent.disableClickPropagation(el('prompt-form'));L.DomEvent.disableScrollPropagation(document.querySelector('.prompt-panel'));L.DomEvent.disableClickPropagation(document.querySelector('.scout-dock'));L.DomEvent.disableScrollPropagation(document.querySelector('.scout-dock'));L.DomEvent.disableClickPropagation(el('center-pin'));L.DomEvent.disableClickPropagation(document.querySelector('.map-account'));
 const streetTiles=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'});
@@ -116,20 +121,28 @@ document.addEventListener('keydown',event=>{if(event.key==='Escape'){for(const m
 if(window.ResizeObserver)new window.ResizeObserver(entries=>{document.body.style.setProperty('--scout-dock-height',entries[0].target.getBoundingClientRect().height+'px');}).observe(document.querySelector('.scout-dock'));
 document.querySelectorAll('[data-map-style]').forEach(b=>b.addEventListener('click',()=>switchMapStyle(b.dataset.mapStyle)));
 switchMapStyle('minimal');
-let selected=L.marker(DEFAULT_LOCATION,{draggable:true,title:'Selected location: drag to move',icon:L.divIcon({className:'scout-pin',html:'<svg viewBox="0 0 48 56" aria-hidden="true" focusable="false"><path d="M24 50C20 45 8 31 8 20a16 16 0 1 1 32 0c0 11-12 25-16 30Z" fill="#e24b47" stroke="#fff" stroke-width="2.5" stroke-linejoin="round"/><circle cx="24" cy="20" r="6" fill="#fff"/></svg>',iconSize:[48,56],iconAnchor:[24,50]})}).addTo(map), resultPins=[];let humanFreePreview=false, serviceAvailable=false, poiCatalog=null, catalogGeneration=0, searchBusy=false, pollGeneration=0, resolving=false, pipelineBusy=false;
+let selected=L.marker(INITIAL_LOCATION,{draggable:true,title:'Selected location: drag to move',icon:L.divIcon({className:'scout-pin',html:'<svg viewBox="0 0 48 56" aria-hidden="true" focusable="false"><path d="M24 50C20 45 8 31 8 20a16 16 0 1 1 32 0c0 11-12 25-16 30Z" fill="#e24b47" stroke="#fff" stroke-width="2.5" stroke-linejoin="round"/><circle cx="24" cy="20" r="6" fill="#fff"/></svg>',iconSize:[48,56],iconAnchor:[24,50]})}).addTo(map), resultPins=[];let humanFreePreview=false, serviceAvailable=false, poiCatalog=null, catalogGeneration=0, searchBusy=false, pollGeneration=0, resolving=false, pipelineBusy=false;
 const candidatePoiLayer=L.layerGroup().addTo(map),photoLocationLayer=L.layerGroup().addTo(map),otherPhotoLocationLayer=L.layerGroup().addTo(map);
 const scanLayer=L.layerGroup().addTo(map);let scanTimer=null,scanIndex=0,scanDot=null,scanRunning=false;
 function stopPoiScan(){clearInterval(scanTimer);scanTimer=null;scanRunning=false;scanIndex=0;scanLayer.clearLayers();if(scanDot)scanDot.setStyle({radius:6,color:'#fff',weight:2,fillColor:'#456951',fillOpacity:.9});scanDot=null;el('map').classList.remove('reviewing-views');}
 function startPoiScan(){if(scanRunning||!candidatePoiLayer.getLayers().length)return;scanRunning=true;el('map').classList.add('reviewing-views');const tick=()=>{if(document.hidden)return;const dots=candidatePoiLayer.getLayers();if(!dots.length){stopPoiScan();return;}if(scanDot)scanDot.setStyle({radius:6,color:'#fff',weight:2,fillColor:'#456951',fillOpacity:.9});scanDot=dots[scanIndex++%dots.length];scanDot.setStyle({radius:9,color:'#fff',weight:3,fillColor:'#9762d1',fillOpacity:1});scanLayer.clearLayers();const name=scanDot.getTooltip()?.getContent()?.textContent||'Nearby place';L.circleMarker(scanDot.getLatLng(),{radius:21,color:'#a26ce1',weight:3,fillColor:'#b889ed',fillOpacity:.15,interactive:false,className:'photo-scan-ring'}).addTo(scanLayer).bindTooltip(node('span','Checking '+name+'…'),{permanent:true,direction:'top',offset:[0,-22],className:'photo-scan-label'}).openTooltip();};tick();scanTimer=setInterval(tick,1400);}
-const searchArea=L.circle(DEFAULT_LOCATION,{radius:Number(el('radius').value),color:'#375947',weight:1.5,dashArray:'5 7',fillColor:'#acd69a',fillOpacity:.12,interactive:false}).addTo(map);
+const searchArea=L.circle(INITIAL_LOCATION,{radius:Number(el('radius').value),color:'#375947',weight:1.5,dashArray:'5 7',fillColor:'#acd69a',fillOpacity:.12,interactive:false}).addTo(map);
 const overlayControl=L.control.layers(null,{'Search radius':searchArea,'Current search results':photoLocationLayer,'Other search history':otherPhotoLocationLayer},{collapsed:true}).addTo(map);
 document.querySelector('.map-overlay-controls').append(overlayControl.getContainer());
 function syncMapSelection(){const lat=Number(el('lat').value),lon=Number(el('lon').value);if(!Number.isFinite(lat)||!Number.isFinite(lon)||Math.abs(lat)>85||Math.abs(lon)>180)return;searchArea.setLatLng([lat,lon]).setRadius(Number(el('radius').value));el('map-selection').textContent=`${lat.toFixed(5)}, ${lon.toFixed(5)}`;el('coordinate-readout').textContent=el('map-selection').textContent;el('map-radius').textContent=`Searching within ${Number(el('radius').value)>=1000?Number(el('radius').value)/1000+' km':el('radius').value+' m'}`;}
 selected.on('dragend',()=>{const p=selected.getLatLng();pick(p.lat,p.lng);});
+function saveMapVisit(){
+ try{const center=map.getCenter().wrap(),point=selected.getLatLng().wrap();localStorage.setItem(MAP_VISIT_KEY,JSON.stringify({center:[center.lat,center.lng],selected:[point.lat,point.lng],zoom:map.getZoom()}));}catch{}
+}
+el('lat').value=INITIAL_LOCATION[0];el('lon').value=INITIAL_LOCATION[1];syncMapSelection();
+map.on('moveend zoomend',saveMapVisit);
+window.addEventListener('pagehide',saveMapVisit);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)saveMapVisit();});
+
 
 function coordinates(){const styles=[...el('style-options').querySelectorAll('input:checked')].map(i=>i.value).filter(s=>s!=='any');return {lat:Number(el('lat').value),lon:Number(el('lon').value),radius:Number(el('radius').value),photoStyles:styles.length?styles:null}}
 function invalidatePois(){stopPoiScan();catalogGeneration++;candidatePoiLayer.clearLayers();poiCatalog=null;}
-function pick(lat,lon){locationSelectionRevision++;invalidatePois();el('lat').value=lat.toFixed(6);el('lon').value=lon.toFixed(6);selected.setLatLng([lat,lon]);syncMapSelection();}
+function pick(lat,lon){locationSelectionRevision++;invalidatePois();el('lat').value=lat.toFixed(6);el('lon').value=lon.toFixed(6);selected.setLatLng([lat,lon]);syncMapSelection();saveMapVisit();}
 const locationStatus=(s,status)=>{el('location-status').textContent=s;if(status)el('location-status').dataset.state=status};
 let locationPending=false,locationSelectionRevision=0,automaticLocationOwnsMap=false;
 function locateCurrentPosition({automatic=false}={}){
@@ -877,4 +890,4 @@ el('search-history').addEventListener('toggle',()=>{if(el('search-history').open
 for(const id of ['search-history','photo-history'])el(id).addEventListener('toggle',()=>{if(el(id).open)loadPublications();});el('published-more').addEventListener('click',()=>loadPublications(true));
 loadPublications().then(()=>{if(sharedPublicationId)openPublication({id:sharedPublicationId});});
 
-// All ordinary visits start in the Bay Area. Device location is selected only on request.
+// First visits start in the Bay Area; returning visits resume their last map view.
