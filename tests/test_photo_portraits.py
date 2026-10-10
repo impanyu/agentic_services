@@ -77,6 +77,10 @@ def test_portrait_validation_and_background_allowlist():
     assert portraits.background_reference('google-street-view','https://www.google.com/maps/@?map_action=pano&pano=abc&heading=90')=='google-streetview://abc/90'
     assert portraits.background_reference('google-street-view','https://www.google.com/maps/@?map_action=pano&pano=abc&heading=90&pitch=-20')=='google-streetview://abc/90/-20'
 
+    assert portraits.background_reference('google-street-view','https://www.google.com/maps/@?map_action=pano&pano=abc&heading=315.0&pitch=0.0&fov=90.0')=='google-streetview://abc/315/0/90'
+    for params in ['heading=nan','heading=360.0','heading=90&pitch=91.0','heading=90&fov=121.0','heading=90&fov=60.5']:
+        with pytest.raises(HTTPException):portraits.background_reference('google-street-view','https://www.google.com/maps/@?map_action=pano&pano=abc&'+params)
+
 
 @pytest.mark.parametrize('image_model',['gpt-image-2.5-sunburst','gpt-image-1.5'])
 @pytest.mark.parametrize('weather,lighting_phrase',[('golden_hour','golden-hour light'),('daytime','Natural daytime'),('night','Natural nighttime')])

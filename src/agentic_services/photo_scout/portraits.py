@@ -90,11 +90,17 @@ def background_reference(provider,url):
         if not image_host(url):raise HTTPException(422,'Unsupported background image provider')
         return url
     try:
-        u=urlsplit(url);q=parse_qs(u.query);pano=q.get('pano',[''])[0];heading=q.get('heading',[''])[0];pitch=q.get('pitch',['0'])[0]
-        if u.scheme!='https' or u.netloc!='www.google.com' or u.path!='/maps/@' or q.get('map_action')!=['pano'] or not re.fullmatch(r'[A-Za-z0-9_-]{1,200}',pano) or not heading.isdigit() or not 0<=int(heading)<360 or not re.fullmatch(r'-?\d{1,2}',pitch) or not -90<=int(pitch)<=90:raise ValueError()
-        fov=int(q.get('fov',['120'])[0])
-        if not 30<=fov<=120:raise ValueError()
-        return f'google-streetview://{pano}/{int(heading)}'+(f'/{int(pitch)}/{fov}' if fov!=120 else f'/{int(pitch)}' if int(pitch) else '')
+        u=urlsplit(url);q=parse_qs(u.query);pano=q.get('pano',[''])[0]
+        if u.scheme!='https' or u.netloc!='www.google.com' or u.path!='/maps/@' or q.get('map_action')!=['pano'] or not re.fullmatch(r'[A-Za-z0-9_-]{1,200}',pano):raise ValueError()
+        # Saved viewpoint fields are floats (315.0), while image references use integers.
+        def angle(key,default,low,high):
+            value=q.get(key,[default])[0]
+            if not re.fullmatch(r'-?\d{1,3}(?:\.0+)?',value):raise ValueError()
+            value=int(float(value))
+            if not low<=value<=high:raise ValueError()
+            return value
+        heading=angle('heading','',0,359);pitch=angle('pitch','0',-90,90);fov=angle('fov','120',30,120)
+        return f'google-streetview://{pano}/{heading}'+(f'/{pitch}/{fov}' if fov!=120 else f'/{pitch}' if pitch else '')
     except Exception as e:raise HTTPException(422,'Invalid background Street View') from e
 
 
