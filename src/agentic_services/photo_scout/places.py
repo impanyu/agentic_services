@@ -5,10 +5,16 @@ import os
 import httpx
 
 from .sources import distance, text
+from .costs import reserve_places_request, record, reuse_request
 
 FIELDS='places.id,places.displayName,places.location,places.primaryType,places.googleMapsUri,places.attributions,nextPageToken'
 
 async def search_text(query, *, center=None, radius=None, limit=20):
+    # Sharing is scoped to one task, including parallel branches and geocoding.
+    key=('places',' '.join(query.split()).casefold(),center,radius,limit)
+    return await reuse_request(key,lambda:_search_text(query,center=center,radius=radius,limit=limit))
+
+async def _search_text(query, *, center=None, radius=None, limit=20):
     key=os.getenv('PHOTO_SCOUT_GOOGLE_PLACES_API_KEY') or os.getenv('PHOTO_SCOUT_GOOGLE_API_KEY')
     if not key:raise ValueError('Google Places credential unavailable')
     limit=max(1,min(60,limit))
@@ -26,6 +32,8 @@ async def search_text(query, *, center=None, radius=None, limit=20):
         rows=[];seen_tokens=set()
         for _ in range(math.ceil(limit/20)):
             try:
+                reserve_places_request()
+                record('places-text', status='attempted')
                 response=await client.post('https://places.googleapis.com/v1/places:searchText',
                     headers={'X-Goog-Api-Key':key,'X-Goog-FieldMask':FIELDS},json=body)
                 response.raise_for_status()

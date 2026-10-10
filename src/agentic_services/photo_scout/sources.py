@@ -467,6 +467,8 @@ def record_google_image_request(kind):
         db.execute('UPDATE photo_scout_google_budget SET requests=requests+1 WHERE day=?',(day,))
         db.execute('CREATE TABLE IF NOT EXISTS photo_scout_google_image_usage (day TEXT, kind TEXT, requests INTEGER NOT NULL, PRIMARY KEY(day,kind))')
         db.execute('INSERT INTO photo_scout_google_image_usage VALUES(?,?,1) ON CONFLICT(day,kind) DO UPDATE SET requests=requests+1',(day,kind))
+    from .costs import record
+    record(kind, status='attempted')
 
 
 async def google_image_data(reference):

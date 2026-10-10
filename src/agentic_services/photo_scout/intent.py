@@ -65,6 +65,7 @@ class PhotoIntent(BaseModel):
     explanation: str=Field(max_length=400)
     clarification: str | None=Field(max_length=300)
 from .intent_prompt import INSTRUCTIONS
+from .costs import observe
 
 async def parse_intent(settings,payload):
     model=getattr(settings,'photo_scout_intent_model',None) or settings.openai_model
@@ -79,7 +80,7 @@ async def parse_intent(settings,payload):
         async with AsyncOpenAI(api_key=settings.openai_api_key,timeout=40,max_retries=0) as client:
             for attempt in range(2):
                 try:
-                    response=await client.responses.parse(**request)
+                    response=await observe('intent', model, client.responses.parse(**request))
                     parsed=response.output_parsed
                     if not isinstance(parsed,PlannerIntent):raise ValueError('No parsed search intent')
                     if not payload.query.strip() and parsed.action!='search':

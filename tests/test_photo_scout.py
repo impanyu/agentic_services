@@ -733,7 +733,7 @@ def test_score_cache_reuses_successful_views_without_download_or_model(tmp_path,
     _scoring_client(monkeypatch,parse);monkeypatch.setattr(visual,'image_data',image)
     first=asyncio.run(visual.explore(settings,ExploreRequest(lat=0,lon=0),_scoring_rows(),{}))
     second=asyncio.run(visual.explore(settings,ExploreRequest(lat=.001,lon=0,radius=2000,limit=5),_scoring_rows(),{}))
-    assert len(downloads)==13 and len(calls)==2
+    assert len(downloads)==13 and len(calls)==1
     assert first['scoring']['newlyScoredImages']==13
     assert second['scoring']['cachedImages']==13 and second['scoring']['newlyScoredImages']==0
     assert len(second['poiResults'])==13 and any(p['recommend'] is False for p in second['poiResults'])
@@ -743,7 +743,7 @@ def test_score_cache_reuses_successful_views_without_download_or_model(tmp_path,
     changed=_scoring_rows();changed[-1]['sourceDate']='new-version'
     third=asyncio.run(visual.explore(settings,ExploreRequest(lat=0,lon=0),changed,{}))
     assert third['scoring']['cachedImages']==12 and third['scoring']['newlyScoredImages']==1
-    assert len(downloads)==14 and len(calls)==3
+    assert len(downloads)==14 and len(calls)==2
 
 
 def test_score_cache_context_and_expiry(tmp_path,monkeypatch):
@@ -1015,7 +1015,7 @@ def test_larger_parallel_batches_score_all_views_without_dropping_last_batch(tmp
         batch=[json.loads(c['text'])['image'] for c in kwargs['input'][0]['content'][1:] if c['type']=='input_text']
         assert kwargs['max_output_tokens']>=len(batch)*900
         sizes.append(len(batch));started+=1;models+=1;peak_models=max(peak_models,models)
-        if started==min(12,(count+7)//8):gate.set()
+        if started==min(12,(count+15)//16):gate.set()
         await asyncio.wait_for(gate.wait(),2)
         models-=1
         return SimpleNamespace(output_parsed=visual.VisualBatch(assessments=[visual.ImageAssessment(
@@ -1023,8 +1023,8 @@ def test_larger_parallel_batches_score_all_views_without_dropping_last_batch(tmp
             visible_evidence='Visible sculpture',photo_tip='Frame sculpture',uncertainty='Access unknown',confidence='medium') for r in batch]),usage=None)
     _scoring_client(monkeypatch,parse);monkeypatch.setattr(visual,'image_data',image)
     result=asyncio.run(visual.explore(settings,ExploreRequest(lat=0,lon=0),rows,{}))
-    assert sum(sizes)==count and max(sizes)==8
-    assert len(sizes)==(count+7)//8
+    assert sum(sizes)==count and max(sizes)==16
+    assert len(sizes)==(count+15)//16
     assert 16<peak_downloads<=32 and 8<peak_models<=12
     assert result['inspectedImages']==count and result['scoring']['scoringFailedImages']==0
     assert len(result['spots'])==count and result['spots'][0]['image_id']==str(count-1)

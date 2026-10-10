@@ -59,7 +59,7 @@ class Settings:
 
         return cls(
             openai_api_key=os.getenv("OPENAI_API_KEY") or None,
-            photo_scout_intent_model=os.getenv("PHOTO_SCOUT_INTENT_MODEL", "gpt-6-astra") or None,
+            photo_scout_intent_model=os.getenv("PHOTO_SCOUT_INTENT_MODEL", "gpt-6.1-sol") or None,
             photo_scout_intent_reasoning=os.getenv("PHOTO_SCOUT_INTENT_REASONING", "low") or None,
             openai_model=os.getenv("OPENAI_MODEL", "gpt-6-luna"),
             database_path=database_path,

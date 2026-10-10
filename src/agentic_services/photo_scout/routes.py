@@ -435,6 +435,9 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
             'categories':plan.get('categories'),'selectedPoiIds':None,'poiCatalogToken':None})
         return parsed,plan
 
+    from .costs import tracked_task
+
+    @tracked_task(settings.database_path,'search')
     async def run(payload,allow_expired=False,task_id=None,parsed=False):
         enabled()
         async with lock, asyncio.timeout(660):
@@ -524,6 +527,8 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
             result['photoStyles']=style_briefs(payload.photoStyles)
             interpretation=plan or (tasks.context('search',task_id) if task_id else None)
             if interpretation:result['interpretation']={k:interpretation.get(k) for k in ('normalizedQuery','intentSummary','subjectRole','assumptions')}
+            from .costs import summary
+            result['costAccounting']=summary()
             return image_links(result)
 
     @router.get('/photo-scout/v1/status')
@@ -541,7 +546,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
                 'imageAnalysisEnabled':google_enabled(),
                 'dailyImageRequestLimit':max(0,int(os.getenv('PHOTO_SCOUT_GOOGLE_DAILY_IMAGE_LIMIT','0'))) or None},
             'routeSearch':{'enabled':True,'travelModes':['walk','drive'],'defaultTravelMode':'walk','maxDistanceMeters':200000,'maxCandidateLocations':50,'corridorMeters':{'min':50,'max':2000,'default':50}},
-            'limits':{'radiusMeters':20000,'candidatePlaces':50,'sampledImages':MAX_SCORED_IMAGES,'inspectedImages':MAX_SCORED_IMAGES,'imagesPerBatch':max(1,min(32,int(os.getenv('PHOTO_SCOUT_SCORING_BATCH_SIZE','8')))),'parallelBatches':max(1,min(16,int(os.getenv('PHOTO_SCOUT_SCORING_CONCURRENCY','12')))),'viewsPerPanorama':8,'googleQueryLocations':50,'timeoutSeconds':660},
+            'limits':{'radiusMeters':20000,'candidatePlaces':50,'sampledImages':MAX_SCORED_IMAGES,'inspectedImages':MAX_SCORED_IMAGES,'imagesPerBatch':max(1,min(32,int(os.getenv('PHOTO_SCOUT_SCORING_BATCH_SIZE','16')))),'parallelBatches':max(1,min(16,int(os.getenv('PHOTO_SCOUT_SCORING_CONCURRENCY','12')))),'viewsPerPanorama':8,'googleQueryLocations':50,'timeoutSeconds':660},
             'analysisMethod':'fixed-batch-scoring','discoveryMethod':'fixed-geographic-and-poi','discoveryMethods':['fixed-geographic-and-poi'],'geographicProvider':'openstreetmap','poiProviders':{'openstreetmap':'standby' if os.getenv('PHOTO_SCOUT_POI_PROVIDER')=='google-places' else 'enabled','google-places':'enabled' if os.getenv('PHOTO_SCOUT_POI_PROVIDER')=='google-places' else 'not_connected'},
             'privacy':'Coordinates/preferences are sent to imagery providers/OpenAI; paid reports retained for 30 days.'}
 
@@ -615,6 +620,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
         response.headers['Cache-Control']='private, no-store'
         return {'jobId':job,'reportToken':x_request_token,'state':store.get(job)['state'],'expiresAt':tasks.expiry(identity),'context':tasks.context('search',job)}
 
+    @tracked_task(settings.database_path,'search')
     async def process_preview():
         if lock.locked(): return False
         job=store.claim_preview()

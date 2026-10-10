@@ -368,7 +368,7 @@ This setting does not change Google account quotas or billing.
 
 Every imagery-backed shortlist card has **Take a selfie here**. The modal accepts a user portrait (JPG/PNG/WebP/HEIC, up to 20 MB and 80 MP; browser-decodable photos are resized to 2048 pixels before submission, with server-side HEIC conversion as fallback), previews the selected camera view and allows an optional pose instruction. `POST /photo-scout/v1/portraits` queues an image edit; `GET /photo-scout/v1/portraits/{id}` and `/image` require the private `X-Report-Token` returned on submission, plus the internal gateway credential. Portrait style is one of natural (default, keeps clothing), street, cinematic, vacation or editorial. Fixed server-side briefs map it to pose, expression and wardrobe while preserving identities, group membership and the original background/view/weather. Unsupported styles are rejected. The generated output is explicitly an AI composite. Model default: `PHOTO_SCOUT_IMAGE_MODEL=gpt-image-2.5-sunburst`, max quality, 1024 square. New image models omit `input_fidelity`; legacy GPT Image 1 models retain high fidelity and high quality.
 
-Before fetching the background or editing an image, the worker checks for at least one visible real human, cartoon/illustrated character or animal with structured vision counts (`PHOTO_SCOUT_PERSON_MODEL`, default `gpt-6-astra`; street-view scoring independently uses `PHOTO_SCOUT_MODEL`, default `gpt-6-luna`). No eligible subjects causes an explicit failed-job message; classifier failures stop the edit with a retry message. Groups and mixed groups are accepted. The edit prompt preserves all subjects, retains cartoon art styles and animal markings, avoids humanizing animals, and integrates subjects with scene lighting, perspective and shadows while keeping the background intact. Upload bytes and payload are removed on either failure. The `checking` job state is shown in the UI. A separate durable worker runs sequentially; switching tabs or closing the dialog does not stop the job. Refreshing reconnects using the anonymous browser cookie or signed-in account. Upload metadata is removed; portrait bytes and job payload are removed after completion/failure. Output and job records expire after seven days by default and are pruned by the worker. No portrait/output is inserted into search history. Up to eight jobs may queue; `PHOTO_SCOUT_PORTRAIT_DAILY_LIMIT` defaults to 100 (0 disables this operator cap). Provider originals and copyright attribution should be retained; generated images must not be represented as actual visits.
+Before fetching the background or editing an image, the worker checks for at least one visible real human, cartoon/illustrated character or animal with structured vision counts (`PHOTO_SCOUT_PERSON_MODEL`, default `gpt-6-luna`; street-view scoring independently uses `PHOTO_SCOUT_MODEL`, default `gpt-6-luna`). No eligible subjects causes an explicit failed-job message; classifier failures stop the edit with a retry message. Groups and mixed groups are accepted. The edit prompt preserves all subjects, retains cartoon art styles and animal markings, avoids humanizing animals, and integrates subjects with scene lighting, perspective and shadows while keeping the background intact. Upload bytes and payload are removed on either failure. The `checking` job state is shown in the UI. A separate durable worker runs sequentially; switching tabs or closing the dialog does not stop the job. Refreshing reconnects using the anonymous browser cookie or signed-in account. Upload metadata is removed; portrait bytes and job payload are removed after completion/failure. Output and job records expire after seven days by default and are pruned by the worker. No portrait/output is inserted into search history. Up to eight jobs may queue; `PHOTO_SCOUT_PORTRAIT_DAILY_LIMIT` defaults to 100 (0 disables this operator cap). Provider originals and copyright attribution should be retained; generated images must not be represented as actual visits.
 
 Map detail controls default to place names and roads/railways only, using the Minimal vector basemap. Other styles remain available; toggling details on a raster basemap selects Minimal.
 
@@ -392,8 +392,8 @@ The website remains a free preview. Selfie generation is not advertised as an ag
 Paid discovery returns ranked viewpoints, camera headings, source links and commerce
 metadata. The order token returned by MCP or HTTP response headers retrieves its
 signed order receipt and the saved report via `X-Report-Token`; reports last 30 days.
-Model cost accounting is not measured in this workflow and is explicitly marked in
-the receipt. A zero-result report is possible. Set client request timeouts above 660
+Search reports now include per-task cost accounting; the commerce receipt
+retains its legacy unmeasured marker and is not a provider billing statement. A zero-result report is possible. Set client request timeouts above 660
 seconds; image scoring is synchronous for paid calls. No private upstream key is
 shared with agents or directories.
 
@@ -571,3 +571,41 @@ other providers, model calls, UI requests after cache expiry and infrastructure
 still need separate accounting. Tiny text, distant subjects and subtle objects
 can be unresolved at this deliberately lowest-resolution setting; generated
 sharpness cannot prove the accuracy of missing real-world details.
+
+
+### Cost-first execution defaults (October 10)
+
+Planning defaults to `gpt-6.1-sol` with low reasoning; scoring and subject presence
+checks default to `gpt-6-luna` with low reasoning. Normal scoring requests carry
+16 images instead of 8, reducing repeated instructions and HTTP overhead; this
+is not the discounted asynchronous OpenAI Batch API. Candidate/view limits and
+all eight directions remain unchanged. Selfie generation retains its configured
+`gpt-image-2.5-sunburst` model and `quality=max`.
+
+The live parser smoke test covered coffee/geography, a motel typo, sculpture with
+a radius, a pure address, existing scene subjects and UI-only mood. Subject checks
+accepted a cartoon, a human and an animal, and rejected a blank image. These are
+limited smoke tests, not a general quality or latency guarantee.
+
+Identical Places requests share one in-flight response only within the same job;
+no Places results are retained across jobs. Geocoding, pagination, parallel search
+branches and route anchors share a total cap of 12 Places HTTP requests
+(`PHOTO_SCOUT_PLACES_REQUESTS_PER_TASK`). This caps first-tier potential Places
+charges at $0.384 before free allowances, not total job costs. Longer routes and
+complex multi-query searches may have partial coverage when this cap is reached.
+
+`photo_scout_cost_events` records worker search/selfie and paid discovery model
+usage and outgoing Places, Routes and Street View attempts, without prompts,
+images or credentials. Search reports expose `costAccounting`: actual model
+usage multiplied by Standard list prices, provider attempts at first-tier list
+prices, unknown usage on failed calls, and whether the Places budget was reached.
+These estimates do not reconcile provider invoices, free allowances, volume
+pricing, infrastructure or separately called legacy planning/preview endpoints.
+Failed calls with missing usage are not reported as free.
+
+Google Map Tiles API policies explicitly prohibit non-visualization use including
+image analysis and machine interpretation:
+https://developers.google.com/maps/documentation/tile/policies . Therefore the
+low tile-fetch estimate above does not establish permission to use those tiles
+for AI scoring or synthesis. Commercial AI-use economics require an authorized
+source/license; switching transport alone does not establish that permission.

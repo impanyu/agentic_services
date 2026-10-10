@@ -73,11 +73,13 @@ def decode_polyline(encoded):
     return points
 
 async def compute_route(route):
+    from .costs import record
     key=os.getenv('PHOTO_SCOUT_GOOGLE_ROUTES_API_KEY') or os.getenv('PHOTO_SCOUT_GOOGLE_PLACES_API_KEY') or os.getenv('PHOTO_SCOUT_GOOGLE_API_KEY')
     if not key:raise HTTPException(503,'Route provider is not configured.')
     waypoint=lambda p:{'location':{'latLng':{'latitude':p.lat,'longitude':p.lon}}}
     try:
         async with httpx.AsyncClient(timeout=25,follow_redirects=False) as client:
+            record('routes-essentials', status='attempted')
             r=await client.post('https://routes.googleapis.com/directions/v2:computeRoutes',
                 headers={'X-Goog-Api-Key':key,'X-Goog-FieldMask':'routes.distanceMeters,routes.duration,routes.polyline.encodedPolyline,routes.warnings'},
                 json={'origin':waypoint(route.origin),'destination':waypoint(route.destination),

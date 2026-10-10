@@ -11,6 +11,7 @@ from openai import AsyncOpenAI
 from pydantic import BaseModel, Field, model_validator
 
 from .score_cache import ScoreCache
+from .costs import observe
 from .styles import style_briefs
 from .sources import distance, image_data, MAX_SCORED_IMAGES
 
@@ -216,7 +217,7 @@ async def assess_images(settings,payload,rows,statuses=None):
             cached.append(assessment)
         else:
             missing.append(row)
-    batch_size=max(1,min(32,int(os.getenv('PHOTO_SCOUT_SCORING_BATCH_SIZE','8'))))
+    batch_size=max(1,min(32,int(os.getenv('PHOTO_SCOUT_SCORING_BATCH_SIZE','16'))))
     aliases={row['id']:str(i) for i,row in enumerate(missing)}
     batches=[missing[i:i+batch_size] for i in range(0,len(missing),batch_size)]
     batch_slots=asyncio.Semaphore(max(1,min(16,int(os.getenv('PHOTO_SCOUT_SCORING_CONCURRENCY','12')))));download_slots=asyncio.Semaphore(max(1,min(64,int(os.getenv('PHOTO_SCOUT_IMAGE_DOWNLOAD_CONCURRENCY','32')))))
@@ -239,9 +240,10 @@ async def assess_images(settings,payload,rows,statuses=None):
             response=None;valid=[];usages=[];requests=1
             try:
                 async with batch_slots:
-                    response=await client.responses.parse(model=model,instructions=INSTRUCTIONS+'\n'+OUTPUT_FORMAT,
+                    response=await observe('scoring',model,client.responses.parse(model=model,instructions=INSTRUCTIONS+'\n'+OUTPUT_FORMAT,
                         input=[{'role':'user','content':content}],text_format=VisualBatch,
-                        max_output_tokens=max(12000,len(usable)*900),store=False)
+                        **({'reasoning':{'effort':'low'}} if model.startswith('gpt-6') else {}),
+                        max_output_tokens=max(12000,len(usable)*900),store=False))
                 output=response.output_parsed
                 expected={aliases[r['id']]:r['id'] for r,_ in usable};counts=Counter(a.image_id for a in output.assessments) if output else {}
                 valid=[a.model_copy(update={'image_id':expected[a.image_id]}) for a in output.assessments if a.image_id in expected and counts[a.image_id]==1] if output else []
