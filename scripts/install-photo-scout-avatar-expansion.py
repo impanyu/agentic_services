@@ -61,6 +61,7 @@ def install(root, report, minimum):
             continue
         added.append({'id': identifier, 'name': row['name'], 'category': row['category'],
             'visualStyle': row['visualStyle'], 'aliases': row.get('aliases', []),
+            **({'featured': True} if row.get('featured') is True else {}),
             'imageUrl': './avatars/characters/' + row['slug'] + '.png',
             'thumbnailUrl': './avatars/thumbnails/' + row['slug'] + '.webp'})
         known_ids.add(identifier)

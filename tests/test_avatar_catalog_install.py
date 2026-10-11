@@ -40,9 +40,13 @@ def test_minimum_failure_preserves_live_catalog(tmp_path):
 
 def test_valid_artwork_gets_thumbnail_and_manifest(tmp_path):
     catalog, report = setup(tmp_path)
+    data = json.loads(report.read_text())
+    data['items'][0]['featured'] = True
+    report.write_text(json.dumps(data))
     result = installer().install(tmp_path, report, 1)
     assert result['total'] == result['distinctCharacters'] == 1
     item = json.loads(catalog.read_text())['items'][0]
+    assert item['featured'] is True
     assert (tmp_path / item['thumbnailUrl'][2:]).is_file()
     assert installer().install(tmp_path, report, 1)['added'] == 0
 

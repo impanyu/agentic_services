@@ -1,0 +1,501 @@
+{
+  "method": "built-in imagegen; one request per character; no retries",
+  "items": [
+    {
+      "name": "Furina",
+      "slug": "furina",
+      "aliases": [
+        "芙宁娜",
+        "原神",
+        "Genshin Impact"
+      ],
+      "category": "Game characters",
+      "visualStyle": "Cel animation",
+      "featured": true,
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Furina (芙宁娜). Subject: Genshin Impact heroine with white and pale-blue bobbed hair, blue eyes, ornate blue top hat, fully covered elegant navy and white theatrical outfit. Style: crisp expressive cel-shaded animation with clean linework, preserving distinctive character appearance and recognizable costume. Single character in a relaxed friendly standing pose, whole body including feet and important accessories visible with generous clear margins. Clean foreground cutout on a truly fully transparent background. No scene, glow, haze, gradient, backdrop, ground shadow, text, labels, logo, frame or watermark. Coherent anatomy, detailed expressive face. Keep outfits modest and nonsexual.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-d969aff3-f1e2-49fb-b4fc-cb64959b2d5f.png"
+    },
+    {
+      "name": "Nahida",
+      "slug": "nahida",
+      "aliases": [
+        "纳西妲",
+        "原神",
+        "Genshin Impact"
+      ],
+      "category": "Game characters",
+      "visualStyle": "3D animation",
+      "featured": true,
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Nahida (纳西妲). Subject: Genshin Impact small elf-like heroine with white side ponytail, green eyes, leaf ornaments, modest fully covered white and green dress and matching tights. Style: polished cinematic 3D character art, tactile detailed materials, preserving distinctive character appearance and recognizable costume. Single character in a relaxed friendly standing pose, whole body including feet and important accessories visible with generous clear margins. Clean foreground cutout on a truly fully transparent background. No scene, glow, haze, gradient, backdrop, ground shadow, text, labels, logo, frame or watermark. Coherent anatomy, detailed expressive face. Keep outfits modest and nonsexual.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-b0a1282f-021c-484e-8a29-c7bc1dd195a7.png"
+    },
+    {
+      "name": "Raiden Shogun",
+      "slug": "raiden-shogun",
+      "aliases": [
+        "雷电将军",
+        "原神",
+        "Genshin Impact"
+      ],
+      "category": "Game characters",
+      "visualStyle": "Watercolor",
+      "featured": true,
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Raiden Shogun (雷电将军). Subject: Genshin Impact adult purple-haired heroine with braid and violet eyes, fully covered elegant purple kimono-inspired outfit, long skirt and tights, calm pose. Style: bright watercolor illustration with delicate ink outlines, preserving distinctive character appearance and recognizable costume. Single character in a relaxed friendly standing pose, whole body including feet and important accessories visible with generous clear margins. Clean foreground cutout on a truly fully transparent background. No scene, glow, haze, gradient, backdrop, ground shadow, text, labels, logo, frame or watermark. Coherent anatomy, detailed expressive face. Keep outfits modest and nonsexual.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-9077e231-635e-4a27-93c1-eac3d8f64e5d.png"
+    },
+    {
+      "name": "Zhongli",
+      "slug": "zhongli",
+      "aliases": [
+        "钟离",
+        "原神",
+        "Genshin Impact"
+      ],
+      "category": "Game characters",
+      "visualStyle": "Graphic novel",
+      "featured": true,
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Zhongli (钟离). Subject: Genshin Impact adult man with brown hair and amber eyes, tailored long brown and black coat with gold geometric details and gloves. Style: color manga illustration with detailed fine ink and controlled shading, preserving distinctive character appearance and recognizable costume. Single character in a relaxed friendly standing pose, whole body including feet and important accessories visible with generous clear margins. Clean foreground cutout on a truly fully transparent background. No scene, glow, haze, gradient, backdrop, ground shadow, text, labels, logo, frame or watermark. Coherent anatomy, detailed expressive face. Keep outfits modest and nonsexual.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-6e302ad2-02c5-4c5c-95ef-6dcc02a45839.png"
+    },
+    {
+      "name": "Hu Tao",
+      "slug": "hu-tao",
+      "aliases": [
+        "胡桃",
+        "原神",
+        "Genshin Impact"
+      ],
+      "category": "Game characters",
+      "visualStyle": "Cel animation",
+      "featured": true,
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Hu Tao (胡桃). Subject: Genshin Impact young adult heroine with long dark hair, red eyes and flower-adorned dark hat, fully covered dark traditional-style coat, long trousers and boots. Style: crisp expressive cel-shaded animation with clean linework, preserving distinctive character appearance and recognizable costume. Single character in a relaxed friendly standing pose, whole body including feet and important accessories visible with generous clear margins. Clean foreground cutout on a truly fully transparent background. No scene, glow, haze, gradient, backdrop, ground shadow, text, labels, logo, frame or watermark. Coherent anatomy, detailed expressive face. Keep outfits modest and nonsexual.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-6c82b6c3-9e98-447e-8f35-f71e4d7086be.png"
+    },
+    {
+      "name": "Venti",
+      "slug": "venti",
+      "aliases": [
+        "温迪",
+        "原神",
+        "Genshin Impact"
+      ],
+      "category": "Game characters",
+      "visualStyle": "3D animation",
+      "featured": true,
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Venti (温迪). Subject: Genshin Impact green-clad bard with black braided hair tips, green feathered cap, white shirt, green cape, fully covered trousers and stockings, holding a small lyre. Style: polished cinematic 3D character art, tactile detailed materials, preserving distinctive character appearance and recognizable costume. Single character in a relaxed friendly standing pose, whole body including feet and important accessories visible with generous clear margins. Clean foreground cutout on a truly fully transparent background. No scene, glow, haze, gradient, backdrop, ground shadow, text, labels, logo, frame or watermark. Coherent anatomy, detailed expressive face. Keep outfits modest and nonsexual.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-ecda140e-a343-4b1e-810a-6258c29ff6e0.png"
+    },
+    {
+      "name": "Kafka",
+      "slug": "kafka-star-rail",
+      "aliases": [
+        "卡芙卡",
+        "崩坏星穹铁道",
+        "星铁",
+        "Honkai Star Rail"
+      ],
+      "category": "Game characters",
+      "visualStyle": "Watercolor",
+      "featured": true,
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Kafka (卡芙卡). Subject: Honkai Star Rail adult woman with wine-red hair and sunglasses on her head, fully covered tailored burgundy and black coat, long dark trousers and boots. Style: bright watercolor illustration with delicate ink outlines, preserving distinctive character appearance and recognizable costume. Single character in a relaxed friendly standing pose, whole body including feet and important accessories visible with generous clear margins. Clean foreground cutout on a truly fully transparent background. No scene, glow, haze, gradient, backdrop, ground shadow, text, labels, logo, frame or watermark. Coherent anatomy, detailed expressive face. Keep outfits modest and nonsexual.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-fa76c887-dcc1-466e-9ab3-289abb320462.png"
+    },
+    {
+      "name": "Firefly",
+      "slug": "firefly-star-rail",
+      "aliases": [
+        "流萤",
+        "崩坏星穹铁道",
+        "星铁",
+        "Honkai Star Rail"
+      ],
+      "category": "Game characters",
+      "visualStyle": "Graphic novel",
+      "featured": true,
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Firefly (流萤). Subject: Honkai Star Rail silver-haired young adult heroine with teal eyes and black ribbon, fully covered white and teal dress, dark tights and matching boots. Style: color manga illustration with detailed fine ink and controlled shading, preserving distinctive character appearance and recognizable costume. Single character in a relaxed friendly standing pose, whole body including feet and important accessories visible with generous clear margins. Clean foreground cutout on a truly fully transparent background. No scene, glow, haze, gradient, backdrop, ground shadow, text, labels, logo, frame or watermark. Coherent anatomy, detailed expressive face. Keep outfits modest and nonsexual.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-6d340785-a271-4c6b-8a7b-493a68d2d3ab.png"
+    },
+    {
+      "name": "March 7th",
+      "slug": "march-7th",
+      "aliases": [
+        "三月七",
+        "崩坏星穹铁道",
+        "星铁",
+        "Honkai Star Rail"
+      ],
+      "category": "Game characters",
+      "visualStyle": "Cel animation",
+      "featured": true,
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of March 7th (三月七). Subject: Honkai Star Rail pink-haired heroine with blue-pink eyes, fully covered blue and white adventure coat, long white skirt and dark tights. Style: crisp expressive cel-shaded animation with clean linework, preserving distinctive character appearance and recognizable costume. Single character in a relaxed friendly standing pose, whole body including feet and important accessories visible with generous clear margins. Clean foreground cutout on a truly fully transparent background. No scene, glow, haze, gradient, backdrop, ground shadow, text, labels, logo, frame or watermark. Coherent anatomy, detailed expressive face. Keep outfits modest and nonsexual.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-9880f319-5c53-44b1-89bd-4ad800c9718b.png"
+    },
+    {
+      "name": "Robin from Star Rail",
+      "slug": "robin-star-rail",
+      "aliases": [
+        "知更鸟",
+        "崩坏星穹铁道",
+        "星铁",
+        "Honkai Star Rail"
+      ],
+      "category": "Game characters",
+      "visualStyle": "3D animation",
+      "featured": true,
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Robin from Star Rail (知更鸟). Subject: Honkai Star Rail singer with pale blue hair, delicate wing-shaped ear ornaments, fully covered elegant white and violet gown, gentle smile. Style: polished cinematic 3D character art, tactile detailed materials, preserving distinctive character appearance and recognizable costume. Single character in a relaxed friendly standing pose, whole body including feet and important accessories visible with generous clear margins. Clean foreground cutout on a truly fully transparent background. No scene, glow, haze, gradient, backdrop, ground shadow, text, labels, logo, frame or watermark. Coherent anatomy, detailed expressive face. Keep outfits modest and nonsexual.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-6004ecc3-d417-4916-8737-8a261527f8b5.png"
+    },
+    {
+      "name": "Aventurine",
+      "slug": "aventurine",
+      "aliases": [
+        "砂金",
+        "崩坏星穹铁道",
+        "星铁",
+        "Honkai Star Rail"
+      ],
+      "category": "Game characters",
+      "visualStyle": "Watercolor",
+      "featured": true,
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Aventurine (砂金). Subject: Honkai Star Rail blond adult man with violet eyes and green-tinted glasses, tailored teal suit and ornate coat, gloved hands. Style: bright watercolor illustration with delicate ink outlines, preserving distinctive character appearance and recognizable costume. Single character in a relaxed friendly standing pose, whole body including feet and important accessories visible with generous clear margins. Clean foreground cutout on a truly fully transparent background. No scene, glow, haze, gradient, backdrop, ground shadow, text, labels, logo, frame or watermark. Coherent anatomy, detailed expressive face. Keep outfits modest and nonsexual.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-682b89b7-0a7b-4277-bc15-959703e3b4ba.png"
+    },
+    {
+      "name": "Hoshimi Miyabi",
+      "slug": "hoshimi-miyabi",
+      "aliases": [
+        "星见雅",
+        "绝区零",
+        "Zenless Zone Zero"
+      ],
+      "category": "Game characters",
+      "visualStyle": "Graphic novel",
+      "featured": true,
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Hoshimi Miyabi (星见雅). Subject: Zenless Zone Zero adult fox-eared heroine with long black hair, fully covered black and white formal adventure uniform, long skirt and dark tights, sheathed katana at her side. Style: color manga illustration with detailed fine ink and controlled shading, preserving distinctive character appearance and recognizable costume. Single character in a relaxed friendly standing pose, whole body including feet and important accessories visible with generous clear margins. Clean foreground cutout on a truly fully transparent background. No scene, glow, haze, gradient, backdrop, ground shadow, text, labels, logo, frame or watermark. Coherent anatomy, detailed expressive face. Keep outfits modest and nonsexual.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-2163157a-ba0e-4863-a250-829fca0171b0.png"
+    },
+    {
+      "name": "Ellen Joe",
+      "slug": "ellen-joe",
+      "aliases": [
+        "艾莲·乔",
+        "绝区零",
+        "Zenless Zone Zero"
+      ],
+      "category": "Game characters",
+      "visualStyle": "Cel animation",
+      "featured": true,
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Ellen Joe (艾莲·乔). Subject: Zenless Zone Zero black-haired shark-tailed heroine in modest fully covered black and white maid-inspired outfit with long skirt and tights, relaxed friendly pose. Style: crisp expressive cel-shaded animation with clean linework, preserving distinctive character appearance and recognizable costume. Single character in a relaxed friendly standing pose, whole body including feet and important accessories visible with generous clear margins. Clean foreground cutout on a truly fully transparent background. No scene, glow, haze, gradient, backdrop, ground shadow, text, labels, logo, frame or watermark. Coherent anatomy, detailed expressive face. Keep outfits modest and nonsexual.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-549026ef-e136-4f68-9a00-f451cd14aec5.png"
+    },
+    {
+      "name": "Nicole Demara",
+      "slug": "nicole-demara",
+      "aliases": [
+        "妮可·德玛拉",
+        "绝区零",
+        "Zenless Zone Zero"
+      ],
+      "category": "Game characters",
+      "visualStyle": "3D animation",
+      "featured": true,
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Nicole Demara (妮可·德玛拉). Subject: Zenless Zone Zero pink-haired adult heroine with twin tails and green eyes, fully covered fashionable white jacket over black high-neck top, long trousers and boots. Style: polished cinematic 3D character art, tactile detailed materials, preserving distinctive character appearance and recognizable costume. Single character in a relaxed friendly standing pose, whole body including feet and important accessories visible with generous clear margins. Clean foreground cutout on a truly fully transparent background. No scene, glow, haze, gradient, backdrop, ground shadow, text, labels, logo, frame or watermark. Coherent anatomy, detailed expressive face. Keep outfits modest and nonsexual.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-3f753842-5c14-4d8f-b416-7b683761068d.png"
+    },
+    {
+      "name": "Momo Ayase",
+      "slug": "momo-ayase",
+      "aliases": [
+        "绫濑桃",
+        "胆大党",
+        "DAN DA DAN"
+      ],
+      "category": "Anime",
+      "visualStyle": "Watercolor",
+      "featured": true,
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Momo Ayase (绫濑桃). Subject: DAN DA DAN brown bob-haired heroine with large earrings and friendly expression, fully covered white blouse, pink cardigan, long dark skirt and tights. Style: bright watercolor illustration with delicate ink outlines, preserving distinctive character appearance and recognizable costume. Single character in a relaxed friendly standing pose, whole body including feet and important accessories visible with generous clear margins. Clean foreground cutout on a truly fully transparent background. No scene, glow, haze, gradient, backdrop, ground shadow, text, labels, logo, frame or watermark. Coherent anatomy, detailed expressive face. Keep outfits modest and nonsexual.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-6c07c387-f152-4821-81b8-adbda289a25e.png"
+    },
+    {
+      "name": "Okarun",
+      "slug": "okarun",
+      "aliases": [
+        "高仓健",
+        "厄卡伦",
+        "胆大党",
+        "DAN DA DAN"
+      ],
+      "category": "Anime",
+      "visualStyle": "Graphic novel",
+      "featured": true,
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Okarun (高仓健). Subject: DAN DA DAN shy black-haired boy with round glasses, fully covered dark school uniform, gentle smile; ordinary human form. Style: color manga illustration with detailed fine ink and controlled shading, preserving distinctive character appearance and recognizable costume. Single character in a relaxed friendly standing pose, whole body including feet and important accessories visible with generous clear margins. Clean foreground cutout on a truly fully transparent background. No scene, glow, haze, gradient, backdrop, ground shadow, text, labels, logo, frame or watermark. Coherent anatomy, detailed expressive face. Keep outfits modest and nonsexual.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-142de69a-0feb-4aa2-9cbb-9dc8fb3a2db1.png"
+    },
+    {
+      "name": "Maomao",
+      "slug": "maomao",
+      "aliases": [
+        "猫猫",
+        "药屋少女的呢喃",
+        "The Apothecary Diaries"
+      ],
+      "category": "Anime",
+      "visualStyle": "Cel animation",
+      "featured": true,
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Maomao (猫猫). Subject: The Apothecary Diaries heroine with dark green hair and freckles, fully covered modest green and red traditional herbalist robes, holding a small herb pouch. Style: crisp expressive cel-shaded animation with clean linework, preserving distinctive character appearance and recognizable costume. Single character in a relaxed friendly standing pose, whole body including feet and important accessories visible with generous clear margins. Clean foreground cutout on a truly fully transparent background. No scene, glow, haze, gradient, backdrop, ground shadow, text, labels, logo, frame or watermark. Coherent anatomy, detailed expressive face. Keep outfits modest and nonsexual.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-2c771cc1-e766-4a4e-8a7e-a57bb00ce4a8.png"
+    },
+    {
+      "name": "Jinshi",
+      "slug": "jinshi",
+      "aliases": [
+        "壬氏",
+        "药屋少女的呢喃",
+        "The Apothecary Diaries"
+      ],
+      "category": "Anime",
+      "visualStyle": "3D animation",
+      "featured": true,
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Jinshi (壬氏). Subject: The Apothecary Diaries elegant adult man with long dark purple hair and violet eyes, fully covered richly layered traditional court robes. Style: polished cinematic 3D character art, tactile detailed materials, preserving distinctive character appearance and recognizable costume. Single character in a relaxed friendly standing pose, whole body including feet and important accessories visible with generous clear margins. Clean foreground cutout on a truly fully transparent background. No scene, glow, haze, gradient, backdrop, ground shadow, text, labels, logo, frame or watermark. Coherent anatomy, detailed expressive face. Keep outfits modest and nonsexual.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-be59de34-4c22-4226-98a2-8c045e109f85.png"
+    },
+    {
+      "name": "Denji",
+      "slug": "denji",
+      "aliases": [
+        "电次",
+        "电锯人",
+        "Chainsaw Man"
+      ],
+      "category": "Anime",
+      "visualStyle": "Watercolor",
+      "featured": true,
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Denji (电次). Subject: Chainsaw Man blond young man in ordinary human form, white shirt, black tie and dark trousers, relaxed friendly pose, no blood or weapons. Style: bright watercolor illustration with delicate ink outlines, preserving distinctive character appearance and recognizable costume. Single character in a relaxed friendly standing pose, whole body including feet and important accessories visible with generous clear margins. Clean foreground cutout on a truly fully transparent background. No scene, glow, haze, gradient, backdrop, ground shadow, text, labels, logo, frame or watermark. Coherent anatomy, detailed expressive face. Keep outfits modest and nonsexual.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-1c0cf895-51d5-4e47-8d8d-185e7b92a232.png"
+    },
+    {
+      "name": "Power",
+      "slug": "power-chainsaw-man",
+      "aliases": [
+        "帕瓦",
+        "电锯人",
+        "Chainsaw Man"
+      ],
+      "category": "Anime",
+      "visualStyle": "Graphic novel",
+      "featured": true,
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Power (帕瓦). Subject: Chainsaw Man pink-blond-haired heroine with small red horns, fully covered white shirt, black tie, dark trousers and loose jacket, playful smile, no violence. Style: color manga illustration with detailed fine ink and controlled shading, preserving distinctive character appearance and recognizable costume. Single character in a relaxed friendly standing pose, whole body including feet and important accessories visible with generous clear margins. Clean foreground cutout on a truly fully transparent background. No scene, glow, haze, gradient, backdrop, ground shadow, text, labels, logo, frame or watermark. Coherent anatomy, detailed expressive face. Keep outfits modest and nonsexual.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-2d479ddf-a8e3-45b4-a512-8800d771f606.png"
+    },
+    {
+      "name": "Makima",
+      "slug": "makima",
+      "aliases": [
+        "玛奇玛",
+        "电锯人",
+        "Chainsaw Man"
+      ],
+      "category": "Anime",
+      "visualStyle": "Cel animation",
+      "featured": true,
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Makima (玛奇玛). Subject: Chainsaw Man adult auburn-braided-haired woman with gold eyes, fully covered white shirt, black tie, dark trousers and long black coat. Style: crisp expressive cel-shaded animation with clean linework, preserving distinctive character appearance and recognizable costume. Single character in a relaxed friendly standing pose, whole body including feet and important accessories visible with generous clear margins. Clean foreground cutout on a truly fully transparent background. No scene, glow, haze, gradient, backdrop, ground shadow, text, labels, logo, frame or watermark. Coherent anatomy, detailed expressive face. Keep outfits modest and nonsexual.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-e74bf71c-b305-4c0e-8bdb-f793f9c43e1c.png"
+    },
+    {
+      "name": "Hitori Gotoh",
+      "slug": "hitori-gotoh",
+      "aliases": [
+        "后藤一里",
+        "波奇",
+        "孤独摇滚",
+        "Bocchi the Rock"
+      ],
+      "category": "Anime",
+      "visualStyle": "3D animation",
+      "featured": true,
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Hitori Gotoh (后藤一里). Subject: Bocchi the Rock pink-haired shy guitarist with blue and yellow hair clips, fully covered pink tracksuit, long skirt and dark tights, holding an electric guitar. Style: polished cinematic 3D character art, tactile detailed materials, preserving distinctive character appearance and recognizable costume. Single character in a relaxed friendly standing pose, whole body including feet and important accessories visible with generous clear margins. Clean foreground cutout on a truly fully transparent background. No scene, glow, haze, gradient, backdrop, ground shadow, text, labels, logo, frame or watermark. Coherent anatomy, detailed expressive face. Keep outfits modest and nonsexual.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-6c9a33be-1101-4d5d-9317-e34ab4f30071.png"
+    },
+    {
+      "name": "Sung Jinwoo",
+      "slug": "sung-jinwoo",
+      "aliases": [
+        "成振宇",
+        "我独自升级",
+        "Solo Leveling"
+      ],
+      "category": "Anime",
+      "visualStyle": "Watercolor",
+      "featured": true,
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Sung Jinwoo (成振宇). Subject: Solo Leveling adult black-haired hero with gray eyes in fully covered sleek black long coat and dark trousers, calm confident standing pose, no combat. Style: bright watercolor illustration with delicate ink outlines, preserving distinctive character appearance and recognizable costume. Single character in a relaxed friendly standing pose, whole body including feet and important accessories visible with generous clear margins. Clean foreground cutout on a truly fully transparent background. No scene, glow, haze, gradient, backdrop, ground shadow, text, labels, logo, frame or watermark. Coherent anatomy, detailed expressive face. Keep outfits modest and nonsexual.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-43f749de-f20e-43db-9acd-8b4f9d766f72.png"
+    },
+    {
+      "name": "Rudo",
+      "slug": "rudo-gachiakuta",
+      "aliases": [
+        "路德",
+        "废渊战鬼",
+        "Gachiakuta"
+      ],
+      "category": "Anime",
+      "visualStyle": "Graphic novel",
+      "featured": true,
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Rudo (路德). Subject: Gachiakuta spiky pale-haired boy with red eyes, fully covered patched dark streetwear, sturdy boots and distinctive heavy gloves, friendly noncombat pose. Style: color manga illustration with detailed fine ink and controlled shading, preserving distinctive character appearance and recognizable costume. Single character in a relaxed friendly standing pose, whole body including feet and important accessories visible with generous clear margins. Clean foreground cutout on a truly fully transparent background. No scene, glow, haze, gradient, backdrop, ground shadow, text, labels, logo, frame or watermark. Coherent anatomy, detailed expressive face. Keep outfits modest and nonsexual.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-c2205512-672f-4f91-9312-6c215a95e0b0.png"
+    },
+    {
+      "name": "Labubu",
+      "slug": "labubu",
+      "aliases": [
+        "拉布布",
+        "泡泡玛特",
+        "POP MART"
+      ],
+      "category": "Designer toys",
+      "visualStyle": "Vinyl toy",
+      "featured": true,
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Labubu (拉布布). Subject: THE MONSTERS mischievous furry beige elf creature with long pointed ears, large eyes, nine tiny pointed teeth and cheeky grin, adorable compact body. Style: designer vinyl collectible aesthetic, smooth sculpted surfaces and subtle highlights, preserving distinctive character appearance and recognizable costume. Single character in a relaxed friendly standing pose, whole body including feet and important accessories visible with generous clear margins. Clean foreground cutout on a truly fully transparent background. No scene, glow, haze, gradient, backdrop, ground shadow, text, labels, logo, frame or watermark. Coherent anatomy, detailed expressive face. Keep outfits modest and nonsexual.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-0ca0f16f-7ad9-458d-b124-480ecb6c424c.png"
+    },
+    {
+      "name": "Molly",
+      "slug": "molly-popmart",
+      "aliases": [
+        "茉莉",
+        "泡泡玛特",
+        "POP MART"
+      ],
+      "category": "Designer toys",
+      "visualStyle": "Plush",
+      "featured": true,
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Molly (茉莉). Subject: POP MART Molly collectible doll with short golden bob hair, large round eyes and pouty lips, colorful fully covered painter overalls and beret. Style: high-quality tactile plush figure with embroidered details, preserving distinctive character appearance and recognizable costume. Single character in a relaxed friendly standing pose, whole body including feet and important accessories visible with generous clear margins. Clean foreground cutout on a truly fully transparent background. No scene, glow, haze, gradient, backdrop, ground shadow, text, labels, logo, frame or watermark. Coherent anatomy, detailed expressive face. Keep outfits modest and nonsexual.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-f461b992-6895-4d49-82e8-d5fce61a78f7.png"
+    },
+    {
+      "name": "Dimoo",
+      "slug": "dimoo",
+      "aliases": [
+        "迪莫",
+        "泡泡玛特",
+        "POP MART"
+      ],
+      "category": "Designer toys",
+      "visualStyle": "Clay",
+      "featured": true,
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Dimoo (迪莫). Subject: POP MART DIMOO collectible character with fluffy cloud-like pale blue hair, large dreamy eyes, modest blue star-themed outfit and little boots. Style: handcrafted clay stop-motion collectible aesthetic, preserving distinctive character appearance and recognizable costume. Single character in a relaxed friendly standing pose, whole body including feet and important accessories visible with generous clear margins. Clean foreground cutout on a truly fully transparent background. No scene, glow, haze, gradient, backdrop, ground shadow, text, labels, logo, frame or watermark. Coherent anatomy, detailed expressive face. Keep outfits modest and nonsexual.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-2e764c25-93ad-4138-8602-f45e311dd38d.png"
+    },
+    {
+      "name": "Skullpanda",
+      "slug": "skullpanda",
+      "aliases": [
+        "骷髅熊猫",
+        "泡泡玛特",
+        "POP MART"
+      ],
+      "category": "Designer toys",
+      "visualStyle": "Paper cut",
+      "featured": true,
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Skullpanda (骷髅熊猫). Subject: POP MART SKULLPANDA art-toy interpretation with large eyes, glossy spherical ear-like head ornaments, fully covered futuristic monochrome outfit, no distress. Style: dimensional layered paper-cut illustration with clean intricate edges, preserving distinctive character appearance and recognizable costume. Single character in a relaxed friendly standing pose, whole body including feet and important accessories visible with generous clear margins. Clean foreground cutout on a truly fully transparent background. No scene, glow, haze, gradient, backdrop, ground shadow, text, labels, logo, frame or watermark. Coherent anatomy, detailed expressive face. Keep outfits modest and nonsexual.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-a2e781bf-8695-4c78-83a9-c6316c356bd5.png"
+    },
+    {
+      "name": "Hirono",
+      "slug": "hirono",
+      "aliases": [
+        "小野",
+        "泡泡玛特",
+        "POP MART"
+      ],
+      "category": "Designer toys",
+      "visualStyle": "Vinyl toy",
+      "featured": true,
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Hirono (小野). Subject: POP MART HIRONO contemplative boy art toy with tousled brown hair, sleepy expressive eyes, fully covered oversized earth-tone jacket and shorts over tights, little shoes. Style: designer vinyl collectible aesthetic, smooth sculpted surfaces and subtle highlights, preserving distinctive character appearance and recognizable costume. Single character in a relaxed friendly standing pose, whole body including feet and important accessories visible with generous clear margins. Clean foreground cutout on a truly fully transparent background. No scene, glow, haze, gradient, backdrop, ground shadow, text, labels, logo, frame or watermark. Coherent anatomy, detailed expressive face. Keep outfits modest and nonsexual.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-d6a5308b-eb1a-4d73-8de4-24b50a9d4e2b.png"
+    },
+    {
+      "name": "Pochacco",
+      "slug": "pochacco",
+      "aliases": [
+        "帕恰狗",
+        "三丽鸥",
+        "Sanrio"
+      ],
+      "category": "Cartoons",
+      "visualStyle": "Plush",
+      "featured": true,
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Pochacco (帕恰狗). Subject: Sanrio Pochacco white puppy with black floppy ears and small dark nose, cheerful upright pose wearing a modest blue sports outfit. Style: high-quality tactile plush figure with embroidered details, preserving distinctive character appearance and recognizable costume. Single character in a relaxed friendly standing pose, whole body including feet and important accessories visible with generous clear margins. Clean foreground cutout on a truly fully transparent background. No scene, glow, haze, gradient, backdrop, ground shadow, text, labels, logo, frame or watermark. Coherent anatomy, detailed expressive face. Keep outfits modest and nonsexual.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-52a154fb-2e45-409b-8eba-24b25dc7cf72.png"
+    },
+    {
+      "name": "Pompompurin",
+      "slug": "pompompurin",
+      "aliases": [
+        "布丁狗",
+        "三丽鸥",
+        "Sanrio"
+      ],
+      "category": "Cartoons",
+      "visualStyle": "Clay",
+      "featured": true,
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Pompompurin (布丁狗). Subject: Sanrio Pompompurin rounded golden retriever character with brown beret, small brown nose, gentle smile and tiny paws. Style: handcrafted clay stop-motion collectible aesthetic, preserving distinctive character appearance and recognizable costume. Single character in a relaxed friendly standing pose, whole body including feet and important accessories visible with generous clear margins. Clean foreground cutout on a truly fully transparent background. No scene, glow, haze, gradient, backdrop, ground shadow, text, labels, logo, frame or watermark. Coherent anatomy, detailed expressive face. Keep outfits modest and nonsexual.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-ad3b44fe-0cf6-48b2-b193-7b147fbca7dc.png"
+    },
+    {
+      "name": "Stitch",
+      "slug": "stitch",
+      "aliases": [
+        "史迪奇",
+        "星际宝贝",
+        "Lilo and Stitch"
+      ],
+      "category": "Cartoons",
+      "visualStyle": "Paper cut",
+      "featured": true,
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Stitch (史迪奇). Subject: Disney Stitch small blue alien with huge rounded ears, dark expressive eyes, four cute paws and familiar blue markings, cheerful harmless standing pose. Style: dimensional layered paper-cut illustration with clean intricate edges, preserving distinctive character appearance and recognizable costume. Single character in a relaxed friendly standing pose, whole body including feet and important accessories visible with generous clear margins. Clean foreground cutout on a truly fully transparent background. No scene, glow, haze, gradient, backdrop, ground shadow, text, labels, logo, frame or watermark. Coherent anatomy, detailed expressive face. Keep outfits modest and nonsexual.",
+      "state": "failed",
+      "diagnostics": "image generation failed: http 400 Bad Request: Some(\"{\\n  \\\"error\\\": {\\n    \\\"message\\\": \\\"Your request was rejected by the safety system. If you believe this is an error, contact us at help.openai.com and include the request ID cae46e64-3d1c-4581-9400-a900500368fc.\\\",\\n    \\\"type\\\": \\\"image_generation_user_error\\\",\\n    \\\"param\\\": null,\\n    \\\"code\\\": \\\"moderation_blocked\\\",\\n    \\\"moderation_details\\\": {\\n      \\\"moderation_stage\\\": \\\"output\\\",\\n      \\\"categories\\\": [\\n        \\\"other\\\"\\n    ",
+      "failure": {
+        "code": "moderation_blocked",
+        "stage": "output",
+        "categories": [
+          "other"
+        ],
+        "requestId": "cae46e64-3d1c-4581-9400-a900500368fc",
+        "specificCause": "not provided by the provider"
+      }
+    }
+  ]
+}

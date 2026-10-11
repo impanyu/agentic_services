@@ -5851,6 +5851,447 @@
       ],
       "imageUrl": "./avatars/characters/hatsune-miku.png",
       "thumbnailUrl": "./avatars/thumbnails/hatsune-miku.webp"
+    },
+    {
+      "id": "preset:furina",
+      "name": "Furina",
+      "category": "Game characters",
+      "visualStyle": "Cel animation",
+      "aliases": [
+        "芙宁娜",
+        "原神",
+        "Genshin Impact"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/furina.png",
+      "thumbnailUrl": "./avatars/thumbnails/furina.webp"
+    },
+    {
+      "id": "preset:nahida",
+      "name": "Nahida",
+      "category": "Game characters",
+      "visualStyle": "3D animation",
+      "aliases": [
+        "纳西妲",
+        "原神",
+        "Genshin Impact"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/nahida.png",
+      "thumbnailUrl": "./avatars/thumbnails/nahida.webp"
+    },
+    {
+      "id": "preset:raiden-shogun",
+      "name": "Raiden Shogun",
+      "category": "Game characters",
+      "visualStyle": "Watercolor",
+      "aliases": [
+        "雷电将军",
+        "原神",
+        "Genshin Impact"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/raiden-shogun.png",
+      "thumbnailUrl": "./avatars/thumbnails/raiden-shogun.webp"
+    },
+    {
+      "id": "preset:zhongli",
+      "name": "Zhongli",
+      "category": "Game characters",
+      "visualStyle": "Graphic novel",
+      "aliases": [
+        "钟离",
+        "原神",
+        "Genshin Impact"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/zhongli.png",
+      "thumbnailUrl": "./avatars/thumbnails/zhongli.webp"
+    },
+    {
+      "id": "preset:hu-tao",
+      "name": "Hu Tao",
+      "category": "Game characters",
+      "visualStyle": "Cel animation",
+      "aliases": [
+        "胡桃",
+        "原神",
+        "Genshin Impact"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/hu-tao.png",
+      "thumbnailUrl": "./avatars/thumbnails/hu-tao.webp"
+    },
+    {
+      "id": "preset:venti",
+      "name": "Venti",
+      "category": "Game characters",
+      "visualStyle": "3D animation",
+      "aliases": [
+        "温迪",
+        "原神",
+        "Genshin Impact"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/venti.png",
+      "thumbnailUrl": "./avatars/thumbnails/venti.webp"
+    },
+    {
+      "id": "preset:kafka-star-rail",
+      "name": "Kafka",
+      "category": "Game characters",
+      "visualStyle": "Watercolor",
+      "aliases": [
+        "卡芙卡",
+        "崩坏星穹铁道",
+        "星铁",
+        "Honkai Star Rail"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/kafka-star-rail.png",
+      "thumbnailUrl": "./avatars/thumbnails/kafka-star-rail.webp"
+    },
+    {
+      "id": "preset:firefly-star-rail",
+      "name": "Firefly",
+      "category": "Game characters",
+      "visualStyle": "Graphic novel",
+      "aliases": [
+        "流萤",
+        "崩坏星穹铁道",
+        "星铁",
+        "Honkai Star Rail"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/firefly-star-rail.png",
+      "thumbnailUrl": "./avatars/thumbnails/firefly-star-rail.webp"
+    },
+    {
+      "id": "preset:march-7th",
+      "name": "March 7th",
+      "category": "Game characters",
+      "visualStyle": "Cel animation",
+      "aliases": [
+        "三月七",
+        "崩坏星穹铁道",
+        "星铁",
+        "Honkai Star Rail"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/march-7th.png",
+      "thumbnailUrl": "./avatars/thumbnails/march-7th.webp"
+    },
+    {
+      "id": "preset:robin-star-rail",
+      "name": "Robin from Star Rail",
+      "category": "Game characters",
+      "visualStyle": "3D animation",
+      "aliases": [
+        "知更鸟",
+        "崩坏星穹铁道",
+        "星铁",
+        "Honkai Star Rail"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/robin-star-rail.png",
+      "thumbnailUrl": "./avatars/thumbnails/robin-star-rail.webp"
+    },
+    {
+      "id": "preset:aventurine",
+      "name": "Aventurine",
+      "category": "Game characters",
+      "visualStyle": "Watercolor",
+      "aliases": [
+        "砂金",
+        "崩坏星穹铁道",
+        "星铁",
+        "Honkai Star Rail"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/aventurine.png",
+      "thumbnailUrl": "./avatars/thumbnails/aventurine.webp"
+    },
+    {
+      "id": "preset:hoshimi-miyabi",
+      "name": "Hoshimi Miyabi",
+      "category": "Game characters",
+      "visualStyle": "Graphic novel",
+      "aliases": [
+        "星见雅",
+        "绝区零",
+        "Zenless Zone Zero"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/hoshimi-miyabi.png",
+      "thumbnailUrl": "./avatars/thumbnails/hoshimi-miyabi.webp"
+    },
+    {
+      "id": "preset:ellen-joe",
+      "name": "Ellen Joe",
+      "category": "Game characters",
+      "visualStyle": "Cel animation",
+      "aliases": [
+        "艾莲·乔",
+        "绝区零",
+        "Zenless Zone Zero"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/ellen-joe.png",
+      "thumbnailUrl": "./avatars/thumbnails/ellen-joe.webp"
+    },
+    {
+      "id": "preset:nicole-demara",
+      "name": "Nicole Demara",
+      "category": "Game characters",
+      "visualStyle": "3D animation",
+      "aliases": [
+        "妮可·德玛拉",
+        "绝区零",
+        "Zenless Zone Zero"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/nicole-demara.png",
+      "thumbnailUrl": "./avatars/thumbnails/nicole-demara.webp"
+    },
+    {
+      "id": "preset:momo-ayase",
+      "name": "Momo Ayase",
+      "category": "Anime",
+      "visualStyle": "Watercolor",
+      "aliases": [
+        "绫濑桃",
+        "胆大党",
+        "DAN DA DAN"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/momo-ayase.png",
+      "thumbnailUrl": "./avatars/thumbnails/momo-ayase.webp"
+    },
+    {
+      "id": "preset:okarun",
+      "name": "Okarun",
+      "category": "Anime",
+      "visualStyle": "Graphic novel",
+      "aliases": [
+        "高仓健",
+        "厄卡伦",
+        "胆大党",
+        "DAN DA DAN"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/okarun.png",
+      "thumbnailUrl": "./avatars/thumbnails/okarun.webp"
+    },
+    {
+      "id": "preset:maomao",
+      "name": "Maomao",
+      "category": "Anime",
+      "visualStyle": "Cel animation",
+      "aliases": [
+        "猫猫",
+        "药屋少女的呢喃",
+        "The Apothecary Diaries"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/maomao.png",
+      "thumbnailUrl": "./avatars/thumbnails/maomao.webp"
+    },
+    {
+      "id": "preset:jinshi",
+      "name": "Jinshi",
+      "category": "Anime",
+      "visualStyle": "3D animation",
+      "aliases": [
+        "壬氏",
+        "药屋少女的呢喃",
+        "The Apothecary Diaries"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/jinshi.png",
+      "thumbnailUrl": "./avatars/thumbnails/jinshi.webp"
+    },
+    {
+      "id": "preset:denji",
+      "name": "Denji",
+      "category": "Anime",
+      "visualStyle": "Watercolor",
+      "aliases": [
+        "电次",
+        "电锯人",
+        "Chainsaw Man"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/denji.png",
+      "thumbnailUrl": "./avatars/thumbnails/denji.webp"
+    },
+    {
+      "id": "preset:power-chainsaw-man",
+      "name": "Power",
+      "category": "Anime",
+      "visualStyle": "Graphic novel",
+      "aliases": [
+        "帕瓦",
+        "电锯人",
+        "Chainsaw Man"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/power-chainsaw-man.png",
+      "thumbnailUrl": "./avatars/thumbnails/power-chainsaw-man.webp"
+    },
+    {
+      "id": "preset:makima",
+      "name": "Makima",
+      "category": "Anime",
+      "visualStyle": "Cel animation",
+      "aliases": [
+        "玛奇玛",
+        "电锯人",
+        "Chainsaw Man"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/makima.png",
+      "thumbnailUrl": "./avatars/thumbnails/makima.webp"
+    },
+    {
+      "id": "preset:hitori-gotoh",
+      "name": "Hitori Gotoh",
+      "category": "Anime",
+      "visualStyle": "3D animation",
+      "aliases": [
+        "后藤一里",
+        "波奇",
+        "孤独摇滚",
+        "Bocchi the Rock"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/hitori-gotoh.png",
+      "thumbnailUrl": "./avatars/thumbnails/hitori-gotoh.webp"
+    },
+    {
+      "id": "preset:sung-jinwoo",
+      "name": "Sung Jinwoo",
+      "category": "Anime",
+      "visualStyle": "Watercolor",
+      "aliases": [
+        "成振宇",
+        "我独自升级",
+        "Solo Leveling"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/sung-jinwoo.png",
+      "thumbnailUrl": "./avatars/thumbnails/sung-jinwoo.webp"
+    },
+    {
+      "id": "preset:rudo-gachiakuta",
+      "name": "Rudo",
+      "category": "Anime",
+      "visualStyle": "Graphic novel",
+      "aliases": [
+        "路德",
+        "废渊战鬼",
+        "Gachiakuta"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/rudo-gachiakuta.png",
+      "thumbnailUrl": "./avatars/thumbnails/rudo-gachiakuta.webp"
+    },
+    {
+      "id": "preset:labubu",
+      "name": "Labubu",
+      "category": "Designer toys",
+      "visualStyle": "Vinyl toy",
+      "aliases": [
+        "拉布布",
+        "泡泡玛特",
+        "POP MART"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/labubu.png",
+      "thumbnailUrl": "./avatars/thumbnails/labubu.webp"
+    },
+    {
+      "id": "preset:molly-popmart",
+      "name": "Molly",
+      "category": "Designer toys",
+      "visualStyle": "Plush",
+      "aliases": [
+        "茉莉",
+        "泡泡玛特",
+        "POP MART"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/molly-popmart.png",
+      "thumbnailUrl": "./avatars/thumbnails/molly-popmart.webp"
+    },
+    {
+      "id": "preset:dimoo",
+      "name": "Dimoo",
+      "category": "Designer toys",
+      "visualStyle": "Clay",
+      "aliases": [
+        "迪莫",
+        "泡泡玛特",
+        "POP MART"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/dimoo.png",
+      "thumbnailUrl": "./avatars/thumbnails/dimoo.webp"
+    },
+    {
+      "id": "preset:skullpanda",
+      "name": "Skullpanda",
+      "category": "Designer toys",
+      "visualStyle": "Paper cut",
+      "aliases": [
+        "骷髅熊猫",
+        "泡泡玛特",
+        "POP MART"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/skullpanda.png",
+      "thumbnailUrl": "./avatars/thumbnails/skullpanda.webp"
+    },
+    {
+      "id": "preset:hirono",
+      "name": "Hirono",
+      "category": "Designer toys",
+      "visualStyle": "Vinyl toy",
+      "aliases": [
+        "小野",
+        "泡泡玛特",
+        "POP MART"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/hirono.png",
+      "thumbnailUrl": "./avatars/thumbnails/hirono.webp"
+    },
+    {
+      "id": "preset:pochacco",
+      "name": "Pochacco",
+      "category": "Cartoons",
+      "visualStyle": "Plush",
+      "aliases": [
+        "帕恰狗",
+        "三丽鸥",
+        "Sanrio"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/pochacco.png",
+      "thumbnailUrl": "./avatars/thumbnails/pochacco.webp"
+    },
+    {
+      "id": "preset:pompompurin",
+      "name": "Pompompurin",
+      "category": "Cartoons",
+      "visualStyle": "Clay",
+      "aliases": [
+        "布丁狗",
+        "三丽鸥",
+        "Sanrio"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/pompompurin.png",
+      "thumbnailUrl": "./avatars/thumbnails/pompompurin.webp"
     }
   ]
 }
