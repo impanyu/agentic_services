@@ -23,6 +23,7 @@ class TaskSpend:
 current = ContextVar('photo_scout_task_spend', default=None)
 # USD per million tokens (Standard), and per provider call, before free tiers.
 RATES = {'gpt-6-astra':(10,1,50), 'gpt-6.1-sol':(2,.1,10), 'gpt-6-luna':(.1,.01,.5)}
+WRITE_RATES = {'gpt-6-astra':12.5,'gpt-6.1-sol':2.5,'gpt-6-luna':.125}
 CALL_RATES = {'places-text':.032, 'places-details-pro':.017, 'places-photo':.007, 'routes-essentials':.005,
               'streetview-tile-z0':.002, 'static-streetview':.007}
 
@@ -56,7 +57,8 @@ def record(stage, model='', usage=None, status='success', quantity=1):
     estimate = None
     if model in RATES and usage:
         a,b,c = RATES[model]
-        estimate = ((input_tokens-cached)*a+cached*b+output_tokens*c)/1_000_000
+        writes = details.get('cache_write_tokens', 0)
+        estimate = ((input_tokens-cached-writes)*a+writes*WRITE_RATES[model]+cached*b+output_tokens*c)/1_000_000
     elif model.startswith('gpt-image-2.5') and usage:
         # Direct Images API has no cached-input discount. Image and text inputs
         # have distinct prices; do not pretend unclassified input is free.

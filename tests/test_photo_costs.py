@@ -106,3 +106,12 @@ def test_route_anchors_share_global_places_photo_cap(tmp_path):
         assert sum(outcomes)==8
         assert costs.summary()['placesPhotoBudgetReached']
     asyncio.run(run())
+
+
+def test_cache_writes_use_their_own_price_without_double_counting(tmp_path):
+    @costs.tracked_task(tmp_path/'db','search')
+    async def run():
+        costs.record('intent','gpt-6.1-sol',{'input_tokens':1000,
+            'input_tokens_details':{'cached_tokens':400,'cache_write_tokens':300},'output_tokens':300})
+        assert costs.summary()['estimatedKnownUsd']==pytest.approx(.00439)
+    asyncio.run(run())
