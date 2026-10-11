@@ -1,0 +1,138 @@
+[
+  {
+    "case": "waterfront-real",
+    "model": "gpt-image-2.5-sunburst",
+    "quality": "high",
+    "size": "1024x1024",
+    "subjectSha256": "38d6dbffea9506039f2d413794c827983bbbc12628675e0d2454ea5a7d5cc9b9",
+    "backgroundSha256": "e50dd10015e3d4a4bade3a21240f65d9ac8eabb4f265b59dcea5c870197d3322",
+    "promptSha256": "3a2a400ccae21d681818156f2cbb791b7fc3b5888be552693ebf04f223df7d98",
+    "state": "complete",
+    "seconds": 34.61,
+    "estimatedUsd": 0.08477,
+    "usage": {
+      "input_tokens": 4882,
+      "input_tokens_details": {
+        "image_tokens": 2560,
+        "text_tokens": 2322
+      },
+      "output_tokens": 1756,
+      "total_tokens": 6638,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      }
+    },
+    "requestId": "req_8304b7c34dfc4dfe93fde1f4ee4573d8",
+    "outputFile": "waterfront-real-sunburst-high.png"
+  },
+  {
+    "case": "waterfront-real",
+    "model": "gpt-image-2.5-flare",
+    "quality": "xhigh",
+    "size": "1024x1024",
+    "subjectSha256": "38d6dbffea9506039f2d413794c827983bbbc12628675e0d2454ea5a7d5cc9b9",
+    "backgroundSha256": "e50dd10015e3d4a4bade3a21240f65d9ac8eabb4f265b59dcea5c870197d3322",
+    "promptSha256": "3a2a400ccae21d681818156f2cbb791b7fc3b5888be552693ebf04f223df7d98",
+    "state": "complete",
+    "seconds": 29.853,
+    "estimatedUsd": 0.12575,
+    "usage": {
+      "input_tokens": 4882,
+      "input_tokens_details": {
+        "image_tokens": 2560,
+        "text_tokens": 2322
+      },
+      "output_tokens": 3122,
+      "total_tokens": 8004,
+      "output_tokens_details": {
+        "image_tokens": 3122,
+        "text_tokens": 0
+      }
+    },
+    "requestId": "req_b90889c6981545308c7bee233e73f005",
+    "outputFile": "waterfront-real-flare-xhigh.png"
+  },
+  {
+    "case": "waterfront-real",
+    "model": "gpt-image-2.5-sunburst",
+    "quality": "max",
+    "size": "1024x1024",
+    "subjectSha256": "38d6dbffea9506039f2d413794c827983bbbc12628675e0d2454ea5a7d5cc9b9",
+    "backgroundSha256": "e50dd10015e3d4a4bade3a21240f65d9ac8eabb4f265b59dcea5c870197d3322",
+    "promptSha256": "3a2a400ccae21d681818156f2cbb791b7fc3b5888be552693ebf04f223df7d98",
+    "state": "complete",
+    "seconds": 113.105,
+    "estimatedUsd": 0.24281,
+    "usage": {
+      "input_tokens": 4882,
+      "input_tokens_details": {
+        "image_tokens": 2560,
+        "text_tokens": 2322
+      },
+      "output_tokens": 7024,
+      "total_tokens": 11906,
+      "output_tokens_details": {
+        "image_tokens": 7024,
+        "text_tokens": 0
+      }
+    },
+    "requestId": "req_69f6b448d0064182a38cad87dd58c953",
+    "outputFile": "waterfront-real-sunburst-max.png"
+  },
+  {
+    "case": "plaza-cartoon",
+    "model": "gpt-image-2.5-sunburst",
+    "quality": "high",
+    "size": "1024x1024",
+    "subjectSha256": "664084639bcdff7f442b391baa36706ca1448436babbdba68be50065e9497ca4",
+    "backgroundSha256": "01a8f5e3900b9044f1d73eb95641263a16fa164129ed8364353acc76ba3b40d0",
+    "promptSha256": "5f951a35d5fb7f21dcfa5810638b556d36c9b53116311b6c89319c79045bbfa7",
+    "state": "complete",
+    "seconds": 37.673,
+    "estimatedUsd": 0.075887,
+    "usage": {
+      "input_tokens": 3715,
+      "input_tokens_details": {
+        "image_tokens": 1544,
+        "text_tokens": 2171
+      },
+      "output_tokens": 1756,
+      "total_tokens": 5471,
+      "output_tokens_details": {
+        "image_tokens": 1756,
+        "text_tokens": 0
+      }
+    },
+    "requestId": "req_60cd6dcbf72446a5a08db525fc4d4d91",
+    "outputFile": "plaza-cartoon-sunburst-high.png"
+  },
+  {
+    "case": "plaza-cartoon",
+    "model": "gpt-image-2.5-sunburst",
+    "quality": "max",
+    "size": "1024x1024",
+    "subjectSha256": "664084639bcdff7f442b391baa36706ca1448436babbdba68be50065e9497ca4",
+    "backgroundSha256": "01a8f5e3900b9044f1d73eb95641263a16fa164129ed8364353acc76ba3b40d0",
+    "promptSha256": "5f951a35d5fb7f21dcfa5810638b556d36c9b53116311b6c89319c79045bbfa7",
+    "state": "failed",
+    "seconds": 104.542,
+    "errorType": "BadRequestError",
+    "code": "moderation_blocked",
+    "requestId": "req_ae987c2b5e4e44829e29e9b308797bd9"
+  },
+  {
+    "case": "plaza-cartoon",
+    "model": "gpt-image-2.5-flare",
+    "quality": "xhigh",
+    "size": "1024x1024",
+    "subjectSha256": "664084639bcdff7f442b391baa36706ca1448436babbdba68be50065e9497ca4",
+    "backgroundSha256": "01a8f5e3900b9044f1d73eb95641263a16fa164129ed8364353acc76ba3b40d0",
+    "promptSha256": "5f951a35d5fb7f21dcfa5810638b556d36c9b53116311b6c89319c79045bbfa7",
+    "state": "failed",
+    "seconds": 28.294,
+    "errorType": "BadRequestError",
+    "code": "moderation_blocked",
+    "requestId": "req_4107ad340fc44bf9bded4db5e93f4318"
+  }
+]

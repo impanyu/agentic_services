@@ -1,0 +1,63 @@
+[
+  {
+    "case": "waterfront-real",
+    "mapping": {
+      "A": "flare-xhigh",
+      "B": "sunburst-max",
+      "C": "sunburst-high"
+    },
+    "review": {
+      "results": [
+        {
+          "label": "A",
+          "subject_identity": 4,
+          "lighting_and_contact": 4,
+          "background_fidelity": 2,
+          "anatomy": 5,
+          "serious_defects": [
+            "The waterfront setting is reconstructed rather than preserved: the railing geometry and spacing, foreground planting, and building facade differ materially from the source.",
+            "The building occupies a larger, lower-reaching portion of the frame, changing its relationship to the walkway and horizon."
+          ],
+          "observations": "The white unruly hair, mustache, facial wrinkles, three-piece suit and watch chain retain the subject's recognizable identity, with modest facial reshaping. Both shoes contact the pavement and cast convincing shadows toward the lower right; bright hair edging fits the upper-left sun, although the face retains somewhat soft portrait lighting. Limbs and pocketed hands are coherent, with no visible studio-background leakage. The source's left planting container becomes a broad shrub bed, and the rail is replaced with a different configuration. Added architectural and bridge detail goes beyond sharpening."
+        },
+        {
+          "label": "B",
+          "subject_identity": 4,
+          "lighting_and_contact": 4,
+          "background_fidelity": 3,
+          "anatomy": 5,
+          "serious_defects": [
+            "Fixed background geometry is altered, including the building's roofline, openings and side structure, and the railing's posts and horizontal members.",
+            "The distant bridge is rendered with newly prominent towers and suspension geometry rather than conservatively retaining the source landmark."
+          ],
+          "observations": "The subject preserves the distinctive hair, mustache, smile, suit and pocketed pose, though the face is slightly reinterpreted. Shoe contact and long lower-right shadows are believable, and the bright hair rim is appropriate to the sun. Body proportions and limbs are intact, without obvious extraction residue. This retains the general source arrangement of left planters, waterfront rail, open pavement and right-hand building, but changes their exact shapes and spacing. The sun is also placed higher, and the crisp setting contains invented detail rather than just recovered texture."
+        },
+        {
+          "label": "C",
+          "subject_identity": 4,
+          "lighting_and_contact": 4,
+          "background_fidelity": 2,
+          "anatomy": 4,
+          "serious_defects": [
+            "The background viewpoint and landmark relationships change: the waterfront horizon and railing sit differently relative to the building and walkway.",
+            "The bridge silhouette, railing design, planter arrangement and building facade are substantially reconstructed."
+          ],
+          "observations": "Distinctive white hair, mustache, aged facial features and clothing remain recognizable, but the face and head angle are modified. The stance is noticeably more tilted and spread than the source; it remains anatomically plausible, with intact limbs and shoes. Ground contact and lower-right shadows are convincing, while facial illumination remains softer than the strongly sunlit environment. No unwanted studio background is visible. The left planter remains a container, but its placement and scale change, and the distant bridge gains a different multi-tower appearance. Sharpness does not compensate for these setting changes."
+        }
+      ]
+    },
+    "seconds": 19.81,
+    "usage": {
+      "input_tokens": 6231,
+      "input_tokens_details": {
+        "cache_write_tokens": 6228,
+        "cached_tokens": 0
+      },
+      "output_tokens": 740,
+      "output_tokens_details": {
+        "reasoning_tokens": 57
+      },
+      "total_tokens": 6971
+    }
+  }
+]
