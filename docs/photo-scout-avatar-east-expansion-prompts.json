@@ -1,0 +1,404 @@
+{
+  "items": [
+    {
+      "name": "Tang Taizong",
+      "slug": "tang-taizong",
+      "aliases": [
+        "唐太宗"
+      ],
+      "category": "Chinese history",
+      "visualStyle": "Chinese ink",
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Tang Taizong (唐太宗). Subject details: Li Shimin, mature Chinese emperor in dignified Tang court robes and black court headwear. Style: Chinese ink-and-wash illustration with expressive brushwork and subtle mineral colors. Single character standing naturally, complete body, feet and important accessories visible, generous clear margins. Truly transparent background. No environment, cast shadow behind subject, text, labels, logos, frames or watermark. Keep anatomy coherent and face detailed. Historical likenesses are respectful imagined interpretations, not authentic portraits."
+    },
+    {
+      "name": "Wu Zetian",
+      "slug": "wu-zetian",
+      "aliases": [
+        "武则天"
+      ],
+      "category": "Chinese history",
+      "visualStyle": "Photorealistic",
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Wu Zetian (武则天). Subject details: Chinese empress in elegant fully covered Tang ceremonial robes and gold floral hair ornaments. Style: cinematic photorealism, realistic skin and richly textured period cloth. Single character standing naturally, complete body, feet and important accessories visible, generous clear margins. Truly transparent background. No environment, cast shadow behind subject, text, labels, logos, frames or watermark. Keep anatomy coherent and face detailed. Historical likenesses are respectful imagined interpretations, not authentic portraits."
+    },
+    {
+      "name": "Zhuge Liang",
+      "slug": "zhuge-liang",
+      "aliases": [
+        "诸葛亮"
+      ],
+      "category": "Chinese history",
+      "visualStyle": "Chinese ink",
+      "prompt": "Use case: historical-scene. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one full-body artistic interpretation of Zhuge Liang (诸葛亮), the Chinese strategist: mature Chinese scholar with neat beard, tall guan scholar hat, flowing pale ivory Han-era robe and a white feather fan. Style: elegant Chinese ink-and-wash with restrained jade and ochre color, detailed expressive face. Single character standing naturally, entire body, feet and fan visible, generous clear margins. Truly transparent background. No landscape, backdrop, labels, lettering, frame or watermark. Respectful imagined historical likeness, not an authentic portrait."
+    },
+    {
+      "name": "Liu Bei",
+      "slug": "liu-bei",
+      "aliases": [
+        "刘备"
+      ],
+      "category": "Chinese history",
+      "visualStyle": "Paper cut",
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Liu Bei (刘备). Subject details: mature Chinese ruler with short beard, traditional Han robes and respectful warm expression. Style: dimensional layered paper-cut art, intricate clean ornamental silhouette. Single character standing naturally, complete body, feet and important accessories visible, generous clear margins. Truly transparent background. No environment, cast shadow behind subject, text, labels, logos, frames or watermark. Keep anatomy coherent and face detailed. Historical likenesses are respectful imagined interpretations, not authentic portraits."
+    },
+    {
+      "name": "Cao Cao",
+      "slug": "cao-cao",
+      "aliases": [
+        "曹操"
+      ],
+      "category": "Chinese history",
+      "visualStyle": "Clay",
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Cao Cao (曹操). Subject details: mature Chinese statesman with dark beard, layered Han ceremonial robe and court hat. Style: handcrafted clay stop-motion figure, tactile fabric and subtle fingerprints. Single character standing naturally, complete body, feet and important accessories visible, generous clear margins. Truly transparent background. No environment, cast shadow behind subject, text, labels, logos, frames or watermark. Keep anatomy coherent and face detailed. Historical likenesses are respectful imagined interpretations, not authentic portraits."
+    },
+    {
+      "name": "Zhao Yun",
+      "slug": "zhao-yun",
+      "aliases": [
+        "赵云"
+      ],
+      "category": "Chinese history",
+      "visualStyle": "Chinese ink",
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Zhao Yun (赵云). Subject details: Chinese historical general in silver-toned traditional armor, blue cloak, hands relaxed, no combat. Style: Chinese ink-and-wash illustration with expressive brushwork and subtle mineral colors. Single character standing naturally, complete body, feet and important accessories visible, generous clear margins. Truly transparent background. No environment, cast shadow behind subject, text, labels, logos, frames or watermark. Keep anatomy coherent and face detailed. Historical likenesses are respectful imagined interpretations, not authentic portraits."
+    },
+    {
+      "name": "Zhou Yu",
+      "slug": "zhou-yu",
+      "aliases": [
+        "周瑜"
+      ],
+      "category": "Chinese history",
+      "visualStyle": "Photorealistic",
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Zhou Yu (周瑜). Subject details: young adult Chinese commander in elegant traditional armor and red cape, calm thoughtful pose. Style: cinematic photorealism, realistic skin and richly textured period cloth. Single character standing naturally, complete body, feet and important accessories visible, generous clear margins. Truly transparent background. No environment, cast shadow behind subject, text, labels, logos, frames or watermark. Keep anatomy coherent and face detailed. Historical likenesses are respectful imagined interpretations, not authentic portraits."
+    },
+    {
+      "name": "Yue Fei",
+      "slug": "yue-fei",
+      "aliases": [
+        "岳飞"
+      ],
+      "category": "Chinese history",
+      "visualStyle": "Oil painting",
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Yue Fei (岳飞). Subject details: Chinese Song general in traditional armor and dark cloak, dignified gentle standing pose. Style: classical oil-painted portrait with visible fine brush texture. Single character standing naturally, complete body, feet and important accessories visible, generous clear margins. Truly transparent background. No environment, cast shadow behind subject, text, labels, logos, frames or watermark. Keep anatomy coherent and face detailed. Historical likenesses are respectful imagined interpretations, not authentic portraits."
+    },
+    {
+      "name": "Wen Tianxiang",
+      "slug": "wen-tianxiang",
+      "aliases": [
+        "文天祥"
+      ],
+      "category": "Chinese history",
+      "visualStyle": "Paper cut",
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Wen Tianxiang (文天祥). Subject details: Chinese Song scholar with beard and plain traditional scholar robe, composed expression. Style: dimensional layered paper-cut art, intricate clean ornamental silhouette. Single character standing naturally, complete body, feet and important accessories visible, generous clear margins. Truly transparent background. No environment, cast shadow behind subject, text, labels, logos, frames or watermark. Keep anatomy coherent and face detailed. Historical likenesses are respectful imagined interpretations, not authentic portraits."
+    },
+    {
+      "name": "Ban Gu",
+      "slug": "ban-gu",
+      "aliases": [
+        "班固"
+      ],
+      "category": "Chinese history",
+      "visualStyle": "Clay",
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Ban Gu (班固). Subject details: Chinese Han historian in dignified scholar robes, holding a bound book. Style: handcrafted clay stop-motion figure, tactile fabric and subtle fingerprints. Single character standing naturally, complete body, feet and important accessories visible, generous clear margins. Truly transparent background. No environment, cast shadow behind subject, text, labels, logos, frames or watermark. Keep anatomy coherent and face detailed. Historical likenesses are respectful imagined interpretations, not authentic portraits."
+    },
+    {
+      "name": "Qi Jiguang",
+      "slug": "qi-jiguang",
+      "aliases": [
+        "戚继光"
+      ],
+      "category": "Chinese history",
+      "visualStyle": "Chinese ink",
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Qi Jiguang (戚继光). Subject details: Chinese Ming general in traditional armor, standing peacefully with hands relaxed. Style: Chinese ink-and-wash illustration with expressive brushwork and subtle mineral colors. Single character standing naturally, complete body, feet and important accessories visible, generous clear margins. Truly transparent background. No environment, cast shadow behind subject, text, labels, logos, frames or watermark. Keep anatomy coherent and face detailed. Historical likenesses are respectful imagined interpretations, not authentic portraits."
+    },
+    {
+      "name": "Zhang Qian",
+      "slug": "zhang-qian",
+      "aliases": [
+        "张骞"
+      ],
+      "category": "Chinese history",
+      "visualStyle": "Photorealistic",
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Zhang Qian (张骞). Subject details: Chinese Han traveler and diplomat in layered travel robes, belt, boots and a rolled map. Style: cinematic photorealism, realistic skin and richly textured period cloth. Single character standing naturally, complete body, feet and important accessories visible, generous clear margins. Truly transparent background. No environment, cast shadow behind subject, text, labels, logos, frames or watermark. Keep anatomy coherent and face detailed. Historical likenesses are respectful imagined interpretations, not authentic portraits."
+    },
+    {
+      "name": "Zu Chongzhi",
+      "slug": "zu-chongzhi",
+      "aliases": [
+        "祖冲之"
+      ],
+      "category": "Chinese history",
+      "visualStyle": "Oil painting",
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Zu Chongzhi (祖冲之). Subject details: Chinese mathematician in traditional scholar robes holding a folded sheet of diagrams without legible writing. Style: classical oil-painted portrait with visible fine brush texture. Single character standing naturally, complete body, feet and important accessories visible, generous clear margins. Truly transparent background. No environment, cast shadow behind subject, text, labels, logos, frames or watermark. Keep anatomy coherent and face detailed. Historical likenesses are respectful imagined interpretations, not authentic portraits."
+    },
+    {
+      "name": "Han Yu",
+      "slug": "han-yu",
+      "aliases": [
+        "韩愈"
+      ],
+      "category": "Chinese history",
+      "visualStyle": "Paper cut",
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Han Yu (韩愈). Subject details: Chinese Tang scholar and poet in elegant traditional robes, warm thoughtful face, holding a closed book. Style: dimensional layered paper-cut art, intricate clean ornamental silhouette. Single character standing naturally, complete body, feet and important accessories visible, generous clear margins. Truly transparent background. No environment, cast shadow behind subject, text, labels, logos, frames or watermark. Keep anatomy coherent and face detailed. Historical likenesses are respectful imagined interpretations, not authentic portraits."
+    },
+    {
+      "name": "Song Yingxing",
+      "slug": "song-yingxing",
+      "aliases": [
+        "宋应星"
+      ],
+      "category": "Chinese history",
+      "visualStyle": "Clay",
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Song Yingxing (宋应星). Subject details: Chinese Ming scholar in blue-gray robe holding a closed bound book. Style: handcrafted clay stop-motion figure, tactile fabric and subtle fingerprints. Single character standing naturally, complete body, feet and important accessories visible, generous clear margins. Truly transparent background. No environment, cast shadow behind subject, text, labels, logos, frames or watermark. Keep anatomy coherent and face detailed. Historical likenesses are respectful imagined interpretations, not authentic portraits."
+    },
+    {
+      "name": "Liu Zongyuan",
+      "slug": "liu-zongyuan",
+      "aliases": [
+        "柳宗元"
+      ],
+      "category": "Chinese history",
+      "visualStyle": "Chinese ink",
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Liu Zongyuan (柳宗元). Subject details: Chinese Tang poet with neat short beard, flowing scholar robes and folded fan. Style: Chinese ink-and-wash illustration with expressive brushwork and subtle mineral colors. Single character standing naturally, complete body, feet and important accessories visible, generous clear margins. Truly transparent background. No environment, cast shadow behind subject, text, labels, logos, frames or watermark. Keep anatomy coherent and face detailed. Historical likenesses are respectful imagined interpretations, not authentic portraits."
+    },
+    {
+      "name": "Wang Anshi",
+      "slug": "wang-anshi",
+      "aliases": [
+        "王安石"
+      ],
+      "category": "Chinese history",
+      "visualStyle": "Photorealistic",
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Wang Anshi (王安石). Subject details: Chinese Song scholar statesman in restrained official robe and black headwear. Style: cinematic photorealism, realistic skin and richly textured period cloth. Single character standing naturally, complete body, feet and important accessories visible, generous clear margins. Truly transparent background. No environment, cast shadow behind subject, text, labels, logos, frames or watermark. Keep anatomy coherent and face detailed. Historical likenesses are respectful imagined interpretations, not authentic portraits."
+    },
+    {
+      "name": "Qu Yuan",
+      "slug": "qu-yuan",
+      "aliases": [
+        "屈原"
+      ],
+      "category": "Chinese history",
+      "visualStyle": "Oil painting",
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Qu Yuan (屈原). Subject details: Chinese ancient poet in flowing layered ivory robe, tall cap, contemplative expression. Style: classical oil-painted portrait with visible fine brush texture. Single character standing naturally, complete body, feet and important accessories visible, generous clear margins. Truly transparent background. No environment, cast shadow behind subject, text, labels, logos, frames or watermark. Keep anatomy coherent and face detailed. Historical likenesses are respectful imagined interpretations, not authentic portraits."
+    },
+    {
+      "name": "Sima Guang",
+      "slug": "sima-guang",
+      "aliases": [
+        "司马光"
+      ],
+      "category": "Chinese history",
+      "visualStyle": "Paper cut",
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Sima Guang (司马光). Subject details: Chinese Song historian with beard and formal scholar robes holding a bound book. Style: dimensional layered paper-cut art, intricate clean ornamental silhouette. Single character standing naturally, complete body, feet and important accessories visible, generous clear margins. Truly transparent background. No environment, cast shadow behind subject, text, labels, logos, frames or watermark. Keep anatomy coherent and face detailed. Historical likenesses are respectful imagined interpretations, not authentic portraits."
+    },
+    {
+      "name": "Cai Wenji",
+      "slug": "cai-wenji",
+      "aliases": [
+        "蔡文姬"
+      ],
+      "category": "Chinese history",
+      "visualStyle": "Clay",
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Cai Wenji (蔡文姬). Subject details: Chinese Han poet and musician in fully covered graceful traditional robes holding a small stringed instrument. Style: handcrafted clay stop-motion figure, tactile fabric and subtle fingerprints. Single character standing naturally, complete body, feet and important accessories visible, generous clear margins. Truly transparent background. No environment, cast shadow behind subject, text, labels, logos, frames or watermark. Keep anatomy coherent and face detailed. Historical likenesses are respectful imagined interpretations, not authentic portraits."
+    },
+    {
+      "name": "Frieren",
+      "slug": "frieren",
+      "aliases": [
+        "芙莉莲"
+      ],
+      "category": "Anime",
+      "visualStyle": "Cel animation",
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Frieren (芙莉莲). Subject details: silver-haired elf mage with green eyes, pointed ears, white and gold cloak, black tights and boots, holding a staff. Style: crisp hand-drawn Japanese cel animation, expressive face and clean shaded shapes. Single character standing naturally, complete body, feet and important accessories visible, generous clear margins. Truly transparent background. No environment, cast shadow behind subject, text, labels, logos, frames or watermark. Keep anatomy coherent and face detailed. Historical likenesses are respectful imagined interpretations, not authentic portraits."
+    },
+    {
+      "name": "Fern",
+      "slug": "fern-anime",
+      "aliases": [
+        "菲伦"
+      ],
+      "category": "Anime",
+      "visualStyle": "Watercolor",
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Fern (菲伦). Subject details: purple-haired mage with purple eyes, long fully covered white dress and dark cloak, holding a staff. Style: delicate anime watercolor illustration, soft expressive color and crisp face. Single character standing naturally, complete body, feet and important accessories visible, generous clear margins. Truly transparent background. No environment, cast shadow behind subject, text, labels, logos, frames or watermark. Keep anatomy coherent and face detailed. Historical likenesses are respectful imagined interpretations, not authentic portraits."
+    },
+    {
+      "name": "Stark",
+      "slug": "stark-anime",
+      "aliases": [
+        "修塔尔克"
+      ],
+      "category": "Anime",
+      "visualStyle": "3D animation",
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Stark (修塔尔克). Subject details: red-haired young adult hero with scar on brow and fully clothed red-brown adventurer outfit. Style: polished cinematic 3D animated interpretation retaining recognizable character design. Single character standing naturally, complete body, feet and important accessories visible, generous clear margins. Truly transparent background. No environment, cast shadow behind subject, text, labels, logos, frames or watermark. Keep anatomy coherent and face detailed. Historical likenesses are respectful imagined interpretations, not authentic portraits."
+    },
+    {
+      "name": "Tanjiro Kamado",
+      "slug": "tanjiro-kamado",
+      "aliases": [
+        "灶门炭治郎"
+      ],
+      "category": "Anime",
+      "visualStyle": "Graphic novel",
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Tanjiro Kamado (灶门炭治郎). Subject details: kind-eyed boy with short burgundy hair, forehead scar, hanafuda earrings, green and black checked haori over fully covered dark uniform. Style: color manga illustration with detailed fine ink lines and controlled screentone shading. Single character standing naturally, complete body, feet and important accessories visible, generous clear margins. Truly transparent background. No environment, cast shadow behind subject, text, labels, logos, frames or watermark. Keep anatomy coherent and face detailed. Historical likenesses are respectful imagined interpretations, not authentic portraits."
+    },
+    {
+      "name": "Nezuko Kamado",
+      "slug": "nezuko-kamado",
+      "aliases": [
+        "灶门祢豆子"
+      ],
+      "category": "Anime",
+      "visualStyle": "Plush",
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Nezuko Kamado (灶门祢豆子). Subject details: girl with long black-to-orange hair, pink eyes, bamboo mouthpiece, fully covered pink kimono and dark outer robe. Style: high-quality soft plush collectible interpretation with recognizable costume and embroidered face. Single character standing naturally, complete body, feet and important accessories visible, generous clear margins. Truly transparent background. No environment, cast shadow behind subject, text, labels, logos, frames or watermark. Keep anatomy coherent and face detailed. Historical likenesses are respectful imagined interpretations, not authentic portraits."
+    },
+    {
+      "name": "Zenitsu Agatsuma",
+      "slug": "zenitsu-agatsuma",
+      "aliases": [
+        "我妻善逸"
+      ],
+      "category": "Anime",
+      "visualStyle": "Cel animation",
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Zenitsu Agatsuma (我妻善逸). Subject details: yellow-haired boy with fully covered dark uniform and orange-yellow triangle-patterned haori. Style: crisp hand-drawn Japanese cel animation, expressive face and clean shaded shapes. Single character standing naturally, complete body, feet and important accessories visible, generous clear margins. Truly transparent background. No environment, cast shadow behind subject, text, labels, logos, frames or watermark. Keep anatomy coherent and face detailed. Historical likenesses are respectful imagined interpretations, not authentic portraits."
+    },
+    {
+      "name": "Inosuke Hashibira",
+      "slug": "inosuke-hashibira",
+      "aliases": [
+        "嘴平伊之助"
+      ],
+      "category": "Anime",
+      "visualStyle": "Watercolor",
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Inosuke Hashibira (嘴平伊之助). Subject details: boar-mask adventurer wearing a fully covered dark blue tunic, furry waist belt and baggy trousers; friendly standing pose. Style: delicate anime watercolor illustration, soft expressive color and crisp face. Single character standing naturally, complete body, feet and important accessories visible, generous clear margins. Truly transparent background. No environment, cast shadow behind subject, text, labels, logos, frames or watermark. Keep anatomy coherent and face detailed. Historical likenesses are respectful imagined interpretations, not authentic portraits."
+    },
+    {
+      "name": "Satoru Gojo",
+      "slug": "satoru-gojo",
+      "aliases": [
+        "五条悟"
+      ],
+      "category": "Anime",
+      "visualStyle": "3D animation",
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Satoru Gojo (五条悟). Subject details: tall adult white-haired teacher with black blindfold and fully covered high-collar dark outfit, cheerful relaxed pose. Style: polished cinematic 3D animated interpretation retaining recognizable character design. Single character standing naturally, complete body, feet and important accessories visible, generous clear margins. Truly transparent background. No environment, cast shadow behind subject, text, labels, logos, frames or watermark. Keep anatomy coherent and face detailed. Historical likenesses are respectful imagined interpretations, not authentic portraits."
+    },
+    {
+      "name": "Yuji Itadori",
+      "slug": "yuji-itadori",
+      "aliases": [
+        "虎杖悠仁"
+      ],
+      "category": "Anime",
+      "visualStyle": "Graphic novel",
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Yuji Itadori (虎杖悠仁). Subject details: pink-haired boy in fully covered dark uniform with red hood and red shoes, friendly pose. Style: color manga illustration with detailed fine ink lines and controlled screentone shading. Single character standing naturally, complete body, feet and important accessories visible, generous clear margins. Truly transparent background. No environment, cast shadow behind subject, text, labels, logos, frames or watermark. Keep anatomy coherent and face detailed. Historical likenesses are respectful imagined interpretations, not authentic portraits."
+    },
+    {
+      "name": "Megumi Fushiguro",
+      "slug": "megumi-fushiguro",
+      "aliases": [
+        "伏黑惠"
+      ],
+      "category": "Anime",
+      "visualStyle": "Plush",
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Megumi Fushiguro (伏黑惠). Subject details: spiky black-haired boy with blue eyes in fully covered high-collar dark uniform. Style: high-quality soft plush collectible interpretation with recognizable costume and embroidered face. Single character standing naturally, complete body, feet and important accessories visible, generous clear margins. Truly transparent background. No environment, cast shadow behind subject, text, labels, logos, frames or watermark. Keep anatomy coherent and face detailed. Historical likenesses are respectful imagined interpretations, not authentic portraits."
+    },
+    {
+      "name": "Nobara Kugisaki",
+      "slug": "nobara-kugisaki",
+      "aliases": [
+        "钉崎野蔷薇"
+      ],
+      "category": "Anime",
+      "visualStyle": "Cel animation",
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Nobara Kugisaki (钉崎野蔷薇). Subject details: auburn bob-haired girl in fully covered dark school uniform jacket, long skirt and tights. Style: crisp hand-drawn Japanese cel animation, expressive face and clean shaded shapes. Single character standing naturally, complete body, feet and important accessories visible, generous clear margins. Truly transparent background. No environment, cast shadow behind subject, text, labels, logos, frames or watermark. Keep anatomy coherent and face detailed. Historical likenesses are respectful imagined interpretations, not authentic portraits."
+    },
+    {
+      "name": "Violet Evergarden",
+      "slug": "violet-evergarden",
+      "aliases": [
+        "薇尔莉特"
+      ],
+      "category": "Anime",
+      "visualStyle": "Watercolor",
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Violet Evergarden (薇尔莉特). Subject details: blonde young woman with blue eyes, braided hair, modest navy jacket, long ivory dress, emerald brooch and mechanical hands. Style: delicate anime watercolor illustration, soft expressive color and crisp face. Single character standing naturally, complete body, feet and important accessories visible, generous clear margins. Truly transparent background. No environment, cast shadow behind subject, text, labels, logos, frames or watermark. Keep anatomy coherent and face detailed. Historical likenesses are respectful imagined interpretations, not authentic portraits."
+    },
+    {
+      "name": "Sakura Kinomoto",
+      "slug": "sakura-kinomoto",
+      "aliases": [
+        "木之本樱"
+      ],
+      "category": "Anime",
+      "visualStyle": "3D animation",
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Sakura Kinomoto (木之本樱). Subject details: brown-haired magical girl with green eyes in fully covered cute pink cape outfit, holding a star-tipped wand, innocent cheerful pose. Style: polished cinematic 3D animated interpretation retaining recognizable character design. Single character standing naturally, complete body, feet and important accessories visible, generous clear margins. Truly transparent background. No environment, cast shadow behind subject, text, labels, logos, frames or watermark. Keep anatomy coherent and face detailed. Historical likenesses are respectful imagined interpretations, not authentic portraits."
+    },
+    {
+      "name": "Inuyasha",
+      "slug": "inuyasha",
+      "aliases": [
+        "犬夜叉"
+      ],
+      "category": "Anime",
+      "visualStyle": "Graphic novel",
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Inuyasha (犬夜叉). Subject details: silver-haired dog-eared fantasy hero in fully covered red traditional outfit and prayer beads. Style: color manga illustration with detailed fine ink lines and controlled screentone shading. Single character standing naturally, complete body, feet and important accessories visible, generous clear margins. Truly transparent background. No environment, cast shadow behind subject, text, labels, logos, frames or watermark. Keep anatomy coherent and face detailed. Historical likenesses are respectful imagined interpretations, not authentic portraits."
+    },
+    {
+      "name": "Sesshomaru",
+      "slug": "sesshomaru",
+      "aliases": [
+        "杀生丸"
+      ],
+      "category": "Anime",
+      "visualStyle": "Plush",
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Sesshomaru (杀生丸). Subject details: adult silver-haired fantasy noble with crescent forehead mark, cheek stripes, fully covered white patterned robe and fluffy shoulder pelt. Style: high-quality soft plush collectible interpretation with recognizable costume and embroidered face. Single character standing naturally, complete body, feet and important accessories visible, generous clear margins. Truly transparent background. No environment, cast shadow behind subject, text, labels, logos, frames or watermark. Keep anatomy coherent and face detailed. Historical likenesses are respectful imagined interpretations, not authentic portraits."
+    },
+    {
+      "name": "Kagome Higurashi",
+      "slug": "kagome-higurashi",
+      "aliases": [
+        "日暮戈薇"
+      ],
+      "category": "Anime",
+      "visualStyle": "Cel animation",
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Kagome Higurashi (日暮戈薇). Subject details: long black-haired girl with brown eyes wearing fully covered green-and-white school outfit, long skirt and tights. Style: crisp hand-drawn Japanese cel animation, expressive face and clean shaded shapes. Single character standing naturally, complete body, feet and important accessories visible, generous clear margins. Truly transparent background. No environment, cast shadow behind subject, text, labels, logos, frames or watermark. Keep anatomy coherent and face detailed. Historical likenesses are respectful imagined interpretations, not authentic portraits."
+    },
+    {
+      "name": "Edward Elric",
+      "slug": "edward-elric",
+      "aliases": [
+        "爱德华·艾尔利克"
+      ],
+      "category": "Anime",
+      "visualStyle": "Watercolor",
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Edward Elric (爱德华·艾尔利克). Subject details: blond braided-haired alchemist with gold eyes, red long coat, fully covered black outfit, mechanical right hand. Style: delicate anime watercolor illustration, soft expressive color and crisp face. Single character standing naturally, complete body, feet and important accessories visible, generous clear margins. Truly transparent background. No environment, cast shadow behind subject, text, labels, logos, frames or watermark. Keep anatomy coherent and face detailed. Historical likenesses are respectful imagined interpretations, not authentic portraits."
+    },
+    {
+      "name": "Alphonse Elric",
+      "slug": "alphonse-elric",
+      "aliases": [
+        "阿尔冯斯·艾尔利克"
+      ],
+      "category": "Anime",
+      "visualStyle": "3D animation",
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Alphonse Elric (阿尔冯斯·艾尔利克). Subject details: friendly large silver suit-of-armor character with horned helmet and white loincloth, gentle standing pose. Style: polished cinematic 3D animated interpretation retaining recognizable character design. Single character standing naturally, complete body, feet and important accessories visible, generous clear margins. Truly transparent background. No environment, cast shadow behind subject, text, labels, logos, frames or watermark. Keep anatomy coherent and face detailed. Historical likenesses are respectful imagined interpretations, not authentic portraits."
+    },
+    {
+      "name": "Saitama",
+      "slug": "saitama",
+      "aliases": [
+        "埼玉"
+      ],
+      "category": "Anime",
+      "visualStyle": "Graphic novel",
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Saitama (埼玉). Subject details: bald adult superhero in fully covered yellow jumpsuit, white cape, red gloves and boots, placid expression. Style: color manga illustration with detailed fine ink lines and controlled screentone shading. Single character standing naturally, complete body, feet and important accessories visible, generous clear margins. Truly transparent background. No environment, cast shadow behind subject, text, labels, logos, frames or watermark. Keep anatomy coherent and face detailed. Historical likenesses are respectful imagined interpretations, not authentic portraits."
+    },
+    {
+      "name": "Hatsune Miku",
+      "slug": "hatsune-miku",
+      "aliases": [
+        "初音未来"
+      ],
+      "category": "Anime",
+      "visualStyle": "Plush",
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout selectable avatar for travel-photo compositing. Create one recognizable full-body artistic interpretation of Hatsune Miku (初音未来). Subject details: teal twin-tailed virtual singer in modest fully covered futuristic gray and teal tunic, dark tights and tall boots, cheerful standing pose. Style: high-quality soft plush collectible interpretation with recognizable costume and embroidered face. Single character standing naturally, complete body, feet and important accessories visible, generous clear margins. Truly transparent background. No environment, cast shadow behind subject, text, labels, logos, frames or watermark. Keep anatomy coherent and face detailed. Historical likenesses are respectful imagined interpretations, not authentic portraits."
+    }
+  ]
+}

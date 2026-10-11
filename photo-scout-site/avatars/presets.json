@@ -5400,6 +5400,457 @@
       ],
       "imageUrl": "./avatars/characters/roald-amundsen.png",
       "thumbnailUrl": "./avatars/thumbnails/roald-amundsen.webp"
+    },
+    {
+      "id": "preset:zhuge-liang",
+      "name": "Zhuge Liang",
+      "category": "Chinese history",
+      "visualStyle": "Chinese ink",
+      "aliases": [
+        "诸葛亮",
+        "孔明",
+        "卧龙"
+      ],
+      "imageUrl": "./avatars/characters/zhuge-liang.png",
+      "thumbnailUrl": "./avatars/thumbnails/zhuge-liang.webp"
+    },
+    {
+      "id": "preset:liu-bei",
+      "name": "Liu Bei",
+      "category": "Chinese history",
+      "visualStyle": "Paper cut",
+      "aliases": [
+        "刘备",
+        "刘玄德"
+      ],
+      "imageUrl": "./avatars/characters/liu-bei.png",
+      "thumbnailUrl": "./avatars/thumbnails/liu-bei.webp"
+    },
+    {
+      "id": "preset:zhang-qian",
+      "name": "Zhang Qian",
+      "category": "Chinese history",
+      "visualStyle": "Photorealistic",
+      "aliases": [
+        "张骞"
+      ],
+      "imageUrl": "./avatars/characters/zhang-qian.png",
+      "thumbnailUrl": "./avatars/thumbnails/zhang-qian.webp"
+    },
+    {
+      "id": "preset:tang-taizong",
+      "name": "Tang Taizong",
+      "category": "Chinese history",
+      "visualStyle": "Chinese ink",
+      "aliases": [
+        "唐太宗",
+        "李世民"
+      ],
+      "imageUrl": "./avatars/characters/tang-taizong.png",
+      "thumbnailUrl": "./avatars/thumbnails/tang-taizong.webp"
+    },
+    {
+      "id": "preset:zu-chongzhi",
+      "name": "Zu Chongzhi",
+      "category": "Chinese history",
+      "visualStyle": "Oil painting",
+      "aliases": [
+        "祖冲之"
+      ],
+      "imageUrl": "./avatars/characters/zu-chongzhi.png",
+      "thumbnailUrl": "./avatars/thumbnails/zu-chongzhi.webp"
+    },
+    {
+      "id": "preset:wu-zetian",
+      "name": "Wu Zetian",
+      "category": "Chinese history",
+      "visualStyle": "Photorealistic",
+      "aliases": [
+        "武则天"
+      ],
+      "imageUrl": "./avatars/characters/wu-zetian.png",
+      "thumbnailUrl": "./avatars/thumbnails/wu-zetian.webp"
+    },
+    {
+      "id": "preset:liu-zongyuan",
+      "name": "Liu Zongyuan",
+      "category": "Chinese history",
+      "visualStyle": "Chinese ink",
+      "aliases": [
+        "柳宗元"
+      ],
+      "imageUrl": "./avatars/characters/liu-zongyuan.png",
+      "thumbnailUrl": "./avatars/thumbnails/liu-zongyuan.webp"
+    },
+    {
+      "id": "preset:cao-cao",
+      "name": "Cao Cao",
+      "category": "Chinese history",
+      "visualStyle": "Clay",
+      "aliases": [
+        "曹操",
+        "曹孟德"
+      ],
+      "imageUrl": "./avatars/characters/cao-cao.png",
+      "thumbnailUrl": "./avatars/thumbnails/cao-cao.webp"
+    },
+    {
+      "id": "preset:song-yingxing",
+      "name": "Song Yingxing",
+      "category": "Chinese history",
+      "visualStyle": "Clay",
+      "aliases": [
+        "宋应星"
+      ],
+      "imageUrl": "./avatars/characters/song-yingxing.png",
+      "thumbnailUrl": "./avatars/thumbnails/song-yingxing.webp"
+    },
+    {
+      "id": "preset:han-yu",
+      "name": "Han Yu",
+      "category": "Chinese history",
+      "visualStyle": "Paper cut",
+      "aliases": [
+        "韩愈"
+      ],
+      "imageUrl": "./avatars/characters/han-yu.png",
+      "thumbnailUrl": "./avatars/thumbnails/han-yu.webp"
+    },
+    {
+      "id": "preset:wang-anshi",
+      "name": "Wang Anshi",
+      "category": "Chinese history",
+      "visualStyle": "Photorealistic",
+      "aliases": [
+        "王安石"
+      ],
+      "imageUrl": "./avatars/characters/wang-anshi.png",
+      "thumbnailUrl": "./avatars/thumbnails/wang-anshi.webp"
+    },
+    {
+      "id": "preset:zhao-yun",
+      "name": "Zhao Yun",
+      "category": "Chinese history",
+      "visualStyle": "Chinese ink",
+      "aliases": [
+        "赵云",
+        "赵子龙"
+      ],
+      "imageUrl": "./avatars/characters/zhao-yun.png",
+      "thumbnailUrl": "./avatars/thumbnails/zhao-yun.webp"
+    },
+    {
+      "id": "preset:qu-yuan",
+      "name": "Qu Yuan",
+      "category": "Chinese history",
+      "visualStyle": "Oil painting",
+      "aliases": [
+        "屈原"
+      ],
+      "imageUrl": "./avatars/characters/qu-yuan.png",
+      "thumbnailUrl": "./avatars/thumbnails/qu-yuan.webp"
+    },
+    {
+      "id": "preset:zhou-yu",
+      "name": "Zhou Yu",
+      "category": "Chinese history",
+      "visualStyle": "Photorealistic",
+      "aliases": [
+        "周瑜",
+        "周公瑾"
+      ],
+      "imageUrl": "./avatars/characters/zhou-yu.png",
+      "thumbnailUrl": "./avatars/thumbnails/zhou-yu.webp"
+    },
+    {
+      "id": "preset:yue-fei",
+      "name": "Yue Fei",
+      "category": "Chinese history",
+      "visualStyle": "Oil painting",
+      "aliases": [
+        "岳飞"
+      ],
+      "imageUrl": "./avatars/characters/yue-fei.png",
+      "thumbnailUrl": "./avatars/thumbnails/yue-fei.webp"
+    },
+    {
+      "id": "preset:sima-guang",
+      "name": "Sima Guang",
+      "category": "Chinese history",
+      "visualStyle": "Paper cut",
+      "aliases": [
+        "司马光"
+      ],
+      "imageUrl": "./avatars/characters/sima-guang.png",
+      "thumbnailUrl": "./avatars/thumbnails/sima-guang.webp"
+    },
+    {
+      "id": "preset:tanjiro-kamado",
+      "name": "Tanjiro Kamado",
+      "category": "Anime",
+      "visualStyle": "Graphic novel",
+      "aliases": [
+        "灶门炭治郎"
+      ],
+      "imageUrl": "./avatars/characters/tanjiro-kamado.png",
+      "thumbnailUrl": "./avatars/thumbnails/tanjiro-kamado.webp"
+    },
+    {
+      "id": "preset:stark-anime",
+      "name": "Stark",
+      "category": "Anime",
+      "visualStyle": "3D animation",
+      "aliases": [
+        "修塔尔克"
+      ],
+      "imageUrl": "./avatars/characters/stark-anime.png",
+      "thumbnailUrl": "./avatars/thumbnails/stark-anime.webp"
+    },
+    {
+      "id": "preset:wen-tianxiang",
+      "name": "Wen Tianxiang",
+      "category": "Chinese history",
+      "visualStyle": "Paper cut",
+      "aliases": [
+        "文天祥"
+      ],
+      "imageUrl": "./avatars/characters/wen-tianxiang.png",
+      "thumbnailUrl": "./avatars/thumbnails/wen-tianxiang.webp"
+    },
+    {
+      "id": "preset:nezuko-kamado",
+      "name": "Nezuko Kamado",
+      "category": "Anime",
+      "visualStyle": "Plush",
+      "aliases": [
+        "灶门祢豆子",
+        "祢豆子"
+      ],
+      "imageUrl": "./avatars/characters/nezuko-kamado.png",
+      "thumbnailUrl": "./avatars/thumbnails/nezuko-kamado.webp"
+    },
+    {
+      "id": "preset:cai-wenji",
+      "name": "Cai Wenji",
+      "category": "Chinese history",
+      "visualStyle": "Clay",
+      "aliases": [
+        "蔡文姬"
+      ],
+      "imageUrl": "./avatars/characters/cai-wenji.png",
+      "thumbnailUrl": "./avatars/thumbnails/cai-wenji.webp"
+    },
+    {
+      "id": "preset:ban-gu",
+      "name": "Ban Gu",
+      "category": "Chinese history",
+      "visualStyle": "Clay",
+      "aliases": [
+        "班固"
+      ],
+      "imageUrl": "./avatars/characters/ban-gu.png",
+      "thumbnailUrl": "./avatars/thumbnails/ban-gu.webp"
+    },
+    {
+      "id": "preset:zenitsu-agatsuma",
+      "name": "Zenitsu Agatsuma",
+      "category": "Anime",
+      "visualStyle": "Cel animation",
+      "aliases": [
+        "我妻善逸"
+      ],
+      "imageUrl": "./avatars/characters/zenitsu-agatsuma.png",
+      "thumbnailUrl": "./avatars/thumbnails/zenitsu-agatsuma.webp"
+    },
+    {
+      "id": "preset:frieren",
+      "name": "Frieren",
+      "category": "Anime",
+      "visualStyle": "Cel animation",
+      "aliases": [
+        "芙莉莲",
+        "葬送的芙莉莲"
+      ],
+      "imageUrl": "./avatars/characters/frieren.png",
+      "thumbnailUrl": "./avatars/thumbnails/frieren.webp"
+    },
+    {
+      "id": "preset:violet-evergarden",
+      "name": "Violet Evergarden",
+      "category": "Anime",
+      "visualStyle": "Watercolor",
+      "aliases": [
+        "薇尔莉特"
+      ],
+      "imageUrl": "./avatars/characters/violet-evergarden.png",
+      "thumbnailUrl": "./avatars/thumbnails/violet-evergarden.webp"
+    },
+    {
+      "id": "preset:qi-jiguang",
+      "name": "Qi Jiguang",
+      "category": "Chinese history",
+      "visualStyle": "Chinese ink",
+      "aliases": [
+        "戚继光"
+      ],
+      "imageUrl": "./avatars/characters/qi-jiguang.png",
+      "thumbnailUrl": "./avatars/thumbnails/qi-jiguang.webp"
+    },
+    {
+      "id": "preset:inosuke-hashibira",
+      "name": "Inosuke Hashibira",
+      "category": "Anime",
+      "visualStyle": "Watercolor",
+      "aliases": [
+        "嘴平伊之助"
+      ],
+      "imageUrl": "./avatars/characters/inosuke-hashibira.png",
+      "thumbnailUrl": "./avatars/thumbnails/inosuke-hashibira.webp"
+    },
+    {
+      "id": "preset:fern-anime",
+      "name": "Fern",
+      "category": "Anime",
+      "visualStyle": "Watercolor",
+      "aliases": [
+        "菲伦"
+      ],
+      "imageUrl": "./avatars/characters/fern-anime.png",
+      "thumbnailUrl": "./avatars/thumbnails/fern-anime.webp"
+    },
+    {
+      "id": "preset:sakura-kinomoto",
+      "name": "Sakura Kinomoto",
+      "category": "Anime",
+      "visualStyle": "3D animation",
+      "aliases": [
+        "木之本樱"
+      ],
+      "imageUrl": "./avatars/characters/sakura-kinomoto.png",
+      "thumbnailUrl": "./avatars/thumbnails/sakura-kinomoto.webp"
+    },
+    {
+      "id": "preset:sesshomaru",
+      "name": "Sesshomaru",
+      "category": "Anime",
+      "visualStyle": "Plush",
+      "aliases": [
+        "杀生丸"
+      ],
+      "imageUrl": "./avatars/characters/sesshomaru.png",
+      "thumbnailUrl": "./avatars/thumbnails/sesshomaru.webp"
+    },
+    {
+      "id": "preset:satoru-gojo",
+      "name": "Satoru Gojo",
+      "category": "Anime",
+      "visualStyle": "3D animation",
+      "aliases": [
+        "五条悟",
+        "Gojo"
+      ],
+      "imageUrl": "./avatars/characters/satoru-gojo.png",
+      "thumbnailUrl": "./avatars/thumbnails/satoru-gojo.webp"
+    },
+    {
+      "id": "preset:edward-elric",
+      "name": "Edward Elric",
+      "category": "Anime",
+      "visualStyle": "Watercolor",
+      "aliases": [
+        "爱德华·艾尔利克"
+      ],
+      "imageUrl": "./avatars/characters/edward-elric.png",
+      "thumbnailUrl": "./avatars/thumbnails/edward-elric.webp"
+    },
+    {
+      "id": "preset:inuyasha",
+      "name": "Inuyasha",
+      "category": "Anime",
+      "visualStyle": "Graphic novel",
+      "aliases": [
+        "犬夜叉"
+      ],
+      "imageUrl": "./avatars/characters/inuyasha.png",
+      "thumbnailUrl": "./avatars/thumbnails/inuyasha.webp"
+    },
+    {
+      "id": "preset:kagome-higurashi",
+      "name": "Kagome Higurashi",
+      "category": "Anime",
+      "visualStyle": "Cel animation",
+      "aliases": [
+        "日暮戈薇"
+      ],
+      "imageUrl": "./avatars/characters/kagome-higurashi.png",
+      "thumbnailUrl": "./avatars/thumbnails/kagome-higurashi.webp"
+    },
+    {
+      "id": "preset:alphonse-elric",
+      "name": "Alphonse Elric",
+      "category": "Anime",
+      "visualStyle": "3D animation",
+      "aliases": [
+        "阿尔冯斯·艾尔利克"
+      ],
+      "imageUrl": "./avatars/characters/alphonse-elric.png",
+      "thumbnailUrl": "./avatars/thumbnails/alphonse-elric.webp"
+    },
+    {
+      "id": "preset:yuji-itadori",
+      "name": "Yuji Itadori",
+      "category": "Anime",
+      "visualStyle": "Graphic novel",
+      "aliases": [
+        "虎杖悠仁"
+      ],
+      "imageUrl": "./avatars/characters/yuji-itadori.png",
+      "thumbnailUrl": "./avatars/thumbnails/yuji-itadori.webp"
+    },
+    {
+      "id": "preset:megumi-fushiguro",
+      "name": "Megumi Fushiguro",
+      "category": "Anime",
+      "visualStyle": "Plush",
+      "aliases": [
+        "伏黑惠"
+      ],
+      "imageUrl": "./avatars/characters/megumi-fushiguro.png",
+      "thumbnailUrl": "./avatars/thumbnails/megumi-fushiguro.webp"
+    },
+    {
+      "id": "preset:saitama",
+      "name": "Saitama",
+      "category": "Anime",
+      "visualStyle": "Graphic novel",
+      "aliases": [
+        "埼玉"
+      ],
+      "imageUrl": "./avatars/characters/saitama.png",
+      "thumbnailUrl": "./avatars/thumbnails/saitama.webp"
+    },
+    {
+      "id": "preset:nobara-kugisaki",
+      "name": "Nobara Kugisaki",
+      "category": "Anime",
+      "visualStyle": "Cel animation",
+      "aliases": [
+        "钉崎野蔷薇"
+      ],
+      "imageUrl": "./avatars/characters/nobara-kugisaki.png",
+      "thumbnailUrl": "./avatars/thumbnails/nobara-kugisaki.webp"
+    },
+    {
+      "id": "preset:hatsune-miku",
+      "name": "Hatsune Miku",
+      "category": "Anime",
+      "visualStyle": "Plush",
+      "aliases": [
+        "初音未来",
+        "初音"
+      ],
+      "imageUrl": "./avatars/characters/hatsune-miku.png",
+      "thumbnailUrl": "./avatars/thumbnails/hatsune-miku.webp"
     }
   ]
 }
