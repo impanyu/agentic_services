@@ -28,7 +28,7 @@ def install(root, report, minimum):
     added, rejected = [], []
     for row in json.loads(report.read_text())['items']:
         if row['state'] != 'complete':
-            rejected.append({'name': row['name'], 'reason': 'generation_failed'})
+            rejected.append({'name': row['name'], 'reason': row.get('reviewReason', 'generation_failed')})
             continue
         identifier = 'preset:' + row['slug']
         if identifier in known_ids:

@@ -6697,6 +6697,5970 @@
       "featured": true,
       "imageUrl": "./avatars/characters/celebrity-faye-wong.png",
       "thumbnailUrl": "./avatars/thumbnails/celebrity-faye-wong.webp"
+    },
+    {
+      "id": "preset:celebrity-dilraba-dilmurat",
+      "name": "Dilraba Dilmurat",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "迪丽热巴"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/celebrity-dilraba-dilmurat.png",
+      "thumbnailUrl": "./avatars/thumbnails/celebrity-dilraba-dilmurat.webp"
+    },
+    {
+      "id": "preset:celebrity-dwayne-johnson",
+      "name": "Dwayne Johnson",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "道恩强森",
+        "巨石强森"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/celebrity-dwayne-johnson.png",
+      "thumbnailUrl": "./avatars/thumbnails/celebrity-dwayne-johnson.webp"
+    },
+    {
+      "id": "preset:expanded-steve-wozniak",
+      "name": "Steve Wozniak",
+      "category": "Technology",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "科技人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-steve-wozniak.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-steve-wozniak.webp"
+    },
+    {
+      "id": "preset:expanded-brad-pitt",
+      "name": "Brad Pitt",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-brad-pitt.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-brad-pitt.webp"
+    },
+    {
+      "id": "preset:expanded-adele",
+      "name": "Adele",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "音乐人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-adele.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-adele.webp"
+    },
+    {
+      "id": "preset:expanded-kevin-durant",
+      "name": "Kevin Durant",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "体育人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-kevin-durant.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-kevin-durant.webp"
+    },
+    {
+      "id": "preset:expanded-amber-from-genshin-impact",
+      "name": "Amber from Genshin Impact",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-amber-from-genshin-impact.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-amber-from-genshin-impact.webp"
+    },
+    {
+      "id": "preset:expanded-linus-torvalds",
+      "name": "Linus Torvalds",
+      "category": "Technology",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "科技人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-linus-torvalds.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-linus-torvalds.webp"
+    },
+    {
+      "id": "preset:expanded-angelina-jolie",
+      "name": "Angelina Jolie",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-angelina-jolie.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-angelina-jolie.webp"
+    },
+    {
+      "id": "preset:expanded-rihanna",
+      "name": "Rihanna",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "音乐人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-rihanna.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-rihanna.webp"
+    },
+    {
+      "id": "preset:expanded-giannis-antetokounmpo",
+      "name": "Giannis Antetokounmpo",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "体育人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-giannis-antetokounmpo.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-giannis-antetokounmpo.webp"
+    },
+    {
+      "id": "preset:expanded-kaeya",
+      "name": "Kaeya",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-kaeya.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-kaeya.webp"
+    },
+    {
+      "id": "preset:expanded-guido-van-rossum",
+      "name": "Guido van Rossum",
+      "category": "Technology",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "科技人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-guido-van-rossum.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-guido-van-rossum.webp"
+    },
+    {
+      "id": "preset:expanded-jennifer-lawrence",
+      "name": "Jennifer Lawrence",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-jennifer-lawrence.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-jennifer-lawrence.webp"
+    },
+    {
+      "id": "preset:expanded-lady-gaga",
+      "name": "Lady Gaga",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "音乐人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-lady-gaga.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-lady-gaga.webp"
+    },
+    {
+      "id": "preset:expanded-nikola-jokic",
+      "name": "Nikola Jokic",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "体育人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-nikola-jokic.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-nikola-jokic.webp"
+    },
+    {
+      "id": "preset:expanded-lisa-minci",
+      "name": "Lisa Minci",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-lisa-minci.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-lisa-minci.webp"
+    },
+    {
+      "id": "preset:expanded-james-dyson",
+      "name": "James Dyson",
+      "category": "Technology",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "科技人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-james-dyson.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-james-dyson.webp"
+    },
+    {
+      "id": "preset:expanded-anne-hathaway",
+      "name": "Anne Hathaway",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-anne-hathaway.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-anne-hathaway.webp"
+    },
+    {
+      "id": "preset:expanded-katy-perry",
+      "name": "Katy Perry",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "音乐人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-katy-perry.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-katy-perry.webp"
+    },
+    {
+      "id": "preset:expanded-luka-doncic",
+      "name": "Luka Doncic",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "体育人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-luka-doncic.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-luka-doncic.webp"
+    },
+    {
+      "id": "preset:expanded-diluc",
+      "name": "Diluc",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-diluc.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-diluc.webp"
+    },
+    {
+      "id": "preset:expanded-richard-branson",
+      "name": "Richard Branson",
+      "category": "Technology",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "科技人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-richard-branson.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-richard-branson.webp"
+    },
+    {
+      "id": "preset:expanded-natalie-portman",
+      "name": "Natalie Portman",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-natalie-portman.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-natalie-portman.webp"
+    },
+    {
+      "id": "preset:expanded-miley-cyrus",
+      "name": "Miley Cyrus",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "音乐人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-miley-cyrus.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-miley-cyrus.webp"
+    },
+    {
+      "id": "preset:expanded-jayson-tatum",
+      "name": "Jayson Tatum",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "体育人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-jayson-tatum.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-jayson-tatum.webp"
+    },
+    {
+      "id": "preset:expanded-jean-gunnhildr",
+      "name": "Jean Gunnhildr",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-jean-gunnhildr.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-jean-gunnhildr.webp"
+    },
+    {
+      "id": "preset:expanded-jack-ma",
+      "name": "Jack Ma",
+      "category": "Technology",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "科技人物",
+        "马云"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-jack-ma.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-jack-ma.webp"
+    },
+    {
+      "id": "preset:expanded-selena-gomez",
+      "name": "Selena Gomez",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "音乐人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-selena-gomez.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-selena-gomez.webp"
+    },
+    {
+      "id": "preset:expanded-jimmy-butler",
+      "name": "Jimmy Butler",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "体育人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-jimmy-butler.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-jimmy-butler.webp"
+    },
+    {
+      "id": "preset:expanded-barbara-pegg",
+      "name": "Barbara Pegg",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-barbara-pegg.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-barbara-pegg.webp"
+    },
+    {
+      "id": "preset:expanded-pony-ma",
+      "name": "Pony Ma",
+      "category": "Technology",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "科技人物",
+        "马化腾"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-pony-ma.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-pony-ma.webp"
+    },
+    {
+      "id": "preset:expanded-christian-bale",
+      "name": "Christian Bale",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-christian-bale.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-christian-bale.webp"
+    },
+    {
+      "id": "preset:expanded-demi-lovato",
+      "name": "Demi Lovato",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "音乐人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-demi-lovato.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-demi-lovato.webp"
+    },
+    {
+      "id": "preset:expanded-kawhi-leonard",
+      "name": "Kawhi Leonard",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "体育人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-kawhi-leonard.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-kawhi-leonard.webp"
+    },
+    {
+      "id": "preset:expanded-razor",
+      "name": "Razor",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-razor.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-razor.webp"
+    },
+    {
+      "id": "preset:expanded-zhang-yiming",
+      "name": "Zhang Yiming",
+      "category": "Technology",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "科技人物",
+        "张一鸣"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-zhang-yiming.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-zhang-yiming.webp"
+    },
+    {
+      "id": "preset:expanded-cillian-murphy",
+      "name": "Cillian Murphy",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-cillian-murphy.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-cillian-murphy.webp"
+    },
+    {
+      "id": "preset:expanded-olivia-rodrigo",
+      "name": "Olivia Rodrigo",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "音乐人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-olivia-rodrigo.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-olivia-rodrigo.webp"
+    },
+    {
+      "id": "preset:expanded-james-harden",
+      "name": "James Harden",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "体育人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-james-harden.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-james-harden.webp"
+    },
+    {
+      "id": "preset:expanded-bennett",
+      "name": "Bennett",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-bennett.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-bennett.webp"
+    },
+    {
+      "id": "preset:expanded-robin-li",
+      "name": "Robin Li",
+      "category": "Technology",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "科技人物",
+        "李彦宏"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-robin-li.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-robin-li.webp"
+    },
+    {
+      "id": "preset:expanded-pedro-pascal",
+      "name": "Pedro Pascal",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-pedro-pascal.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-pedro-pascal.webp"
+    },
+    {
+      "id": "preset:expanded-sabrina-carpenter",
+      "name": "Sabrina Carpenter",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "音乐人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-sabrina-carpenter.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-sabrina-carpenter.webp"
+    },
+    {
+      "id": "preset:expanded-damian-lillard",
+      "name": "Damian Lillard",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "体育人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-damian-lillard.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-damian-lillard.webp"
+    },
+    {
+      "id": "preset:expanded-fischl",
+      "name": "Fischl",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-fischl.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-fischl.webp"
+    },
+    {
+      "id": "preset:expanded-wang-chuanfu",
+      "name": "Wang Chuanfu",
+      "category": "Technology",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "科技人物",
+        "王传福"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-wang-chuanfu.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-wang-chuanfu.webp"
+    },
+    {
+      "id": "preset:expanded-oscar-isaac",
+      "name": "Oscar Isaac",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-oscar-isaac.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-oscar-isaac.webp"
+    },
+    {
+      "id": "preset:expanded-chappell-roan",
+      "name": "Chappell Roan",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "音乐人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-chappell-roan.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-chappell-roan.webp"
+    },
+    {
+      "id": "preset:expanded-kyrie-irving",
+      "name": "Kyrie Irving",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "体育人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-kyrie-irving.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-kyrie-irving.webp"
+    },
+    {
+      "id": "preset:expanded-noelle",
+      "name": "Noelle",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-noelle.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-noelle.webp"
+    },
+    {
+      "id": "preset:expanded-ren-zhengfei",
+      "name": "Ren Zhengfei",
+      "category": "Technology",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "科技人物",
+        "任正非"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-ren-zhengfei.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-ren-zhengfei.webp"
+    },
+    {
+      "id": "preset:expanded-adam-driver",
+      "name": "Adam Driver",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-adam-driver.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-adam-driver.webp"
+    },
+    {
+      "id": "preset:expanded-lana-del-rey",
+      "name": "Lana Del Rey",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "音乐人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-lana-del-rey.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-lana-del-rey.webp"
+    },
+    {
+      "id": "preset:expanded-anthony-davis",
+      "name": "Anthony Davis",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "体育人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-anthony-davis.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-anthony-davis.webp"
+    },
+    {
+      "id": "preset:expanded-sucrose",
+      "name": "Sucrose",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-sucrose.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-sucrose.webp"
+    },
+    {
+      "id": "preset:expanded-lisa-su",
+      "name": "Lisa Su",
+      "category": "Technology",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "科技人物",
+        "苏姿丰"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-lisa-su.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-lisa-su.webp"
+    },
+    {
+      "id": "preset:expanded-benedict-cumberbatch",
+      "name": "Benedict Cumberbatch",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-benedict-cumberbatch.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-benedict-cumberbatch.webp"
+    },
+    {
+      "id": "preset:expanded-sza",
+      "name": "SZA",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "音乐人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-sza.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-sza.webp"
+    },
+    {
+      "id": "preset:expanded-anthony-edwards",
+      "name": "Anthony Edwards",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "体育人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-anthony-edwards.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-anthony-edwards.webp"
+    },
+    {
+      "id": "preset:expanded-mona-megistus",
+      "name": "Mona Megistus",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-mona-megistus.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-mona-megistus.webp"
+    },
+    {
+      "id": "preset:expanded-susan-wojcicki",
+      "name": "Susan Wojcicki",
+      "category": "Technology",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "科技人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-susan-wojcicki.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-susan-wojcicki.webp"
+    },
+    {
+      "id": "preset:expanded-tom-holland",
+      "name": "Tom Holland",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-tom-holland.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-tom-holland.webp"
+    },
+    {
+      "id": "preset:expanded-victor-wembanyama",
+      "name": "Victor Wembanyama",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "体育人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-victor-wembanyama.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-victor-wembanyama.webp"
+    },
+    {
+      "id": "preset:expanded-klee",
+      "name": "Klee",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-klee.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-klee.webp"
+    },
+    {
+      "id": "preset:expanded-sheryl-sandberg",
+      "name": "Sheryl Sandberg",
+      "category": "Technology",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "科技人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-sheryl-sandberg.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-sheryl-sandberg.webp"
+    },
+    {
+      "id": "preset:expanded-chris-hemsworth",
+      "name": "Chris Hemsworth",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-chris-hemsworth.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-chris-hemsworth.webp"
+    },
+    {
+      "id": "preset:expanded-shaquille-oneal",
+      "name": "Shaquille ONeal",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "体育人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-shaquille-oneal.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-shaquille-oneal.webp"
+    },
+    {
+      "id": "preset:expanded-diona",
+      "name": "Diona",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-diona.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-diona.webp"
+    },
+    {
+      "id": "preset:expanded-melanie-perkins",
+      "name": "Melanie Perkins",
+      "category": "Technology",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "科技人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-melanie-perkins.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-melanie-perkins.webp"
+    },
+    {
+      "id": "preset:expanded-chris-evans",
+      "name": "Chris Evans",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-chris-evans.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-chris-evans.webp"
+    },
+    {
+      "id": "preset:expanded-charles-barkley",
+      "name": "Charles Barkley",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "体育人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-charles-barkley.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-charles-barkley.webp"
+    },
+    {
+      "id": "preset:expanded-albedo",
+      "name": "Albedo",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-albedo.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-albedo.webp"
+    },
+    {
+      "id": "preset:expanded-reid-hoffman",
+      "name": "Reid Hoffman",
+      "category": "Technology",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "科技人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-reid-hoffman.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-reid-hoffman.webp"
+    },
+    {
+      "id": "preset:expanded-chris-pratt",
+      "name": "Chris Pratt",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-chris-pratt.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-chris-pratt.webp"
+    },
+    {
+      "id": "preset:expanded-shakira",
+      "name": "Shakira",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "音乐人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-shakira.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-shakira.webp"
+    },
+    {
+      "id": "preset:expanded-steve-nash",
+      "name": "Steve Nash",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "体育人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-steve-nash.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-steve-nash.webp"
+    },
+    {
+      "id": "preset:expanded-eula",
+      "name": "Eula",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-eula.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-eula.webp"
+    },
+    {
+      "id": "preset:expanded-drew-houston",
+      "name": "Drew Houston",
+      "category": "Technology",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "科技人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-drew-houston.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-drew-houston.webp"
+    },
+    {
+      "id": "preset:expanded-robert-pattinson",
+      "name": "Robert Pattinson",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-robert-pattinson.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-robert-pattinson.webp"
+    },
+    {
+      "id": "preset:expanded-jennifer-lopez",
+      "name": "Jennifer Lopez",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "音乐人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-jennifer-lopez.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-jennifer-lopez.webp"
+    },
+    {
+      "id": "preset:expanded-dirk-nowitzki",
+      "name": "Dirk Nowitzki",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "体育人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-dirk-nowitzki.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-dirk-nowitzki.webp"
+    },
+    {
+      "id": "preset:expanded-rosaria",
+      "name": "Rosaria",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-rosaria.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-rosaria.webp"
+    },
+    {
+      "id": "preset:expanded-brian-chesky",
+      "name": "Brian Chesky",
+      "category": "Technology",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "科技人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-brian-chesky.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-brian-chesky.webp"
+    },
+    {
+      "id": "preset:expanded-daniel-radcliffe",
+      "name": "Daniel Radcliffe",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-daniel-radcliffe.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-daniel-radcliffe.webp"
+    },
+    {
+      "id": "preset:expanded-celine-dion",
+      "name": "Celine Dion",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "音乐人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-celine-dion.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-celine-dion.webp"
+    },
+    {
+      "id": "preset:expanded-allen-iverson",
+      "name": "Allen Iverson",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "体育人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-allen-iverson.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-allen-iverson.webp"
+    },
+    {
+      "id": "preset:expanded-xiangling",
+      "name": "Xiangling",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-xiangling.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-xiangling.webp"
+    },
+    {
+      "id": "preset:expanded-daniel-ek",
+      "name": "Daniel Ek",
+      "category": "Technology",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "科技人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-daniel-ek.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-daniel-ek.webp"
+    },
+    {
+      "id": "preset:expanded-rupert-grint",
+      "name": "Rupert Grint",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-rupert-grint.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-rupert-grint.webp"
+    },
+    {
+      "id": "preset:expanded-mariah-carey",
+      "name": "Mariah Carey",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "音乐人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-mariah-carey.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-mariah-carey.webp"
+    },
+    {
+      "id": "preset:expanded-dwyane-wade",
+      "name": "Dwyane Wade",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "体育人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-dwyane-wade.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-dwyane-wade.webp"
+    },
+    {
+      "id": "preset:expanded-xingqiu",
+      "name": "Xingqiu",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-xingqiu.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-xingqiu.webp"
+    },
+    {
+      "id": "preset:expanded-demis-hassabis",
+      "name": "Demis Hassabis",
+      "category": "Technology",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "科技人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-demis-hassabis.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-demis-hassabis.webp"
+    },
+    {
+      "id": "preset:expanded-daniel-craig",
+      "name": "Daniel Craig",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-daniel-craig.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-daniel-craig.webp"
+    },
+    {
+      "id": "preset:expanded-christina-aguilera",
+      "name": "Christina Aguilera",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "音乐人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-christina-aguilera.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-christina-aguilera.webp"
+    },
+    {
+      "id": "preset:expanded-tim-duncan",
+      "name": "Tim Duncan",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "体育人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-tim-duncan.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-tim-duncan.webp"
+    },
+    {
+      "id": "preset:expanded-chongyun",
+      "name": "Chongyun",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-chongyun.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-chongyun.webp"
+    },
+    {
+      "id": "preset:expanded-fei-fei-li",
+      "name": "Fei-Fei Li",
+      "category": "Technology",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "科技人物",
+        "李飞飞"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-fei-fei-li.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-fei-fei-li.webp"
+    },
+    {
+      "id": "preset:expanded-idris-elba",
+      "name": "Idris Elba",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-idris-elba.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-idris-elba.webp"
+    },
+    {
+      "id": "preset:expanded-britney-spears",
+      "name": "Britney Spears",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "音乐人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-britney-spears.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-britney-spears.webp"
+    },
+    {
+      "id": "preset:expanded-jeremy-lin",
+      "name": "Jeremy Lin",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "体育人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-jeremy-lin.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-jeremy-lin.webp"
+    },
+    {
+      "id": "preset:expanded-beidou",
+      "name": "Beidou",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-beidou.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-beidou.webp"
+    },
+    {
+      "id": "preset:expanded-andrew-ng",
+      "name": "Andrew Ng",
+      "category": "Technology",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "科技人物",
+        "吴恩达"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-andrew-ng.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-andrew-ng.webp"
+    },
+    {
+      "id": "preset:expanded-michael-b-jordan",
+      "name": "Michael B. Jordan",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-michael-b-jordan.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-michael-b-jordan.webp"
+    },
+    {
+      "id": "preset:expanded-avril-lavigne",
+      "name": "Avril Lavigne",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "音乐人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-avril-lavigne.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-avril-lavigne.webp"
+    },
+    {
+      "id": "preset:expanded-yi-jianlian",
+      "name": "Yi Jianlian",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "体育人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-yi-jianlian.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-yi-jianlian.webp"
+    },
+    {
+      "id": "preset:expanded-ningguang",
+      "name": "Ningguang",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-ningguang.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-ningguang.webp"
+    },
+    {
+      "id": "preset:expanded-yann-lecun",
+      "name": "Yann LeCun",
+      "category": "Technology",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "科技人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-yann-lecun.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-yann-lecun.webp"
+    },
+    {
+      "id": "preset:expanded-will-smith",
+      "name": "Will Smith",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-will-smith.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-will-smith.webp"
+    },
+    {
+      "id": "preset:expanded-p-nk",
+      "name": "P!nk",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "音乐人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-p-nk.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-p-nk.webp"
+    },
+    {
+      "id": "preset:expanded-zhou-qi",
+      "name": "Zhou Qi",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "体育人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-zhou-qi.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-zhou-qi.webp"
+    },
+    {
+      "id": "preset:expanded-keqing",
+      "name": "Keqing",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-keqing.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-keqing.webp"
+    },
+    {
+      "id": "preset:expanded-geoffrey-hinton",
+      "name": "Geoffrey Hinton",
+      "category": "Technology",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "科技人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-geoffrey-hinton.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-geoffrey-hinton.webp"
+    },
+    {
+      "id": "preset:expanded-samuel-l-jackson",
+      "name": "Samuel L. Jackson",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-samuel-l-jackson.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-samuel-l-jackson.webp"
+    },
+    {
+      "id": "preset:expanded-kelly-clarkson",
+      "name": "Kelly Clarkson",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "音乐人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-kelly-clarkson.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-kelly-clarkson.webp"
+    },
+    {
+      "id": "preset:expanded-zhang-ziyu",
+      "name": "Zhang Ziyu",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "体育人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-zhang-ziyu.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-zhang-ziyu.webp"
+    },
+    {
+      "id": "preset:expanded-qiqi",
+      "name": "Qiqi",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-qiqi.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-qiqi.webp"
+    },
+    {
+      "id": "preset:expanded-yoshua-bengio",
+      "name": "Yoshua Bengio",
+      "category": "Technology",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "科技人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-yoshua-bengio.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-yoshua-bengio.webp"
+    },
+    {
+      "id": "preset:expanded-anthony-hopkins",
+      "name": "Anthony Hopkins",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-anthony-hopkins.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-anthony-hopkins.webp"
+    },
+    {
+      "id": "preset:expanded-alanis-morissette",
+      "name": "Alanis Morissette",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "音乐人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-alanis-morissette.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-alanis-morissette.webp"
+    },
+    {
+      "id": "preset:expanded-novak-djokovic",
+      "name": "Novak Djokovic",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "体育人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-novak-djokovic.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-novak-djokovic.webp"
+    },
+    {
+      "id": "preset:expanded-ilya-sutskever",
+      "name": "Ilya Sutskever",
+      "category": "Technology",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "科技人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-ilya-sutskever.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-ilya-sutskever.webp"
+    },
+    {
+      "id": "preset:expanded-gary-oldman",
+      "name": "Gary Oldman",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-gary-oldman.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-gary-oldman.webp"
+    },
+    {
+      "id": "preset:expanded-norah-jones",
+      "name": "Norah Jones",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "音乐人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-norah-jones.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-norah-jones.webp"
+    },
+    {
+      "id": "preset:expanded-jannik-sinner",
+      "name": "Jannik Sinner",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "体育人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-jannik-sinner.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-jannik-sinner.webp"
+    },
+    {
+      "id": "preset:expanded-xiao",
+      "name": "Xiao",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-xiao.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-xiao.webp"
+    },
+    {
+      "id": "preset:expanded-dario-amodei",
+      "name": "Dario Amodei",
+      "category": "Technology",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "科技人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-dario-amodei.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-dario-amodei.webp"
+    },
+    {
+      "id": "preset:expanded-matt-damon",
+      "name": "Matt Damon",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-matt-damon.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-matt-damon.webp"
+    },
+    {
+      "id": "preset:expanded-laufey",
+      "name": "Laufey",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "音乐人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-laufey.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-laufey.webp"
+    },
+    {
+      "id": "preset:expanded-daniil-medvedev",
+      "name": "Daniil Medvedev",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "体育人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-daniil-medvedev.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-daniil-medvedev.webp"
+    },
+    {
+      "id": "preset:expanded-tartaglia",
+      "name": "Tartaglia",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-tartaglia.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-tartaglia.webp"
+    },
+    {
+      "id": "preset:expanded-daphne-koller",
+      "name": "Daphne Koller",
+      "category": "Technology",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "科技人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-daphne-koller.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-daphne-koller.webp"
+    },
+    {
+      "id": "preset:expanded-ben-affleck",
+      "name": "Ben Affleck",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-ben-affleck.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-ben-affleck.webp"
+    },
+    {
+      "id": "preset:expanded-gracie-abrams",
+      "name": "Gracie Abrams",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "音乐人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-gracie-abrams.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-gracie-abrams.webp"
+    },
+    {
+      "id": "preset:expanded-alexander-zverev",
+      "name": "Alexander Zverev",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "体育人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-alexander-zverev.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-alexander-zverev.webp"
+    },
+    {
+      "id": "preset:expanded-xinyan",
+      "name": "Xinyan",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-xinyan.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-xinyan.webp"
+    },
+    {
+      "id": "preset:expanded-kai-fu-lee",
+      "name": "Kai-Fu Lee",
+      "category": "Technology",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "科技人物",
+        "李开复"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-kai-fu-lee.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-kai-fu-lee.webp"
+    },
+    {
+      "id": "preset:expanded-hugh-jackman",
+      "name": "Hugh Jackman",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-hugh-jackman.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-hugh-jackman.webp"
+    },
+    {
+      "id": "preset:expanded-iga-swiatek",
+      "name": "Iga Swiatek",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "体育人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-iga-swiatek.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-iga-swiatek.webp"
+    },
+    {
+      "id": "preset:expanded-yanfei",
+      "name": "Yanfei",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-yanfei.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-yanfei.webp"
+    },
+    {
+      "id": "preset:expanded-andrej-karpathy",
+      "name": "Andrej Karpathy",
+      "category": "Technology",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "科技人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-andrej-karpathy.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-andrej-karpathy.webp"
+    },
+    {
+      "id": "preset:expanded-hugh-grant",
+      "name": "Hugh Grant",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-hugh-grant.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-hugh-grant.webp"
+    },
+    {
+      "id": "preset:expanded-rose",
+      "name": "ROSÉ",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "音乐人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-rose.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-rose.webp"
+    },
+    {
+      "id": "preset:expanded-aryna-sabalenka",
+      "name": "Aryna Sabalenka",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "体育人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-aryna-sabalenka.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-aryna-sabalenka.webp"
+    },
+    {
+      "id": "preset:expanded-yun-jin",
+      "name": "Yun Jin",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-yun-jin.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-yun-jin.webp"
+    },
+    {
+      "id": "preset:expanded-colin-firth",
+      "name": "Colin Firth",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-colin-firth.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-colin-firth.webp"
+    },
+    {
+      "id": "preset:expanded-jisoo",
+      "name": "Jisoo",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "音乐人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-jisoo.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-jisoo.webp"
+    },
+    {
+      "id": "preset:expanded-coco-gauff",
+      "name": "Coco Gauff",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "体育人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-coco-gauff.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-coco-gauff.webp"
+    },
+    {
+      "id": "preset:expanded-yelan",
+      "name": "Yelan",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-yelan.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-yelan.webp"
+    },
+    {
+      "id": "preset:expanded-jude-law",
+      "name": "Jude Law",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-jude-law.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-jude-law.webp"
+    },
+    {
+      "id": "preset:expanded-rm",
+      "name": "RM",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "音乐人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-rm.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-rm.webp"
+    },
+    {
+      "id": "preset:expanded-zheng-qinwen",
+      "name": "Zheng Qinwen",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "体育人物",
+        "郑钦文"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-zheng-qinwen.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-zheng-qinwen.webp"
+    },
+    {
+      "id": "preset:expanded-yaoyao",
+      "name": "Yaoyao",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-yaoyao.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-yaoyao.webp"
+    },
+    {
+      "id": "preset:expanded-orlando-bloom",
+      "name": "Orlando Bloom",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-orlando-bloom.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-orlando-bloom.webp"
+    },
+    {
+      "id": "preset:expanded-jin",
+      "name": "Jin",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "音乐人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-jin.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-jin.webp"
+    },
+    {
+      "id": "preset:expanded-emma-raducanu",
+      "name": "Emma Raducanu",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "体育人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-emma-raducanu.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-emma-raducanu.webp"
+    },
+    {
+      "id": "preset:expanded-baizhu",
+      "name": "Baizhu",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-baizhu.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-baizhu.webp"
+    },
+    {
+      "id": "preset:expanded-jake-gyllenhaal",
+      "name": "Jake Gyllenhaal",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-jake-gyllenhaal.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-jake-gyllenhaal.webp"
+    },
+    {
+      "id": "preset:expanded-suga",
+      "name": "Suga",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "音乐人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-suga.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-suga.webp"
+    },
+    {
+      "id": "preset:expanded-venus-williams",
+      "name": "Venus Williams",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "体育人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-venus-williams.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-venus-williams.webp"
+    },
+    {
+      "id": "preset:expanded-xianyun",
+      "name": "Xianyun",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-xianyun.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-xianyun.webp"
+    },
+    {
+      "id": "preset:expanded-andrew-garfield",
+      "name": "Andrew Garfield",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-andrew-garfield.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-andrew-garfield.webp"
+    },
+    {
+      "id": "preset:expanded-j-hope",
+      "name": "J-Hope",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "音乐人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-j-hope.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-j-hope.webp"
+    },
+    {
+      "id": "preset:expanded-andy-murray",
+      "name": "Andy Murray",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "体育人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-andy-murray.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-andy-murray.webp"
+    },
+    {
+      "id": "preset:expanded-gaming-from-genshin-impact",
+      "name": "Gaming from Genshin Impact",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-gaming-from-genshin-impact.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-gaming-from-genshin-impact.webp"
+    },
+    {
+      "id": "preset:expanded-paul-rudd",
+      "name": "Paul Rudd",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-paul-rudd.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-paul-rudd.webp"
+    },
+    {
+      "id": "preset:expanded-jimin",
+      "name": "Jimin",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "音乐人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-jimin.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-jimin.webp"
+    },
+    {
+      "id": "preset:expanded-ronaldinho",
+      "name": "Ronaldinho",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "体育人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-ronaldinho.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-ronaldinho.webp"
+    },
+    {
+      "id": "preset:expanded-kazuha",
+      "name": "Kazuha",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-kazuha.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-kazuha.webp"
+    },
+    {
+      "id": "preset:expanded-willem-dafoe",
+      "name": "Willem Dafoe",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-willem-dafoe.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-willem-dafoe.webp"
+    },
+    {
+      "id": "preset:expanded-v-from-bts",
+      "name": "V from BTS",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "音乐人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-v-from-bts.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-v-from-bts.webp"
+    },
+    {
+      "id": "preset:expanded-neymar",
+      "name": "Neymar",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "体育人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-neymar.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-neymar.webp"
+    },
+    {
+      "id": "preset:expanded-kamisato-ayaka",
+      "name": "Kamisato Ayaka",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-kamisato-ayaka.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-kamisato-ayaka.webp"
+    },
+    {
+      "id": "preset:expanded-nicolas-cage",
+      "name": "Nicolas Cage",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-nicolas-cage.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-nicolas-cage.webp"
+    },
+    {
+      "id": "preset:expanded-g-dragon",
+      "name": "G-Dragon",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "音乐人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-g-dragon.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-g-dragon.webp"
+    },
+    {
+      "id": "preset:expanded-erling-haaland",
+      "name": "Erling Haaland",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "体育人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-erling-haaland.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-erling-haaland.webp"
+    },
+    {
+      "id": "preset:expanded-yoimiya",
+      "name": "Yoimiya",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-yoimiya.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-yoimiya.webp"
+    },
+    {
+      "id": "preset:expanded-jason-momoa",
+      "name": "Jason Momoa",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-jason-momoa.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-jason-momoa.webp"
+    },
+    {
+      "id": "preset:expanded-iu",
+      "name": "IU",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "音乐人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-iu.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-iu.webp"
+    },
+    {
+      "id": "preset:expanded-mohamed-salah",
+      "name": "Mohamed Salah",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "体育人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-mohamed-salah.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-mohamed-salah.webp"
+    },
+    {
+      "id": "preset:expanded-sayu",
+      "name": "Sayu",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-sayu.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-sayu.webp"
+    },
+    {
+      "id": "preset:expanded-jason-statham",
+      "name": "Jason Statham",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-jason-statham.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-jason-statham.webp"
+    },
+    {
+      "id": "preset:expanded-taeyeon",
+      "name": "Taeyeon",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "音乐人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-taeyeon.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-taeyeon.webp"
+    },
+    {
+      "id": "preset:expanded-son-heung-min",
+      "name": "Son Heung-min",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "体育人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-son-heung-min.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-son-heung-min.webp"
+    },
+    {
+      "id": "preset:expanded-kujou-sara",
+      "name": "Kujou Sara",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-kujou-sara.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-kujou-sara.webp"
+    },
+    {
+      "id": "preset:expanded-vin-diesel",
+      "name": "Vin Diesel",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-vin-diesel.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-vin-diesel.webp"
+    },
+    {
+      "id": "preset:expanded-taemin",
+      "name": "Taemin",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "音乐人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-taemin.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-taemin.webp"
+    },
+    {
+      "id": "preset:expanded-harry-kane",
+      "name": "Harry Kane",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "体育人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-harry-kane.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-harry-kane.webp"
+    },
+    {
+      "id": "preset:expanded-sangonomiya-kokomi",
+      "name": "Sangonomiya Kokomi",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-sangonomiya-kokomi.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-sangonomiya-kokomi.webp"
+    },
+    {
+      "id": "preset:expanded-owen-wilson",
+      "name": "Owen Wilson",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-owen-wilson.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-owen-wilson.webp"
+    },
+    {
+      "id": "preset:expanded-boa",
+      "name": "BoA",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "音乐人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-boa.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-boa.webp"
+    },
+    {
+      "id": "preset:expanded-kevin-de-bruyne",
+      "name": "Kevin De Bruyne",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "体育人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-kevin-de-bruyne.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-kevin-de-bruyne.webp"
+    },
+    {
+      "id": "preset:expanded-thoma",
+      "name": "Thoma",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-thoma.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-thoma.webp"
+    },
+    {
+      "id": "preset:expanded-jim-carrey",
+      "name": "Jim Carrey",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-jim-carrey.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-jim-carrey.webp"
+    },
+    {
+      "id": "preset:expanded-psy",
+      "name": "PSY",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "音乐人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-psy.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-psy.webp"
+    },
+    {
+      "id": "preset:expanded-luka-modric",
+      "name": "Luka Modric",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "体育人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-luka-modric.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-luka-modric.webp"
+    },
+    {
+      "id": "preset:expanded-arataki-itto",
+      "name": "Arataki Itto",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-arataki-itto.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-arataki-itto.webp"
+    },
+    {
+      "id": "preset:expanded-steve-carell",
+      "name": "Steve Carell",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-steve-carell.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-steve-carell.webp"
+    },
+    {
+      "id": "preset:expanded-bambam",
+      "name": "BamBam",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "音乐人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-bambam.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-bambam.webp"
+    },
+    {
+      "id": "preset:expanded-david-beckham",
+      "name": "David Beckham",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "体育人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-david-beckham.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-david-beckham.webp"
+    },
+    {
+      "id": "preset:expanded-gorou",
+      "name": "Gorou",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-gorou.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-gorou.webp"
+    },
+    {
+      "id": "preset:expanded-rowan-atkinson",
+      "name": "Rowan Atkinson",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-rowan-atkinson.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-rowan-atkinson.webp"
+    },
+    {
+      "id": "preset:expanded-cha-eun-woo",
+      "name": "Cha Eun-woo",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "音乐人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-cha-eun-woo.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-cha-eun-woo.webp"
+    },
+    {
+      "id": "preset:expanded-zinedine-zidane",
+      "name": "Zinedine Zidane",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "体育人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-zinedine-zidane.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-zinedine-zidane.webp"
+    },
+    {
+      "id": "preset:expanded-yae-miko",
+      "name": "Yae Miko",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-yae-miko.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-yae-miko.webp"
+    },
+    {
+      "id": "preset:expanded-ricky-gervais",
+      "name": "Ricky Gervais",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-ricky-gervais.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-ricky-gervais.webp"
+    },
+    {
+      "id": "preset:expanded-bad-bunny",
+      "name": "Bad Bunny",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "音乐人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-bad-bunny.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-bad-bunny.webp"
+    },
+    {
+      "id": "preset:expanded-andres-iniesta",
+      "name": "Andres Iniesta",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "体育人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-andres-iniesta.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-andres-iniesta.webp"
+    },
+    {
+      "id": "preset:expanded-kamisato-ayato",
+      "name": "Kamisato Ayato",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-kamisato-ayato.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-kamisato-ayato.webp"
+    },
+    {
+      "id": "preset:expanded-jack-black",
+      "name": "Jack Black",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-jack-black.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-jack-black.webp"
+    },
+    {
+      "id": "preset:expanded-the-weeknd",
+      "name": "The Weeknd",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "音乐人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-the-weeknd.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-the-weeknd.webp"
+    },
+    {
+      "id": "preset:expanded-xavi-hernandez",
+      "name": "Xavi Hernandez",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "体育人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-xavi-hernandez.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-xavi-hernandez.webp"
+    },
+    {
+      "id": "preset:expanded-kuki-shinobu",
+      "name": "Kuki Shinobu",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-kuki-shinobu.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-kuki-shinobu.webp"
+    },
+    {
+      "id": "preset:expanded-adam-sandler",
+      "name": "Adam Sandler",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-adam-sandler.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-adam-sandler.webp"
+    },
+    {
+      "id": "preset:expanded-luis-suarez",
+      "name": "Luis Suarez",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "体育人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-luis-suarez.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-luis-suarez.webp"
+    },
+    {
+      "id": "preset:expanded-shikanoin-heizou",
+      "name": "Shikanoin Heizou",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-shikanoin-heizou.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-shikanoin-heizou.webp"
+    },
+    {
+      "id": "preset:expanded-kevin-hart",
+      "name": "Kevin Hart",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-kevin-hart.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-kevin-hart.webp"
+    },
+    {
+      "id": "preset:expanded-kendrick-lamar",
+      "name": "Kendrick Lamar",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "音乐人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-kendrick-lamar.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-kendrick-lamar.webp"
+    },
+    {
+      "id": "preset:expanded-robert-lewandowski",
+      "name": "Robert Lewandowski",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "体育人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-robert-lewandowski.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-robert-lewandowski.webp"
+    },
+    {
+      "id": "preset:expanded-kirara",
+      "name": "Kirara",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-kirara.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-kirara.webp"
+    },
+    {
+      "id": "preset:expanded-eddie-murphy",
+      "name": "Eddie Murphy",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-eddie-murphy.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-eddie-murphy.webp"
+    },
+    {
+      "id": "preset:expanded-post-malone",
+      "name": "Post Malone",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "音乐人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-post-malone.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-post-malone.webp"
+    },
+    {
+      "id": "preset:expanded-vinicius-junior",
+      "name": "Vinicius Junior",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "体育人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-vinicius-junior.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-vinicius-junior.webp"
+    },
+    {
+      "id": "preset:expanded-tighnari",
+      "name": "Tighnari",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-tighnari.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-tighnari.webp"
+    },
+    {
+      "id": "preset:expanded-emily-blunt",
+      "name": "Emily Blunt",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-emily-blunt.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-emily-blunt.webp"
+    },
+    {
+      "id": "preset:expanded-collei",
+      "name": "Collei",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-collei.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-collei.webp"
+    },
+    {
+      "id": "preset:expanded-florence-pugh",
+      "name": "Florence Pugh",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-florence-pugh.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-florence-pugh.webp"
+    },
+    {
+      "id": "preset:expanded-zayn-malik",
+      "name": "Zayn Malik",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "音乐人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-zayn-malik.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-zayn-malik.webp"
+    },
+    {
+      "id": "preset:expanded-anya-taylor-joy",
+      "name": "Anya Taylor-Joy",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-anya-taylor-joy.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-anya-taylor-joy.webp"
+    },
+    {
+      "id": "preset:expanded-niall-horan",
+      "name": "Niall Horan",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "音乐人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-niall-horan.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-niall-horan.webp"
+    },
+    {
+      "id": "preset:expanded-saoirse-ronan",
+      "name": "Saoirse Ronan",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-saoirse-ronan.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-saoirse-ronan.webp"
+    },
+    {
+      "id": "preset:expanded-louis-tomlinson",
+      "name": "Louis Tomlinson",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "音乐人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-louis-tomlinson.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-louis-tomlinson.webp"
+    },
+    {
+      "id": "preset:expanded-cyno",
+      "name": "Cyno",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-cyno.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-cyno.webp"
+    },
+    {
+      "id": "preset:expanded-emma-stone",
+      "name": "Emma Stone",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-emma-stone.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-emma-stone.webp"
+    },
+    {
+      "id": "preset:expanded-shawn-mendes",
+      "name": "Shawn Mendes",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "音乐人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-shawn-mendes.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-shawn-mendes.webp"
+    },
+    {
+      "id": "preset:expanded-nilou",
+      "name": "Nilou",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-nilou.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-nilou.webp"
+    },
+    {
+      "id": "preset:expanded-rachel-mcadams",
+      "name": "Rachel McAdams",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-rachel-mcadams.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-rachel-mcadams.webp"
+    },
+    {
+      "id": "preset:expanded-layla",
+      "name": "Layla",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-layla.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-layla.webp"
+    },
+    {
+      "id": "preset:expanded-sandra-bullock",
+      "name": "Sandra Bullock",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-sandra-bullock.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-sandra-bullock.webp"
+    },
+    {
+      "id": "preset:expanded-charlie-puth",
+      "name": "Charlie Puth",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "音乐人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-charlie-puth.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-charlie-puth.webp"
+    },
+    {
+      "id": "preset:expanded-faruzan",
+      "name": "Faruzan",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-faruzan.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-faruzan.webp"
+    },
+    {
+      "id": "preset:expanded-julia-roberts",
+      "name": "Julia Roberts",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-julia-roberts.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-julia-roberts.webp"
+    },
+    {
+      "id": "preset:expanded-troye-sivan",
+      "name": "Troye Sivan",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "音乐人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-troye-sivan.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-troye-sivan.webp"
+    },
+    {
+      "id": "preset:expanded-wanderer-from-genshin-impact",
+      "name": "Wanderer from Genshin Impact",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-wanderer-from-genshin-impact.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-wanderer-from-genshin-impact.webp"
+    },
+    {
+      "id": "preset:expanded-sam-smith",
+      "name": "Sam Smith",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "音乐人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-sam-smith.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-sam-smith.webp"
+    },
+    {
+      "id": "preset:expanded-alhaitham",
+      "name": "Alhaitham",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-alhaitham.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-alhaitham.webp"
+    },
+    {
+      "id": "preset:expanded-nicole-kidman",
+      "name": "Nicole Kidman",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-nicole-kidman.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-nicole-kidman.webp"
+    },
+    {
+      "id": "preset:expanded-lewis-capaldi",
+      "name": "Lewis Capaldi",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "音乐人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-lewis-capaldi.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-lewis-capaldi.webp"
+    },
+    {
+      "id": "preset:expanded-dehya",
+      "name": "Dehya",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-dehya.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-dehya.webp"
+    },
+    {
+      "id": "preset:expanded-reese-witherspoon",
+      "name": "Reese Witherspoon",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-reese-witherspoon.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-reese-witherspoon.webp"
+    },
+    {
+      "id": "preset:expanded-kaveh",
+      "name": "Kaveh",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-kaveh.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-kaveh.webp"
+    },
+    {
+      "id": "preset:expanded-amy-adams",
+      "name": "Amy Adams",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-amy-adams.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-amy-adams.webp"
+    },
+    {
+      "id": "preset:expanded-lyney",
+      "name": "Lyney",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-lyney.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-lyney.webp"
+    },
+    {
+      "id": "preset:expanded-jessica-chastain",
+      "name": "Jessica Chastain",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-jessica-chastain.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-jessica-chastain.webp"
+    },
+    {
+      "id": "preset:expanded-lynette",
+      "name": "Lynette",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-lynette.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-lynette.webp"
+    },
+    {
+      "id": "preset:expanded-viola-davis",
+      "name": "Viola Davis",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-viola-davis.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-viola-davis.webp"
+    },
+    {
+      "id": "preset:expanded-freminet",
+      "name": "Freminet",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-freminet.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-freminet.webp"
+    },
+    {
+      "id": "preset:expanded-lupita-nyongo",
+      "name": "Lupita Nyongo",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-lupita-nyongo.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-lupita-nyongo.webp"
+    },
+    {
+      "id": "preset:expanded-neuvillette",
+      "name": "Neuvillette",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-neuvillette.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-neuvillette.webp"
+    },
+    {
+      "id": "preset:expanded-awkwafina",
+      "name": "Awkwafina",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-awkwafina.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-awkwafina.webp"
+    },
+    {
+      "id": "preset:expanded-wriothesley",
+      "name": "Wriothesley",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-wriothesley.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-wriothesley.webp"
+    },
+    {
+      "id": "preset:expanded-sandra-oh",
+      "name": "Sandra Oh",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-sandra-oh.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-sandra-oh.webp"
+    },
+    {
+      "id": "preset:expanded-charlotte-from-genshin-impact",
+      "name": "Charlotte from Genshin Impact",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-charlotte-from-genshin-impact.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-charlotte-from-genshin-impact.webp"
+    },
+    {
+      "id": "preset:expanded-lucy-liu",
+      "name": "Lucy Liu",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-lucy-liu.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-lucy-liu.webp"
+    },
+    {
+      "id": "preset:expanded-navia",
+      "name": "Navia",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-navia.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-navia.webp"
+    },
+    {
+      "id": "preset:expanded-priyanka-chopra",
+      "name": "Priyanka Chopra",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-priyanka-chopra.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-priyanka-chopra.webp"
+    },
+    {
+      "id": "preset:expanded-chevreuse",
+      "name": "Chevreuse",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-chevreuse.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-chevreuse.webp"
+    },
+    {
+      "id": "preset:expanded-deepika-padukone",
+      "name": "Deepika Padukone",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "影视人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-deepika-padukone.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-deepika-padukone.webp"
+    },
+    {
+      "id": "preset:expanded-chiori",
+      "name": "Chiori",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-chiori.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-chiori.webp"
+    },
+    {
+      "id": "preset:expanded-arlecchino",
+      "name": "Arlecchino",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-arlecchino.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-arlecchino.webp"
+    },
+    {
+      "id": "preset:expanded-clorinde",
+      "name": "Clorinde",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-clorinde.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-clorinde.webp"
+    },
+    {
+      "id": "preset:expanded-sigewinne",
+      "name": "Sigewinne",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-sigewinne.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-sigewinne.webp"
+    },
+    {
+      "id": "preset:expanded-emilie",
+      "name": "Emilie",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-emilie.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-emilie.webp"
+    },
+    {
+      "id": "preset:expanded-mualani",
+      "name": "Mualani",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-mualani.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-mualani.webp"
+    },
+    {
+      "id": "preset:expanded-kinich",
+      "name": "Kinich",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-kinich.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-kinich.webp"
+    },
+    {
+      "id": "preset:expanded-kachina",
+      "name": "Kachina",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-kachina.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-kachina.webp"
+    },
+    {
+      "id": "preset:expanded-xilonen",
+      "name": "Xilonen",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-xilonen.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-xilonen.webp"
+    },
+    {
+      "id": "preset:expanded-chasca",
+      "name": "Chasca",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-chasca.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-chasca.webp"
+    },
+    {
+      "id": "preset:expanded-ororon",
+      "name": "Ororon",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-ororon.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-ororon.webp"
+    },
+    {
+      "id": "preset:expanded-mavuika",
+      "name": "Mavuika",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-mavuika.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-mavuika.webp"
+    },
+    {
+      "id": "preset:expanded-citlali",
+      "name": "Citlali",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-citlali.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-citlali.webp"
+    },
+    {
+      "id": "preset:expanded-iansan",
+      "name": "Iansan",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-iansan.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-iansan.webp"
+    },
+    {
+      "id": "preset:expanded-skirk",
+      "name": "Skirk",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-skirk.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-skirk.webp"
+    },
+    {
+      "id": "preset:expanded-aether",
+      "name": "Aether",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-aether.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-aether.webp"
+    },
+    {
+      "id": "preset:expanded-lumine",
+      "name": "Lumine",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-lumine.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-lumine.webp"
+    },
+    {
+      "id": "preset:expanded-paimon",
+      "name": "Paimon",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-paimon.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-paimon.webp"
+    },
+    {
+      "id": "preset:expanded-dan-heng",
+      "name": "Dan Heng",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-dan-heng.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-dan-heng.webp"
+    },
+    {
+      "id": "preset:expanded-himeko-from-star-rail",
+      "name": "Himeko from Star Rail",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-himeko-from-star-rail.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-himeko-from-star-rail.webp"
+    },
+    {
+      "id": "preset:expanded-welt-yang",
+      "name": "Welt Yang",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-welt-yang.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-welt-yang.webp"
+    },
+    {
+      "id": "preset:expanded-bronya-rand",
+      "name": "Bronya Rand",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-bronya-rand.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-bronya-rand.webp"
+    },
+    {
+      "id": "preset:expanded-seele",
+      "name": "Seele",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-seele.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-seele.webp"
+    },
+    {
+      "id": "preset:expanded-gepard",
+      "name": "Gepard",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-gepard.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-gepard.webp"
+    },
+    {
+      "id": "preset:expanded-serval",
+      "name": "Serval",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-serval.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-serval.webp"
+    },
+    {
+      "id": "preset:expanded-natasha-from-star-rail",
+      "name": "Natasha from Star Rail",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-natasha-from-star-rail.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-natasha-from-star-rail.webp"
+    },
+    {
+      "id": "preset:expanded-pela",
+      "name": "Pela",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-pela.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-pela.webp"
+    },
+    {
+      "id": "preset:expanded-sampo",
+      "name": "Sampo",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-sampo.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-sampo.webp"
+    },
+    {
+      "id": "preset:expanded-hook-from-star-rail",
+      "name": "Hook from Star Rail",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-hook-from-star-rail.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-hook-from-star-rail.webp"
+    },
+    {
+      "id": "preset:expanded-clara-from-star-rail",
+      "name": "Clara from Star Rail",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-clara-from-star-rail.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-clara-from-star-rail.webp"
+    },
+    {
+      "id": "preset:expanded-luka-from-star-rail",
+      "name": "Luka from Star Rail",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-luka-from-star-rail.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-luka-from-star-rail.webp"
+    },
+    {
+      "id": "preset:expanded-lynx-landau",
+      "name": "Lynx Landau",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-lynx-landau.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-lynx-landau.webp"
+    },
+    {
+      "id": "preset:expanded-silver-wolf",
+      "name": "Silver Wolf",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-silver-wolf.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-silver-wolf.webp"
+    },
+    {
+      "id": "preset:expanded-blade-from-star-rail",
+      "name": "Blade from Star Rail",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-blade-from-star-rail.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-blade-from-star-rail.webp"
+    },
+    {
+      "id": "preset:expanded-jing-yuan",
+      "name": "Jing Yuan",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-jing-yuan.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-jing-yuan.webp"
+    },
+    {
+      "id": "preset:expanded-yanqing",
+      "name": "Yanqing",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-yanqing.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-yanqing.webp"
+    },
+    {
+      "id": "preset:expanded-bailu",
+      "name": "Bailu",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-bailu.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-bailu.webp"
+    },
+    {
+      "id": "preset:expanded-tingyun",
+      "name": "Tingyun",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-tingyun.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-tingyun.webp"
+    },
+    {
+      "id": "preset:expanded-yukong",
+      "name": "Yukong",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-yukong.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-yukong.webp"
+    },
+    {
+      "id": "preset:expanded-sushang",
+      "name": "Sushang",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-sushang.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-sushang.webp"
+    },
+    {
+      "id": "preset:expanded-qingque",
+      "name": "Qingque",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-qingque.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-qingque.webp"
+    },
+    {
+      "id": "preset:expanded-fu-xuan",
+      "name": "Fu Xuan",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-fu-xuan.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-fu-xuan.webp"
+    },
+    {
+      "id": "preset:expanded-jingliu",
+      "name": "Jingliu",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-jingliu.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-jingliu.webp"
+    },
+    {
+      "id": "preset:expanded-topaz-from-star-rail",
+      "name": "Topaz from Star Rail",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-topaz-from-star-rail.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-topaz-from-star-rail.webp"
+    },
+    {
+      "id": "preset:expanded-guinaifen",
+      "name": "Guinaifen",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-guinaifen.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-guinaifen.webp"
+    },
+    {
+      "id": "preset:expanded-huohuo",
+      "name": "Huohuo",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-huohuo.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-huohuo.webp"
+    },
+    {
+      "id": "preset:expanded-hanya",
+      "name": "Hanya",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-hanya.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-hanya.webp"
+    },
+    {
+      "id": "preset:expanded-argenti",
+      "name": "Argenti",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-argenti.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-argenti.webp"
+    },
+    {
+      "id": "preset:expanded-ruan-mei",
+      "name": "Ruan Mei",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-ruan-mei.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-ruan-mei.webp"
+    },
+    {
+      "id": "preset:expanded-dr-ratio",
+      "name": "Dr. Ratio",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-dr-ratio.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-dr-ratio.webp"
+    },
+    {
+      "id": "preset:expanded-xueyi",
+      "name": "Xueyi",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-xueyi.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-xueyi.webp"
+    },
+    {
+      "id": "preset:expanded-black-swan-from-star-rail",
+      "name": "Black Swan from Star Rail",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-black-swan-from-star-rail.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-black-swan-from-star-rail.webp"
+    },
+    {
+      "id": "preset:expanded-sparkle-from-star-rail",
+      "name": "Sparkle from Star Rail",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-sparkle-from-star-rail.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-sparkle-from-star-rail.webp"
+    },
+    {
+      "id": "preset:expanded-acheron",
+      "name": "Acheron",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-acheron.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-acheron.webp"
+    },
+    {
+      "id": "preset:expanded-gallagher",
+      "name": "Gallagher",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-gallagher.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-gallagher.webp"
+    },
+    {
+      "id": "preset:expanded-boothill",
+      "name": "Boothill",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-boothill.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-boothill.webp"
+    },
+    {
+      "id": "preset:expanded-jade-from-star-rail",
+      "name": "Jade from Star Rail",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-jade-from-star-rail.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-jade-from-star-rail.webp"
+    },
+    {
+      "id": "preset:expanded-yunli",
+      "name": "Yunli",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-yunli.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-yunli.webp"
+    },
+    {
+      "id": "preset:expanded-jiaoqiu",
+      "name": "Jiaoqiu",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-jiaoqiu.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-jiaoqiu.webp"
+    },
+    {
+      "id": "preset:expanded-feixiao",
+      "name": "Feixiao",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-feixiao.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-feixiao.webp"
+    },
+    {
+      "id": "preset:expanded-moze",
+      "name": "Moze",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-moze.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-moze.webp"
+    },
+    {
+      "id": "preset:expanded-lingsha",
+      "name": "Lingsha",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-lingsha.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-lingsha.webp"
+    },
+    {
+      "id": "preset:expanded-rappa",
+      "name": "Rappa",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-rappa.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-rappa.webp"
+    },
+    {
+      "id": "preset:expanded-sunday-from-star-rail",
+      "name": "Sunday from Star Rail",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-sunday-from-star-rail.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-sunday-from-star-rail.webp"
+    },
+    {
+      "id": "preset:expanded-fugue-from-star-rail",
+      "name": "Fugue from Star Rail",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-fugue-from-star-rail.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-fugue-from-star-rail.webp"
+    },
+    {
+      "id": "preset:expanded-the-herta",
+      "name": "The Herta",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-the-herta.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-the-herta.webp"
+    },
+    {
+      "id": "preset:expanded-tribbie",
+      "name": "Tribbie",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-tribbie.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-tribbie.webp"
+    },
+    {
+      "id": "preset:expanded-mydei",
+      "name": "Mydei",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-mydei.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-mydei.webp"
+    },
+    {
+      "id": "preset:expanded-castorice",
+      "name": "Castorice",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-castorice.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-castorice.webp"
+    },
+    {
+      "id": "preset:expanded-anaxa",
+      "name": "Anaxa",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-anaxa.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-anaxa.webp"
+    },
+    {
+      "id": "preset:expanded-hyacine",
+      "name": "Hyacine",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-hyacine.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-hyacine.webp"
+    },
+    {
+      "id": "preset:expanded-phainon",
+      "name": "Phainon",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-phainon.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-phainon.webp"
+    },
+    {
+      "id": "preset:expanded-cipher",
+      "name": "Cipher",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-cipher.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-cipher.webp"
+    },
+    {
+      "id": "preset:expanded-anby-demara",
+      "name": "Anby Demara",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-anby-demara.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-anby-demara.webp"
+    },
+    {
+      "id": "preset:expanded-billy-kid",
+      "name": "Billy Kid",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-billy-kid.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-billy-kid.webp"
+    },
+    {
+      "id": "preset:expanded-nekomata",
+      "name": "Nekomata",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-nekomata.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-nekomata.webp"
+    },
+    {
+      "id": "preset:expanded-koleda-belobog",
+      "name": "Koleda Belobog",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-koleda-belobog.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-koleda-belobog.webp"
+    },
+    {
+      "id": "preset:expanded-anton-ivanov",
+      "name": "Anton Ivanov",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-anton-ivanov.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-anton-ivanov.webp"
+    },
+    {
+      "id": "preset:expanded-alexandrina-sebastiane",
+      "name": "Alexandrina Sebastiane",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-alexandrina-sebastiane.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-alexandrina-sebastiane.webp"
+    },
+    {
+      "id": "preset:expanded-von-lycaon",
+      "name": "Von Lycaon",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-von-lycaon.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-von-lycaon.webp"
+    },
+    {
+      "id": "preset:expanded-soldier-11",
+      "name": "Soldier 11",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-soldier-11.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-soldier-11.webp"
+    },
+    {
+      "id": "preset:expanded-soukaku",
+      "name": "Soukaku",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-soukaku.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-soukaku.webp"
+    },
+    {
+      "id": "preset:expanded-lucy-from-zenless-zone-zero",
+      "name": "Lucy from Zenless Zone Zero",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-lucy-from-zenless-zone-zero.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-lucy-from-zenless-zone-zero.webp"
+    },
+    {
+      "id": "preset:expanded-zhu-yuan",
+      "name": "Zhu Yuan",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-zhu-yuan.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-zhu-yuan.webp"
+    },
+    {
+      "id": "preset:expanded-qingyi",
+      "name": "Qingyi",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-qingyi.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-qingyi.webp"
+    },
+    {
+      "id": "preset:expanded-jane-doe",
+      "name": "Jane Doe",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-jane-doe.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-jane-doe.webp"
+    },
+    {
+      "id": "preset:expanded-caesar-king",
+      "name": "Caesar King",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-caesar-king.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-caesar-king.webp"
+    },
+    {
+      "id": "preset:expanded-burnice-white",
+      "name": "Burnice White",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-burnice-white.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-burnice-white.webp"
+    },
+    {
+      "id": "preset:expanded-lighter-from-zenless-zone-zero",
+      "name": "Lighter from Zenless Zone Zero",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-lighter-from-zenless-zone-zero.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-lighter-from-zenless-zone-zero.webp"
+    },
+    {
+      "id": "preset:expanded-tsukishiro-yanagi",
+      "name": "Tsukishiro Yanagi",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-tsukishiro-yanagi.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-tsukishiro-yanagi.webp"
+    },
+    {
+      "id": "preset:expanded-asaba-harumasa",
+      "name": "Asaba Harumasa",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-asaba-harumasa.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-asaba-harumasa.webp"
+    },
+    {
+      "id": "preset:expanded-astra-yao",
+      "name": "Astra Yao",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-astra-yao.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-astra-yao.webp"
+    },
+    {
+      "id": "preset:expanded-pulchra",
+      "name": "Pulchra",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-pulchra.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-pulchra.webp"
+    },
+    {
+      "id": "preset:expanded-trigger-from-zenless-zone-zero",
+      "name": "Trigger from Zenless Zone Zero",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-trigger-from-zenless-zone-zero.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-trigger-from-zenless-zone-zero.webp"
+    },
+    {
+      "id": "preset:expanded-wise-from-zenless-zone-zero",
+      "name": "Wise from Zenless Zone Zero",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-wise-from-zenless-zone-zero.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-wise-from-zenless-zone-zero.webp"
+    },
+    {
+      "id": "preset:expanded-jinhsi",
+      "name": "Jinhsi",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-jinhsi.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-jinhsi.webp"
+    },
+    {
+      "id": "preset:expanded-changli",
+      "name": "Changli",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-changli.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-changli.webp"
+    },
+    {
+      "id": "preset:expanded-yinlin",
+      "name": "Yinlin",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-yinlin.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-yinlin.webp"
+    },
+    {
+      "id": "preset:expanded-jiyan",
+      "name": "Jiyan",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-jiyan.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-jiyan.webp"
+    },
+    {
+      "id": "preset:expanded-camellya",
+      "name": "Camellya",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-camellya.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-camellya.webp"
+    },
+    {
+      "id": "preset:expanded-shorekeeper",
+      "name": "Shorekeeper",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-shorekeeper.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-shorekeeper.webp"
+    },
+    {
+      "id": "preset:expanded-carlotta",
+      "name": "Carlotta",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-carlotta.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-carlotta.webp"
+    },
+    {
+      "id": "preset:expanded-zani",
+      "name": "Zani",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-zani.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-zani.webp"
+    },
+    {
+      "id": "preset:expanded-brant",
+      "name": "Brant",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-brant.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-brant.webp"
+    },
+    {
+      "id": "preset:expanded-phoebe-from-wuthering-waves",
+      "name": "Phoebe from Wuthering Waves",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-phoebe-from-wuthering-waves.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-phoebe-from-wuthering-waves.webp"
+    },
+    {
+      "id": "preset:expanded-ciaccona",
+      "name": "Ciaccona",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-ciaccona.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-ciaccona.webp"
+    },
+    {
+      "id": "preset:expanded-rover-from-wuthering-waves",
+      "name": "Rover from Wuthering Waves",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-rover-from-wuthering-waves.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-rover-from-wuthering-waves.webp"
+    },
+    {
+      "id": "preset:expanded-princess-zelda",
+      "name": "Princess Zelda",
+      "category": "Game characters",
+      "visualStyle": "Anime illustration",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-princess-zelda.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-princess-zelda.webp"
+    },
+    {
+      "id": "preset:expanded-tom-nook",
+      "name": "Tom Nook",
+      "category": "Game characters",
+      "visualStyle": "3D cartoon",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-tom-nook.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-tom-nook.webp"
+    },
+    {
+      "id": "preset:expanded-inkling",
+      "name": "Inkling",
+      "category": "Game characters",
+      "visualStyle": "3D cartoon",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-inkling.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-inkling.webp"
+    },
+    {
+      "id": "preset:expanded-sonic-the-hedgehog",
+      "name": "Sonic the Hedgehog",
+      "category": "Game characters",
+      "visualStyle": "3D cartoon",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-sonic-the-hedgehog.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-sonic-the-hedgehog.webp"
+    },
+    {
+      "id": "preset:expanded-miles-tails-prower",
+      "name": "Miles Tails Prower",
+      "category": "Game characters",
+      "visualStyle": "3D cartoon",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-miles-tails-prower.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-miles-tails-prower.webp"
+    },
+    {
+      "id": "preset:expanded-knuckles-the-echidna",
+      "name": "Knuckles the Echidna",
+      "category": "Game characters",
+      "visualStyle": "3D cartoon",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-knuckles-the-echidna.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-knuckles-the-echidna.webp"
+    },
+    {
+      "id": "preset:expanded-amy-rose",
+      "name": "Amy Rose",
+      "category": "Game characters",
+      "visualStyle": "3D cartoon",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-amy-rose.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-amy-rose.webp"
+    },
+    {
+      "id": "preset:expanded-shadow-the-hedgehog",
+      "name": "Shadow the Hedgehog",
+      "category": "Game characters",
+      "visualStyle": "3D cartoon",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-shadow-the-hedgehog.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-shadow-the-hedgehog.webp"
+    },
+    {
+      "id": "preset:expanded-dr-eggman",
+      "name": "Dr. Eggman",
+      "category": "Game characters",
+      "visualStyle": "3D cartoon",
+      "aliases": [
+        "游戏人物"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/expanded-dr-eggman.png",
+      "thumbnailUrl": "./avatars/thumbnails/expanded-dr-eggman.webp"
+    },
+    {
+      "id": "preset:regional-zhang-ziyi",
+      "name": "Zhang Ziyi",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "章子怡"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-zhang-ziyi.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-zhang-ziyi.webp"
+    },
+    {
+      "id": "preset:regional-zhou-xun",
+      "name": "Zhou Xun",
+      "category": "Screen icons",
+      "visualStyle": "Illustrated realism",
+      "aliases": [
+        "周迅"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-zhou-xun.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-zhou-xun.webp"
+    },
+    {
+      "id": "preset:regional-tang-wei",
+      "name": "Tang Wei",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "汤唯"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-tang-wei.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-tang-wei.webp"
+    },
+    {
+      "id": "preset:regional-ni-ni",
+      "name": "Ni Ni",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "倪妮"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-ni-ni.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-ni-ni.webp"
+    },
+    {
+      "id": "preset:regional-liu-yifei",
+      "name": "Liu Yifei",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "刘亦菲"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-liu-yifei.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-liu-yifei.webp"
+    },
+    {
+      "id": "preset:regional-zhao-liying",
+      "name": "Zhao Liying",
+      "category": "Screen icons",
+      "visualStyle": "Illustrated realism",
+      "aliases": [
+        "赵丽颖"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-zhao-liying.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-zhao-liying.webp"
+    },
+    {
+      "id": "preset:regional-yang-zi",
+      "name": "Yang Zi",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "杨紫"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-yang-zi.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-yang-zi.webp"
+    },
+    {
+      "id": "preset:regional-bai-lu",
+      "name": "Bai Lu",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "白鹿"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-bai-lu.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-bai-lu.webp"
+    },
+    {
+      "id": "preset:regional-hu-ge",
+      "name": "Hu Ge",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "胡歌"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-hu-ge.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-hu-ge.webp"
+    },
+    {
+      "id": "preset:regional-zhao-lusi",
+      "name": "Zhao Lusi",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "赵露思"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-zhao-lusi.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-zhao-lusi.webp"
+    },
+    {
+      "id": "preset:regional-zhang-yi",
+      "name": "Zhang Yi",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "张译"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-zhang-yi.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-zhang-yi.webp"
+    },
+    {
+      "id": "preset:regional-shen-teng",
+      "name": "Shen Teng",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "沈腾"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-shen-teng.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-shen-teng.webp"
+    },
+    {
+      "id": "preset:regional-chen-kun",
+      "name": "Chen Kun",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "陈坤"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-chen-kun.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-chen-kun.webp"
+    },
+    {
+      "id": "preset:regional-wu-jing",
+      "name": "Wu Jing",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "吴京"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-wu-jing.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-wu-jing.webp"
+    },
+    {
+      "id": "preset:regional-wang-hedi",
+      "name": "Wang Hedi",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "王鹤棣"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-wang-hedi.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-wang-hedi.webp"
+    },
+    {
+      "id": "preset:regional-bai-jingting",
+      "name": "Bai Jingting",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "白敬亭"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-bai-jingting.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-bai-jingting.webp"
+    },
+    {
+      "id": "preset:regional-yi-yangqianxi",
+      "name": "Yi Yangqianxi",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "易烊千玺"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-yi-yangqianxi.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-yi-yangqianxi.webp"
+    },
+    {
+      "id": "preset:regional-yu-shuxin",
+      "name": "Yu Shuxin",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "虞书欣"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-yu-shuxin.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-yu-shuxin.webp"
+    },
+    {
+      "id": "preset:regional-wang-junkai",
+      "name": "Wang Junkai",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "王俊凯"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-wang-junkai.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-wang-junkai.webp"
+    },
+    {
+      "id": "preset:regional-deng-chao",
+      "name": "Deng Chao",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "邓超"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-deng-chao.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-deng-chao.webp"
+    },
+    {
+      "id": "preset:regional-liu-haoran",
+      "name": "Liu Haoran",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "刘昊然"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-liu-haoran.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-liu-haoran.webp"
+    },
+    {
+      "id": "preset:regional-wang-yuan",
+      "name": "Wang Yuan",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "王源"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-wang-yuan.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-wang-yuan.webp"
+    },
+    {
+      "id": "preset:regional-zhang-ruoyun",
+      "name": "Zhang Ruoyun",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "张若昀"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-zhang-ruoyun.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-zhang-ruoyun.webp"
+    },
+    {
+      "id": "preset:regional-li-yuchun",
+      "name": "Li Yuchun",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "李宇春"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-li-yuchun.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-li-yuchun.webp"
+    },
+    {
+      "id": "preset:regional-huang-bo",
+      "name": "Huang Bo",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "黄渤"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-huang-bo.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-huang-bo.webp"
+    },
+    {
+      "id": "preset:regional-jj-lin",
+      "name": "JJ Lin",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "林俊杰"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-jj-lin.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-jj-lin.webp"
+    },
+    {
+      "id": "preset:regional-zhou-shen",
+      "name": "Zhou Shen",
+      "category": "Music",
+      "visualStyle": "Illustrated realism",
+      "aliases": [
+        "周深"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-zhou-shen.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-zhou-shen.webp"
+    },
+    {
+      "id": "preset:regional-eason-chan",
+      "name": "Eason Chan",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "陈奕迅"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-eason-chan.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-eason-chan.webp"
+    },
+    {
+      "id": "preset:regional-mao-buyi",
+      "name": "Mao Buyi",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "毛不易"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-mao-buyi.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-mao-buyi.webp"
+    },
+    {
+      "id": "preset:regional-hua-chenyu",
+      "name": "Hua Chenyu",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "华晨宇"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-hua-chenyu.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-hua-chenyu.webp"
+    },
+    {
+      "id": "preset:regional-peng-yuyan",
+      "name": "Peng Yuyan",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "彭于晏"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-peng-yuyan.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-peng-yuyan.webp"
+    },
+    {
+      "id": "preset:regional-ge-you",
+      "name": "Ge You",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "葛优"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-ge-you.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-ge-you.webp"
+    },
+    {
+      "id": "preset:regional-wang-leehom",
+      "name": "Wang Leehom",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "王力宏"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-wang-leehom.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-wang-leehom.webp"
+    },
+    {
+      "id": "preset:regional-david-tao",
+      "name": "David Tao",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "陶喆"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-david-tao.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-david-tao.webp"
+    },
+    {
+      "id": "preset:regional-a-lin",
+      "name": "A-Lin",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "黄丽玲"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-a-lin.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-a-lin.webp"
+    },
+    {
+      "id": "preset:regional-liu-shishi",
+      "name": "Liu Shishi",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "刘诗诗"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-liu-shishi.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-liu-shishi.webp"
+    },
+    {
+      "id": "preset:regional-stefanie-sun",
+      "name": "Stefanie Sun",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "孙燕姿"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-stefanie-sun.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-stefanie-sun.webp"
+    },
+    {
+      "id": "preset:regional-karen-mok",
+      "name": "Karen Mok",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "莫文蔚"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-karen-mok.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-karen-mok.webp"
+    },
+    {
+      "id": "preset:regional-sandy-lam",
+      "name": "Sandy Lam",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "林忆莲"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-sandy-lam.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-sandy-lam.webp"
+    },
+    {
+      "id": "preset:regional-rainie-yang",
+      "name": "Rainie Yang",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "杨丞琳"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-rainie-yang.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-rainie-yang.webp"
+    },
+    {
+      "id": "preset:regional-jolin-tsai",
+      "name": "Jolin Tsai",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "蔡依林"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-jolin-tsai.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-jolin-tsai.webp"
+    },
+    {
+      "id": "preset:regional-wu-bai",
+      "name": "Wu Bai",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "伍佰"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-wu-bai.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-wu-bai.webp"
+    },
+    {
+      "id": "preset:regional-tang-yan",
+      "name": "Tang Yan",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "唐嫣"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-tang-yan.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-tang-yan.webp"
+    },
+    {
+      "id": "preset:regional-angela-chang",
+      "name": "Angela Chang",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "张韶涵"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-angela-chang.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-angela-chang.webp"
+    },
+    {
+      "id": "preset:regional-nicholas-tse",
+      "name": "Nicholas Tse",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "谢霆锋"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-nicholas-tse.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-nicholas-tse.webp"
+    },
+    {
+      "id": "preset:regional-gong-yoo",
+      "name": "Gong Yoo",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "孔刘"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-gong-yoo.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-gong-yoo.webp"
+    },
+    {
+      "id": "preset:regional-na-ying",
+      "name": "Na Ying",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "那英"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-na-ying.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-na-ying.webp"
+    },
+    {
+      "id": "preset:regional-han-hong",
+      "name": "Han Hong",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "韩红"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-han-hong.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-han-hong.webp"
+    },
+    {
+      "id": "preset:regional-lee-min-ho",
+      "name": "Lee Min-ho",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "李敏镐"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-lee-min-ho.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-lee-min-ho.webp"
+    },
+    {
+      "id": "preset:regional-li-ronghao",
+      "name": "Li Ronghao",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "李荣浩"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-li-ronghao.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-li-ronghao.webp"
+    },
+    {
+      "id": "preset:regional-song-kang-ho",
+      "name": "Song Kang-ho",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "宋康昊"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-song-kang-ho.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-song-kang-ho.webp"
+    },
+    {
+      "id": "preset:regional-lee-jung-jae",
+      "name": "Lee Jung-jae",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "李政宰"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-lee-jung-jae.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-lee-jung-jae.webp"
+    },
+    {
+      "id": "preset:regional-hyun-bin",
+      "name": "Hyun Bin",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "玄彬"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-hyun-bin.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-hyun-bin.webp"
+    },
+    {
+      "id": "preset:regional-park-seo-joon",
+      "name": "Park Seo-joon",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "朴叙俊"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-park-seo-joon.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-park-seo-joon.webp"
+    },
+    {
+      "id": "preset:regional-son-ye-jin",
+      "name": "Son Ye-jin",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "孙艺珍"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-son-ye-jin.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-son-ye-jin.webp"
+    },
+    {
+      "id": "preset:regional-takuya-kimura",
+      "name": "Takuya Kimura",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "木村拓哉"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-takuya-kimura.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-takuya-kimura.webp"
+    },
+    {
+      "id": "preset:regional-tomohisa-yamashita",
+      "name": "Tomohisa Yamashita",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "山下智久"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-tomohisa-yamashita.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-tomohisa-yamashita.webp"
+    },
+    {
+      "id": "preset:regional-takeru-satoh",
+      "name": "Takeru Satoh",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "佐藤健"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-takeru-satoh.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-takeru-satoh.webp"
+    },
+    {
+      "id": "preset:regional-kento-yamazaki",
+      "name": "Kento Yamazaki",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "山崎贤人"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-kento-yamazaki.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-kento-yamazaki.webp"
+    },
+    {
+      "id": "preset:regional-masaki-suda",
+      "name": "Masaki Suda",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "菅田将晖"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-masaki-suda.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-masaki-suda.webp"
+    },
+    {
+      "id": "preset:regional-song-hye-kyo",
+      "name": "Song Hye-kyo",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "宋慧乔"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-song-hye-kyo.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-song-hye-kyo.webp"
+    },
+    {
+      "id": "preset:regional-haruka-ayase",
+      "name": "Haruka Ayase",
+      "category": "Screen icons",
+      "visualStyle": "Illustrated realism",
+      "aliases": [
+        "绫濑遥"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-haruka-ayase.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-haruka-ayase.webp"
+    },
+    {
+      "id": "preset:regional-kim-tae-ri",
+      "name": "Kim Tae-ri",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "金泰梨"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-kim-tae-ri.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-kim-tae-ri.webp"
+    },
+    {
+      "id": "preset:regional-hikaru-utada",
+      "name": "Hikaru Utada",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "宇多田光"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-hikaru-utada.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-hikaru-utada.webp"
+    },
+    {
+      "id": "preset:regional-kenshi-yonezu",
+      "name": "Kenshi Yonezu",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "米津玄师"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-kenshi-yonezu.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-kenshi-yonezu.webp"
+    },
+    {
+      "id": "preset:regional-gen-hoshino",
+      "name": "Gen Hoshino",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "星野源"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-gen-hoshino.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-gen-hoshino.webp"
+    },
+    {
+      "id": "preset:regional-bae-suzy",
+      "name": "Bae Suzy",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "裴秀智"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-bae-suzy.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-bae-suzy.webp"
+    },
+    {
+      "id": "preset:regional-masami-nagasawa",
+      "name": "Masami Nagasawa",
+      "category": "Screen icons",
+      "visualStyle": "Illustrated realism",
+      "aliases": [
+        "长泽雅美"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-masami-nagasawa.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-masami-nagasawa.webp"
+    },
+    {
+      "id": "preset:regional-yoshiki",
+      "name": "Yoshiki",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "林佳树"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-yoshiki.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-yoshiki.webp"
+    },
+    {
+      "id": "preset:regional-quan-hongchan",
+      "name": "Quan Hongchan",
+      "category": "Sports",
+      "visualStyle": "Illustrated realism",
+      "aliases": [
+        "全红婵"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-quan-hongchan.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-quan-hongchan.webp"
+    },
+    {
+      "id": "preset:regional-hiroyuki-sanada",
+      "name": "Hiroyuki Sanada",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "真田广之"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-hiroyuki-sanada.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-hiroyuki-sanada.webp"
+    },
+    {
+      "id": "preset:regional-chen-yuxi",
+      "name": "Chen Yuxi",
+      "category": "Sports",
+      "visualStyle": "Illustrated realism",
+      "aliases": [
+        "陈芋汐"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-chen-yuxi.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-chen-yuxi.webp"
+    },
+    {
+      "id": "preset:regional-pan-zhanle",
+      "name": "Pan Zhanle",
+      "category": "Sports",
+      "visualStyle": "Illustrated realism",
+      "aliases": [
+        "潘展乐"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-pan-zhanle.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-pan-zhanle.webp"
+    },
+    {
+      "id": "preset:regional-fan-zhendong",
+      "name": "Fan Zhendong",
+      "category": "Sports",
+      "visualStyle": "Illustrated realism",
+      "aliases": [
+        "樊振东"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-fan-zhendong.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-fan-zhendong.webp"
+    },
+    {
+      "id": "preset:regional-chen-meng",
+      "name": "Chen Meng",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "陈梦"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-chen-meng.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-chen-meng.webp"
+    },
+    {
+      "id": "preset:regional-ma-long",
+      "name": "Ma Long",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "马龙"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-ma-long.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-ma-long.webp"
+    },
+    {
+      "id": "preset:regional-wang-chuqin",
+      "name": "Wang Chuqin",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "王楚钦"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-wang-chuqin.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-wang-chuqin.webp"
+    },
+    {
+      "id": "preset:regional-zhang-yufei",
+      "name": "Zhang Yufei",
+      "category": "Sports",
+      "visualStyle": "Illustrated realism",
+      "aliases": [
+        "张雨霏"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-zhang-yufei.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-zhang-yufei.webp"
+    },
+    {
+      "id": "preset:regional-sun-yingsha",
+      "name": "Sun Yingsha",
+      "category": "Sports",
+      "visualStyle": "Illustrated realism",
+      "aliases": [
+        "孙颖莎"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-sun-yingsha.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-sun-yingsha.webp"
+    },
+    {
+      "id": "preset:regional-yui-aragaki",
+      "name": "Yui Aragaki",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "新垣结衣"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-yui-aragaki.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-yui-aragaki.webp"
+    },
+    {
+      "id": "preset:regional-lin-dan",
+      "name": "Lin Dan",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "林丹"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-lin-dan.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-lin-dan.webp"
+    },
+    {
+      "id": "preset:regional-ding-junhui",
+      "name": "Ding Junhui",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "丁俊晖"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-ding-junhui.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-ding-junhui.webp"
+    },
+    {
+      "id": "preset:regional-ichiro-suzuki",
+      "name": "Ichiro Suzuki",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "铃木一朗"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-ichiro-suzuki.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-ichiro-suzuki.webp"
+    },
+    {
+      "id": "preset:regional-rajinikanth",
+      "name": "Rajinikanth",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "拉吉尼坎特"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-rajinikanth.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-rajinikanth.webp"
+    },
+    {
+      "id": "preset:regional-alia-bhatt",
+      "name": "Alia Bhatt",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "阿莉雅巴特"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-alia-bhatt.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-alia-bhatt.webp"
+    },
+    {
+      "id": "preset:regional-hanyu-yuzuru",
+      "name": "Hanyu Yuzuru",
+      "category": "Sports",
+      "visualStyle": "Illustrated realism",
+      "aliases": [
+        "羽生结弦"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-hanyu-yuzuru.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-hanyu-yuzuru.webp"
+    },
+    {
+      "id": "preset:regional-lee-chong-wei",
+      "name": "Lee Chong Wei",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "李宗伟"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-lee-chong-wei.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-lee-chong-wei.webp"
+    },
+    {
+      "id": "preset:regional-burna-boy",
+      "name": "Burna Boy",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "伯纳男孩"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-burna-boy.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-burna-boy.webp"
+    },
+    {
+      "id": "preset:regional-an-se-young",
+      "name": "An Se-young",
+      "category": "Sports",
+      "visualStyle": "Illustrated realism",
+      "aliases": [
+        "安洗莹"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-an-se-young.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-an-se-young.webp"
+    },
+    {
+      "id": "preset:regional-tyla",
+      "name": "Tyla",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "泰拉"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-tyla.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-tyla.webp"
+    },
+    {
+      "id": "preset:regional-angelique-kidjo",
+      "name": "Angelique Kidjo",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "安杰莉克基乔"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-angelique-kidjo.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-angelique-kidjo.webp"
+    },
+    {
+      "id": "preset:regional-wizkid",
+      "name": "Wizkid",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "维兹基德"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-wizkid.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-wizkid.webp"
+    },
+    {
+      "id": "preset:regional-aamir-khan",
+      "name": "Aamir Khan",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "阿米尔汗"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-aamir-khan.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-aamir-khan.webp"
+    },
+    {
+      "id": "preset:regional-youssou-n-dour",
+      "name": "Youssou N'Dour",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "尤苏恩多尔"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-youssou-n-dour.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-youssou-n-dour.webp"
+    },
+    {
+      "id": "preset:regional-anitta",
+      "name": "Anitta",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "安妮塔"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-anitta.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-anitta.webp"
+    },
+    {
+      "id": "preset:regional-tems",
+      "name": "Tems",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "特姆斯"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-tems.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-tems.webp"
+    },
+    {
+      "id": "preset:regional-salman-khan",
+      "name": "Salman Khan",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "萨尔曼汗"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-salman-khan.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-salman-khan.webp"
+    },
+    {
+      "id": "preset:regional-karol-g",
+      "name": "Karol G",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "卡罗尔G"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-karol-g.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-karol-g.webp"
+    },
+    {
+      "id": "preset:regional-j-balvin",
+      "name": "J Balvin",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "杰巴尔文"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-j-balvin.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-j-balvin.webp"
+    },
+    {
+      "id": "preset:regional-hrithik-roshan",
+      "name": "Hrithik Roshan",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "赫里尼克罗斯汉"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-hrithik-roshan.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-hrithik-roshan.webp"
+    },
+    {
+      "id": "preset:regional-karim-benzema",
+      "name": "Karim Benzema",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "卡里姆本泽马"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-karim-benzema.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-karim-benzema.webp"
+    },
+    {
+      "id": "preset:regional-rosalia",
+      "name": "Rosalia",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "罗莎莉亚"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-rosalia.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-rosalia.webp"
+    },
+    {
+      "id": "preset:regional-achraf-hakimi",
+      "name": "Achraf Hakimi",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "阿什拉夫哈基米"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-achraf-hakimi.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-achraf-hakimi.webp"
+    },
+    {
+      "id": "preset:regional-luis-fonsi",
+      "name": "Luis Fonsi",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "路易斯丰西"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-luis-fonsi.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-luis-fonsi.webp"
+    },
+    {
+      "id": "preset:regional-sadio-mane",
+      "name": "Sadio Mane",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "萨迪奥马内"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-sadio-mane.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-sadio-mane.webp"
+    },
+    {
+      "id": "preset:regional-sachin-tendulkar",
+      "name": "Sachin Tendulkar",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "萨钦滕杜尔卡"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-sachin-tendulkar.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-sachin-tendulkar.webp"
+    },
+    {
+      "id": "preset:regional-daddy-yankee",
+      "name": "Daddy Yankee",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "扬基老爹"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-daddy-yankee.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-daddy-yankee.webp"
+    },
+    {
+      "id": "preset:regional-didier-drogba",
+      "name": "Didier Drogba",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "迪迪埃德罗巴"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-didier-drogba.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-didier-drogba.webp"
+    },
+    {
+      "id": "preset:regional-ms-dhoni",
+      "name": "MS Dhoni",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "马亨德拉辛格多尼"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-ms-dhoni.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-ms-dhoni.webp"
+    },
+    {
+      "id": "preset:regional-samuel-eto-o",
+      "name": "Samuel Eto'o",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "萨穆埃尔埃托奥"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-samuel-eto-o.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-samuel-eto-o.webp"
+    },
+    {
+      "id": "preset:regional-virat-kohli",
+      "name": "Virat Kohli",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "维拉特科利"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/regional-virat-kohli.png",
+      "thumbnailUrl": "./avatars/thumbnails/regional-virat-kohli.webp"
     }
   ]
 }
