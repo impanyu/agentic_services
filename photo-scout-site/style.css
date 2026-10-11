@@ -239,7 +239,7 @@ html:has(body.photo-app),body.photo-app{height:100%;overflow:hidden}.photo-app m
 /* Keep place previews above overlays and scroll long content within the map. */
 .leaflet-popup-pane{z-index:850}
 .leaflet-popup-scrolled{overscroll-behavior:contain;scrollbar-width:thin}
-@media(max-width:760px){.map-stage:has(.leaflet-popup) #results{visibility:hidden;pointer-events:none}}
+@media(max-width:760px){.map-stage:has(.leaflet-popup:not([style*="opacity: 0"])) #results{visibility:hidden;pointer-events:none}}
 
 /* Route controls share the compact map-overlay search dock. */
 .search-mode-picker label,.route-settings label{display:flex;flex-direction:column;gap:.35rem;font-size:.85rem;font-weight:600}

@@ -33,6 +33,7 @@ def provider(tmp_path, monkeypatch, request):
     monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_API_KEY', 'secret-fixture')
     monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_ENABLED', '1')
     monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_IMAGE_MODE', 'tiles-low')
+    monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_TILE_ZOOM', '0')
     monkeypatch.setenv('WEB_EVIDENCE_DB', str(tmp_path/'db'))
     monkeypatch.delenv('PHOTO_SCOUT_GOOGLE_TILES_API_KEY', raising=False)
     monkeypatch.delenv('PHOTO_SCOUT_GOOGLE_DAILY_IMAGE_LIMIT', raising=False)
@@ -46,10 +47,15 @@ def provider(tmp_path, monkeypatch, request):
             return httpx.Response(200, json={'session':'test-session','expiry':9999999999,'tileWidth':512,'tileHeight':512})
         if request.url.path.endswith('/metadata'):
             return httpx.Response(200, json={'imageWidth':width*32,'imageHeight':height*32,'tileWidth':512,'tileHeight':512,'heading':90,'tilt':90,'roll':0,'copyright':'Fixture provider'})
-        assert request.url.path.endswith('/tiles/0/0/0')
+        z,x,y = map(int, request.url.path.rsplit('/',3)[1:])
         native_zoom=math.ceil(math.log2(width*32/512))
-        return httpx.Response(200, headers={'Cache-Control':'private, max-age=3600, must-revalidate, no-transform'},
-            content=fixture_tile(math.ceil(width*32/2**native_zoom),math.ceil(height*32/2**native_zoom)))
+        w,h = math.ceil(width*32/2**(native_zoom-z)), math.ceil(height*32/2**(native_zoom-z))
+        pano=Image.new('RGB',(w,h))
+        colors=[(220,30,30),(220,140,30),(220,220,30),(30,220,30),(30,220,220),(30,30,220),(140,30,220),(220,30,140)]
+        for i,color in enumerate(colors):pano.paste(color,(round(i*w/8),0,round((i+1)*w/8),h))
+        tile=Image.new('RGB',(512,512),(255,0,255));tile.paste(pano,(-x*512,-y*512))
+        out=io.BytesIO();tile.save(out,'PNG')
+        return httpx.Response(200, headers={'Cache-Control':'private, max-age=3600, must-revalidate, no-transform'},content=out.getvalue())
     real = httpx.AsyncClient
     monkeypatch.setattr(tiles.httpx, 'AsyncClient', lambda **kw: real(transport=httpx.MockTransport(handler)))
     return calls, tmp_path/'db'
@@ -70,13 +76,13 @@ def test_eight_headings_and_later_framing_fetch_one_tile(provider):
         return images
     images = asyncio.run(run())
     assert len(calls) == 3  # one free session + free metadata + one paid tile
-    assert all(decode(image).size == (256,256) for image in images)
+    assert all(decode(image).size == (512,512) for image in images)
     assert len(set(images)) == 8
     # Correct heading calibration: requested east equals the panorama center.
-    pixel = decode(images[2]).getpixel((135,128))
+    pixel = decode(images[2]).getpixel((270,256))
     assert pixel[1] > 170 and pixel[2] > 170 and pixel[0] < 80
     # The magenta padding below the sphere never enters rendered scene pixels.
-    array = np.asarray(decode(images[2]))[:240]
+    array = np.asarray(decode(images[2]))[:490]
     assert not ((array[:,:,0]>230)&(array[:,:,1]<20)&(array[:,:,2]>230)).any()
     with sqlite3.connect(db) as connection:
         assert connection.execute('SELECT requests FROM photo_scout_google_budget').fetchone()[0] == 1
@@ -160,3 +166,43 @@ def test_invalid_reference_makes_no_provider_requests(provider):
     with pytest.raises(ValueError):
         asyncio.run(sources.google_image_data('google-streetview://fixture/360/0/120'))
     assert not calls
+
+
+@pytest.mark.parametrize('provider',[(512,256),(416,208),(168,84)],indirect=True)
+def test_higher_tier_stitches_two_original_tiles_and_reuses_after_restart(provider, monkeypatch):
+    calls, db = provider
+    monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_TILE_ZOOM','1')
+    async def run():
+        return await asyncio.gather(*(sources.google_image_data(f'google-streetview://fixture/{h}/0/120') for h in range(0,360,45)))
+    images=asyncio.run(run())
+    paid=[r for r in calls if '/tiles/' in r.url.path]
+    assert {r.url.path for r in paid} == {'/v1/streetview/tiles/1/0/0','/v1/streetview/tiles/1/1/0'}
+    assert len(calls)==4
+    assert len(set(images))==8
+    for image in images:
+        arr=np.asarray(decode(image))[:490]
+        assert not ((arr[:,:,0]>230)&(arr[:,:,1]<20)&(arr[:,:,2]>230)).any()
+    assert decode(images[2]).getpixel((270,256))[1]>170
+    tiles._panoramas.clear();tiles._sessions.clear()
+    asyncio.run(sources.google_image_data('google-streetview://fixture/180/15/45'))
+    assert len(calls)==4
+    with sqlite3.connect(db) as connection:
+        assert connection.execute('SELECT kind,requests FROM photo_scout_google_image_usage').fetchone()==('streetview-tile-z1',2)
+        assert connection.execute('SELECT count(*) FROM photo_scout_panorama_responses').fetchone()[0]==2
+
+
+def test_tier_change_never_reuses_lower_resolution_sphere(provider, monkeypatch):
+    calls,_=provider
+    asyncio.run(sources.google_image_data('google-streetview://fixture/90'))
+    low_profile=tiles.profile()
+    monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_TILE_ZOOM','1')
+    asyncio.run(sources.google_image_data('google-streetview://fixture/90'))
+    assert tiles.profile()!=low_profile
+    assert len([r for r in calls if '/tiles/' in r.url.path])==3
+
+@pytest.mark.parametrize('provider',[(16,8)],indirect=True)
+def test_small_native_sphere_does_not_request_nonexistent_higher_level(provider, monkeypatch):
+    calls,_=provider
+    monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_TILE_ZOOM','1')
+    asyncio.run(sources.google_image_data('google-streetview://fixture/90'))
+    assert [r.url.path for r in calls if '/tiles/' in r.url.path]==['/v1/streetview/tiles/0/0/0']

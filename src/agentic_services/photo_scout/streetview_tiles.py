@@ -1,6 +1,6 @@
-"""Lowest-resolution Google panorama, projected locally into any requested view.
+"""Budget-resolution Google panorama, projected locally into any requested view.
 
-One zoom-0 tile covers the full sphere. Retain original responses through their
+Fetch a complete sphere at the configured tier once. Retain original tiles through their
 provider freshness deadline, including across application restarts.
 No static-image fallback: a provider failure must not silently increase spend.
 """
@@ -86,8 +86,16 @@ def enabled():
     return mode == 'tiles-low'
 
 
+def tile_zoom():
+    zoom = int(os.getenv('PHOTO_SCOUT_GOOGLE_TILE_ZOOM', '1'))
+    if zoom not in (0, 1):
+        raise ValueError('Google panorama tier must be 0 or 1')
+    return zoom
+
+
 def profile():
-    return 'google-tiles-z0-v1' if enabled() else 'google-static-640-v1'
+    return f'google-tiles-z{tile_zoom()}-v2' if enabled() else 'google-static-640-v1'
+
 
 
 async def _json(client, method, path, *, params, body=None):
@@ -124,60 +132,79 @@ async def _session(key, identity):
             _session_tasks.pop(identity, None)
 
 
-async def _load_panorama(pano, key, identity):
-    saved = await asyncio.to_thread(_tile_store, identity, pano)
-    if saved:
-        blob, meta = saved
-        return _decode_panorama(blob, meta), meta
-    session = await _session(key, identity)
-    params = {'key': key, 'session': session['session'], 'panoId': pano}
-    async with httpx.AsyncClient(timeout=25, follow_redirects=False) as client:
-        meta = await _json(client, 'GET', '/streetview/metadata', params=params)
-        width, height = int(meta['imageWidth']), int(meta['imageHeight'])
-        if width <= 0 or height <= 0 or width < height:
-            raise ValueError('Invalid Street View panorama dimensions')
-        # Metadata and sessions are free. Count the actual attempted paid tile.
-        from .sources import record_google_image_request
-        record_google_image_request('streetview-tile-z0')
-        async with client.stream('GET', BASE + '/streetview/tiles/0/0/0', params=params) as response:
-            if response.status_code != 200:
-                raise ValueError(f'Street View tile unavailable ({response.status_code})')
-            meta['_tileExpiresAt'] = _fresh_until(response.headers)
-            blob = bytearray()
-            async for chunk in response.aiter_bytes():
-                blob.extend(chunk)
-                if len(blob) > 1_000_000:
-                    raise ValueError('Street View tile exceeds limit')
-    panorama = _decode_panorama(blob, meta)
-    await asyncio.to_thread(_tile_store, identity, pano, (bytes(blob), meta))
-    return panorama, meta
-
-
-def _decode_panorama(blob, meta):
+def _dimensions(meta):
     width, height = int(meta['imageWidth']), int(meta['imageHeight'])
+    tw, th = int(meta.get('tileWidth', 512)), int(meta.get('tileHeight', 512))
+    if width <= 0 or height <= 0 or width < height or not 1 <= tw <= 1024 or not 1 <= th <= 1024:
+        raise ValueError('Invalid Street View panorama dimensions')
+    native = max(0, math.ceil(math.log2(width/tw)))
+    if native > 5:
+        raise ValueError('Unsupported Street View panorama pyramid')
+    zoom = min(tile_zoom(), native)
+    scale = 2**(native-zoom)
+    return zoom, math.ceil(width/scale), math.ceil(height/scale), tw, th
+
+
+async def _load_panorama(pano, key, identity):
+    # Namespace by requested tier; old z0 bytes must never stand in for z1.
+    namespace = f'{pano}:z{tile_zoom()}'
+    first = await asyncio.to_thread(_tile_store, identity, namespace+':0:0')
+    session = None
+    async with httpx.AsyncClient(timeout=25, follow_redirects=False) as client:
+        if first:
+            meta = first[1].copy()
+        else:
+            session = await _session(key, identity)
+            meta = await _json(client, 'GET', '/streetview/metadata',
+                params={'key': key, 'session': session['session'], 'panoId': pano})
+        zoom, width, height, tw, th = _dimensions(meta)
+        positions = [(x,y) for y in range(math.ceil(height/th)) for x in range(math.ceil(width/tw))]
+        saved = {}
+        for x,y in positions:
+            value = first if (x,y)==(0,0) else await asyncio.to_thread(_tile_store, identity, f'{namespace}:{x}:{y}')
+            if value:
+                saved[x,y] = value
+        if len(saved) < len(positions):
+            session = session or await _session(key, identity)
+        async def fetch_tile(x, y):
+            if (x,y) in saved:
+                return x, y, *saved[x,y]
+            from .sources import record_google_image_request
+            record_google_image_request(f'streetview-tile-z{zoom}')
+            params = {'key': key, 'session': session['session'], 'panoId': pano}
+            async with client.stream('GET', BASE+f'/streetview/tiles/{zoom}/{x}/{y}', params=params) as response:
+                if response.status_code != 200:
+                    raise ValueError(f'Street View tile unavailable ({response.status_code})')
+                tile_meta = {**meta, '_tileExpiresAt': _fresh_until(response.headers)}
+                blob = bytearray()
+                async for chunk in response.aiter_bytes():
+                    blob.extend(chunk)
+                    if len(blob) > 1_000_000:
+                        raise ValueError('Street View tile exceeds limit')
+            # Validate before persisting; retain each original provider response.
+            _decode_tile(blob, tw, th)
+            await asyncio.to_thread(_tile_store, identity, f'{namespace}:{x}:{y}', (bytes(blob), tile_meta))
+            return x, y, bytes(blob), tile_meta
+        parts = await asyncio.gather(*(fetch_tile(x,y) for x,y in positions))
+    image = Image.new('RGB', (width,height))
+    for x,y,blob,tile_meta in parts:
+        image.paste(_decode_tile(blob, tw, th), (x*tw,y*th))
+    meta['_tileExpiresAt'] = min(part[3]['_tileExpiresAt'] for part in parts)
+    return image, meta
+
+
+def _decode_tile(blob, width, height):
     with Image.open(io.BytesIO(blob)) as tile:
+        if tile.size != (width,height):
+            raise ValueError('Unexpected Street View tile dimensions')
         tile.load()
-        if tile.width > 1024 or tile.height > 1024:
-            raise ValueError('Unexpected zoom-zero tile dimensions')
-        # The metadata dimensions describe the highest native level, which is
-        # lower than z5 for some contributor panoramas. Halve that pyramid
-        # down to z0 instead of assuming every source has five levels.
-        # UGC imagery can repeat horizontally outside that rectangle, while
-        # vertical padding is black; neither belongs to the sphere.
-        native_zoom = max(0, math.ceil(math.log2(width/int(meta.get('tileWidth', tile.width)))))
-        if native_zoom > 5:
-            raise ValueError('Unsupported Street View panorama pyramid')
-        content_width, content_height = math.ceil(width/2**native_zoom), math.ceil(height/2**native_zoom)
-        if not 1 <= content_width <= tile.width or not 1 <= content_height <= tile.height:
-            raise ValueError('Unsupported lowest-resolution panorama dimensions')
-        panorama = tile.convert('RGB').crop((0, 0, content_width, content_height))
-    return panorama
+        return tile.convert('RGB')
 
 
 async def panorama(pano):
     key = os.getenv('PHOTO_SCOUT_GOOGLE_TILES_API_KEY') or os.environ['PHOTO_SCOUT_GOOGLE_API_KEY']
     identity = hashlib.sha256(key.encode()).hexdigest()
-    cache_key = (identity, pano)
+    cache_key = (identity, pano, tile_zoom())
     now = time.time()
     for expired in [k for k, (expiry, _) in _panoramas.items() if expiry <= now]:
         _panoramas.pop(expired, None)
@@ -211,7 +238,7 @@ def _basis(heading, pitch, roll=0):
 
 def project(panorama, meta, heading, pitch, fov):
     """Perspective projection, preserving compass orientation and panorama seam."""
-    size = 256
+    size = 512
     axis = ((np.arange(size) + .5) / size * 2 - 1) * math.tan(math.radians(fov)/2)
     x, y = np.meshgrid(axis, -axis)
     forward, right, up = _basis(heading, pitch)
@@ -234,10 +261,10 @@ def project(panorama, meta, heading, pitch, fov):
     # Locally rendered previews still retain source attribution.
     draw = ImageDraw.Draw(image)
     label = 'Google · ' + str(meta.get('copyright', 'Google'))
-    draw.rectangle((0, size-14, size, size), fill=(30, 30, 30))
-    draw.text((3, size-13), label[:75], fill='white', font_size=10)
+    draw.rectangle((0, size-20, size, size), fill=(30, 30, 30))
+    draw.text((3, size-18), label[:75], fill='white', font_size=13)
     out = io.BytesIO()
-    image.save(out, format='JPEG', quality=65, optimize=True)
+    image.save(out, format='JPEG', quality=80, optimize=True)
     return 'data:image/jpeg;base64,' + base64.b64encode(out.getvalue()).decode()
 
 

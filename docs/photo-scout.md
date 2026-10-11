@@ -522,13 +522,13 @@ Selfie composition supports `composition`: `auto` (default), `full_body`, `half_
 ## Cost-first Street View delivery (October 10)
 
 `PHOTO_SCOUT_GOOGLE_IMAGE_MODE=tiles-low` is the default. Discover panorama IDs
-with the existing free Static metadata endpoint. Fetch one full-sphere zoom-zero
-Map Tiles image per panorama, then render every requested compass heading, tilt,
-and FOV locally as a 256x256 JPEG. The metadata gives native panorama dimensions; infer its native pyramid level
-from the tile width and halve down to z0. Contributor panoramas can have fewer
-levels than Google car panoramas. The sphere can be smaller than the 512x512 tile. Discard horizontal
-repetition and black padding outside that rectangle. The 256x256 output size
-does not imply additional detail.
+with the existing free Static metadata endpoint. `PHOTO_SCOUT_GOOGLE_TILE_ZOOM=1`
+raises the original z0 source by one tier. Fetch all tiles covering the full sphere
+(usually two at z1), then render every requested compass heading, tilt,
+and FOV locally as a 512x512 JPEG at quality 80. Set the tier to 0 to restore the smallest source. The metadata gives native panorama dimensions; infer its native pyramid level
+from the tile width and halve down to the configured tier (bounded by the native level). Contributor panoramas can have fewer
+levels than Google car panoramas. Stitch original tiles and crop repetition and black padding outside the actual sphere.
+A larger output alone does not add detail; this change also doubles source dimensions.
 All eight search directions remain available. Previews and selfie framing use the
 same low-resolution source; neither automatically requests a higher zoom level.
 The image generator and its output quality are unchanged.
@@ -551,8 +551,8 @@ removed on access and re-fetched once for concurrent views. Original response
 bytes are bounded to 64 MiB, with 512 decoded spheres in memory; capacity eviction
 can require another request. These bytes are separate from persistent assessments
 and are never exposed through public/CDN HTTP caching. Google assessment cache entries distinguish
-image delivery profiles so old high-resolution scores cannot hide low-resolution
-quality. Other providers' score cache keys remain unchanged. Outgoing image attempts
+image delivery profiles, including the source tier and projection version, so an older
+quality level cannot supply assessments for the new level. Other providers' score cache keys remain unchanged. Outgoing image attempts
 are counted by SKU in `photo_scout_google_image_usage`; local view renders do not
 consume the daily paid-image request budget. Provider failures never silently
 fall back to the more expensive static image path. An operator can explicitly
@@ -620,3 +620,12 @@ The whole job, including every route anchor, shares a separate Places photo cap
 of eight Details Pro and sixteen photo media requests (potential $0.248 before
 allowances). Reaching it can reduce contributor-photo coverage and sets
 `placesPhotoBudgetReached`; Street View and open-image retrieval still proceed.
+
+
+### Shortlist overlay switching (October 10)
+
+The Shortlist button closes any open POI popup and reveals the list in one click,
+including when mobile popup styling had hidden the list. View place does the same.
+The mobile CSS ignores a popup already fading out, so the list appears immediately
+rather than waiting for Leaflet's fade-out removal. Ordinary view editing still
+keeps the POI popup open. Verified at 360x640, 390x844 and 1440x1000.

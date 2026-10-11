@@ -308,7 +308,7 @@ async def google_streetview(client, lat, lon, radius, targets=None, area_samplin
                 'sourceDate':data.get('date'),'capturedAt':data.get('date'),
                 'viewHeadingDegrees':heading,'viewPitchDegrees':pitch,'viewFovDegrees':120,
                 'imageryProfile':google_imagery_profile(),
-                'description':'Street View camera position; access and safe standing point unverified.'+(' Lowest-resolution panorama projection; small visual details may be unresolved.' if google_imagery_profile()=='google-tiles-z0-v1' else ''),
+                'description':'Street View camera position; access and safe standing point unverified.'+(' Lowest-resolution panorama projection; small visual details may be unresolved.' if google_imagery_profile().startswith('google-tiles-z0-') else ''),
                 **({'centerPriority':True} if poi and poi.get('centerPriority') else {}),
                 **({'poi':poi,'poiCandidates':[poi],'poiDistanceMeters':round(distance((lat2,lon2),(poi['lat'],poi['lon'])))} if poi else {})})
     if not successful: raise ValueError('Google Street View metadata unavailable')

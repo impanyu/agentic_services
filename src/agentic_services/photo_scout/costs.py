@@ -25,7 +25,7 @@ current = ContextVar('photo_scout_task_spend', default=None)
 RATES = {'gpt-6-astra':(10,1,50), 'gpt-6.1-sol':(2,.1,10), 'gpt-6-luna':(.1,.01,.5)}
 WRITE_RATES = {'gpt-6-astra':12.5,'gpt-6.1-sol':2.5,'gpt-6-luna':.125}
 CALL_RATES = {'places-text':.032, 'places-details-pro':.017, 'places-photo':.007, 'routes-essentials':.005,
-              'streetview-tile-z0':.002, 'static-streetview':.007}
+              'streetview-tile-z0':.002, 'streetview-tile-z1':.002, 'static-streetview':.007}
 
 
 def tracked_task(path, kind):

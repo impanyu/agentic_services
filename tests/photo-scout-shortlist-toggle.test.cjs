@@ -1,0 +1,6 @@
+const {test}=require('node:test');const assert=require('node:assert/strict');const vm=require('node:vm');const fs=require('node:fs');
+const source=fs.readFileSync('photo-scout-site/app.js','utf8');
+function fixture({popup=false,hidden=false}={}){const root={hidden},controls={open:true},menus=[{open:true}],c={document:{querySelector:()=>popup?{}:null},map:{closePopup(){popup=false;}},controls,mapMenus:menus,el:()=>root};vm.runInNewContext(source.slice(source.indexOf('function showShortlist('),source.indexOf("el('toggle-results').addEventListener")),c);return {c,root,controls,menus,hasPopup:()=>popup};}
+test('one Shortlist click opens the list and dismisses the POI overlay even if list was CSS-hidden',()=>{for(const hidden of [false,true]){const f=fixture({popup:true,hidden});f.c.toggleShortlist();assert.equal(f.root.hidden,false);assert.equal(f.hasPopup(),false);assert.equal(f.controls.open,false);assert.equal(f.menus[0].open,false);}});
+test('Shortlist remains a toggle when no popup obscures it',()=>{const f=fixture({hidden:true});f.c.toggleShortlist();assert.equal(f.root.hidden,false);f.c.toggleShortlist();assert.equal(f.root.hidden,true);});
+test('View place dismisses its popup before opening the shortlist',()=>{assert.match(source,/const reveal=\(\)=>\{showShortlist\(\);render\(h.result/);});
