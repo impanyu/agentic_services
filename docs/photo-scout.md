@@ -629,3 +629,29 @@ including when mobile popup styling had hidden the list. View place does the sam
 The mobile CSS ignores a popup already fading out, so the list appears immediately
 rather than waiting for Leaflet's fade-out removal. Ordinary view editing still
 keeps the POI popup open. Verified at 360x640, 390x844 and 1440x1000.
+
+### Tier 1 incremental cost estimate (October 10)
+
+Production cost accounting for the three previous z0 sample searches recorded:
+
+| Sample | Prior API cost, USD | Paid z0 tile attempts | z1 estimate, USD |
+| --- | ---: | ---: | ---: |
+| San Francisco, default 5 km | 0.47703789 | 30 | 0.53703789 |
+| Chicago, architecture 20 km | 0.55891956 | 36 | 0.63091956 |
+| San Francisco, walking route | 0.28694105 | 19 | 0.32494105 |
+
+At the undiscounted $0.002/tile rate, replacing each z0 attempt with two z1
+attempts adds $0.05666667/search on average: $0.44096617 to $0.49763283,
+about 12.85%. Adding the previous $0.22732690 selfie sample gives $0.66829307
+to $0.72495973/bundle, about 8.48%. These are projections holding all other
+provider call counts and model token usage constant, not newly measured complete
+z1 workflows. Model input/output usage, different native panoramas, response reuse,
+failed attempts, free quotas and volume tiers can change the actual increment.
+Fixed hosting, network, taxes and payment fees are excluded.
+
+The live same-panorama quality check doubled the sphere from 320x160 to 640x320,
+using two z1 requests; eight headings and another pitch/FOV change added no
+requests. Scoring preserves `detail: low` for both z0 and z1 profile versions;
+this does not guarantee constant token counts across image sizes or models.
+Google pricing: https://developers.google.com/maps/billing-and-pricing/pricing
+OpenAI vision sizing: https://developers.openai.com/api/docs/guides/images-vision
