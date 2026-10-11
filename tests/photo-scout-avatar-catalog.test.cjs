@@ -1,7 +1,7 @@
 const {test}=require('node:test');const assert=require('node:assert/strict');const fs=require('node:fs');const vm=require('node:vm');
-test('preset catalog has over 200 distinct images with lightweight local thumbnails',()=>{
+test('preset catalog has at least 500 characters with lightweight local thumbnails',()=>{
  const items=JSON.parse(fs.readFileSync('photo-scout-site/avatars/presets.json')).items;
- assert.ok(items.length>200);assert.equal(new Set(items.map(x=>x.id)).size,items.length);
+ assert.ok(items.length>=500);assert.ok(new Set(items.map(x=>x.name.split(' · ')[0].toLowerCase())).size>=500);assert.equal(new Set(items.map(x=>x.id)).size,items.length);
  for(const item of items){for(const url of [item.imageUrl,item.thumbnailUrl]){assert.match(url,/^\.\/avatars\/(characters|thumbnails)\/[\w-]+\.(png|webp)$/);assert.ok(fs.existsSync('photo-scout-site/'+url.slice(2)),item.name);}assert.ok(fs.statSync('photo-scout-site/'+item.thumbnailUrl.slice(2)).size<100000,item.name);}
 });
 test('selecting a preset uses its full image while the card uses its thumbnail',async()=>{

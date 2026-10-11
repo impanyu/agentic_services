@@ -2461,6 +2461,2945 @@
       ],
       "category": "Art & literature",
       "thumbnailUrl": "./avatars/thumbnails/emily-dickinson.webp"
+    },
+    {
+      "id": "preset:frederick-douglass",
+      "name": "Frederick Douglass",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "aliases": [
+        "弗雷德里克·道格拉斯",
+        "道格拉斯"
+      ],
+      "imageUrl": "./avatars/characters/frederick-douglass.png",
+      "thumbnailUrl": "./avatars/thumbnails/frederick-douglass.webp"
+    },
+    {
+      "id": "preset:sojourner-truth",
+      "name": "Sojourner Truth",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/sojourner-truth.png",
+      "thumbnailUrl": "./avatars/thumbnails/sojourner-truth.webp"
+    },
+    {
+      "id": "preset:harriet-tubman",
+      "name": "Harriet Tubman",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "aliases": [
+        "哈丽特·塔布曼"
+      ],
+      "imageUrl": "./avatars/characters/harriet-tubman.png",
+      "thumbnailUrl": "./avatars/thumbnails/harriet-tubman.webp"
+    },
+    {
+      "id": "preset:susan-b-anthony",
+      "name": "Susan B. Anthony",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/susan-b-anthony.png",
+      "thumbnailUrl": "./avatars/thumbnails/susan-b-anthony.webp"
+    },
+    {
+      "id": "preset:w-e-b-du-bois",
+      "name": "W. E. B. Du Bois",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/w-e-b-du-bois.png",
+      "thumbnailUrl": "./avatars/thumbnails/w-e-b-du-bois.webp"
+    },
+    {
+      "id": "preset:elizabeth-cady-stanton",
+      "name": "Elizabeth Cady Stanton",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/elizabeth-cady-stanton.png",
+      "thumbnailUrl": "./avatars/thumbnails/elizabeth-cady-stanton.webp"
+    },
+    {
+      "id": "preset:rosa-parks",
+      "name": "Rosa Parks",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "aliases": [
+        "罗莎·帕克斯"
+      ],
+      "imageUrl": "./avatars/characters/rosa-parks.png",
+      "thumbnailUrl": "./avatars/thumbnails/rosa-parks.webp"
+    },
+    {
+      "id": "preset:jane-addams",
+      "name": "Jane Addams",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/jane-addams.png",
+      "thumbnailUrl": "./avatars/thumbnails/jane-addams.webp"
+    },
+    {
+      "id": "preset:sitting-bull",
+      "name": "Sitting Bull",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/sitting-bull.png",
+      "thumbnailUrl": "./avatars/thumbnails/sitting-bull.webp"
+    },
+    {
+      "id": "preset:geronimo",
+      "name": "Geronimo",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/geronimo.png",
+      "thumbnailUrl": "./avatars/thumbnails/geronimo.webp"
+    },
+    {
+      "id": "preset:george-washington",
+      "name": "George Washington",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "aliases": [
+        "乔治·华盛顿",
+        "华盛顿"
+      ],
+      "imageUrl": "./avatars/characters/george-washington.png",
+      "thumbnailUrl": "./avatars/thumbnails/george-washington.webp"
+    },
+    {
+      "id": "preset:booker-t-washington",
+      "name": "Booker T. Washington",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/booker-t-washington.png",
+      "thumbnailUrl": "./avatars/thumbnails/booker-t-washington.webp"
+    },
+    {
+      "id": "preset:crazy-horse",
+      "name": "Crazy Horse",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/crazy-horse.png",
+      "thumbnailUrl": "./avatars/thumbnails/crazy-horse.webp"
+    },
+    {
+      "id": "preset:thomas-jefferson",
+      "name": "Thomas Jefferson",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "aliases": [
+        "托马斯·杰斐逊"
+      ],
+      "imageUrl": "./avatars/characters/thomas-jefferson.png",
+      "thumbnailUrl": "./avatars/thumbnails/thomas-jefferson.webp"
+    },
+    {
+      "id": "preset:sacagawea",
+      "name": "Sacagawea",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/sacagawea.png",
+      "thumbnailUrl": "./avatars/thumbnails/sacagawea.webp"
+    },
+    {
+      "id": "preset:john-adams",
+      "name": "John Adams",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/john-adams.png",
+      "thumbnailUrl": "./avatars/thumbnails/john-adams.webp"
+    },
+    {
+      "id": "preset:chief-joseph",
+      "name": "Chief Joseph",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/chief-joseph.png",
+      "thumbnailUrl": "./avatars/thumbnails/chief-joseph.webp"
+    },
+    {
+      "id": "preset:franklin-d-roosevelt",
+      "name": "Franklin D. Roosevelt",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "aliases": [
+        "富兰克林·罗斯福"
+      ],
+      "imageUrl": "./avatars/characters/franklin-d-roosevelt.png",
+      "thumbnailUrl": "./avatars/thumbnails/franklin-d-roosevelt.webp"
+    },
+    {
+      "id": "preset:sequoyah",
+      "name": "Sequoyah",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/sequoyah.png",
+      "thumbnailUrl": "./avatars/thumbnails/sequoyah.webp"
+    },
+    {
+      "id": "preset:gabriela-mistral",
+      "name": "Gabriela Mistral",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/gabriela-mistral.png",
+      "thumbnailUrl": "./avatars/thumbnails/gabriela-mistral.webp"
+    },
+    {
+      "id": "preset:tecumseh",
+      "name": "Tecumseh",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/tecumseh.png",
+      "thumbnailUrl": "./avatars/thumbnails/tecumseh.webp"
+    },
+    {
+      "id": "preset:jose-de-san-martin",
+      "name": "Jose de San Martin",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/jose-de-san-martin.png",
+      "thumbnailUrl": "./avatars/thumbnails/jose-de-san-martin.webp"
+    },
+    {
+      "id": "preset:eleanor-roosevelt",
+      "name": "Eleanor Roosevelt",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "aliases": [
+        "埃莉诺·罗斯福"
+      ],
+      "imageUrl": "./avatars/characters/eleanor-roosevelt.png",
+      "thumbnailUrl": "./avatars/thumbnails/eleanor-roosevelt.webp"
+    },
+    {
+      "id": "preset:pablo-neruda",
+      "name": "Pablo Neruda",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/pablo-neruda.png",
+      "thumbnailUrl": "./avatars/thumbnails/pablo-neruda.webp"
+    },
+    {
+      "id": "preset:simon-bolivar",
+      "name": "Simon Bolivar",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "aliases": [
+        "西蒙·玻利瓦尔"
+      ],
+      "imageUrl": "./avatars/characters/simon-bolivar.png",
+      "thumbnailUrl": "./avatars/thumbnails/simon-bolivar.webp"
+    },
+    {
+      "id": "preset:ulysses-s-grant",
+      "name": "Ulysses S. Grant",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/ulysses-s-grant.png",
+      "thumbnailUrl": "./avatars/thumbnails/ulysses-s-grant.webp"
+    },
+    {
+      "id": "preset:benito-juarez",
+      "name": "Benito Juarez",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/benito-juarez.png",
+      "thumbnailUrl": "./avatars/thumbnails/benito-juarez.webp"
+    },
+    {
+      "id": "preset:gabriel-garcia-marquez",
+      "name": "Gabriel Garcia Marquez",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "aliases": [
+        "加西亚·马尔克斯",
+        "马尔克斯"
+      ],
+      "imageUrl": "./avatars/characters/gabriel-garcia-marquez.png",
+      "thumbnailUrl": "./avatars/thumbnails/gabriel-garcia-marquez.webp"
+    },
+    {
+      "id": "preset:jose-marti",
+      "name": "Jose Marti",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/jose-marti.png",
+      "thumbnailUrl": "./avatars/thumbnails/jose-marti.webp"
+    },
+    {
+      "id": "preset:diego-rivera",
+      "name": "Diego Rivera",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "aliases": [
+        "迭戈·里维拉"
+      ],
+      "imageUrl": "./avatars/characters/diego-rivera.png",
+      "thumbnailUrl": "./avatars/thumbnails/diego-rivera.webp"
+    },
+    {
+      "id": "preset:toussaint-louverture",
+      "name": "Toussaint Louverture",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/toussaint-louverture.png",
+      "thumbnailUrl": "./avatars/thumbnails/toussaint-louverture.webp"
+    },
+    {
+      "id": "preset:ibn-sina",
+      "name": "Ibn Sina",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "aliases": [
+        "伊本·西那",
+        "阿维森纳"
+      ],
+      "imageUrl": "./avatars/characters/ibn-sina.png",
+      "thumbnailUrl": "./avatars/thumbnails/ibn-sina.webp"
+    },
+    {
+      "id": "preset:theodore-roosevelt",
+      "name": "Theodore Roosevelt",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "aliases": [
+        "西奥多·罗斯福"
+      ],
+      "imageUrl": "./avatars/characters/theodore-roosevelt.png",
+      "thumbnailUrl": "./avatars/thumbnails/theodore-roosevelt.webp"
+    },
+    {
+      "id": "preset:octavio-paz",
+      "name": "Octavio Paz",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/octavio-paz.png",
+      "thumbnailUrl": "./avatars/thumbnails/octavio-paz.webp"
+    },
+    {
+      "id": "preset:sor-juana-ines-de-la-cruz",
+      "name": "Sor Juana Ines de la Cruz",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/sor-juana-ines-de-la-cruz.png",
+      "thumbnailUrl": "./avatars/thumbnails/sor-juana-ines-de-la-cruz.webp"
+    },
+    {
+      "id": "preset:antonio-jose-de-sucre",
+      "name": "Antonio Jose de Sucre",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/antonio-jose-de-sucre.png",
+      "thumbnailUrl": "./avatars/thumbnails/antonio-jose-de-sucre.webp"
+    },
+    {
+      "id": "preset:miguel-hidalgo",
+      "name": "Miguel Hidalgo",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/miguel-hidalgo.png",
+      "thumbnailUrl": "./avatars/thumbnails/miguel-hidalgo.webp"
+    },
+    {
+      "id": "preset:jorge-luis-borges",
+      "name": "Jorge Luis Borges",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "aliases": [
+        "博尔赫斯"
+      ],
+      "imageUrl": "./avatars/characters/jorge-luis-borges.png",
+      "thumbnailUrl": "./avatars/thumbnails/jorge-luis-borges.webp"
+    },
+    {
+      "id": "preset:cesar-vallejo",
+      "name": "Cesar Vallejo",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/cesar-vallejo.png",
+      "thumbnailUrl": "./avatars/thumbnails/cesar-vallejo.webp"
+    },
+    {
+      "id": "preset:al-khwarizmi",
+      "name": "Al-Khwarizmi",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "aliases": [
+        "花拉子米"
+      ],
+      "imageUrl": "./avatars/characters/al-khwarizmi.png",
+      "thumbnailUrl": "./avatars/thumbnails/al-khwarizmi.webp"
+    },
+    {
+      "id": "preset:omar-khayyam",
+      "name": "Omar Khayyam",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "aliases": [
+        "欧玛尔·海亚姆"
+      ],
+      "imageUrl": "./avatars/characters/omar-khayyam.png",
+      "thumbnailUrl": "./avatars/thumbnails/omar-khayyam.webp"
+    },
+    {
+      "id": "preset:ibn-al-haytham",
+      "name": "Ibn al-Haytham",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/ibn-al-haytham.png",
+      "thumbnailUrl": "./avatars/thumbnails/ibn-al-haytham.webp"
+    },
+    {
+      "id": "preset:al-biruni",
+      "name": "Al-Biruni",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/al-biruni.png",
+      "thumbnailUrl": "./avatars/thumbnails/al-biruni.webp"
+    },
+    {
+      "id": "preset:juana-azurduy",
+      "name": "Juana Azurduy",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/juana-azurduy.png",
+      "thumbnailUrl": "./avatars/thumbnails/juana-azurduy.webp"
+    },
+    {
+      "id": "preset:mansa-musa",
+      "name": "Mansa Musa",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "aliases": [
+        "曼萨·穆萨"
+      ],
+      "imageUrl": "./avatars/characters/mansa-musa.png",
+      "thumbnailUrl": "./avatars/thumbnails/mansa-musa.webp"
+    },
+    {
+      "id": "preset:hafez",
+      "name": "Hafez",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/hafez.png",
+      "thumbnailUrl": "./avatars/thumbnails/hafez.webp"
+    },
+    {
+      "id": "preset:haile-selassie",
+      "name": "Haile Selassie",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/haile-selassie.png",
+      "thumbnailUrl": "./avatars/thumbnails/haile-selassie.webp"
+    },
+    {
+      "id": "preset:tupac-amaru-ii",
+      "name": "Tupac Amaru II",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/tupac-amaru-ii.png",
+      "thumbnailUrl": "./avatars/thumbnails/tupac-amaru-ii.webp"
+    },
+    {
+      "id": "preset:saladin",
+      "name": "Saladin",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "aliases": [
+        "萨拉丁"
+      ],
+      "imageUrl": "./avatars/characters/saladin.png",
+      "thumbnailUrl": "./avatars/thumbnails/saladin.webp"
+    },
+    {
+      "id": "preset:rumi",
+      "name": "Rumi",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "aliases": [
+        "鲁米"
+      ],
+      "imageUrl": "./avatars/characters/rumi.png",
+      "thumbnailUrl": "./avatars/thumbnails/rumi.webp"
+    },
+    {
+      "id": "preset:yaa-asantewaa",
+      "name": "Yaa Asantewaa",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/yaa-asantewaa.png",
+      "thumbnailUrl": "./avatars/thumbnails/yaa-asantewaa.webp"
+    },
+    {
+      "id": "preset:julius-nyerere",
+      "name": "Julius Nyerere",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/julius-nyerere.png",
+      "thumbnailUrl": "./avatars/thumbnails/julius-nyerere.webp"
+    },
+    {
+      "id": "preset:ibn-khaldun",
+      "name": "Ibn Khaldun",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/ibn-khaldun.png",
+      "thumbnailUrl": "./avatars/thumbnails/ibn-khaldun.webp"
+    },
+    {
+      "id": "preset:patrice-lumumba",
+      "name": "Patrice Lumumba",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/patrice-lumumba.png",
+      "thumbnailUrl": "./avatars/thumbnails/patrice-lumumba.webp"
+    },
+    {
+      "id": "preset:sundiata-keita",
+      "name": "Sundiata Keita",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/sundiata-keita.png",
+      "thumbnailUrl": "./avatars/thumbnails/sundiata-keita.webp"
+    },
+    {
+      "id": "preset:ahmed-baba",
+      "name": "Ahmed Baba",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/ahmed-baba.png",
+      "thumbnailUrl": "./avatars/thumbnails/ahmed-baba.webp"
+    },
+    {
+      "id": "preset:nefertiti",
+      "name": "Nefertiti",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "aliases": [
+        "纳芙蒂蒂"
+      ],
+      "imageUrl": "./avatars/characters/nefertiti.png",
+      "thumbnailUrl": "./avatars/thumbnails/nefertiti.webp"
+    },
+    {
+      "id": "preset:fatima-al-fihri",
+      "name": "Fatima al-Fihri",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/fatima-al-fihri.png",
+      "thumbnailUrl": "./avatars/thumbnails/fatima-al-fihri.webp"
+    },
+    {
+      "id": "preset:wangari-maathai",
+      "name": "Wangari Maathai",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "aliases": [
+        "旺加里·马塔伊"
+      ],
+      "imageUrl": "./avatars/characters/wangari-maathai.png",
+      "thumbnailUrl": "./avatars/thumbnails/wangari-maathai.webp"
+    },
+    {
+      "id": "preset:desmond-tutu",
+      "name": "Desmond Tutu",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "aliases": [
+        "德斯蒙德·图图"
+      ],
+      "imageUrl": "./avatars/characters/desmond-tutu.png",
+      "thumbnailUrl": "./avatars/thumbnails/desmond-tutu.webp"
+    },
+    {
+      "id": "preset:menelik-ii",
+      "name": "Menelik II",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/menelik-ii.png",
+      "thumbnailUrl": "./avatars/thumbnails/menelik-ii.webp"
+    },
+    {
+      "id": "preset:imhotep",
+      "name": "Imhotep",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/imhotep.png",
+      "thumbnailUrl": "./avatars/thumbnails/imhotep.webp"
+    },
+    {
+      "id": "preset:chinua-achebe",
+      "name": "Chinua Achebe",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "aliases": [
+        "钦努阿·阿契贝"
+      ],
+      "imageUrl": "./avatars/characters/chinua-achebe.png",
+      "thumbnailUrl": "./avatars/thumbnails/chinua-achebe.webp"
+    },
+    {
+      "id": "preset:queen-nzinga",
+      "name": "Queen Nzinga",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/queen-nzinga.png",
+      "thumbnailUrl": "./avatars/thumbnails/queen-nzinga.webp"
+    },
+    {
+      "id": "preset:kwame-nkrumah",
+      "name": "Kwame Nkrumah",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/kwame-nkrumah.png",
+      "thumbnailUrl": "./avatars/thumbnails/kwame-nkrumah.webp"
+    },
+    {
+      "id": "preset:ibn-battuta",
+      "name": "Ibn Battuta",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/ibn-battuta.png",
+      "thumbnailUrl": "./avatars/thumbnails/ibn-battuta.webp"
+    },
+    {
+      "id": "preset:thomas-sankara",
+      "name": "Thomas Sankara",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/thomas-sankara.png",
+      "thumbnailUrl": "./avatars/thumbnails/thomas-sankara.webp"
+    },
+    {
+      "id": "preset:ramesses-ii",
+      "name": "Ramesses II",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "aliases": [
+        "拉美西斯二世"
+      ],
+      "imageUrl": "./avatars/characters/ramesses-ii.png",
+      "thumbnailUrl": "./avatars/thumbnails/ramesses-ii.webp"
+    },
+    {
+      "id": "preset:plato",
+      "name": "Plato",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "aliases": [
+        "柏拉图"
+      ],
+      "imageUrl": "./avatars/characters/plato.png",
+      "thumbnailUrl": "./avatars/thumbnails/plato.webp"
+    },
+    {
+      "id": "preset:sappho",
+      "name": "Sappho",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "aliases": [
+        "萨福"
+      ],
+      "imageUrl": "./avatars/characters/sappho.png",
+      "thumbnailUrl": "./avatars/thumbnails/sappho.webp"
+    },
+    {
+      "id": "preset:pythagoras",
+      "name": "Pythagoras",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "aliases": [
+        "毕达哥拉斯"
+      ],
+      "imageUrl": "./avatars/characters/pythagoras.png",
+      "thumbnailUrl": "./avatars/thumbnails/pythagoras.webp"
+    },
+    {
+      "id": "preset:thucydides",
+      "name": "Thucydides",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/thucydides.png",
+      "thumbnailUrl": "./avatars/thumbnails/thucydides.webp"
+    },
+    {
+      "id": "preset:democritus",
+      "name": "Democritus",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/democritus.png",
+      "thumbnailUrl": "./avatars/thumbnails/democritus.webp"
+    },
+    {
+      "id": "preset:tutankhamun",
+      "name": "Tutankhamun",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "aliases": [
+        "图坦卡蒙"
+      ],
+      "imageUrl": "./avatars/characters/tutankhamun.png",
+      "thumbnailUrl": "./avatars/thumbnails/tutankhamun.webp"
+    },
+    {
+      "id": "preset:aristotle",
+      "name": "Aristotle",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "aliases": [
+        "亚里士多德"
+      ],
+      "imageUrl": "./avatars/characters/aristotle.png",
+      "thumbnailUrl": "./avatars/thumbnails/aristotle.webp"
+    },
+    {
+      "id": "preset:socrates",
+      "name": "Socrates",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "aliases": [
+        "苏格拉底"
+      ],
+      "imageUrl": "./avatars/characters/socrates.png",
+      "thumbnailUrl": "./avatars/thumbnails/socrates.webp"
+    },
+    {
+      "id": "preset:hypatia",
+      "name": "Hypatia",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "aliases": [
+        "海帕蒂娅"
+      ],
+      "imageUrl": "./avatars/characters/hypatia.png",
+      "thumbnailUrl": "./avatars/thumbnails/hypatia.webp"
+    },
+    {
+      "id": "preset:hatshepsut",
+      "name": "Hatshepsut",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/hatshepsut.png",
+      "thumbnailUrl": "./avatars/thumbnails/hatshepsut.webp"
+    },
+    {
+      "id": "preset:euclid",
+      "name": "Euclid",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "aliases": [
+        "欧几里得"
+      ],
+      "imageUrl": "./avatars/characters/euclid.png",
+      "thumbnailUrl": "./avatars/thumbnails/euclid.webp"
+    },
+    {
+      "id": "preset:diogenes",
+      "name": "Diogenes",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "aliases": [
+        "第欧根尼"
+      ],
+      "imageUrl": "./avatars/characters/diogenes.png",
+      "thumbnailUrl": "./avatars/thumbnails/diogenes.webp"
+    },
+    {
+      "id": "preset:herodotus",
+      "name": "Herodotus",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "aliases": [
+        "希罗多德"
+      ],
+      "imageUrl": "./avatars/characters/herodotus.png",
+      "thumbnailUrl": "./avatars/thumbnails/herodotus.webp"
+    },
+    {
+      "id": "preset:cicero",
+      "name": "Cicero",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "aliases": [
+        "西塞罗"
+      ],
+      "imageUrl": "./avatars/characters/cicero.png",
+      "thumbnailUrl": "./avatars/thumbnails/cicero.webp"
+    },
+    {
+      "id": "preset:boudicca",
+      "name": "Boudicca",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/boudicca.png",
+      "thumbnailUrl": "./avatars/thumbnails/boudicca.webp"
+    },
+    {
+      "id": "preset:dante-alighieri",
+      "name": "Dante Alighieri",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "aliases": [
+        "但丁"
+      ],
+      "imageUrl": "./avatars/characters/dante-alighieri.png",
+      "thumbnailUrl": "./avatars/thumbnails/dante-alighieri.webp"
+    },
+    {
+      "id": "preset:niccolo-machiavelli",
+      "name": "Niccolo Machiavelli",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "aliases": [
+        "马基雅维利"
+      ],
+      "imageUrl": "./avatars/characters/niccolo-machiavelli.png",
+      "thumbnailUrl": "./avatars/thumbnails/niccolo-machiavelli.webp"
+    },
+    {
+      "id": "preset:seneca",
+      "name": "Seneca",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "aliases": [
+        "塞涅卡"
+      ],
+      "imageUrl": "./avatars/characters/seneca.png",
+      "thumbnailUrl": "./avatars/thumbnails/seneca.webp"
+    },
+    {
+      "id": "preset:francesco-petrarca",
+      "name": "Francesco Petrarca",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/francesco-petrarca.png",
+      "thumbnailUrl": "./avatars/thumbnails/francesco-petrarca.webp"
+    },
+    {
+      "id": "preset:charlemagne",
+      "name": "Charlemagne",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "aliases": [
+        "查理曼"
+      ],
+      "imageUrl": "./avatars/characters/charlemagne.png",
+      "thumbnailUrl": "./avatars/thumbnails/charlemagne.webp"
+    },
+    {
+      "id": "preset:eleanor-of-aquitaine",
+      "name": "Eleanor of Aquitaine",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/eleanor-of-aquitaine.png",
+      "thumbnailUrl": "./avatars/thumbnails/eleanor-of-aquitaine.webp"
+    },
+    {
+      "id": "preset:thomas-more",
+      "name": "Thomas More",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "aliases": [
+        "托马斯·莫尔"
+      ],
+      "imageUrl": "./avatars/characters/thomas-more.png",
+      "thumbnailUrl": "./avatars/thumbnails/thomas-more.webp"
+    },
+    {
+      "id": "preset:hildegard-of-bingen",
+      "name": "Hildegard of Bingen",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/hildegard-of-bingen.png",
+      "thumbnailUrl": "./avatars/thumbnails/hildegard-of-bingen.webp"
+    },
+    {
+      "id": "preset:erasmus",
+      "name": "Erasmus",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/erasmus.png",
+      "thumbnailUrl": "./avatars/thumbnails/erasmus.webp"
+    },
+    {
+      "id": "preset:artemisia-gentileschi",
+      "name": "Artemisia Gentileschi",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/artemisia-gentileschi.png",
+      "thumbnailUrl": "./avatars/thumbnails/artemisia-gentileschi.webp"
+    },
+    {
+      "id": "preset:caravaggio",
+      "name": "Caravaggio",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "aliases": [
+        "卡拉瓦乔"
+      ],
+      "imageUrl": "./avatars/characters/caravaggio.png",
+      "thumbnailUrl": "./avatars/thumbnails/caravaggio.webp"
+    },
+    {
+      "id": "preset:marcus-aurelius",
+      "name": "Marcus Aurelius",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "aliases": [
+        "马可·奥勒留"
+      ],
+      "imageUrl": "./avatars/characters/marcus-aurelius.png",
+      "thumbnailUrl": "./avatars/thumbnails/marcus-aurelius.webp"
+    },
+    {
+      "id": "preset:augustus",
+      "name": "Augustus",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "aliases": [
+        "奥古斯都"
+      ],
+      "imageUrl": "./avatars/characters/augustus.png",
+      "thumbnailUrl": "./avatars/thumbnails/augustus.webp"
+    },
+    {
+      "id": "preset:hadrian",
+      "name": "Hadrian",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "aliases": [
+        "哈德良"
+      ],
+      "imageUrl": "./avatars/characters/hadrian.png",
+      "thumbnailUrl": "./avatars/thumbnails/hadrian.webp"
+    },
+    {
+      "id": "preset:johannes-gutenberg",
+      "name": "Johannes Gutenberg",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "aliases": [
+        "古腾堡"
+      ],
+      "imageUrl": "./avatars/characters/johannes-gutenberg.png",
+      "thumbnailUrl": "./avatars/thumbnails/johannes-gutenberg.webp"
+    },
+    {
+      "id": "preset:christine-de-pizan",
+      "name": "Christine de Pizan",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/christine-de-pizan.png",
+      "thumbnailUrl": "./avatars/thumbnails/christine-de-pizan.webp"
+    },
+    {
+      "id": "preset:diego-velazquez",
+      "name": "Diego Velazquez",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "aliases": [
+        "委拉斯开兹"
+      ],
+      "imageUrl": "./avatars/characters/diego-velazquez.png",
+      "thumbnailUrl": "./avatars/thumbnails/diego-velazquez.webp"
+    },
+    {
+      "id": "preset:geoffrey-chaucer",
+      "name": "Geoffrey Chaucer",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/geoffrey-chaucer.png",
+      "thumbnailUrl": "./avatars/thumbnails/geoffrey-chaucer.webp"
+    },
+    {
+      "id": "preset:francisco-goya",
+      "name": "Francisco Goya",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "aliases": [
+        "戈雅"
+      ],
+      "imageUrl": "./avatars/characters/francisco-goya.png",
+      "thumbnailUrl": "./avatars/thumbnails/francisco-goya.webp"
+    },
+    {
+      "id": "preset:titian",
+      "name": "Titian",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "aliases": [
+        "提香"
+      ],
+      "imageUrl": "./avatars/characters/titian.png",
+      "thumbnailUrl": "./avatars/thumbnails/titian.webp"
+    },
+    {
+      "id": "preset:auguste-rodin",
+      "name": "Auguste Rodin",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "aliases": [
+        "奥古斯特·罗丹",
+        "罗丹"
+      ],
+      "imageUrl": "./avatars/characters/auguste-rodin.png",
+      "thumbnailUrl": "./avatars/thumbnails/auguste-rodin.webp"
+    },
+    {
+      "id": "preset:camille-claudel",
+      "name": "Camille Claudel",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "aliases": [
+        "卡米耶·克洛岱尔"
+      ],
+      "imageUrl": "./avatars/characters/camille-claudel.png",
+      "thumbnailUrl": "./avatars/thumbnails/camille-claudel.webp"
+    },
+    {
+      "id": "preset:john-constable",
+      "name": "John Constable",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/john-constable.png",
+      "thumbnailUrl": "./avatars/thumbnails/john-constable.webp"
+    },
+    {
+      "id": "preset:wassily-kandinsky",
+      "name": "Wassily Kandinsky",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "aliases": [
+        "康定斯基"
+      ],
+      "imageUrl": "./avatars/characters/wassily-kandinsky.png",
+      "thumbnailUrl": "./avatars/thumbnails/wassily-kandinsky.webp"
+    },
+    {
+      "id": "preset:albrecht-durer",
+      "name": "Albrecht Durer",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "aliases": [
+        "阿尔布雷希特·丢勒"
+      ],
+      "imageUrl": "./avatars/characters/albrecht-durer.png",
+      "thumbnailUrl": "./avatars/thumbnails/albrecht-durer.webp"
+    },
+    {
+      "id": "preset:raphael",
+      "name": "Raphael",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "aliases": [
+        "拉斐尔"
+      ],
+      "imageUrl": "./avatars/characters/raphael.png",
+      "thumbnailUrl": "./avatars/thumbnails/raphael.webp"
+    },
+    {
+      "id": "preset:edvard-munch",
+      "name": "Edvard Munch",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "aliases": [
+        "爱德华·蒙克"
+      ],
+      "imageUrl": "./avatars/characters/edvard-munch.png",
+      "thumbnailUrl": "./avatars/thumbnails/edvard-munch.webp"
+    },
+    {
+      "id": "preset:mary-cassatt",
+      "name": "Mary Cassatt",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "aliases": [
+        "玛丽·卡萨特"
+      ],
+      "imageUrl": "./avatars/characters/mary-cassatt.png",
+      "thumbnailUrl": "./avatars/thumbnails/mary-cassatt.webp"
+    },
+    {
+      "id": "preset:sandro-botticelli",
+      "name": "Sandro Botticelli",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "aliases": [
+        "波提切利"
+      ],
+      "imageUrl": "./avatars/characters/sandro-botticelli.png",
+      "thumbnailUrl": "./avatars/thumbnails/sandro-botticelli.webp"
+    },
+    {
+      "id": "preset:william-turner",
+      "name": "William Turner",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "aliases": [
+        "透纳"
+      ],
+      "imageUrl": "./avatars/characters/william-turner.png",
+      "thumbnailUrl": "./avatars/thumbnails/william-turner.webp"
+    },
+    {
+      "id": "preset:georgia-o-keeffe",
+      "name": "Georgia O'Keeffe",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "aliases": [
+        "乔治亚·欧姬芙"
+      ],
+      "imageUrl": "./avatars/characters/georgia-o-keeffe.png",
+      "thumbnailUrl": "./avatars/thumbnails/georgia-o-keeffe.webp"
+    },
+    {
+      "id": "preset:natsume-soseki",
+      "name": "Natsume Soseki",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "aliases": [
+        "夏目漱石"
+      ],
+      "imageUrl": "./avatars/characters/natsume-soseki.png",
+      "thumbnailUrl": "./avatars/thumbnails/natsume-soseki.webp"
+    },
+    {
+      "id": "preset:murasaki-shikibu",
+      "name": "Murasaki Shikibu",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "aliases": [
+        "紫式部"
+      ],
+      "imageUrl": "./avatars/characters/murasaki-shikibu.png",
+      "thumbnailUrl": "./avatars/thumbnails/murasaki-shikibu.webp"
+    },
+    {
+      "id": "preset:berthe-morisot",
+      "name": "Berthe Morisot",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "aliases": [
+        "贝尔特·莫里索"
+      ],
+      "imageUrl": "./avatars/characters/berthe-morisot.png",
+      "thumbnailUrl": "./avatars/thumbnails/berthe-morisot.webp"
+    },
+    {
+      "id": "preset:sei-shonagon",
+      "name": "Sei Shonagon",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "aliases": [
+        "清少纳言"
+      ],
+      "imageUrl": "./avatars/characters/sei-shonagon.png",
+      "thumbnailUrl": "./avatars/thumbnails/sei-shonagon.webp"
+    },
+    {
+      "id": "preset:katsushika-hokusai",
+      "name": "Katsushika Hokusai",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "aliases": [
+        "葛饰北斋"
+      ],
+      "imageUrl": "./avatars/characters/katsushika-hokusai.png",
+      "thumbnailUrl": "./avatars/thumbnails/katsushika-hokusai.webp"
+    },
+    {
+      "id": "preset:matsuo-basho",
+      "name": "Matsuo Basho",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "aliases": [
+        "松尾芭蕉"
+      ],
+      "imageUrl": "./avatars/characters/matsuo-basho.png",
+      "thumbnailUrl": "./avatars/thumbnails/matsuo-basho.webp"
+    },
+    {
+      "id": "preset:utagawa-hiroshige",
+      "name": "Utagawa Hiroshige",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "aliases": [
+        "歌川广重"
+      ],
+      "imageUrl": "./avatars/characters/utagawa-hiroshige.png",
+      "thumbnailUrl": "./avatars/thumbnails/utagawa-hiroshige.webp"
+    },
+    {
+      "id": "preset:yukichi-fukuzawa",
+      "name": "Yukichi Fukuzawa",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "aliases": [
+        "福泽谕吉"
+      ],
+      "imageUrl": "./avatars/characters/yukichi-fukuzawa.png",
+      "thumbnailUrl": "./avatars/thumbnails/yukichi-fukuzawa.webp"
+    },
+    {
+      "id": "preset:oda-nobunaga",
+      "name": "Oda Nobunaga",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "aliases": [
+        "织田信长"
+      ],
+      "imageUrl": "./avatars/characters/oda-nobunaga.png",
+      "thumbnailUrl": "./avatars/thumbnails/oda-nobunaga.webp"
+    },
+    {
+      "id": "preset:yosa-buson",
+      "name": "Yosa Buson",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/yosa-buson.png",
+      "thumbnailUrl": "./avatars/thumbnails/yosa-buson.webp"
+    },
+    {
+      "id": "preset:paul-klee",
+      "name": "Paul Klee",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "aliases": [
+        "保罗·克利"
+      ],
+      "imageUrl": "./avatars/characters/paul-klee.png",
+      "thumbnailUrl": "./avatars/thumbnails/paul-klee.webp"
+    },
+    {
+      "id": "preset:gustav-klimt",
+      "name": "Gustav Klimt",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "aliases": [
+        "古斯塔夫·克里姆特"
+      ],
+      "imageUrl": "./avatars/characters/gustav-klimt.png",
+      "thumbnailUrl": "./avatars/thumbnails/gustav-klimt.webp"
+    },
+    {
+      "id": "preset:sesshu-toyo",
+      "name": "Sesshu Toyo",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "aliases": [
+        "雪舟"
+      ],
+      "imageUrl": "./avatars/characters/sesshu-toyo.png",
+      "thumbnailUrl": "./avatars/thumbnails/sesshu-toyo.webp"
+    },
+    {
+      "id": "preset:tomoe-gozen",
+      "name": "Tomoe Gozen",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "aliases": [
+        "巴御前"
+      ],
+      "imageUrl": "./avatars/characters/tomoe-gozen.png",
+      "thumbnailUrl": "./avatars/thumbnails/tomoe-gozen.webp"
+    },
+    {
+      "id": "preset:shin-saimdang",
+      "name": "Shin Saimdang",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/shin-saimdang.png",
+      "thumbnailUrl": "./avatars/thumbnails/shin-saimdang.webp"
+    },
+    {
+      "id": "preset:toyotomi-hideyoshi",
+      "name": "Toyotomi Hideyoshi",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "aliases": [
+        "丰臣秀吉"
+      ],
+      "imageUrl": "./avatars/characters/toyotomi-hideyoshi.png",
+      "thumbnailUrl": "./avatars/thumbnails/toyotomi-hideyoshi.webp"
+    },
+    {
+      "id": "preset:tokugawa-ieyasu",
+      "name": "Tokugawa Ieyasu",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "aliases": [
+        "德川家康"
+      ],
+      "imageUrl": "./avatars/characters/tokugawa-ieyasu.png",
+      "thumbnailUrl": "./avatars/thumbnails/tokugawa-ieyasu.webp"
+    },
+    {
+      "id": "preset:king-ashoka",
+      "name": "King Ashoka",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "aliases": [
+        "阿育王"
+      ],
+      "imageUrl": "./avatars/characters/king-ashoka.png",
+      "thumbnailUrl": "./avatars/thumbnails/king-ashoka.webp"
+    },
+    {
+      "id": "preset:akbar",
+      "name": "Akbar",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "aliases": [
+        "阿克巴"
+      ],
+      "imageUrl": "./avatars/characters/akbar.png",
+      "thumbnailUrl": "./avatars/thumbnails/akbar.webp"
+    },
+    {
+      "id": "preset:ryunosuke-akutagawa",
+      "name": "Ryunosuke Akutagawa",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "aliases": [
+        "芥川龙之介"
+      ],
+      "imageUrl": "./avatars/characters/ryunosuke-akutagawa.png",
+      "thumbnailUrl": "./avatars/thumbnails/ryunosuke-akutagawa.webp"
+    },
+    {
+      "id": "preset:sakamoto-ryoma",
+      "name": "Sakamoto Ryoma",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "aliases": [
+        "坂本龙马"
+      ],
+      "imageUrl": "./avatars/characters/sakamoto-ryoma.png",
+      "thumbnailUrl": "./avatars/thumbnails/sakamoto-ryoma.webp"
+    },
+    {
+      "id": "preset:miyamoto-musashi",
+      "name": "Miyamoto Musashi",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "aliases": [
+        "宫本武藏"
+      ],
+      "imageUrl": "./avatars/characters/miyamoto-musashi.png",
+      "thumbnailUrl": "./avatars/thumbnails/miyamoto-musashi.webp"
+    },
+    {
+      "id": "preset:heo-nanseolheon",
+      "name": "Heo Nanseolheon",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/heo-nanseolheon.png",
+      "thumbnailUrl": "./avatars/thumbnails/heo-nanseolheon.webp"
+    },
+    {
+      "id": "preset:yi-sun-sin",
+      "name": "Yi Sun-sin",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "aliases": [
+        "李舜臣"
+      ],
+      "imageUrl": "./avatars/characters/yi-sun-sin.png",
+      "thumbnailUrl": "./avatars/thumbnails/yi-sun-sin.webp"
+    },
+    {
+      "id": "preset:chandragupta-maurya",
+      "name": "Chandragupta Maurya",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/chandragupta-maurya.png",
+      "thumbnailUrl": "./avatars/thumbnails/chandragupta-maurya.webp"
+    },
+    {
+      "id": "preset:shah-jahan",
+      "name": "Shah Jahan",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "aliases": [
+        "沙贾汗"
+      ],
+      "imageUrl": "./avatars/characters/shah-jahan.png",
+      "thumbnailUrl": "./avatars/thumbnails/shah-jahan.webp"
+    },
+    {
+      "id": "preset:sarojini-naidu",
+      "name": "Sarojini Naidu",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/sarojini-naidu.png",
+      "thumbnailUrl": "./avatars/thumbnails/sarojini-naidu.webp"
+    },
+    {
+      "id": "preset:rani-lakshmibai",
+      "name": "Rani Lakshmibai",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/rani-lakshmibai.png",
+      "thumbnailUrl": "./avatars/thumbnails/rani-lakshmibai.webp"
+    },
+    {
+      "id": "preset:b-r-ambedkar",
+      "name": "B. R. Ambedkar",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "aliases": [
+        "安贝德卡尔"
+      ],
+      "imageUrl": "./avatars/characters/b-r-ambedkar.png",
+      "thumbnailUrl": "./avatars/thumbnails/b-r-ambedkar.webp"
+    },
+    {
+      "id": "preset:meghnad-saha",
+      "name": "Meghnad Saha",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/meghnad-saha.png",
+      "thumbnailUrl": "./avatars/thumbnails/meghnad-saha.webp"
+    },
+    {
+      "id": "preset:abanindranath-tagore",
+      "name": "Abanindranath Tagore",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/abanindranath-tagore.png",
+      "thumbnailUrl": "./avatars/thumbnails/abanindranath-tagore.webp"
+    },
+    {
+      "id": "preset:satyendra-nath-bose",
+      "name": "Satyendra Nath Bose",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/satyendra-nath-bose.png",
+      "thumbnailUrl": "./avatars/thumbnails/satyendra-nath-bose.webp"
+    },
+    {
+      "id": "preset:savitribai-phule",
+      "name": "Savitribai Phule",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/savitribai-phule.png",
+      "thumbnailUrl": "./avatars/thumbnails/savitribai-phule.webp"
+    },
+    {
+      "id": "preset:kazi-nazrul-islam",
+      "name": "Kazi Nazrul Islam",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/kazi-nazrul-islam.png",
+      "thumbnailUrl": "./avatars/thumbnails/kazi-nazrul-islam.webp"
+    },
+    {
+      "id": "preset:subhas-chandra-bose",
+      "name": "Subhas Chandra Bose",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/subhas-chandra-bose.png",
+      "thumbnailUrl": "./avatars/thumbnails/subhas-chandra-bose.webp"
+    },
+    {
+      "id": "preset:laozi",
+      "name": "Laozi",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "aliases": [
+        "老子"
+      ],
+      "imageUrl": "./avatars/characters/laozi.png",
+      "thumbnailUrl": "./avatars/thumbnails/laozi.webp"
+    },
+    {
+      "id": "preset:sima-qian",
+      "name": "Sima Qian",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "aliases": [
+        "司马迁"
+      ],
+      "imageUrl": "./avatars/characters/sima-qian.png",
+      "thumbnailUrl": "./avatars/thumbnails/sima-qian.webp"
+    },
+    {
+      "id": "preset:sejong-the-great",
+      "name": "Sejong the Great",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "aliases": [
+        "世宗大王"
+      ],
+      "imageUrl": "./avatars/characters/sejong-the-great.png",
+      "thumbnailUrl": "./avatars/thumbnails/sejong-the-great.webp"
+    },
+    {
+      "id": "preset:ban-zhao",
+      "name": "Ban Zhao",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "aliases": [
+        "班昭"
+      ],
+      "imageUrl": "./avatars/characters/ban-zhao.png",
+      "thumbnailUrl": "./avatars/thumbnails/ban-zhao.webp"
+    },
+    {
+      "id": "preset:begum-rokeya",
+      "name": "Begum Rokeya",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/begum-rokeya.png",
+      "thumbnailUrl": "./avatars/thumbnails/begum-rokeya.webp"
+    },
+    {
+      "id": "preset:mencius",
+      "name": "Mencius",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "aliases": [
+        "孟子"
+      ],
+      "imageUrl": "./avatars/characters/mencius.png",
+      "thumbnailUrl": "./avatars/thumbnails/mencius.webp"
+    },
+    {
+      "id": "preset:xu-guangqi",
+      "name": "Xu Guangqi",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "aliases": [
+        "徐光启"
+      ],
+      "imageUrl": "./avatars/characters/xu-guangqi.png",
+      "thumbnailUrl": "./avatars/thumbnails/xu-guangqi.webp"
+    },
+    {
+      "id": "preset:c-v-raman",
+      "name": "C. V. Raman",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/c-v-raman.png",
+      "thumbnailUrl": "./avatars/thumbnails/c-v-raman.webp"
+    },
+    {
+      "id": "preset:xu-xiake",
+      "name": "Xu Xiake",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "aliases": [
+        "徐霞客"
+      ],
+      "imageUrl": "./avatars/characters/xu-xiake.png",
+      "thumbnailUrl": "./avatars/thumbnails/xu-xiake.webp"
+    },
+    {
+      "id": "preset:zhuangzi",
+      "name": "Zhuangzi",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "aliases": [
+        "庄子"
+      ],
+      "imageUrl": "./avatars/characters/zhuangzi.png",
+      "thumbnailUrl": "./avatars/thumbnails/zhuangzi.webp"
+    },
+    {
+      "id": "preset:raja-ravi-varma",
+      "name": "Raja Ravi Varma",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/raja-ravi-varma.png",
+      "thumbnailUrl": "./avatars/thumbnails/raja-ravi-varma.webp"
+    },
+    {
+      "id": "preset:jagadish-chandra-bose",
+      "name": "Jagadish Chandra Bose",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/jagadish-chandra-bose.png",
+      "thumbnailUrl": "./avatars/thumbnails/jagadish-chandra-bose.webp"
+    },
+    {
+      "id": "preset:mozi",
+      "name": "Mozi",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "aliases": [
+        "墨子"
+      ],
+      "imageUrl": "./avatars/characters/mozi.png",
+      "thumbnailUrl": "./avatars/thumbnails/mozi.webp"
+    },
+    {
+      "id": "preset:cai-lun",
+      "name": "Cai Lun",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "aliases": [
+        "蔡伦"
+      ],
+      "imageUrl": "./avatars/characters/cai-lun.png",
+      "thumbnailUrl": "./avatars/thumbnails/cai-lun.webp"
+    },
+    {
+      "id": "preset:li-shizhen",
+      "name": "Li Shizhen",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "aliases": [
+        "李时珍"
+      ],
+      "imageUrl": "./avatars/characters/li-shizhen.png",
+      "thumbnailUrl": "./avatars/thumbnails/li-shizhen.webp"
+    },
+    {
+      "id": "preset:hua-tuo",
+      "name": "Hua Tuo",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "aliases": [
+        "华佗"
+      ],
+      "imageUrl": "./avatars/characters/hua-tuo.png",
+      "thumbnailUrl": "./avatars/thumbnails/hua-tuo.webp"
+    },
+    {
+      "id": "preset:gu-kaizhi",
+      "name": "Gu Kaizhi",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "aliases": [
+        "顾恺之"
+      ],
+      "imageUrl": "./avatars/characters/gu-kaizhi.png",
+      "thumbnailUrl": "./avatars/thumbnails/gu-kaizhi.webp"
+    },
+    {
+      "id": "preset:zhang-zhongjing",
+      "name": "Zhang Zhongjing",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "aliases": [
+        "张仲景"
+      ],
+      "imageUrl": "./avatars/characters/zhang-zhongjing.png",
+      "thumbnailUrl": "./avatars/thumbnails/zhang-zhongjing.webp"
+    },
+    {
+      "id": "preset:wang-wei",
+      "name": "Wang Wei",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/wang-wei.png",
+      "thumbnailUrl": "./avatars/thumbnails/wang-wei.webp"
+    },
+    {
+      "id": "preset:bai-juyi",
+      "name": "Bai Juyi",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/bai-juyi.png",
+      "thumbnailUrl": "./avatars/thumbnails/bai-juyi.webp"
+    },
+    {
+      "id": "preset:wang-xizhi",
+      "name": "Wang Xizhi",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "aliases": [
+        "王羲之"
+      ],
+      "imageUrl": "./avatars/characters/wang-xizhi.png",
+      "thumbnailUrl": "./avatars/thumbnails/wang-xizhi.webp"
+    },
+    {
+      "id": "preset:zhu-xi",
+      "name": "Zhu Xi",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/zhu-xi.png",
+      "thumbnailUrl": "./avatars/thumbnails/zhu-xi.webp"
+    },
+    {
+      "id": "preset:xin-qiji",
+      "name": "Xin Qiji",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/xin-qiji.png",
+      "thumbnailUrl": "./avatars/thumbnails/xin-qiji.webp"
+    },
+    {
+      "id": "preset:queen-of-hearts",
+      "name": "Queen of Hearts",
+      "category": "Fictional characters",
+      "visualStyle": "Watercolor",
+      "aliases": [
+        "红心皇后"
+      ],
+      "imageUrl": "./avatars/characters/queen-of-hearts.png",
+      "thumbnailUrl": "./avatars/thumbnails/queen-of-hearts.webp"
+    },
+    {
+      "id": "preset:wendy-darling",
+      "name": "Wendy Darling",
+      "category": "Fictional characters",
+      "visualStyle": "Paper craft",
+      "aliases": [
+        "温蒂"
+      ],
+      "imageUrl": "./avatars/characters/wendy-darling.png",
+      "thumbnailUrl": "./avatars/thumbnails/wendy-darling.webp"
+    },
+    {
+      "id": "preset:wu-daozi",
+      "name": "Wu Daozi",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "aliases": [
+        "吴道子"
+      ],
+      "imageUrl": "./avatars/characters/wu-daozi.png",
+      "thumbnailUrl": "./avatars/thumbnails/wu-daozi.webp"
+    },
+    {
+      "id": "preset:the-velveteen-rabbit",
+      "name": "The Velveteen Rabbit",
+      "category": "Fictional characters",
+      "visualStyle": "3D animation",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/the-velveteen-rabbit.png",
+      "thumbnailUrl": "./avatars/thumbnails/the-velveteen-rabbit.webp"
+    },
+    {
+      "id": "preset:blue-fairy",
+      "name": "Blue Fairy",
+      "category": "Fictional characters",
+      "visualStyle": "Oil painting",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/blue-fairy.png",
+      "thumbnailUrl": "./avatars/thumbnails/blue-fairy.webp"
+    },
+    {
+      "id": "preset:zheng-banqiao",
+      "name": "Zheng Banqiao",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/zheng-banqiao.png",
+      "thumbnailUrl": "./avatars/thumbnails/zheng-banqiao.webp"
+    },
+    {
+      "id": "preset:badger-from-wind-in-the-willows",
+      "name": "Badger from Wind in the Willows",
+      "category": "Fictional characters",
+      "visualStyle": "Plush & felt",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/badger-from-wind-in-the-willows.png",
+      "thumbnailUrl": "./avatars/thumbnails/badger-from-wind-in-the-willows.webp"
+    },
+    {
+      "id": "preset:rumpelstiltskin",
+      "name": "Rumpelstiltskin",
+      "category": "Fictional characters",
+      "visualStyle": "Cel animation",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/rumpelstiltskin.png",
+      "thumbnailUrl": "./avatars/thumbnails/rumpelstiltskin.webp"
+    },
+    {
+      "id": "preset:rabbit-from-winnie-the-pooh",
+      "name": "Rabbit from Winnie the Pooh",
+      "category": "Fictional characters",
+      "visualStyle": "Clay stop-motion",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/rabbit-from-winnie-the-pooh.png",
+      "thumbnailUrl": "./avatars/thumbnails/rabbit-from-winnie-the-pooh.webp"
+    },
+    {
+      "id": "preset:hansel",
+      "name": "Hansel",
+      "category": "Fictional characters",
+      "visualStyle": "Oil painting",
+      "aliases": [
+        "汉塞尔"
+      ],
+      "imageUrl": "./avatars/characters/hansel.png",
+      "thumbnailUrl": "./avatars/thumbnails/hansel.webp"
+    },
+    {
+      "id": "preset:peter-rabbit",
+      "name": "Peter Rabbit",
+      "category": "Fictional characters",
+      "visualStyle": "Cel animation",
+      "aliases": [
+        "彼得兔"
+      ],
+      "imageUrl": "./avatars/characters/peter-rabbit.png",
+      "thumbnailUrl": "./avatars/thumbnails/peter-rabbit.webp"
+    },
+    {
+      "id": "preset:jemima-puddle-duck",
+      "name": "Jemima Puddle-Duck",
+      "category": "Fictional characters",
+      "visualStyle": "Oil painting",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/jemima-puddle-duck.png",
+      "thumbnailUrl": "./avatars/thumbnails/jemima-puddle-duck.webp"
+    },
+    {
+      "id": "preset:mole-from-wind-in-the-willows",
+      "name": "Mole from Wind in the Willows",
+      "category": "Fictional characters",
+      "visualStyle": "Paper craft",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/mole-from-wind-in-the-willows.png",
+      "thumbnailUrl": "./avatars/thumbnails/mole-from-wind-in-the-willows.webp"
+    },
+    {
+      "id": "preset:gretel",
+      "name": "Gretel",
+      "category": "Fictional characters",
+      "visualStyle": "Watercolor",
+      "aliases": [
+        "格蕾特"
+      ],
+      "imageUrl": "./avatars/characters/gretel.png",
+      "thumbnailUrl": "./avatars/thumbnails/gretel.webp"
+    },
+    {
+      "id": "preset:squirrel-nutkin",
+      "name": "Squirrel Nutkin",
+      "category": "Fictional characters",
+      "visualStyle": "Clay stop-motion",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/squirrel-nutkin.png",
+      "thumbnailUrl": "./avatars/thumbnails/squirrel-nutkin.webp"
+    },
+    {
+      "id": "preset:ratty-from-wind-in-the-willows",
+      "name": "Ratty from Wind in the Willows",
+      "category": "Fictional characters",
+      "visualStyle": "Graphic novel",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/ratty-from-wind-in-the-willows.png",
+      "thumbnailUrl": "./avatars/thumbnails/ratty-from-wind-in-the-willows.webp"
+    },
+    {
+      "id": "preset:mr-toad",
+      "name": "Mr. Toad",
+      "category": "Fictional characters",
+      "visualStyle": "3D animation",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/mr-toad.png",
+      "thumbnailUrl": "./avatars/thumbnails/mr-toad.webp"
+    },
+    {
+      "id": "preset:the-ugly-duckling",
+      "name": "The Ugly Duckling",
+      "category": "Fictional characters",
+      "visualStyle": "Graphic novel",
+      "aliases": [
+        "丑小鸭"
+      ],
+      "imageUrl": "./avatars/characters/the-ugly-duckling.png",
+      "thumbnailUrl": "./avatars/thumbnails/the-ugly-duckling.webp"
+    },
+    {
+      "id": "preset:benjamin-bunny",
+      "name": "Benjamin Bunny",
+      "category": "Fictional characters",
+      "visualStyle": "Watercolor",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/benjamin-bunny.png",
+      "thumbnailUrl": "./avatars/thumbnails/benjamin-bunny.webp"
+    },
+    {
+      "id": "preset:babar",
+      "name": "Babar",
+      "category": "Fictional characters",
+      "visualStyle": "Graphic novel",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/babar.png",
+      "thumbnailUrl": "./avatars/thumbnails/babar.webp"
+    },
+    {
+      "id": "preset:mrs-tiggy-winkle",
+      "name": "Mrs. Tiggy-Winkle",
+      "category": "Fictional characters",
+      "visualStyle": "Paper craft",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/mrs-tiggy-winkle.png",
+      "thumbnailUrl": "./avatars/thumbnails/mrs-tiggy-winkle.webp"
+    },
+    {
+      "id": "preset:bagheera",
+      "name": "Bagheera",
+      "category": "Fictional characters",
+      "visualStyle": "Watercolor",
+      "aliases": [
+        "巴希拉"
+      ],
+      "imageUrl": "./avatars/characters/bagheera.png",
+      "thumbnailUrl": "./avatars/thumbnails/bagheera.webp"
+    },
+    {
+      "id": "preset:athos",
+      "name": "Athos",
+      "category": "Fictional characters",
+      "visualStyle": "Plush & felt",
+      "aliases": [
+        "阿多斯"
+      ],
+      "imageUrl": "./avatars/characters/athos.png",
+      "thumbnailUrl": "./avatars/thumbnails/athos.webp"
+    },
+    {
+      "id": "preset:tarzan",
+      "name": "Tarzan",
+      "category": "Fictional characters",
+      "visualStyle": "Graphic novel",
+      "aliases": [
+        "泰山"
+      ],
+      "imageUrl": "./avatars/characters/tarzan.png",
+      "thumbnailUrl": "./avatars/thumbnails/tarzan.webp"
+    },
+    {
+      "id": "preset:aramis",
+      "name": "Aramis",
+      "category": "Fictional characters",
+      "visualStyle": "Oil painting",
+      "aliases": [
+        "阿拉密斯"
+      ],
+      "imageUrl": "./avatars/characters/aramis.png",
+      "thumbnailUrl": "./avatars/thumbnails/aramis.webp"
+    },
+    {
+      "id": "preset:edmond-dantes",
+      "name": "Edmond Dantes",
+      "category": "Fictional characters",
+      "visualStyle": "Watercolor",
+      "aliases": [
+        "爱德蒙·唐泰斯",
+        "基督山伯爵"
+      ],
+      "imageUrl": "./avatars/characters/edmond-dantes.png",
+      "thumbnailUrl": "./avatars/thumbnails/edmond-dantes.webp"
+    },
+    {
+      "id": "preset:d-artagnan",
+      "name": "D'Artagnan",
+      "category": "Fictional characters",
+      "visualStyle": "3D animation",
+      "aliases": [
+        "达达尼昂"
+      ],
+      "imageUrl": "./avatars/characters/d-artagnan.png",
+      "thumbnailUrl": "./avatars/thumbnails/d-artagnan.webp"
+    },
+    {
+      "id": "preset:porthos",
+      "name": "Porthos",
+      "category": "Fictional characters",
+      "visualStyle": "Cel animation",
+      "aliases": [
+        "波尔多斯"
+      ],
+      "imageUrl": "./avatars/characters/porthos.png",
+      "thumbnailUrl": "./avatars/thumbnails/porthos.webp"
+    },
+    {
+      "id": "preset:akela",
+      "name": "Akela",
+      "category": "Fictional characters",
+      "visualStyle": "Paper craft",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/akela.png",
+      "thumbnailUrl": "./avatars/thumbnails/akela.webp"
+    },
+    {
+      "id": "preset:othello",
+      "name": "Othello",
+      "category": "Fictional characters",
+      "visualStyle": "Graphic novel",
+      "aliases": [
+        "奥赛罗"
+      ],
+      "imageUrl": "./avatars/characters/othello.png",
+      "thumbnailUrl": "./avatars/thumbnails/othello.webp"
+    },
+    {
+      "id": "preset:hamlet",
+      "name": "Hamlet",
+      "category": "Fictional characters",
+      "visualStyle": "Cel animation",
+      "aliases": [
+        "哈姆雷特"
+      ],
+      "imageUrl": "./avatars/characters/hamlet.png",
+      "thumbnailUrl": "./avatars/thumbnails/hamlet.webp"
+    },
+    {
+      "id": "preset:jean-valjean",
+      "name": "Jean Valjean",
+      "category": "Fictional characters",
+      "visualStyle": "Clay stop-motion",
+      "aliases": [
+        "冉阿让"
+      ],
+      "imageUrl": "./avatars/characters/jean-valjean.png",
+      "thumbnailUrl": "./avatars/thumbnails/jean-valjean.webp"
+    },
+    {
+      "id": "preset:cosette",
+      "name": "Cosette",
+      "category": "Fictional characters",
+      "visualStyle": "Paper craft",
+      "aliases": [
+        "珂赛特"
+      ],
+      "imageUrl": "./avatars/characters/cosette.png",
+      "thumbnailUrl": "./avatars/thumbnails/cosette.webp"
+    },
+    {
+      "id": "preset:falstaff",
+      "name": "Falstaff",
+      "category": "Fictional characters",
+      "visualStyle": "Plush & felt",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/falstaff.png",
+      "thumbnailUrl": "./avatars/thumbnails/falstaff.webp"
+    },
+    {
+      "id": "preset:david-copperfield",
+      "name": "David Copperfield",
+      "category": "Fictional characters",
+      "visualStyle": "Clay stop-motion",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/david-copperfield.png",
+      "thumbnailUrl": "./avatars/thumbnails/david-copperfield.webp"
+    },
+    {
+      "id": "preset:javert",
+      "name": "Javert",
+      "category": "Fictional characters",
+      "visualStyle": "Graphic novel",
+      "aliases": [
+        "沙威"
+      ],
+      "imageUrl": "./avatars/characters/javert.png",
+      "thumbnailUrl": "./avatars/thumbnails/javert.webp"
+    },
+    {
+      "id": "preset:prospero",
+      "name": "Prospero",
+      "category": "Fictional characters",
+      "visualStyle": "Watercolor",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/prospero.png",
+      "thumbnailUrl": "./avatars/thumbnails/prospero.webp"
+    },
+    {
+      "id": "preset:fagin",
+      "name": "Fagin",
+      "category": "Fictional characters",
+      "visualStyle": "Paper craft",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/fagin.png",
+      "thumbnailUrl": "./avatars/thumbnails/fagin.webp"
+    },
+    {
+      "id": "preset:macbeth",
+      "name": "Macbeth",
+      "category": "Fictional characters",
+      "visualStyle": "3D animation",
+      "aliases": [
+        "麦克白"
+      ],
+      "imageUrl": "./avatars/characters/macbeth.png",
+      "thumbnailUrl": "./avatars/thumbnails/macbeth.webp"
+    },
+    {
+      "id": "preset:ophelia",
+      "name": "Ophelia",
+      "category": "Fictional characters",
+      "visualStyle": "Oil painting",
+      "aliases": [
+        "奥菲莉娅"
+      ],
+      "imageUrl": "./avatars/characters/ophelia.png",
+      "thumbnailUrl": "./avatars/thumbnails/ophelia.webp"
+    },
+    {
+      "id": "preset:huckleberry-finn",
+      "name": "Huckleberry Finn",
+      "category": "Fictional characters",
+      "visualStyle": "Graphic novel",
+      "aliases": [
+        "哈克贝利·费恩"
+      ],
+      "imageUrl": "./avatars/characters/huckleberry-finn.png",
+      "thumbnailUrl": "./avatars/thumbnails/huckleberry-finn.webp"
+    },
+    {
+      "id": "preset:ebenezer-scrooge",
+      "name": "Ebenezer Scrooge",
+      "category": "Fictional characters",
+      "visualStyle": "Cel animation",
+      "aliases": [
+        "斯克鲁奇"
+      ],
+      "imageUrl": "./avatars/characters/ebenezer-scrooge.png",
+      "thumbnailUrl": "./avatars/thumbnails/ebenezer-scrooge.webp"
+    },
+    {
+      "id": "preset:puck",
+      "name": "Puck",
+      "category": "Fictional characters",
+      "visualStyle": "Clay stop-motion",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/puck.png",
+      "thumbnailUrl": "./avatars/thumbnails/puck.webp"
+    },
+    {
+      "id": "preset:tom-sawyer",
+      "name": "Tom Sawyer",
+      "category": "Fictional characters",
+      "visualStyle": "3D animation",
+      "aliases": [
+        "汤姆·索亚"
+      ],
+      "imageUrl": "./avatars/characters/tom-sawyer.png",
+      "thumbnailUrl": "./avatars/thumbnails/tom-sawyer.webp"
+    },
+    {
+      "id": "preset:long-john-silver",
+      "name": "Long John Silver",
+      "category": "Fictional characters",
+      "visualStyle": "Plush & felt",
+      "aliases": [
+        "独腿西尔弗"
+      ],
+      "imageUrl": "./avatars/characters/long-john-silver.png",
+      "thumbnailUrl": "./avatars/thumbnails/long-john-silver.webp"
+    },
+    {
+      "id": "preset:oliver-twist",
+      "name": "Oliver Twist",
+      "category": "Fictional characters",
+      "visualStyle": "Watercolor",
+      "aliases": [
+        "雾都孤儿",
+        "奥利弗·特威斯特"
+      ],
+      "imageUrl": "./avatars/characters/oliver-twist.png",
+      "thumbnailUrl": "./avatars/thumbnails/oliver-twist.webp"
+    },
+    {
+      "id": "preset:king-lear",
+      "name": "King Lear",
+      "category": "Fictional characters",
+      "visualStyle": "Paper craft",
+      "aliases": [
+        "李尔王"
+      ],
+      "imageUrl": "./avatars/characters/king-lear.png",
+      "thumbnailUrl": "./avatars/thumbnails/king-lear.webp"
+    },
+    {
+      "id": "preset:tiny-tim",
+      "name": "Tiny Tim",
+      "category": "Fictional characters",
+      "visualStyle": "Oil painting",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/tiny-tim.png",
+      "thumbnailUrl": "./avatars/thumbnails/tiny-tim.webp"
+    },
+    {
+      "id": "preset:passepartout",
+      "name": "Passepartout",
+      "category": "Fictional characters",
+      "visualStyle": "Graphic novel",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/passepartout.png",
+      "thumbnailUrl": "./avatars/thumbnails/passepartout.webp"
+    },
+    {
+      "id": "preset:allan-quatermain",
+      "name": "Allan Quatermain",
+      "category": "Fictional characters",
+      "visualStyle": "3D animation",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/allan-quatermain.png",
+      "thumbnailUrl": "./avatars/thumbnails/allan-quatermain.webp"
+    },
+    {
+      "id": "preset:phileas-fogg",
+      "name": "Phileas Fogg",
+      "category": "Fictional characters",
+      "visualStyle": "Paper craft",
+      "aliases": [
+        "菲利亚斯·福格"
+      ],
+      "imageUrl": "./avatars/characters/phileas-fogg.png",
+      "thumbnailUrl": "./avatars/thumbnails/phileas-fogg.webp"
+    },
+    {
+      "id": "preset:gulliver",
+      "name": "Gulliver",
+      "category": "Fictional characters",
+      "visualStyle": "Clay stop-motion",
+      "aliases": [
+        "格列佛"
+      ],
+      "imageUrl": "./avatars/characters/gulliver.png",
+      "thumbnailUrl": "./avatars/thumbnails/gulliver.webp"
+    },
+    {
+      "id": "preset:friday-from-robinson-crusoe",
+      "name": "Friday from Robinson Crusoe",
+      "category": "Fictional characters",
+      "visualStyle": "Watercolor",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/friday-from-robinson-crusoe.png",
+      "thumbnailUrl": "./avatars/thumbnails/friday-from-robinson-crusoe.webp"
+    },
+    {
+      "id": "preset:pollyanna",
+      "name": "Pollyanna",
+      "category": "Fictional characters",
+      "visualStyle": "Graphic novel",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/pollyanna.png",
+      "thumbnailUrl": "./avatars/thumbnails/pollyanna.webp"
+    },
+    {
+      "id": "preset:heidi",
+      "name": "Heidi",
+      "category": "Fictional characters",
+      "visualStyle": "Paper craft",
+      "aliases": [
+        "海蒂"
+      ],
+      "imageUrl": "./avatars/characters/heidi.png",
+      "thumbnailUrl": "./avatars/thumbnails/heidi.webp"
+    },
+    {
+      "id": "preset:colin-craven",
+      "name": "Colin Craven",
+      "category": "Fictional characters",
+      "visualStyle": "Cel animation",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/colin-craven.png",
+      "thumbnailUrl": "./avatars/thumbnails/colin-craven.webp"
+    },
+    {
+      "id": "preset:jim-hawkins",
+      "name": "Jim Hawkins",
+      "category": "Fictional characters",
+      "visualStyle": "Cel animation",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/jim-hawkins.png",
+      "thumbnailUrl": "./avatars/thumbnails/jim-hawkins.webp"
+    },
+    {
+      "id": "preset:robinson-crusoe",
+      "name": "Robinson Crusoe",
+      "category": "Fictional characters",
+      "visualStyle": "Oil painting",
+      "aliases": [
+        "鲁滨逊"
+      ],
+      "imageUrl": "./avatars/characters/robinson-crusoe.png",
+      "thumbnailUrl": "./avatars/thumbnails/robinson-crusoe.webp"
+    },
+    {
+      "id": "preset:hester-prynne",
+      "name": "Hester Prynne",
+      "category": "Fictional characters",
+      "visualStyle": "Plush & felt",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/hester-prynne.png",
+      "thumbnailUrl": "./avatars/thumbnails/hester-prynne.webp"
+    },
+    {
+      "id": "preset:sara-crewe",
+      "name": "Sara Crewe",
+      "category": "Fictional characters",
+      "visualStyle": "3D animation",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/sara-crewe.png",
+      "thumbnailUrl": "./avatars/thumbnails/sara-crewe.webp"
+    },
+    {
+      "id": "preset:mary-lennox",
+      "name": "Mary Lennox",
+      "category": "Fictional characters",
+      "visualStyle": "Plush & felt",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/mary-lennox.png",
+      "thumbnailUrl": "./avatars/thumbnails/mary-lennox.webp"
+    },
+    {
+      "id": "preset:jo-march",
+      "name": "Jo March",
+      "category": "Fictional characters",
+      "visualStyle": "Oil painting",
+      "aliases": [
+        "乔·马奇"
+      ],
+      "imageUrl": "./avatars/characters/jo-march.png",
+      "thumbnailUrl": "./avatars/thumbnails/jo-march.webp"
+    },
+    {
+      "id": "preset:christopher-robin",
+      "name": "Christopher Robin",
+      "category": "Fictional characters",
+      "visualStyle": "Oil painting",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/christopher-robin.png",
+      "thumbnailUrl": "./avatars/thumbnails/christopher-robin.webp"
+    },
+    {
+      "id": "preset:elizabeth-bennet",
+      "name": "Elizabeth Bennet",
+      "category": "Fictional characters",
+      "visualStyle": "Watercolor",
+      "aliases": [
+        "伊丽莎白·班纳特"
+      ],
+      "imageUrl": "./avatars/characters/elizabeth-bennet.png",
+      "thumbnailUrl": "./avatars/thumbnails/elizabeth-bennet.webp"
+    },
+    {
+      "id": "preset:mr-darcy",
+      "name": "Mr. Darcy",
+      "category": "Fictional characters",
+      "visualStyle": "Clay stop-motion",
+      "aliases": [
+        "达西先生"
+      ],
+      "imageUrl": "./avatars/characters/mr-darcy.png",
+      "thumbnailUrl": "./avatars/thumbnails/mr-darcy.webp"
+    },
+    {
+      "id": "preset:luna-lovegood",
+      "name": "Luna Lovegood",
+      "category": "Fictional characters",
+      "visualStyle": "Oil painting",
+      "aliases": [
+        "卢娜·洛夫古德"
+      ],
+      "imageUrl": "./avatars/characters/luna-lovegood.png",
+      "thumbnailUrl": "./avatars/thumbnails/luna-lovegood.webp"
+    },
+    {
+      "id": "preset:anne-shirley",
+      "name": "Anne Shirley",
+      "category": "Fictional characters",
+      "visualStyle": "Cel animation",
+      "aliases": [
+        "安妮·雪莉"
+      ],
+      "imageUrl": "./avatars/characters/anne-shirley.png",
+      "thumbnailUrl": "./avatars/thumbnails/anne-shirley.webp"
+    },
+    {
+      "id": "preset:newt-scamander",
+      "name": "Newt Scamander",
+      "category": "Fictional characters",
+      "visualStyle": "Watercolor",
+      "aliases": [
+        "纽特·斯卡曼德"
+      ],
+      "imageUrl": "./avatars/characters/newt-scamander.png",
+      "thumbnailUrl": "./avatars/thumbnails/newt-scamander.webp"
+    },
+    {
+      "id": "preset:lise-meitner",
+      "name": "Lise Meitner",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "aliases": [
+        "莉泽·迈特纳"
+      ],
+      "imageUrl": "./avatars/characters/lise-meitner.png",
+      "thumbnailUrl": "./avatars/thumbnails/lise-meitner.webp"
+    },
+    {
+      "id": "preset:vera-rubin",
+      "name": "Vera Rubin",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "aliases": [
+        "薇拉·鲁宾"
+      ],
+      "imageUrl": "./avatars/characters/vera-rubin.png",
+      "thumbnailUrl": "./avatars/thumbnails/vera-rubin.webp"
+    },
+    {
+      "id": "preset:rachel-carson",
+      "name": "Rachel Carson",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "aliases": [
+        "蕾切尔·卡森"
+      ],
+      "imageUrl": "./avatars/characters/rachel-carson.png",
+      "thumbnailUrl": "./avatars/thumbnails/rachel-carson.webp"
+    },
+    {
+      "id": "preset:barbara-mcclintock",
+      "name": "Barbara McClintock",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/barbara-mcclintock.png",
+      "thumbnailUrl": "./avatars/thumbnails/barbara-mcclintock.webp"
+    },
+    {
+      "id": "preset:caroline-herschel",
+      "name": "Caroline Herschel",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/caroline-herschel.png",
+      "thumbnailUrl": "./avatars/thumbnails/caroline-herschel.webp"
+    },
+    {
+      "id": "preset:henrietta-leavitt",
+      "name": "Henrietta Leavitt",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/henrietta-leavitt.png",
+      "thumbnailUrl": "./avatars/thumbnails/henrietta-leavitt.webp"
+    },
+    {
+      "id": "preset:cecilia-payne-gaposchkin",
+      "name": "Cecilia Payne-Gaposchkin",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/cecilia-payne-gaposchkin.png",
+      "thumbnailUrl": "./avatars/thumbnails/cecilia-payne-gaposchkin.webp"
+    },
+    {
+      "id": "preset:mary-anning",
+      "name": "Mary Anning",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "aliases": [
+        "玛丽·安宁"
+      ],
+      "imageUrl": "./avatars/characters/mary-anning.png",
+      "thumbnailUrl": "./avatars/thumbnails/mary-anning.webp"
+    },
+    {
+      "id": "preset:chien-shiung-wu",
+      "name": "Chien-Shiung Wu",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "aliases": [
+        "吴健雄"
+      ],
+      "imageUrl": "./avatars/characters/chien-shiung-wu.png",
+      "thumbnailUrl": "./avatars/thumbnails/chien-shiung-wu.webp"
+    },
+    {
+      "id": "preset:sophie-germain",
+      "name": "Sophie Germain",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/sophie-germain.png",
+      "thumbnailUrl": "./avatars/thumbnails/sophie-germain.webp"
+    },
+    {
+      "id": "preset:leonhard-euler",
+      "name": "Leonhard Euler",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "aliases": [
+        "欧拉"
+      ],
+      "imageUrl": "./avatars/characters/leonhard-euler.png",
+      "thumbnailUrl": "./avatars/thumbnails/leonhard-euler.webp"
+    },
+    {
+      "id": "preset:bernhard-riemann",
+      "name": "Bernhard Riemann",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "aliases": [
+        "黎曼"
+      ],
+      "imageUrl": "./avatars/characters/bernhard-riemann.png",
+      "thumbnailUrl": "./avatars/thumbnails/bernhard-riemann.webp"
+    },
+    {
+      "id": "preset:sofia-kovalevskaya",
+      "name": "Sofia Kovalevskaya",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/sofia-kovalevskaya.png",
+      "thumbnailUrl": "./avatars/thumbnails/sofia-kovalevskaya.webp"
+    },
+    {
+      "id": "preset:blaise-pascal",
+      "name": "Blaise Pascal",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "aliases": [
+        "帕斯卡"
+      ],
+      "imageUrl": "./avatars/characters/blaise-pascal.png",
+      "thumbnailUrl": "./avatars/thumbnails/blaise-pascal.webp"
+    },
+    {
+      "id": "preset:dorothy-hodgkin",
+      "name": "Dorothy Hodgkin",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/dorothy-hodgkin.png",
+      "thumbnailUrl": "./avatars/thumbnails/dorothy-hodgkin.webp"
+    },
+    {
+      "id": "preset:rene-descartes",
+      "name": "Rene Descartes",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "aliases": [
+        "笛卡尔"
+      ],
+      "imageUrl": "./avatars/characters/rene-descartes.png",
+      "thumbnailUrl": "./avatars/thumbnails/rene-descartes.webp"
+    },
+    {
+      "id": "preset:carl-friedrich-gauss",
+      "name": "Carl Friedrich Gauss",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "aliases": [
+        "高斯"
+      ],
+      "imageUrl": "./avatars/characters/carl-friedrich-gauss.png",
+      "thumbnailUrl": "./avatars/thumbnails/carl-friedrich-gauss.webp"
+    },
+    {
+      "id": "preset:pierre-de-fermat",
+      "name": "Pierre de Fermat",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/pierre-de-fermat.png",
+      "thumbnailUrl": "./avatars/thumbnails/pierre-de-fermat.webp"
+    },
+    {
+      "id": "preset:ernest-rutherford",
+      "name": "Ernest Rutherford",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "aliases": [
+        "卢瑟福"
+      ],
+      "imageUrl": "./avatars/characters/ernest-rutherford.png",
+      "thumbnailUrl": "./avatars/thumbnails/ernest-rutherford.webp"
+    },
+    {
+      "id": "preset:gottfried-wilhelm-leibniz",
+      "name": "Gottfried Wilhelm Leibniz",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "aliases": [
+        "莱布尼茨"
+      ],
+      "imageUrl": "./avatars/characters/gottfried-wilhelm-leibniz.png",
+      "thumbnailUrl": "./avatars/thumbnails/gottfried-wilhelm-leibniz.webp"
+    },
+    {
+      "id": "preset:heinrich-hertz",
+      "name": "Heinrich Hertz",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "aliases": [
+        "赫兹"
+      ],
+      "imageUrl": "./avatars/characters/heinrich-hertz.png",
+      "thumbnailUrl": "./avatars/thumbnails/heinrich-hertz.webp"
+    },
+    {
+      "id": "preset:erwin-schrodinger",
+      "name": "Erwin Schrodinger",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "aliases": [
+        "薛定谔"
+      ],
+      "imageUrl": "./avatars/characters/erwin-schrodinger.png",
+      "thumbnailUrl": "./avatars/thumbnails/erwin-schrodinger.webp"
+    },
+    {
+      "id": "preset:michael-faraday",
+      "name": "Michael Faraday",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "aliases": [
+        "法拉第"
+      ],
+      "imageUrl": "./avatars/characters/michael-faraday.png",
+      "thumbnailUrl": "./avatars/thumbnails/michael-faraday.webp"
+    },
+    {
+      "id": "preset:james-clerk-maxwell",
+      "name": "James Clerk Maxwell",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "aliases": [
+        "麦克斯韦"
+      ],
+      "imageUrl": "./avatars/characters/james-clerk-maxwell.png",
+      "thumbnailUrl": "./avatars/thumbnails/james-clerk-maxwell.webp"
+    },
+    {
+      "id": "preset:paul-dirac",
+      "name": "Paul Dirac",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "aliases": [
+        "狄拉克"
+      ],
+      "imageUrl": "./avatars/characters/paul-dirac.png",
+      "thumbnailUrl": "./avatars/thumbnails/paul-dirac.webp"
+    },
+    {
+      "id": "preset:enrico-fermi",
+      "name": "Enrico Fermi",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "aliases": [
+        "费米"
+      ],
+      "imageUrl": "./avatars/characters/enrico-fermi.png",
+      "thumbnailUrl": "./avatars/thumbnails/enrico-fermi.webp"
+    },
+    {
+      "id": "preset:werner-heisenberg",
+      "name": "Werner Heisenberg",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "aliases": [
+        "海森堡"
+      ],
+      "imageUrl": "./avatars/characters/werner-heisenberg.png",
+      "thumbnailUrl": "./avatars/thumbnails/werner-heisenberg.webp"
+    },
+    {
+      "id": "preset:robert-oppenheimer",
+      "name": "Robert Oppenheimer",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "aliases": [
+        "奥本海默"
+      ],
+      "imageUrl": "./avatars/characters/robert-oppenheimer.png",
+      "thumbnailUrl": "./avatars/thumbnails/robert-oppenheimer.webp"
+    },
+    {
+      "id": "preset:edwin-hubble",
+      "name": "Edwin Hubble",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "aliases": [
+        "哈勃"
+      ],
+      "imageUrl": "./avatars/characters/edwin-hubble.png",
+      "thumbnailUrl": "./avatars/thumbnails/edwin-hubble.webp"
+    },
+    {
+      "id": "preset:florence-nightingale",
+      "name": "Florence Nightingale",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "aliases": [
+        "南丁格尔"
+      ],
+      "imageUrl": "./avatars/characters/florence-nightingale.png",
+      "thumbnailUrl": "./avatars/thumbnails/florence-nightingale.webp"
+    },
+    {
+      "id": "preset:alfred-nobel",
+      "name": "Alfred Nobel",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "aliases": [
+        "诺贝尔"
+      ],
+      "imageUrl": "./avatars/characters/alfred-nobel.png",
+      "thumbnailUrl": "./avatars/thumbnails/alfred-nobel.webp"
+    },
+    {
+      "id": "preset:antoine-lavoisier",
+      "name": "Antoine Lavoisier",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "aliases": [
+        "拉瓦锡"
+      ],
+      "imageUrl": "./avatars/characters/antoine-lavoisier.png",
+      "thumbnailUrl": "./avatars/thumbnails/antoine-lavoisier.webp"
+    },
+    {
+      "id": "preset:tycho-brahe",
+      "name": "Tycho Brahe",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "aliases": [
+        "第谷"
+      ],
+      "imageUrl": "./avatars/characters/tycho-brahe.png",
+      "thumbnailUrl": "./avatars/thumbnails/tycho-brahe.webp"
+    },
+    {
+      "id": "preset:alexander-fleming",
+      "name": "Alexander Fleming",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "aliases": [
+        "弗莱明"
+      ],
+      "imageUrl": "./avatars/characters/alexander-fleming.png",
+      "thumbnailUrl": "./avatars/thumbnails/alexander-fleming.webp"
+    },
+    {
+      "id": "preset:wilbur-wright",
+      "name": "Wilbur Wright",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "aliases": [
+        "威尔伯·莱特"
+      ],
+      "imageUrl": "./avatars/characters/wilbur-wright.png",
+      "thumbnailUrl": "./avatars/thumbnails/wilbur-wright.webp"
+    },
+    {
+      "id": "preset:elizabeth-blackwell",
+      "name": "Elizabeth Blackwell",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/elizabeth-blackwell.png",
+      "thumbnailUrl": "./avatars/thumbnails/elizabeth-blackwell.webp"
+    },
+    {
+      "id": "preset:valentina-tereshkova",
+      "name": "Valentina Tereshkova",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "aliases": [
+        "瓦莲京娜·捷列什科娃"
+      ],
+      "imageUrl": "./avatars/characters/valentina-tereshkova.png",
+      "thumbnailUrl": "./avatars/thumbnails/valentina-tereshkova.webp"
+    },
+    {
+      "id": "preset:yuri-gagarin",
+      "name": "Yuri Gagarin",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "aliases": [
+        "尤里·加加林"
+      ],
+      "imageUrl": "./avatars/characters/yuri-gagarin.png",
+      "thumbnailUrl": "./avatars/thumbnails/yuri-gagarin.webp"
+    },
+    {
+      "id": "preset:charles-babbage",
+      "name": "Charles Babbage",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "aliases": [
+        "查尔斯·巴贝奇"
+      ],
+      "imageUrl": "./avatars/characters/charles-babbage.png",
+      "thumbnailUrl": "./avatars/thumbnails/charles-babbage.webp"
+    },
+    {
+      "id": "preset:clara-barton",
+      "name": "Clara Barton",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "aliases": [],
+      "imageUrl": "./avatars/characters/clara-barton.png",
+      "thumbnailUrl": "./avatars/thumbnails/clara-barton.webp"
+    },
+    {
+      "id": "preset:orville-wright",
+      "name": "Orville Wright",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "aliases": [
+        "奥维尔·莱特"
+      ],
+      "imageUrl": "./avatars/characters/orville-wright.png",
+      "thumbnailUrl": "./avatars/thumbnails/orville-wright.webp"
+    },
+    {
+      "id": "preset:jacques-cousteau",
+      "name": "Jacques Cousteau",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "aliases": [
+        "雅克·库斯托"
+      ],
+      "imageUrl": "./avatars/characters/jacques-cousteau.png",
+      "thumbnailUrl": "./avatars/thumbnails/jacques-cousteau.webp"
+    },
+    {
+      "id": "preset:hedy-lamarr",
+      "name": "Hedy Lamarr",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "aliases": [
+        "海蒂·拉玛"
+      ],
+      "imageUrl": "./avatars/characters/hedy-lamarr.png",
+      "thumbnailUrl": "./avatars/thumbnails/hedy-lamarr.webp"
+    },
+    {
+      "id": "preset:mae-jemison",
+      "name": "Mae Jemison",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "aliases": [
+        "梅·杰米森"
+      ],
+      "imageUrl": "./avatars/characters/mae-jemison.png",
+      "thumbnailUrl": "./avatars/thumbnails/mae-jemison.webp"
+    },
+    {
+      "id": "preset:sally-ride",
+      "name": "Sally Ride",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "aliases": [
+        "莎莉·赖德"
+      ],
+      "imageUrl": "./avatars/characters/sally-ride.png",
+      "thumbnailUrl": "./avatars/thumbnails/sally-ride.webp"
+    },
+    {
+      "id": "preset:tenzing-norgay",
+      "name": "Tenzing Norgay",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "aliases": [
+        "丹增·诺尔盖"
+      ],
+      "imageUrl": "./avatars/characters/tenzing-norgay.png",
+      "thumbnailUrl": "./avatars/thumbnails/tenzing-norgay.webp"
+    },
+    {
+      "id": "preset:ernest-shackleton",
+      "name": "Ernest Shackleton",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "aliases": [
+        "欧内斯特·沙克尔顿"
+      ],
+      "imageUrl": "./avatars/characters/ernest-shackleton.png",
+      "thumbnailUrl": "./avatars/thumbnails/ernest-shackleton.webp"
+    },
+    {
+      "id": "preset:roald-amundsen",
+      "name": "Roald Amundsen",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "aliases": [
+        "罗尔德·阿蒙森"
+      ],
+      "imageUrl": "./avatars/characters/roald-amundsen.png",
+      "thumbnailUrl": "./avatars/thumbnails/roald-amundsen.webp"
     }
   ]
 }

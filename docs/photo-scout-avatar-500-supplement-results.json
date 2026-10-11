@@ -1,0 +1,220 @@
+{
+  "items": [
+    {
+      "name": "Paul Dirac",
+      "slug": "paul-dirac",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "details": "physicist in twentieth-century suit",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-9f3a63af-dfd0-4b6e-ad85-31e562c48137.png"
+    },
+    {
+      "name": "Enrico Fermi",
+      "slug": "enrico-fermi",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "details": "physicist in modest twentieth-century suit",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-438b9f5a-8783-416d-9703-55d537d87f77.png"
+    },
+    {
+      "name": "Werner Heisenberg",
+      "slug": "werner-heisenberg",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "details": "physicist in twentieth-century formal attire",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-08847606-9875-42e2-9ac4-c325977f9937.png"
+    },
+    {
+      "name": "Robert Oppenheimer",
+      "slug": "robert-oppenheimer",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "details": "physicist, broad-brimmed hat and period suit",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-b8ea3630-8109-4986-8915-3103799d7e57.png"
+    },
+    {
+      "name": "Edwin Hubble",
+      "slug": "edwin-hubble",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "details": "astronomer in twentieth-century formal attire",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-17869817-7210-4953-bcaa-cd8bc2478fd4.png"
+    },
+    {
+      "name": "Florence Nightingale",
+      "slug": "florence-nightingale",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "details": "nurse in nineteenth-century uniform",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-f0ab1060-08e1-4911-84b1-a9c8015faaa4.png"
+    },
+    {
+      "name": "Alfred Nobel",
+      "slug": "alfred-nobel",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "details": "bearded inventor in nineteenth-century suit",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-b1bc6306-c73d-4492-b33e-ccc65a3eb38b.png"
+    },
+    {
+      "name": "Antoine Lavoisier",
+      "slug": "antoine-lavoisier",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "details": "chemist in eighteenth-century clothing",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-5d85f2e4-4629-49dc-8652-788897010aff.png"
+    },
+    {
+      "name": "Tycho Brahe",
+      "slug": "tycho-brahe",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "details": "astronomer with moustache and Renaissance attire",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-bcf5d377-ad10-488c-9af2-91756efecf91.png"
+    },
+    {
+      "name": "Alexander Fleming",
+      "slug": "alexander-fleming",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "details": "scientist in lab coat",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-3d3ba1c6-2af8-419a-90ac-0f68ac4e6a37.png"
+    },
+    {
+      "name": "Wilbur Wright",
+      "slug": "wilbur-wright",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "details": "aviation pioneer in period clothing",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-7afa2cdd-855b-44a6-877b-534f5a966f60.png"
+    },
+    {
+      "name": "Elizabeth Blackwell",
+      "slug": "elizabeth-blackwell",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "details": "physician in nineteenth-century dress",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-d8209403-21fb-46df-baec-79195e58a808.png"
+    },
+    {
+      "name": "Valentina Tereshkova",
+      "slug": "valentina-tereshkova",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "details": "cosmonaut in historical flight suit",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-aa2c37c9-c398-4dc1-9bfe-a1e8551200d4.png"
+    },
+    {
+      "name": "Yuri Gagarin",
+      "slug": "yuri-gagarin",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "details": "cosmonaut in orange historical flight suit",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-6483dd1f-a078-4967-ade6-53f0f185edde.png"
+    },
+    {
+      "name": "Charles Babbage",
+      "slug": "charles-babbage",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "details": "inventor in nineteenth-century scholarly attire",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-727562a6-f981-41ae-8e38-04a030d0acf7.png"
+    },
+    {
+      "name": "Clara Barton",
+      "slug": "clara-barton",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "details": "nurse in nineteenth-century attire",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-0a255bda-4599-462d-9c43-561ca74c4cc7.png"
+    },
+    {
+      "name": "Orville Wright",
+      "slug": "orville-wright",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "details": "aviation pioneer, moustache and period attire",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-87cca29b-07ca-4cec-bec0-3422c2ad1b44.png"
+    },
+    {
+      "name": "Jacques Cousteau",
+      "slug": "jacques-cousteau",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "details": "ocean explorer, red wool cap and sailor clothing",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-21784740-8820-4e79-b3e6-9a17ae8f85ff.png"
+    },
+    {
+      "name": "Hedy Lamarr",
+      "slug": "hedy-lamarr",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "details": "inventor and actor in elegant 1940s clothing",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-ac969841-6a00-49bb-84f7-d2eb1018464e.png"
+    },
+    {
+      "name": "Mae Jemison",
+      "slug": "mae-jemison",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "details": "astronaut in blue flight suit",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-9f076a44-141c-4553-96c7-87cc9af6ec2d.png"
+    },
+    {
+      "name": "Sally Ride",
+      "slug": "sally-ride",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "details": "astronaut in blue flight suit",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-8d97c38f-d0f6-47d5-9e54-79fc72b379cc.png"
+    },
+    {
+      "name": "Tenzing Norgay",
+      "slug": "tenzing-norgay",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "details": "mountaineer in historical climbing outfit",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-eaa52520-275c-4d50-a28f-66162f89bc12.png"
+    },
+    {
+      "name": "Ernest Shackleton",
+      "slug": "ernest-shackleton",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "details": "polar explorer in historical expedition clothing",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-b93a51a6-9aca-4816-afa3-213a57c1ca50.png"
+    },
+    {
+      "name": "Roald Amundsen",
+      "slug": "roald-amundsen",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "details": "polar explorer in historical cold-weather clothing",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-c4b4cca2-d193-4720-afc0-41e67c9e7bea.png"
+    }
+  ]
+}

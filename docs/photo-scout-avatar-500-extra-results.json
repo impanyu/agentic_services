@@ -1,0 +1,220 @@
+{
+  "items": [
+    {
+      "name": "Lise Meitner",
+      "slug": "lise-meitner",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "details": "physicist in modest twentieth-century attire",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-e2a67b06-5024-4510-90f1-48c5973e9688.png"
+    },
+    {
+      "name": "Vera Rubin",
+      "slug": "vera-rubin",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "details": "astronomer, spectacles and twentieth-century attire",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-6fa1a971-c160-4f45-84b2-39f85dbca81b.png"
+    },
+    {
+      "name": "Rachel Carson",
+      "slug": "rachel-carson",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "details": "American biologist in modest mid-century dress",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-4e53cd30-2284-4308-ab89-e615466b7e46.png"
+    },
+    {
+      "name": "Barbara McClintock",
+      "slug": "barbara-mcclintock",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "details": "geneticist, short gray hair and practical clothing",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-6383f1dd-9c99-4dee-a39c-81e240eca2c0.png"
+    },
+    {
+      "name": "Caroline Herschel",
+      "slug": "caroline-herschel",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "details": "astronomer in eighteenth-century clothing",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-69de7b9d-e668-44d4-8eb3-0d6a9340f169.png"
+    },
+    {
+      "name": "Henrietta Leavitt",
+      "slug": "henrietta-leavitt",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "details": "astronomer in Edwardian dress",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-c4d967ed-a470-43ad-b7a6-3274fd682910.png"
+    },
+    {
+      "name": "Cecilia Payne-Gaposchkin",
+      "slug": "cecilia-payne-gaposchkin",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "details": "astronomer in period scholarly attire",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-4ae16beb-4c87-4f47-a5ce-70e56c2cabbb.png"
+    },
+    {
+      "name": "Mary Anning",
+      "slug": "mary-anning",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "details": "fossil collector in nineteenth-century dress",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-b1a46d93-3ddc-4925-81d1-e2d2b5b7c745.png"
+    },
+    {
+      "name": "Chien-Shiung Wu",
+      "slug": "chien-shiung-wu",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "details": "Chinese-American physicist in elegant qipao",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-530a50b0-91ed-4535-b44e-ed6004e2f0fb.png"
+    },
+    {
+      "name": "Sophie Germain",
+      "slug": "sophie-germain",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "details": "mathematician in early nineteenth-century dress",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-4bee9316-7a63-4be4-8723-3acf8078ba37.png"
+    },
+    {
+      "name": "Leonhard Euler",
+      "slug": "leonhard-euler",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "details": "mathematician in eighteenth-century attire",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-30e3aac3-221b-481c-ab88-8f2dbb8f516e.png"
+    },
+    {
+      "name": "Bernhard Riemann",
+      "slug": "bernhard-riemann",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "details": "bearded mathematician in nineteenth-century suit",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-d0bd52d3-9a7b-48a3-897d-e902e62551a6.png"
+    },
+    {
+      "name": "Sofia Kovalevskaya",
+      "slug": "sofia-kovalevskaya",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "details": "mathematician in nineteenth-century dress",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-af525105-f9da-41df-9096-26b9817b9eea.png"
+    },
+    {
+      "name": "Blaise Pascal",
+      "slug": "blaise-pascal",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "details": "French scholar in seventeenth-century attire",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-ff00a5b1-95ca-43a6-9011-75419df070fb.png"
+    },
+    {
+      "name": "Dorothy Hodgkin",
+      "slug": "dorothy-hodgkin",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "details": "chemist in modest twentieth-century clothing",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-8b496b89-e265-4826-b30b-1dd2c322c6d0.png"
+    },
+    {
+      "name": "Rene Descartes",
+      "slug": "rene-descartes",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "details": "philosopher with moustache and seventeenth-century suit",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-72f41849-bd13-422a-b3cf-a9354b9b51c3.png"
+    },
+    {
+      "name": "Carl Friedrich Gauss",
+      "slug": "carl-friedrich-gauss",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "details": "mathematician in nineteenth-century clothing",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-c1da3e26-5e92-4ea0-a2be-25bc5dbea648.png"
+    },
+    {
+      "name": "Pierre de Fermat",
+      "slug": "pierre-de-fermat",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "details": "mathematician in seventeenth-century clothing",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-cb82f9ee-60ff-4714-a25b-3fe8007ab878.png"
+    },
+    {
+      "name": "Ernest Rutherford",
+      "slug": "ernest-rutherford",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "details": "physicist, moustache and period suit",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-a7715f0a-f0fc-4625-ba02-373f173be4d1.png"
+    },
+    {
+      "name": "Gottfried Wilhelm Leibniz",
+      "slug": "gottfried-wilhelm-leibniz",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "details": "mathematician with long curled wig",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-552b330d-b94d-4442-9624-1bd8654ea009.png"
+    },
+    {
+      "name": "Heinrich Hertz",
+      "slug": "heinrich-hertz",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "details": "German physicist in nineteenth-century formal clothing",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-9291b4ee-b9fe-4105-9993-3a9d7084419f.png"
+    },
+    {
+      "name": "Erwin Schrodinger",
+      "slug": "erwin-schrodinger",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "details": "physicist, round glasses and bow tie",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-630a1b8a-d714-4378-bc82-867525d08d98.png"
+    },
+    {
+      "name": "Michael Faraday",
+      "slug": "michael-faraday",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "details": "scientist in nineteenth-century attire",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-e31bceaf-efe7-4565-b44b-ced3fbb71c6a.png"
+    },
+    {
+      "name": "James Clerk Maxwell",
+      "slug": "james-clerk-maxwell",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "details": "bearded Scottish physicist in nineteenth-century suit",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-3b5f107f-b52f-4f22-92d2-235be0a1efa5.png"
+    }
+  ]
+}

@@ -1,0 +1,2488 @@
+{
+  "items": [
+    {
+      "name": "Frederick Douglass",
+      "slug": "frederick-douglass",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "details": "silver-haired abolitionist, dark Victorian three-piece suit",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-7974c26a-2b66-43b7-8617-a16398da9d82.png"
+    },
+    {
+      "name": "Sojourner Truth",
+      "slug": "sojourner-truth",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "details": "tall Black abolitionist, white bonnet and dark period dress",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-284ca633-65c5-46b3-b768-65f3d0f0dd03.png"
+    },
+    {
+      "name": "Harriet Tubman",
+      "slug": "harriet-tubman",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "details": "elderly Black freedom fighter, patterned headscarf and modest nineteenth-century dress",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-0cbebc4f-391a-4ae7-9f39-f5cafeecebf2.png"
+    },
+    {
+      "name": "Susan B. Anthony",
+      "slug": "susan-b-anthony",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "details": "elderly suffragist, spectacles and black Victorian dress",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-a1a0bd05-3ce8-4802-a3e7-0a098dbd7060.png"
+    },
+    {
+      "name": "W. E. B. Du Bois",
+      "slug": "w-e-b-du-bois",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "details": "scholar with moustache, formal early twentieth-century suit",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-0cb66c83-063b-4518-8ecb-1d1db85aa6ca.png"
+    },
+    {
+      "name": "Elizabeth Cady Stanton",
+      "slug": "elizabeth-cady-stanton",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "details": "white curled hair, nineteenth-century dress",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-015f3e86-e69d-4f39-9fd2-144628b76a48.png"
+    },
+    {
+      "name": "Rosa Parks",
+      "slug": "rosa-parks",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "details": "civil rights pioneer, glasses and mid-century tailored dress",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-3d56f881-e86b-4ace-a395-0e21d270ff1e.png"
+    },
+    {
+      "name": "Jane Addams",
+      "slug": "jane-addams",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "details": "social reformer, Edwardian dress",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-408704bd-192b-43c8-9469-64822f22aa33.png"
+    },
+    {
+      "name": "Sitting Bull",
+      "slug": "sitting-bull",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "details": "Lakota leader in historically respectful nineteenth-century clothing",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-4d883103-4109-494b-9342-c78920e18664.png"
+    },
+    {
+      "name": "Geronimo",
+      "slug": "geronimo",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "details": "Apache elder, bandana and historically grounded period attire",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-e0b4b8ea-39d9-472c-8bca-81032d88b207.png"
+    },
+    {
+      "name": "George Washington",
+      "slug": "george-washington",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "details": "white powdered hair, eighteenth-century civilian coat",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-22432465-747e-4226-a4cd-1c2141e8cedf.png"
+    },
+    {
+      "name": "Booker T. Washington",
+      "slug": "booker-t-washington",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "details": "educator, dark suit and neat moustache",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-a72c0301-eb43-4b8b-bfec-1412c9b19d21.png"
+    },
+    {
+      "name": "Crazy Horse",
+      "slug": "crazy-horse",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "details": "Lakota warrior, long loose hair and restrained traditional clothing",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-16bcfcde-810d-4b2b-9402-97a011f5ad88.png"
+    },
+    {
+      "name": "Thomas Jefferson",
+      "slug": "thomas-jefferson",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "details": "red-haired statesman, eighteenth-century frock coat",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-2cc4860d-3152-4e95-9b25-bca7342a0574.png"
+    },
+    {
+      "name": "Sacagawea",
+      "slug": "sacagawea",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "details": "Shoshone interpreter in historically grounded buckskin clothing",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-23758c51-b0d2-49bc-9ff5-00c4986a15da.png"
+    },
+    {
+      "name": "John Adams",
+      "slug": "john-adams",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "details": "colonial statesman in eighteenth-century suit",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-a708e9ad-aca5-4bc3-8952-090838952377.png"
+    },
+    {
+      "name": "Chief Joseph",
+      "slug": "chief-joseph",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "details": "Nez Perce leader, long hair and dignified traditional attire",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-ae8784d2-ff17-4a08-94a2-06ae10c6097b.png"
+    },
+    {
+      "name": "Franklin D. Roosevelt",
+      "slug": "franklin-d-roosevelt",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "details": "round spectacles, dignified suited seated pose in wheelchair",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-5ec43ccb-139a-4839-9699-635190fb1b83.png"
+    },
+    {
+      "name": "Sequoyah",
+      "slug": "sequoyah",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "details": "Cherokee scholar, turban and nineteenth-century coat",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-b86ab8f3-6fb0-4fb2-855e-1e41d2867931.png"
+    },
+    {
+      "name": "Gabriela Mistral",
+      "slug": "gabriela-mistral",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "details": "Chilean poet, modest twentieth-century dress",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-8194657b-01c1-4b46-8f0a-b350a35eef99.png"
+    },
+    {
+      "name": "Tecumseh",
+      "slug": "tecumseh",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "details": "Shawnee leader in historically grounded clothing",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-f4e2e102-b40a-4210-a65e-db04dbdf41ab.png"
+    },
+    {
+      "name": "Jose de San Martin",
+      "slug": "jose-de-san-martin",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "details": "Argentine independence leader in period military coat",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-862d0362-3cf4-4799-9eb8-ced6549fe7e0.png"
+    },
+    {
+      "name": "Eleanor Roosevelt",
+      "slug": "eleanor-roosevelt",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "details": "short waved hair, elegant mid-century dress",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-13109ccc-7b34-410e-a752-e53c53ca74de.png"
+    },
+    {
+      "name": "Pablo Neruda",
+      "slug": "pablo-neruda",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "details": "Chilean poet, beret and overcoat",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-186b6212-e0f9-4ade-8a85-9ab84aadf136.png"
+    },
+    {
+      "name": "Simon Bolivar",
+      "slug": "simon-bolivar",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "details": "Latin American independence leader, nineteenth-century uniform",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-bdd68cd1-3c4b-46ff-a4f9-ebb4a3d7c295.png"
+    },
+    {
+      "name": "Ulysses S. Grant",
+      "slug": "ulysses-s-grant",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "details": "bearded nineteenth-century general, Union uniform",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-8c53bfdd-a41e-4e1b-a63d-6740ff107627.png"
+    },
+    {
+      "name": "Benito Juarez",
+      "slug": "benito-juarez",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "details": "Zapotec Mexican statesman, nineteenth-century black suit",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-0f6c7efd-cef3-4757-b8f4-06cdac1c7491.png"
+    },
+    {
+      "name": "Gabriel Garcia Marquez",
+      "slug": "gabriel-garcia-marquez",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "details": "Colombian novelist, silver hair and moustache",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-7e66de92-98d7-4514-b51f-eae6c6dd83c6.png"
+    },
+    {
+      "name": "Jose Marti",
+      "slug": "jose-marti",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "details": "Cuban poet, moustache and nineteenth-century suit",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-26c5099e-080e-4d2e-9dc1-c41ab25b295d.png"
+    },
+    {
+      "name": "Diego Rivera",
+      "slug": "diego-rivera",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "details": "Mexican muralist, broad face and painter's clothes",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-f7e10955-ddd5-4923-afbf-db7f1dc4c21e.png"
+    },
+    {
+      "name": "Toussaint Louverture",
+      "slug": "toussaint-louverture",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "details": "Haitian independence leader, nineteenth-century military uniform",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-67deac01-45ae-403c-8fa5-e8b03164eb3a.png"
+    },
+    {
+      "name": "Ibn Sina",
+      "slug": "ibn-sina",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "details": "Persian physician Avicenna, medieval scholar's robe and turban",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-ea96dc19-5bff-4f2d-a7b2-5b911ca24b39.png"
+    },
+    {
+      "name": "Theodore Roosevelt",
+      "slug": "theodore-roosevelt",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "details": "round spectacles, moustache and early twentieth-century suit",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-a412f998-586e-4985-9f4f-e01abca07e08.png"
+    },
+    {
+      "name": "Octavio Paz",
+      "slug": "octavio-paz",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "details": "Mexican poet, silver hair and neat suit",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-8d3c8947-a24e-45ef-a6f2-6f89c281431e.png"
+    },
+    {
+      "name": "Sor Juana Ines de la Cruz",
+      "slug": "sor-juana-ines-de-la-cruz",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "details": "Mexican scholar and poet, seventeenth-century nun's habit",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-7b74bdda-f102-4f53-8e94-52c1d46f08c5.png"
+    },
+    {
+      "name": "Antonio Jose de Sucre",
+      "slug": "antonio-jose-de-sucre",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "details": "Venezuelan independence leader in period uniform",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-1a6303c6-29f1-4eb1-ba4f-e48e03c13b0c.png"
+    },
+    {
+      "name": "Miguel Hidalgo",
+      "slug": "miguel-hidalgo",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "details": "Mexican independence figure, white hair and priestly clothing",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-ac7e2261-91d0-48bb-bf69-b197d3a50694.png"
+    },
+    {
+      "name": "Jorge Luis Borges",
+      "slug": "jorge-luis-borges",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "details": "Argentine writer, silver hair, suit and cane",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-d05e3ab2-8d11-4c4b-b776-fe431ea4bf31.png"
+    },
+    {
+      "name": "Cesar Vallejo",
+      "slug": "cesar-vallejo",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "details": "Peruvian poet, dark hair and early twentieth-century suit",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-b720e01d-0ba4-4b99-b18c-758c2380933a.png"
+    },
+    {
+      "name": "Al-Khwarizmi",
+      "slug": "al-khwarizmi",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "details": "Persian mathematician in medieval scholar's robes",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-d2eea921-a488-4401-8620-c723665e1ff0.png"
+    },
+    {
+      "name": "Omar Khayyam",
+      "slug": "omar-khayyam",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "details": "Persian poet and mathematician, embroidered scholarly robe",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-e97fff67-35e9-4558-8c83-41a8768e7cc7.png"
+    },
+    {
+      "name": "Ibn al-Haytham",
+      "slug": "ibn-al-haytham",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "details": "Arab optics scholar in medieval scholarly robes",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-b57262fd-377b-4b94-a9ee-44fc32da8e32.png"
+    },
+    {
+      "name": "Al-Biruni",
+      "slug": "al-biruni",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "details": "Central Asian polymath, turban and medieval robes",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-9e38ded0-bf61-4a51-98a5-49a18721282c.png"
+    },
+    {
+      "name": "Juana Azurduy",
+      "slug": "juana-azurduy",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "details": "Bolivian independence heroine, period military clothing",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-746432ef-b5d4-40a1-a31f-8fb47e850349.png"
+    },
+    {
+      "name": "Mansa Musa",
+      "slug": "mansa-musa",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "details": "Malian ruler in richly woven West African royal clothing",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-fe9383d9-1fef-43e4-bdcd-9a7268b134a4.png"
+    },
+    {
+      "name": "Hafez",
+      "slug": "hafez",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "details": "Persian poet in medieval scholarly attire",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-9241e4a0-e524-47a7-927f-f56210c94584.png"
+    },
+    {
+      "name": "Haile Selassie",
+      "slug": "haile-selassie",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "details": "Ethiopian emperor, formal historical uniform",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-a3cdf262-e3ba-4b45-8697-9917d858a1a8.png"
+    },
+    {
+      "name": "Saadi",
+      "slug": "saadi",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "details": "Persian poet, turban and simple medieval robe",
+      "state": "failed",
+      "errorType": "Error"
+    },
+    {
+      "name": "Tupac Amaru II",
+      "slug": "tupac-amaru-ii",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "details": "Andean independence figure in respectful eighteenth-century clothing",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-3416e9b2-3359-47c7-bf23-6c5bb3e12444.png"
+    },
+    {
+      "name": "Saladin",
+      "slug": "saladin",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "details": "medieval Kurdish ruler, dignified period attire",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-00a49006-b2e3-41f5-8886-003a985dd96e.png"
+    },
+    {
+      "name": "Rumi",
+      "slug": "rumi",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "details": "Persian poet, dignified turban and flowing medieval robe",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-f6989d77-feba-4651-897a-40154d93edd4.png"
+    },
+    {
+      "name": "Yaa Asantewaa",
+      "slug": "yaa-asantewaa",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "details": "Asante queen mother, kente cloth and royal ornaments",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-7188ef80-a243-43ed-af49-e0e47ed706dd.png"
+    },
+    {
+      "name": "Julius Nyerere",
+      "slug": "julius-nyerere",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "details": "Tanzanian statesman, modest formal attire",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-f9972817-577b-4848-9d58-dd9a220b488f.png"
+    },
+    {
+      "name": "Ibn Khaldun",
+      "slug": "ibn-khaldun",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "details": "North African historian, medieval scholar's robe",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-67b24ed3-183b-4aee-be23-9d712f340d3e.png"
+    },
+    {
+      "name": "Patrice Lumumba",
+      "slug": "patrice-lumumba",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "details": "Congolese statesman, glasses and suit",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-85b7e253-364e-4100-be4e-36464682f2d1.png"
+    },
+    {
+      "name": "Sundiata Keita",
+      "slug": "sundiata-keita",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "details": "Malian founder, respectful medieval West African attire",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-c92bc78e-29c5-4bc4-91d9-565dae2c4312.png"
+    },
+    {
+      "name": "Ahmed Baba",
+      "slug": "ahmed-baba",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "details": "Timbuktu scholar in respectful scholarly robes",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-2beaf5b4-8d0e-4708-a550-f1588b03636f.png"
+    },
+    {
+      "name": "Nefertiti",
+      "slug": "nefertiti",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "details": "Egyptian queen, recognizable tall blue crown and period clothing",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-4694dfad-bbc8-4336-a9b4-c68e514dc02a.png"
+    },
+    {
+      "name": "Fatima al-Fihri",
+      "slug": "fatima-al-fihri",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "details": "historic Moroccan scholar, modest medieval attire",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-adb54ad0-b797-4eb7-acdc-b0eec243f8f5.png"
+    },
+    {
+      "name": "Wangari Maathai",
+      "slug": "wangari-maathai",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "details": "Kenyan environmentalist in colorful African dress",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-10d04541-96bb-41d4-a00d-f5ee3f439987.png"
+    },
+    {
+      "name": "Desmond Tutu",
+      "slug": "desmond-tutu",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "details": "South African cleric, purple clerical shirt and spectacles",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-e0e35afb-f348-4ab5-81c0-22854fcf05dd.png"
+    },
+    {
+      "name": "Menelik II",
+      "slug": "menelik-ii",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "details": "Ethiopian ruler, historical royal robes",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-fda4baa5-dfb6-4dcc-b2dc-ce546ac56c66.png"
+    },
+    {
+      "name": "Imhotep",
+      "slug": "imhotep",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "details": "ancient Egyptian architect in period linen clothing",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-992c1a90-5277-4250-887c-8fb7dd230bfe.png"
+    },
+    {
+      "name": "Chinua Achebe",
+      "slug": "chinua-achebe",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "details": "Nigerian novelist, traditional cap and dignified attire",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-15fc3e6c-7f69-4aed-8d46-ca21314b4c9a.png"
+    },
+    {
+      "name": "Queen Nzinga",
+      "slug": "queen-nzinga",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "details": "Angolan ruler, dignified seventeenth-century clothing",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-c0a6a706-8cd6-4853-85a4-6d41c18701f7.png"
+    },
+    {
+      "name": "Kwame Nkrumah",
+      "slug": "kwame-nkrumah",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "details": "Ghanaian statesman in kente cloth",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-30000526-f744-42ab-986b-ed2d76640fec.png"
+    },
+    {
+      "name": "Ibn Battuta",
+      "slug": "ibn-battuta",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "details": "Moroccan traveler, medieval robes and travel satchel",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-c0ce1896-3e4e-459d-8076-0c3cb6e5024a.png"
+    },
+    {
+      "name": "Thomas Sankara",
+      "slug": "thomas-sankara",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "details": "Burkinabe leader, red beret and historical uniform",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-2ab21d8d-3535-4ea2-a100-8938d9e1d50d.png"
+    },
+    {
+      "name": "Ramesses II",
+      "slug": "ramesses-ii",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "details": "ancient Egyptian pharaoh in royal period clothing",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-2e37fb51-b47f-461d-ba5a-6c7d954d3ae3.png"
+    },
+    {
+      "name": "Plato",
+      "slug": "plato",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "details": "bearded Greek philosopher in classical robes",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-a5545363-6bb1-4af5-adbc-7ee52e821fcb.png"
+    },
+    {
+      "name": "Sappho",
+      "slug": "sappho",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "details": "ancient Greek poet, draped classical dress and lyre",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-264b2cbc-20c4-4b7b-842a-79c2909d616c.png"
+    },
+    {
+      "name": "Pythagoras",
+      "slug": "pythagoras",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "details": "Greek philosopher in ancient scholarly attire",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-e8441017-6460-44c9-b096-af1805c412bf.png"
+    },
+    {
+      "name": "Thucydides",
+      "slug": "thucydides",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "details": "ancient Greek historian with scroll",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-321257f3-88da-4faf-8f80-4dcd22d24b4d.png"
+    },
+    {
+      "name": "Democritus",
+      "slug": "democritus",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "details": "ancient Greek scholar in classical robe",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-772a2470-b500-44c8-94ad-cbc0d030fba1.png"
+    },
+    {
+      "name": "Tutankhamun",
+      "slug": "tutankhamun",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "details": "ancient Egyptian ruler, striped headdress and royal linen",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-d99d9c7e-8ac4-43fc-a652-14c6132dbb74.png"
+    },
+    {
+      "name": "Aristotle",
+      "slug": "aristotle",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "details": "Greek philosopher, classical robes and manuscript",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-26d78913-56ff-4e74-90ce-b4a46cda574d.png"
+    },
+    {
+      "name": "Socrates",
+      "slug": "socrates",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "details": "bald bearded Greek philosopher, simple classical robe",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-d3671b92-3341-43d7-8071-054e6ad77568.png"
+    },
+    {
+      "name": "Hypatia",
+      "slug": "hypatia",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "details": "Alexandrian mathematician, classical robe and scroll",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-20f3c5e1-d29e-4fc8-99be-fe490545eca7.png"
+    },
+    {
+      "name": "Hatshepsut",
+      "slug": "hatshepsut",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "details": "ancient Egyptian ruler in historically grounded royal dress",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-53af076e-a10a-4dc3-ba22-3317ebf01850.png"
+    },
+    {
+      "name": "Euclid",
+      "slug": "euclid",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "details": "ancient mathematician, classical robe and geometric tablet",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-8e08df1a-44d5-4885-859d-438e6c7d7d3b.png"
+    },
+    {
+      "name": "Diogenes",
+      "slug": "diogenes",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "details": "elderly bearded philosopher, simple cloak",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-ef882c68-219c-4f84-8ae8-d7e17c5fdfa9.png"
+    },
+    {
+      "name": "Herodotus",
+      "slug": "herodotus",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "details": "ancient historian in classical robes",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-247b4628-8d77-443b-937f-28610f93215d.png"
+    },
+    {
+      "name": "Cicero",
+      "slug": "cicero",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "details": "Roman orator, white toga",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-2531990d-3541-4a02-b6f3-6485b2e4cbaf.png"
+    },
+    {
+      "name": "Boudicca",
+      "slug": "boudicca",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "details": "red-haired ancient Briton queen, cloak and period dress",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-1bfb3b0b-67b3-404f-81bd-8163124ed021.png"
+    },
+    {
+      "name": "Dante Alighieri",
+      "slug": "dante-alighieri",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "details": "Italian poet, red cap and red medieval robe",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-6226f406-994a-423c-90dd-8cd5271200cc.png"
+    },
+    {
+      "name": "Niccolo Machiavelli",
+      "slug": "niccolo-machiavelli",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "details": "Renaissance writer, dark robe and red cap",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-0958a759-9d16-4363-b533-0b2a0a485561.png"
+    },
+    {
+      "name": "Seneca",
+      "slug": "seneca",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "details": "Roman philosopher, dignified classical robe",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-bdcc8c25-6f45-49db-812e-71528b0c4740.png"
+    },
+    {
+      "name": "Francesco Petrarca",
+      "slug": "francesco-petrarca",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "details": "Italian poet in medieval scholar's clothing",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-4b30be19-6e4d-4f37-bd9c-23513df42a88.png"
+    },
+    {
+      "name": "Charlemagne",
+      "slug": "charlemagne",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "details": "medieval Frankish ruler, beard and royal cloak",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-4edf9fb4-0981-428f-986e-c3c46321164c.png"
+    },
+    {
+      "name": "Eleanor of Aquitaine",
+      "slug": "eleanor-of-aquitaine",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "details": "medieval queen in elegant period gown",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-1a10be4e-2be3-4cbf-a62f-eb3ba8d62a3f.png"
+    },
+    {
+      "name": "Thomas More",
+      "slug": "thomas-more",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "details": "Tudor scholar, dark fur-trimmed coat",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-c87475a9-d50d-4bc0-b336-683cb7c0d7cf.png"
+    },
+    {
+      "name": "Hildegard of Bingen",
+      "slug": "hildegard-of-bingen",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "details": "medieval composer and scholar in Benedictine habit",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-cebcfa11-2ef0-4195-9f10-6df4f7e6fcf8.png"
+    },
+    {
+      "name": "Erasmus",
+      "slug": "erasmus",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "details": "Renaissance scholar, dark cap and scholarly robes",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-ebb4e1c9-e2a4-4c27-87ef-d01008cf0636.png"
+    },
+    {
+      "name": "Artemisia Gentileschi",
+      "slug": "artemisia-gentileschi",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "details": "Baroque painter, period dress and paintbrush",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-e43198b1-a4e2-44a4-86d3-74aaea9c295f.png"
+    },
+    {
+      "name": "Caravaggio",
+      "slug": "caravaggio",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "details": "Italian painter in dark Renaissance clothing",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-db9e8a87-49ca-42ac-ab45-60ccbf7f5d79.png"
+    },
+    {
+      "name": "Marcus Aurelius",
+      "slug": "marcus-aurelius",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "details": "curly-haired bearded Roman philosopher in toga",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-309566fb-1fb7-4f27-84d1-44a70c6345bf.png"
+    },
+    {
+      "name": "Augustus",
+      "slug": "augustus",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "details": "Roman emperor in historically grounded classical clothing",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-fd48229f-3b4b-4ff8-8c1f-0d62cf64a84e.png"
+    },
+    {
+      "name": "Hadrian",
+      "slug": "hadrian",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "details": "bearded Roman emperor in classical attire",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-9cbe6778-7fb0-492a-89e2-8e5955260508.png"
+    },
+    {
+      "name": "Johannes Gutenberg",
+      "slug": "johannes-gutenberg",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "details": "bearded early printer in fifteenth-century attire",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-aafe8af7-bf26-491d-b309-e51824f896db.png"
+    },
+    {
+      "name": "Christine de Pizan",
+      "slug": "christine-de-pizan",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "details": "medieval author in blue gown and horned headdress",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-bb1374ec-0fc2-4923-9fe4-eee8b38c8516.png"
+    },
+    {
+      "name": "Diego Velazquez",
+      "slug": "diego-velazquez",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "details": "Spanish painter, curled hair, moustache and black period suit",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-e5995f1f-ac33-4faf-812e-dab7d3891aa3.png"
+    },
+    {
+      "name": "Geoffrey Chaucer",
+      "slug": "geoffrey-chaucer",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "details": "medieval poet in hood and scholarly robes",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-27d5c863-fa68-487c-8125-034dc1a596e0.png"
+    },
+    {
+      "name": "Francisco Goya",
+      "slug": "francisco-goya",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "details": "Spanish painter in eighteenth-century attire",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-c099c910-e0d5-4cef-911d-0b9ba9ef64e1.png"
+    },
+    {
+      "name": "Titian",
+      "slug": "titian",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "details": "elderly bearded Venetian painter in historical robes",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-6ca30b8e-d1a2-40d8-a765-8f8d7e7356e7.png"
+    },
+    {
+      "name": "Auguste Rodin",
+      "slug": "auguste-rodin",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "details": "bearded French sculptor in work clothes",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-d420083f-9f9d-45e8-ae0b-85e71b50a9f0.png"
+    },
+    {
+      "name": "Camille Claudel",
+      "slug": "camille-claudel",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "details": "French sculptor in period dress",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-d9f35dee-c6b4-442b-90b5-fd7b92aa7734.png"
+    },
+    {
+      "name": "John Constable",
+      "slug": "john-constable",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "details": "British painter in nineteenth-century clothing",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-eda6ecce-95ca-4df1-bca1-d0c692006765.png"
+    },
+    {
+      "name": "Wassily Kandinsky",
+      "slug": "wassily-kandinsky",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "details": "artist, round glasses and formal suit",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-55315dc2-9964-42c8-9b2f-29247a75a1f3.png"
+    },
+    {
+      "name": "Albrecht Durer",
+      "slug": "albrecht-durer",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "details": "Renaissance artist, long curled hair and period coat",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-87e53504-c27d-4050-9948-2c84c38a84a8.png"
+    },
+    {
+      "name": "Raphael",
+      "slug": "raphael",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "details": "Renaissance painter in period velvet clothing",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-a9d3c504-770b-4cca-9ca8-256a77214090.png"
+    },
+    {
+      "name": "Edvard Munch",
+      "slug": "edvard-munch",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "details": "Norwegian artist in early twentieth-century suit",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-df925bc2-9264-4c96-a7cd-8155ab4ddd58.png"
+    },
+    {
+      "name": "Mary Cassatt",
+      "slug": "mary-cassatt",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "details": "American painter, nineteenth-century dress",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-b501d4ff-d4d0-4811-a901-193a90a22485.png"
+    },
+    {
+      "name": "Sandro Botticelli",
+      "slug": "sandro-botticelli",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "details": "Renaissance painter with shoulder-length hair",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-0cf30bb5-6904-48aa-8151-c23b6d989e21.png"
+    },
+    {
+      "name": "William Turner",
+      "slug": "william-turner",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "details": "British painter in nineteenth-century coat",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-267104a8-794a-4827-b7be-0eb392c2e727.png"
+    },
+    {
+      "name": "Georgia O'Keeffe",
+      "slug": "georgia-o-keeffe",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "details": "American painter, dark simple dress and silver hair",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-583feb8b-7845-449f-bb45-bcdd42f3165c.png"
+    },
+    {
+      "name": "Natsume Soseki",
+      "slug": "natsume-soseki",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "details": "Japanese novelist, moustache and formal suit",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-b417ba0d-37e2-4e66-ac8b-b256d645eb27.png"
+    },
+    {
+      "name": "Murasaki Shikibu",
+      "slug": "murasaki-shikibu",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "details": "Heian Japanese writer in layered court robes",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-ae8706da-fa1f-45f4-a501-8fb240b4311f.png"
+    },
+    {
+      "name": "Berthe Morisot",
+      "slug": "berthe-morisot",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "details": "French Impressionist painter in nineteenth-century dress",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-d0ec7340-7482-4add-8742-ab8d9f36482d.png"
+    },
+    {
+      "name": "Sei Shonagon",
+      "slug": "sei-shonagon",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "details": "Heian Japanese writer in layered court attire",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-a63df9cd-15e1-472b-a2c3-089e172759d4.png"
+    },
+    {
+      "name": "Katsushika Hokusai",
+      "slug": "katsushika-hokusai",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "details": "elderly Japanese artist in Edo-period robes",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-ef7245a0-634c-4eaa-90ad-d43fa4020b1d.png"
+    },
+    {
+      "name": "Matsuo Basho",
+      "slug": "matsuo-basho",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "details": "Japanese poet, travel robes and straw hat",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-056b0e7b-7aa2-4700-94f1-5dd231b56b8f.png"
+    },
+    {
+      "name": "Utagawa Hiroshige",
+      "slug": "utagawa-hiroshige",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "details": "Japanese printmaker in Edo-period attire",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-0d5d0bf6-ecb3-449d-856f-dc9299ee2861.png"
+    },
+    {
+      "name": "Yukichi Fukuzawa",
+      "slug": "yukichi-fukuzawa",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "details": "Japanese educator in Meiji-era attire",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-8d8887e4-f42c-4f7f-bafa-591869bbdd45.png"
+    },
+    {
+      "name": "Oda Nobunaga",
+      "slug": "oda-nobunaga",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "details": "Sengoku Japanese ruler in historical robes",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-e91cac55-e00d-42eb-8134-94cd7677eb7b.png"
+    },
+    {
+      "name": "Yosa Buson",
+      "slug": "yosa-buson",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "details": "Japanese poet and painter in Edo-period robes",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-8117b3c0-8413-4fd1-baf2-5ce4a2caabd0.png"
+    },
+    {
+      "name": "Paul Klee",
+      "slug": "paul-klee",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "details": "painter in early twentieth-century clothing",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-723d59ff-ccdd-4c0b-8e7e-3fa4eb998b6d.png"
+    },
+    {
+      "name": "Gustav Klimt",
+      "slug": "gustav-klimt",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "details": "bearded Austrian painter in long painter's smock",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-d6a3a626-0228-4688-9706-c3a1db39c9f0.png"
+    },
+    {
+      "name": "Sesshu Toyo",
+      "slug": "sesshu-toyo",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "details": "Japanese ink painter in medieval monk's robes",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-89152f25-5082-41f4-9f1c-82a0a65920c8.png"
+    },
+    {
+      "name": "Tomoe Gozen",
+      "slug": "tomoe-gozen",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "details": "Japanese warrior woman in historical armor",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-212dc8ba-f34f-4e91-ace6-472e4b157ead.png"
+    },
+    {
+      "name": "Shin Saimdang",
+      "slug": "shin-saimdang",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "details": "Korean artist in historically grounded hanbok",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-c542600a-ccc6-4c5f-96c4-6543da57bbd2.png"
+    },
+    {
+      "name": "Toyotomi Hideyoshi",
+      "slug": "toyotomi-hideyoshi",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "details": "Japanese ruler in historical period attire",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-d75ae6a5-558a-4840-b7d3-1b9a68cad5bd.png"
+    },
+    {
+      "name": "Tokugawa Ieyasu",
+      "slug": "tokugawa-ieyasu",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "details": "Japanese ruler in historical robes",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-e23e2d12-f213-4af5-90f7-0c4af2dc5a91.png"
+    },
+    {
+      "name": "King Ashoka",
+      "slug": "king-ashoka",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "details": "ancient Indian ruler in historically grounded royal attire",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-870dd7fe-b7a1-47dd-9553-2064080c4f0d.png"
+    },
+    {
+      "name": "Akbar",
+      "slug": "akbar",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "details": "Mughal ruler in ornate period robes",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-910611ba-8d3d-4c59-b8a1-9873319ee326.png"
+    },
+    {
+      "name": "Ryunosuke Akutagawa",
+      "slug": "ryunosuke-akutagawa",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "details": "Japanese writer in early twentieth-century clothing",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-5ac816fe-c6ca-463c-8117-39b90d695b16.png"
+    },
+    {
+      "name": "Sakamoto Ryoma",
+      "slug": "sakamoto-ryoma",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "details": "Japanese reformer, period kimono",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-4b27ecd3-0606-4f26-81d3-c33b018789d1.png"
+    },
+    {
+      "name": "Miyamoto Musashi",
+      "slug": "miyamoto-musashi",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "details": "Japanese swordsman, worn kimono and two sheathed swords",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-9bbc5f58-4774-4f2b-8c1e-4ba8c3a8f171.png"
+    },
+    {
+      "name": "Heo Nanseolheon",
+      "slug": "heo-nanseolheon",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "details": "Korean poet in Joseon hanbok",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-3476e2f6-dacd-441b-81c5-7e7eaa839283.png"
+    },
+    {
+      "name": "Yi Sun-sin",
+      "slug": "yi-sun-sin",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "details": "Korean admiral in historical Joseon armor",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-12aac19b-50bd-4422-8339-b4c9ad731298.png"
+    },
+    {
+      "name": "Mahatma Gandhi",
+      "slug": "mahatma-gandhi",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "details": "bald bespectacled leader, dhoti and walking staff",
+      "state": "failed",
+      "errorType": "Error"
+    },
+    {
+      "name": "Chandragupta Maurya",
+      "slug": "chandragupta-maurya",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "details": "ancient Indian ruler in period royal clothing",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-2e482d7b-517f-4cc4-a274-ee2038586a94.png"
+    },
+    {
+      "name": "Shah Jahan",
+      "slug": "shah-jahan",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "details": "Mughal ruler in historical court clothing",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-9fd95d14-67d4-496b-90e5-66c243c282ed.png"
+    },
+    {
+      "name": "Sarojini Naidu",
+      "slug": "sarojini-naidu",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "details": "Indian poet in sari",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-c00c8817-3636-4e84-9d77-b2888c1deea5.png"
+    },
+    {
+      "name": "Rani Lakshmibai",
+      "slug": "rani-lakshmibai",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "details": "Indian queen in sari and historical royal attire",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-81caf7b5-114e-41df-8bf1-875ed7bbec95.png"
+    },
+    {
+      "name": "B. R. Ambedkar",
+      "slug": "b-r-ambedkar",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "details": "Indian scholar, glasses and blue formal suit",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-d522dc9b-21f2-4f68-b37a-66527113a4f3.png"
+    },
+    {
+      "name": "Meghnad Saha",
+      "slug": "meghnad-saha",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "details": "Indian scientist in formal historical clothing",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-2a2eb068-a5f5-4a1b-84dc-049ee7a68a0d.png"
+    },
+    {
+      "name": "Abanindranath Tagore",
+      "slug": "abanindranath-tagore",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "details": "Bengali painter in historical attire",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-8838350c-cdc5-43d7-9a08-122b2623f481.png"
+    },
+    {
+      "name": "Satyendra Nath Bose",
+      "slug": "satyendra-nath-bose",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "details": "Indian physicist, glasses and period attire",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-4898953d-0e3b-453d-a93c-e65341adcfbf.png"
+    },
+    {
+      "name": "Savitribai Phule",
+      "slug": "savitribai-phule",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "details": "Indian educator in period sari",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-d01ed681-f7ec-4e86-8ebb-8c3753f85359.png"
+    },
+    {
+      "name": "Kazi Nazrul Islam",
+      "slug": "kazi-nazrul-islam",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "details": "Bengali poet in early twentieth-century attire",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-1d385efa-80da-4916-ad6c-324913e45f07.png"
+    },
+    {
+      "name": "Subhas Chandra Bose",
+      "slug": "subhas-chandra-bose",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "details": "Indian historical figure, glasses and uniform",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-641eb098-9803-43d6-977f-0cf19a97a6e9.png"
+    },
+    {
+      "name": "Laozi",
+      "slug": "laozi",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "details": "elderly Chinese philosopher, long white beard and simple robe",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-663a152b-d770-4c32-8483-a2145e87fce5.png"
+    },
+    {
+      "name": "Sima Qian",
+      "slug": "sima-qian",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "details": "Han historian in period scholarly robes",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-09087264-91d2-433e-9796-ffce67f801df.png"
+    },
+    {
+      "name": "Sejong the Great",
+      "slug": "sejong-the-great",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "details": "Korean king in red royal Joseon robe",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-78048490-2fae-4400-a3ba-1eb2a8281b49.png"
+    },
+    {
+      "name": "Ban Zhao",
+      "slug": "ban-zhao",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "details": "Han woman scholar in period dress",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-53cd0a6e-0894-45e4-911a-0332aeab3ccc.png"
+    },
+    {
+      "name": "Begum Rokeya",
+      "slug": "begum-rokeya",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "details": "Bengali author and educator in modest period dress",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-170caedc-c68a-484b-a217-225b166bb69a.png"
+    },
+    {
+      "name": "Mencius",
+      "slug": "mencius",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "details": "Chinese philosopher in ancient scholarly clothing",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-d6d9aa88-040c-476d-8165-971308c28c80.png"
+    },
+    {
+      "name": "Xu Guangqi",
+      "slug": "xu-guangqi",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "details": "Ming scholar in historically grounded robes",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-c2a88fe0-cd48-4ee2-a5b7-e705b17f9277.png"
+    },
+    {
+      "name": "C. V. Raman",
+      "slug": "c-v-raman",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "details": "Indian physicist, white turban and suit",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-bffe4d1b-66bf-4b29-aa9b-c04a3ac77c08.png"
+    },
+    {
+      "name": "Xu Xiake",
+      "slug": "xu-xiake",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "details": "Ming traveler, simple robes and walking stick",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-e861c838-41bd-4019-8edf-bdeb8ff0a317.png"
+    },
+    {
+      "name": "Zhuangzi",
+      "slug": "zhuangzi",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "details": "Chinese philosopher in ancient scholarly robes",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-83835664-c38f-4780-844d-214b30d3f950.png"
+    },
+    {
+      "name": "Raja Ravi Varma",
+      "slug": "raja-ravi-varma",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "details": "Indian painter in nineteenth-century clothing",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-64eb9399-f9be-47c7-9713-537f30fda571.png"
+    },
+    {
+      "name": "Jagadish Chandra Bose",
+      "slug": "jagadish-chandra-bose",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "details": "Indian scientist, moustache and historical formal attire",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-35f23399-21d9-4e89-9fd0-6800b5d04ddb.png"
+    },
+    {
+      "name": "Mozi",
+      "slug": "mozi",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "details": "Chinese philosopher in simple ancient robes",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-2eda4140-90d1-4390-806c-2364e384f292.png"
+    },
+    {
+      "name": "Cai Lun",
+      "slug": "cai-lun",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "details": "Han inventor in period clothing",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-0df1f222-c7fe-447d-93fe-24dc5eec7771.png"
+    },
+    {
+      "name": "Li Shizhen",
+      "slug": "li-shizhen",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "details": "Ming physician in scholarly attire",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-a6e4735d-607f-4016-aad3-e97a10eb8604.png"
+    },
+    {
+      "name": "Hua Tuo",
+      "slug": "hua-tuo",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "details": "ancient Chinese physician, robe and medicine pouch",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-8c0de3cc-0bdc-4b42-b0f0-a9a8aad24883.png"
+    },
+    {
+      "name": "Gu Kaizhi",
+      "slug": "gu-kaizhi",
+      "category": "World history",
+      "visualStyle": "Oil painting",
+      "details": "ancient Chinese painter in scholarly robes",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-168f7944-4e31-4662-8afa-b51b9912e3f8.png"
+    },
+    {
+      "name": "Zhang Zhongjing",
+      "slug": "zhang-zhongjing",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "details": "ancient Chinese physician in scholar's robe",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-5ccaf8bf-8296-47c4-8f59-1abada0ed38f.png"
+    },
+    {
+      "name": "White Rabbit",
+      "slug": "white-rabbit",
+      "category": "Fictional characters",
+      "visualStyle": "Cel animation",
+      "details": "white rabbit in waistcoat holding a pocket watch",
+      "state": "failed",
+      "errorType": "Error"
+    },
+    {
+      "name": "Wang Wei",
+      "slug": "wang-wei",
+      "category": "World history",
+      "visualStyle": "Clay stop-motion",
+      "details": "Tang poet and painter in scholarly attire",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-6f51f8c0-3ee5-4d54-aac3-15a973e5edf2.png"
+    },
+    {
+      "name": "Cheshire Cat",
+      "slug": "cheshire-cat",
+      "category": "Fictional characters",
+      "visualStyle": "Oil painting",
+      "details": "grinning purple-striped storybook cat",
+      "state": "failed",
+      "errorType": "Error"
+    },
+    {
+      "name": "Tinker Bell",
+      "slug": "tinker-bell",
+      "category": "Fictional characters",
+      "visualStyle": "Graphic novel",
+      "details": "small blonde fairy, green dress and translucent wings",
+      "state": "failed",
+      "errorType": "Error"
+    },
+    {
+      "name": "Bai Juyi",
+      "slug": "bai-juyi",
+      "category": "World history",
+      "visualStyle": "Paper craft",
+      "details": "Tang poet in scholarly robes",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-a14bd040-0463-482c-85de-d0d11bfa4cc8.png"
+    },
+    {
+      "name": "Wang Xizhi",
+      "slug": "wang-xizhi",
+      "category": "World history",
+      "visualStyle": "Photorealistic",
+      "details": "Chinese calligrapher in scholar's robes",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-e49d69b8-1e52-4d9c-a381-e9e0203a29e5.png"
+    },
+    {
+      "name": "Zhu Xi",
+      "slug": "zhu-xi",
+      "category": "World history",
+      "visualStyle": "3D animation",
+      "details": "Song philosopher in scholarly robes",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-d505f156-49c7-4dd7-bb7d-eed5f64e3af1.png"
+    },
+    {
+      "name": "Peter Pan",
+      "slug": "peter-pan",
+      "category": "Fictional characters",
+      "visualStyle": "Clay stop-motion",
+      "details": "green tunic and feathered cap, playful young fantasy hero",
+      "state": "failed",
+      "errorType": "Error"
+    },
+    {
+      "name": "Captain Hook",
+      "slug": "captain-hook",
+      "category": "Fictional characters",
+      "visualStyle": "3D animation",
+      "details": "pirate captain, red coat, curled moustache and hook hand",
+      "state": "failed",
+      "errorType": "Error"
+    },
+    {
+      "name": "Xin Qiji",
+      "slug": "xin-qiji",
+      "category": "World history",
+      "visualStyle": "Graphic novel",
+      "details": "Song poet in historical clothing",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-6e899559-7a2d-4cfe-b104-c7e8a082eb65.png"
+    },
+    {
+      "name": "Queen of Hearts",
+      "slug": "queen-of-hearts",
+      "category": "Fictional characters",
+      "visualStyle": "Watercolor",
+      "details": "storybook queen in red heart-patterned royal dress",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-c9e8caf9-2ced-4327-a4fe-696d119f2845.png"
+    },
+    {
+      "name": "Wendy Darling",
+      "slug": "wendy-darling",
+      "category": "Fictional characters",
+      "visualStyle": "Paper craft",
+      "details": "storybook girl in pale blue period dress",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-eab5546f-4a98-4463-97f3-a0acd0468fd5.png"
+    },
+    {
+      "name": "Pinocchio",
+      "slug": "pinocchio",
+      "category": "Fictional characters",
+      "visualStyle": "Plush & felt",
+      "details": "wooden puppet boy, long nose, hat and colorful outfit",
+      "state": "failed",
+      "errorType": "Error"
+    },
+    {
+      "name": "Snow White",
+      "slug": "snow-white",
+      "category": "Fictional characters",
+      "visualStyle": "Watercolor",
+      "details": "black bob, blue bodice and yellow skirt",
+      "state": "failed",
+      "errorType": "Error"
+    },
+    {
+      "name": "Alice in Wonderland",
+      "slug": "alice-in-wonderland",
+      "category": "Fictional characters",
+      "visualStyle": "Plush & felt",
+      "details": "blue dress, white apron, blonde hair and curious expression",
+      "state": "failed",
+      "errorType": "Error"
+    },
+    {
+      "name": "Wu Daozi",
+      "slug": "wu-daozi",
+      "category": "World history",
+      "visualStyle": "Watercolor",
+      "details": "Tang painter in period robes",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-19382c59-b214-40d6-a05a-094dfb13f48c.png"
+    },
+    {
+      "name": "Jiminy Cricket",
+      "slug": "jiminy-cricket",
+      "category": "Fictional characters",
+      "visualStyle": "Cel animation",
+      "details": "small cricket gentleman with top hat and umbrella",
+      "state": "failed",
+      "errorType": "Error"
+    },
+    {
+      "name": "Cinderella",
+      "slug": "cinderella",
+      "category": "Fictional characters",
+      "visualStyle": "Clay stop-motion",
+      "details": "storybook heroine in blue ball gown",
+      "state": "failed",
+      "errorType": "Error"
+    },
+    {
+      "name": "Sleeping Beauty",
+      "slug": "sleeping-beauty",
+      "category": "Fictional characters",
+      "visualStyle": "Paper craft",
+      "details": "fairytale princess in pink gown",
+      "state": "failed",
+      "errorType": "Error"
+    },
+    {
+      "name": "The Velveteen Rabbit",
+      "slug": "the-velveteen-rabbit",
+      "category": "Fictional characters",
+      "visualStyle": "3D animation",
+      "details": "soft worn toy rabbit with expressive face",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-eedd7b39-a66c-4716-a3cb-30c184bae862.png"
+    },
+    {
+      "name": "Rapunzel",
+      "slug": "rapunzel",
+      "category": "Fictional characters",
+      "visualStyle": "Graphic novel",
+      "details": "fairytale heroine with very long golden braid",
+      "state": "failed",
+      "errorType": "Error"
+    },
+    {
+      "name": "Winnie the Pooh",
+      "slug": "winnie-the-pooh",
+      "category": "Fictional characters",
+      "visualStyle": "Plush & felt",
+      "details": "round yellow bear with red shirt",
+      "state": "failed",
+      "errorType": "Error"
+    },
+    {
+      "name": "Beauty from Beauty and the Beast",
+      "slug": "beauty-from-beauty-and-the-beast",
+      "category": "Fictional characters",
+      "visualStyle": "3D animation",
+      "details": "storybook heroine in golden gown",
+      "state": "failed",
+      "errorType": "Error"
+    },
+    {
+      "name": "The Beast",
+      "slug": "the-beast",
+      "category": "Fictional characters",
+      "visualStyle": "Plush & felt",
+      "details": "gentle fairytale creature in royal coat",
+      "state": "failed",
+      "errorType": "Error"
+    },
+    {
+      "name": "Blue Fairy",
+      "slug": "blue-fairy",
+      "category": "Fictional characters",
+      "visualStyle": "Oil painting",
+      "details": "storybook fairy in blue gown and delicate wings",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-d6c4e4f5-fe80-40fd-9fe2-5dcfdef979f1.png"
+    },
+    {
+      "name": "Zheng Banqiao",
+      "slug": "zheng-banqiao",
+      "category": "World history",
+      "visualStyle": "Plush & felt",
+      "details": "Qing painter in scholar's robe",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-849c86f3-c9ac-455a-97c4-e2463876835e.png"
+    },
+    {
+      "name": "Piglet",
+      "slug": "piglet",
+      "category": "Fictional characters",
+      "visualStyle": "Cel animation",
+      "details": "small pink pig in striped pink shirt",
+      "state": "failed",
+      "errorType": "Error"
+    },
+    {
+      "name": "Tigger",
+      "slug": "tigger",
+      "category": "Fictional characters",
+      "visualStyle": "Oil painting",
+      "details": "orange striped tiger, playful upright pose",
+      "state": "failed",
+      "errorType": "Error"
+    },
+    {
+      "name": "Badger from Wind in the Willows",
+      "slug": "badger-from-wind-in-the-willows",
+      "category": "Fictional characters",
+      "visualStyle": "Plush & felt",
+      "details": "gray badger gentleman in country clothing",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-f18e9a18-b309-4817-82f8-3acdfdca5c74.png"
+    },
+    {
+      "name": "Eeyore",
+      "slug": "eeyore",
+      "category": "Fictional characters",
+      "visualStyle": "Watercolor",
+      "details": "gentle gray stuffed donkey with bow on tail",
+      "state": "failed",
+      "errorType": "Error"
+    },
+    {
+      "name": "Rumpelstiltskin",
+      "slug": "rumpelstiltskin",
+      "category": "Fictional characters",
+      "visualStyle": "Cel animation",
+      "details": "mischievous small fairy-tale spinner in medieval clothes",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-f45a54f1-f5d6-4a9b-97c0-c9f24fca5af9.png"
+    },
+    {
+      "name": "Rabbit from Winnie the Pooh",
+      "slug": "rabbit-from-winnie-the-pooh",
+      "category": "Fictional characters",
+      "visualStyle": "Clay stop-motion",
+      "details": "yellow rabbit, long ears and friendly expression",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-c22c1f1a-fff7-46bf-8d8c-c5e6714dd836.png"
+    },
+    {
+      "name": "Hansel",
+      "slug": "hansel",
+      "category": "Fictional characters",
+      "visualStyle": "Oil painting",
+      "details": "storybook boy in traditional woodland attire",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-9617b351-2ddb-47a9-a21a-e3322e616539.png"
+    },
+    {
+      "name": "Peter Rabbit",
+      "slug": "peter-rabbit",
+      "category": "Fictional characters",
+      "visualStyle": "Cel animation",
+      "details": "small brown rabbit in blue jacket",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-37490d92-2fbf-4b07-b915-acd641330d9b.png"
+    },
+    {
+      "name": "Jemima Puddle-Duck",
+      "slug": "jemima-puddle-duck",
+      "category": "Fictional characters",
+      "visualStyle": "Oil painting",
+      "details": "storybook white duck in bonnet and shawl",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-7a5af31e-27a7-43ef-9f1f-baed50fe50cf.png"
+    },
+    {
+      "name": "Mole from Wind in the Willows",
+      "slug": "mole-from-wind-in-the-willows",
+      "category": "Fictional characters",
+      "visualStyle": "Paper craft",
+      "details": "small mole gentleman in tweed waistcoat",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-9af03a0b-6956-4b26-98cf-263b77821103.png"
+    },
+    {
+      "name": "Gretel",
+      "slug": "gretel",
+      "category": "Fictional characters",
+      "visualStyle": "Watercolor",
+      "details": "storybook girl in traditional woodland dress",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-2405dab8-3bdb-45ab-8ad4-5ac21c584082.png"
+    },
+    {
+      "name": "Squirrel Nutkin",
+      "slug": "squirrel-nutkin",
+      "category": "Fictional characters",
+      "visualStyle": "Clay stop-motion",
+      "details": "storybook red squirrel",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-ad8ac9d8-b2a1-47cb-8f3f-8c08a174fe2a.png"
+    },
+    {
+      "name": "The Snow Queen",
+      "slug": "the-snow-queen",
+      "category": "Fictional characters",
+      "visualStyle": "Clay stop-motion",
+      "details": "icy fairytale monarch in crystalline white gown",
+      "state": "failed",
+      "errorType": "Error"
+    },
+    {
+      "name": "The Little Mermaid",
+      "slug": "the-little-mermaid",
+      "category": "Fictional characters",
+      "visualStyle": "Paper craft",
+      "details": "red-haired mermaid with green tail, no actor likeness",
+      "state": "failed",
+      "errorType": "Error"
+    },
+    {
+      "name": "Baloo",
+      "slug": "baloo",
+      "category": "Fictional characters",
+      "visualStyle": "Oil painting",
+      "details": "friendly gray bear, relaxed standing pose",
+      "state": "failed",
+      "errorType": "Error"
+    },
+    {
+      "name": "Ratty from Wind in the Willows",
+      "slug": "ratty-from-wind-in-the-willows",
+      "category": "Fictional characters",
+      "visualStyle": "Graphic novel",
+      "details": "water rat gentleman in boating attire",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-c8c5fc51-bb15-417e-8850-ac595f18573f.png"
+    },
+    {
+      "name": "Mr. Toad",
+      "slug": "mr-toad",
+      "category": "Fictional characters",
+      "visualStyle": "3D animation",
+      "details": "green toad gentleman in tweed suit",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-260895a3-3c6e-462c-9b26-c08f2470b322.png"
+    },
+    {
+      "name": "The Ugly Duckling",
+      "slug": "the-ugly-duckling",
+      "category": "Fictional characters",
+      "visualStyle": "Graphic novel",
+      "details": "gentle storybook gray duckling",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-c9ab3ccc-0abc-48ed-b92d-c08719b65210.png"
+    },
+    {
+      "name": "Bambi",
+      "slug": "bambi",
+      "category": "Fictional characters",
+      "visualStyle": "3D animation",
+      "details": "young brown deer with white spots",
+      "state": "failed",
+      "errorType": "Error"
+    },
+    {
+      "name": "Benjamin Bunny",
+      "slug": "benjamin-bunny",
+      "category": "Fictional characters",
+      "visualStyle": "Watercolor",
+      "details": "storybook rabbit in brown jacket and cap",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-e1cbf5dc-7055-4492-a7f8-309e2db38b0b.png"
+    },
+    {
+      "name": "Shere Khan",
+      "slug": "shere-khan",
+      "category": "Fictional characters",
+      "visualStyle": "Clay stop-motion",
+      "details": "majestic orange tiger",
+      "state": "failed",
+      "errorType": "Error"
+    },
+    {
+      "name": "Thumper",
+      "slug": "thumper",
+      "category": "Fictional characters",
+      "visualStyle": "Plush & felt",
+      "details": "small gray rabbit with friendly expression",
+      "state": "failed",
+      "errorType": "Error"
+    },
+    {
+      "name": "Babar",
+      "slug": "babar",
+      "category": "Fictional characters",
+      "visualStyle": "Graphic novel",
+      "details": "gentle elephant king in green suit and crown",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-06c8adfa-dd7a-437c-911a-cd66a70c0da8.png"
+    },
+    {
+      "name": "Mrs. Tiggy-Winkle",
+      "slug": "mrs-tiggy-winkle",
+      "category": "Fictional characters",
+      "visualStyle": "Paper craft",
+      "details": "storybook hedgehog washerwoman in apron",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-990d5792-6e89-4d6a-a7ff-f448ad1a3534.png"
+    },
+    {
+      "name": "Bagheera",
+      "slug": "bagheera",
+      "category": "Fictional characters",
+      "visualStyle": "Watercolor",
+      "details": "sleek black panther",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-6d2370c9-8c50-47f3-b5a9-8f8878d29b8a.png"
+    },
+    {
+      "name": "Mowgli",
+      "slug": "mowgli",
+      "category": "Fictional characters",
+      "visualStyle": "Cel animation",
+      "details": "young jungle story hero in simple red shorts",
+      "state": "failed",
+      "errorType": "Error"
+    },
+    {
+      "name": "Athos",
+      "slug": "athos",
+      "category": "Fictional characters",
+      "visualStyle": "Plush & felt",
+      "details": "dignified musketeer in seventeenth-century costume",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-02dd3676-8e38-419f-8f66-b68e36909d9c.png"
+    },
+    {
+      "name": "Esmeralda",
+      "slug": "esmeralda",
+      "category": "Fictional characters",
+      "visualStyle": "Plush & felt",
+      "details": "medieval literary heroine in colorful modest dress",
+      "state": "failed",
+      "errorType": "Error"
+    },
+    {
+      "name": "Tarzan",
+      "slug": "tarzan",
+      "category": "Fictional characters",
+      "visualStyle": "Graphic novel",
+      "details": "classic literary jungle hero in modest loincloth, no actor likeness",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-a33db643-f698-432e-a18c-4d28668f5010.png"
+    },
+    {
+      "name": "Aramis",
+      "slug": "aramis",
+      "category": "Fictional characters",
+      "visualStyle": "Oil painting",
+      "details": "elegant musketeer in seventeenth-century clothing",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-ce074b50-e0e6-4032-9295-de14f1db962a.png"
+    },
+    {
+      "name": "Edmond Dantes",
+      "slug": "edmond-dantes",
+      "category": "Fictional characters",
+      "visualStyle": "Watercolor",
+      "details": "Count of Monte Cristo in nineteenth-century gentleman's clothing",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-5e9c4552-9467-418f-b6d9-e57aa8f3fabc.png"
+    },
+    {
+      "name": "D'Artagnan",
+      "slug": "d-artagnan",
+      "category": "Fictional characters",
+      "visualStyle": "3D animation",
+      "details": "young seventeenth-century musketeer in blue tabard",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-9579bf64-ff9c-44e1-b38c-1f18851724cf.png"
+    },
+    {
+      "name": "Porthos",
+      "slug": "porthos",
+      "category": "Fictional characters",
+      "visualStyle": "Cel animation",
+      "details": "large cheerful musketeer in period costume",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-b7d7f3fa-e568-49e8-a877-2149da34f91d.png"
+    },
+    {
+      "name": "Akela",
+      "slug": "akela",
+      "category": "Fictional characters",
+      "visualStyle": "Paper craft",
+      "details": "gray wolf from the Jungle Book",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-23ff53bf-fe66-4a71-a400-3e341f0fa60c.png"
+    },
+    {
+      "name": "Othello",
+      "slug": "othello",
+      "category": "Fictional characters",
+      "visualStyle": "Graphic novel",
+      "details": "Shakespeare hero in Renaissance military clothing",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-00a9768c-1feb-40c7-915f-77122a7ebd42.png"
+    },
+    {
+      "name": "Hamlet",
+      "slug": "hamlet",
+      "category": "Fictional characters",
+      "visualStyle": "Cel animation",
+      "details": "Danish prince in dark Renaissance costume",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-0a49d91a-0c7f-48e3-9c0e-59ef9e8e8c8f.png"
+    },
+    {
+      "name": "Jean Valjean",
+      "slug": "jean-valjean",
+      "category": "Fictional characters",
+      "visualStyle": "Clay stop-motion",
+      "details": "bearded nineteenth-century literary gentleman",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-14cacff2-a650-4943-bf43-eb0ec1618d80.png"
+    },
+    {
+      "name": "Cosette",
+      "slug": "cosette",
+      "category": "Fictional characters",
+      "visualStyle": "Paper craft",
+      "details": "Les Miserables heroine in modest nineteenth-century dress",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-cddb270e-364a-4dd8-a069-ee77cd8588fc.png"
+    },
+    {
+      "name": "Falstaff",
+      "slug": "falstaff",
+      "category": "Fictional characters",
+      "visualStyle": "Plush & felt",
+      "details": "round cheerful Shakespeare knight in period costume",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-9c46ead7-130b-44ca-9c2f-92b1ab9c8e57.png"
+    },
+    {
+      "name": "David Copperfield",
+      "slug": "david-copperfield",
+      "category": "Fictional characters",
+      "visualStyle": "Clay stop-motion",
+      "details": "Victorian literary gentleman in period suit",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-e01f2ae9-a11a-4177-b4ae-d3d456657732.png"
+    },
+    {
+      "name": "Quasimodo",
+      "slug": "quasimodo",
+      "category": "Fictional characters",
+      "visualStyle": "3D animation",
+      "details": "kind hunchback bell ringer in medieval clothing",
+      "state": "failed",
+      "errorType": "Error"
+    },
+    {
+      "name": "Javert",
+      "slug": "javert",
+      "category": "Fictional characters",
+      "visualStyle": "Graphic novel",
+      "details": "stern nineteenth-century police inspector in period uniform",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-a1b1b86d-2b1b-4bc0-a29a-98dcba2d1796.png"
+    },
+    {
+      "name": "Prospero",
+      "slug": "prospero",
+      "category": "Fictional characters",
+      "visualStyle": "Watercolor",
+      "details": "Shakespeare magician in dignified robes",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-a9168652-7110-456f-b6f2-ceb0724342e0.png"
+    },
+    {
+      "name": "Fagin",
+      "slug": "fagin",
+      "category": "Fictional characters",
+      "visualStyle": "Paper craft",
+      "details": "elderly Victorian literary figure, no ethnic caricature",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-18e285b0-30e1-4228-acde-77cd1718aa07.png"
+    },
+    {
+      "name": "Macbeth",
+      "slug": "macbeth",
+      "category": "Fictional characters",
+      "visualStyle": "3D animation",
+      "details": "Shakespeare Scottish nobleman in period costume",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-c9eafc45-9bf8-43a2-bdd8-d72e1de11387.png"
+    },
+    {
+      "name": "Ophelia",
+      "slug": "ophelia",
+      "category": "Fictional characters",
+      "visualStyle": "Oil painting",
+      "details": "Shakespeare heroine in Renaissance dress",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-866a6363-db5a-4605-93a9-55d3d518b2b1.png"
+    },
+    {
+      "name": "Huckleberry Finn",
+      "slug": "huckleberry-finn",
+      "category": "Fictional characters",
+      "visualStyle": "Graphic novel",
+      "details": "nineteenth-century boy in straw hat and simple clothes",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-aa0ac9fa-a4ab-4644-8b8d-4e3c082a81bc.png"
+    },
+    {
+      "name": "Ebenezer Scrooge",
+      "slug": "ebenezer-scrooge",
+      "category": "Fictional characters",
+      "visualStyle": "Cel animation",
+      "details": "elderly Victorian gentleman with spectacles and dark coat",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-1a105d96-3bf0-40c0-b9cf-79026c0fabc7.png"
+    },
+    {
+      "name": "Puck",
+      "slug": "puck",
+      "category": "Fictional characters",
+      "visualStyle": "Clay stop-motion",
+      "details": "mischievous woodland sprite with pointed ears",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-7cd3f071-87fe-45bf-b18c-6093f733825e.png"
+    },
+    {
+      "name": "Tom Sawyer",
+      "slug": "tom-sawyer",
+      "category": "Fictional characters",
+      "visualStyle": "3D animation",
+      "details": "nineteenth-century boy in country clothes",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-d97612fb-5207-4f40-bb5c-1f4e9a738418.png"
+    },
+    {
+      "name": "Long John Silver",
+      "slug": "long-john-silver",
+      "category": "Fictional characters",
+      "visualStyle": "Plush & felt",
+      "details": "pirate with tricorn hat and wooden leg",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-fabe844c-05d3-47f6-a6d3-4ab0c8a9041c.png"
+    },
+    {
+      "name": "Oliver Twist",
+      "slug": "oliver-twist",
+      "category": "Fictional characters",
+      "visualStyle": "Watercolor",
+      "details": "Victorian orphan boy in modest period clothing",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-6fcf194d-22d8-49df-b6fe-be92cc1482c8.png"
+    },
+    {
+      "name": "King Lear",
+      "slug": "king-lear",
+      "category": "Fictional characters",
+      "visualStyle": "Paper craft",
+      "details": "white-bearded Shakespeare king in worn royal robes",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-6d63a6c6-617c-44b2-8699-84c8aaf1252d.png"
+    },
+    {
+      "name": "Tiny Tim",
+      "slug": "tiny-tim",
+      "category": "Fictional characters",
+      "visualStyle": "Oil painting",
+      "details": "Victorian boy in cap holding a crutch",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-83e9d1a4-8538-43f2-bcf0-9876bf097f34.png"
+    },
+    {
+      "name": "Passepartout",
+      "slug": "passepartout",
+      "category": "Fictional characters",
+      "visualStyle": "Graphic novel",
+      "details": "Victorian traveler in practical period clothes",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-5c984c29-470e-4b8e-8425-ab3bf84aaa93.png"
+    },
+    {
+      "name": "Allan Quatermain",
+      "slug": "allan-quatermain",
+      "category": "Fictional characters",
+      "visualStyle": "3D animation",
+      "details": "literary explorer in nineteenth-century safari attire",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-33621b73-86e0-48bb-a0b2-aaf70e5b1c29.png"
+    },
+    {
+      "name": "Phileas Fogg",
+      "slug": "phileas-fogg",
+      "category": "Fictional characters",
+      "visualStyle": "Paper craft",
+      "details": "Victorian traveler in top hat and formal suit",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-4eefd052-6265-4875-b2ad-816abe079136.png"
+    },
+    {
+      "name": "Gulliver",
+      "slug": "gulliver",
+      "category": "Fictional characters",
+      "visualStyle": "Clay stop-motion",
+      "details": "eighteenth-century traveler in period coat",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-7ce44432-a4c2-4a3f-abcf-de90eddab7e6.png"
+    },
+    {
+      "name": "Friday from Robinson Crusoe",
+      "slug": "friday-from-robinson-crusoe",
+      "category": "Fictional characters",
+      "visualStyle": "Watercolor",
+      "details": "dignified islander in respectful historic literary interpretation",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-ab1613d0-2d8e-47bc-b16e-13de1177539f.png"
+    },
+    {
+      "name": "Pollyanna",
+      "slug": "pollyanna",
+      "category": "Fictional characters",
+      "visualStyle": "Graphic novel",
+      "details": "Edwardian storybook girl in modest dress",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-ba4d6e99-8bb1-4b91-a9a9-c5c295874bb0.png"
+    },
+    {
+      "name": "Heidi",
+      "slug": "heidi",
+      "category": "Fictional characters",
+      "visualStyle": "Paper craft",
+      "details": "Alpine storybook girl in traditional dress",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-406e1341-e60d-4b74-9bfe-24bdbf27cf43.png"
+    },
+    {
+      "name": "Colin Craven",
+      "slug": "colin-craven",
+      "category": "Fictional characters",
+      "visualStyle": "Cel animation",
+      "details": "Secret Garden boy in Edwardian clothes",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-84c7cc73-5a03-4e52-bc28-35444dc7597d.png"
+    },
+    {
+      "name": "Jim Hawkins",
+      "slug": "jim-hawkins",
+      "category": "Fictional characters",
+      "visualStyle": "Cel animation",
+      "details": "young Treasure Island hero in period sailor clothes",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-6d60ccd0-61c5-42b0-a844-a21814c09fb6.png"
+    },
+    {
+      "name": "Robinson Crusoe",
+      "slug": "robinson-crusoe",
+      "category": "Fictional characters",
+      "visualStyle": "Oil painting",
+      "details": "bearded castaway in rustic seventeenth-century clothing",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-e355670c-2830-4597-9bee-876b0a26012b.png"
+    },
+    {
+      "name": "Harry Potter",
+      "slug": "harry-potter",
+      "category": "Fictional characters",
+      "visualStyle": "Watercolor",
+      "details": "round glasses, lightning scar, school robes and wand",
+      "state": "failed",
+      "errorType": "Error"
+    },
+    {
+      "name": "Hester Prynne",
+      "slug": "hester-prynne",
+      "category": "Fictional characters",
+      "visualStyle": "Plush & felt",
+      "details": "Puritan literary heroine in seventeenth-century dress",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-93905cba-2a0e-496d-a698-0b254ab1e9de.png"
+    },
+    {
+      "name": "Sara Crewe",
+      "slug": "sara-crewe",
+      "category": "Fictional characters",
+      "visualStyle": "3D animation",
+      "details": "Victorian literary heroine in elegant modest dress",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-f23282ea-8ef9-4999-91a7-bc4b1b0dd7f5.png"
+    },
+    {
+      "name": "Hermione Granger",
+      "slug": "hermione-granger",
+      "category": "Fictional characters",
+      "visualStyle": "Clay stop-motion",
+      "details": "curly-haired young witch in school robes with book",
+      "state": "failed",
+      "errorType": "Error"
+    },
+    {
+      "name": "Mary Lennox",
+      "slug": "mary-lennox",
+      "category": "Fictional characters",
+      "visualStyle": "Plush & felt",
+      "details": "Secret Garden heroine in Edwardian clothing",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-9b1294b2-0329-4154-a15f-d3d5fb4418f5.png"
+    },
+    {
+      "name": "Minerva McGonagall",
+      "slug": "minerva-mcgonagall",
+      "category": "Fictional characters",
+      "visualStyle": "3D animation",
+      "details": "elderly witch, spectacles and green robes",
+      "state": "failed",
+      "errorType": "Error"
+    },
+    {
+      "name": "Ron Weasley",
+      "slug": "ron-weasley",
+      "category": "Fictional characters",
+      "visualStyle": "Paper craft",
+      "details": "red-haired young wizard in school robes",
+      "state": "failed",
+      "errorType": "Error"
+    },
+    {
+      "name": "Jo March",
+      "slug": "jo-march",
+      "category": "Fictional characters",
+      "visualStyle": "Oil painting",
+      "details": "Little Women heroine in nineteenth-century dress",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-37de6d77-c815-4b61-b6a5-32c38ddc3eef.png"
+    },
+    {
+      "name": "Rubeus Hagrid",
+      "slug": "rubeus-hagrid",
+      "category": "Fictional characters",
+      "visualStyle": "Plush & felt",
+      "details": "large bearded fantasy groundskeeper in rustic coat",
+      "state": "failed",
+      "errorType": "Error"
+    },
+    {
+      "name": "Albus Dumbledore",
+      "slug": "albus-dumbledore",
+      "category": "Fictional characters",
+      "visualStyle": "Graphic novel",
+      "details": "silver-bearded wizard in ornate robes",
+      "state": "failed",
+      "errorType": "Error"
+    },
+    {
+      "name": "Christopher Robin",
+      "slug": "christopher-robin",
+      "category": "Fictional characters",
+      "visualStyle": "Oil painting",
+      "details": "storybook boy in simple mid-century clothes",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-579d8b96-0f43-40a1-ba7b-bbf379ccb53c.png"
+    },
+    {
+      "name": "Severus Snape",
+      "slug": "severus-snape",
+      "category": "Fictional characters",
+      "visualStyle": "Cel animation",
+      "details": "pale dark-haired wizard in long black robes",
+      "state": "failed",
+      "errorType": "Error"
+    },
+    {
+      "name": "Elizabeth Bennet",
+      "slug": "elizabeth-bennet",
+      "category": "Fictional characters",
+      "visualStyle": "Watercolor",
+      "details": "Regency heroine in elegant period dress",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-3c751474-44fd-4d6c-bef9-e910fd913f85.png"
+    },
+    {
+      "name": "Mr. Darcy",
+      "slug": "mr-darcy",
+      "category": "Fictional characters",
+      "visualStyle": "Clay stop-motion",
+      "details": "Regency gentleman in tailored period coat",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-f1a3f610-05b6-4c2f-a30f-c52b76e1022e.png"
+    },
+    {
+      "name": "Luna Lovegood",
+      "slug": "luna-lovegood",
+      "category": "Fictional characters",
+      "visualStyle": "Oil painting",
+      "details": "blonde young witch with whimsical accessories",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-17fd7677-6457-4de3-9d19-84bf05ee561c.png"
+    },
+    {
+      "name": "Anne Shirley",
+      "slug": "anne-shirley",
+      "category": "Fictional characters",
+      "visualStyle": "Cel animation",
+      "details": "red-haired girl with braids in Edwardian dress",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-28709299-0435-42f6-9128-110288f178b8.png"
+    },
+    {
+      "name": "Newt Scamander",
+      "slug": "newt-scamander",
+      "category": "Fictional characters",
+      "visualStyle": "Watercolor",
+      "details": "shy wizard zoologist in teal coat and suitcase",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-51dfbebc-cb4b-4c3d-8dda-b096d08e99e4.png"
+    }
+  ]
+}
