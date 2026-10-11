@@ -271,3 +271,15 @@ def project(panorama, meta, heading, pitch, fov):
 async def image_data(pano, heading, pitch, fov):
     image, meta = await panorama(pano)
     return await asyncio.to_thread(project, image, meta, heading, pitch, fov)
+
+
+async def panorama_payload(pano):
+    image, meta = await panorama(pano)
+    def encode():
+        out = io.BytesIO()
+        image.save(out, format='JPEG', quality=90, optimize=True)
+        return 'data:image/jpeg;base64,' + base64.b64encode(out.getvalue()).decode()
+    return {'image': await asyncio.to_thread(encode),
+            'heading': meta.get('heading', 0), 'tilt': meta.get('tilt', 90),
+            'roll': meta.get('roll', 0), 'copyright': meta.get('copyright', 'Google'),
+            'expiresAt': meta['_tileExpiresAt']}

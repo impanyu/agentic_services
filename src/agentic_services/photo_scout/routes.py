@@ -403,7 +403,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
         return Response(json.dumps({'imageUrls':results}),media_type='application/json',headers={'Cache-Control':'private, no-store'})
 
     @router.get('/photo-scout/v1/street-view-image')
-    async def street_view_image(reference:str,expires:int,signature:str,authorization:str|None=Header(None)):
+    async def street_view_image(reference:str,expires:int,signature:str,panorama:bool=False,authorization:str|None=Header(None)):
         require_api(authorization)
         if not settings.service_api_key: raise HTTPException(503,'Private gateway credential is required')
         now=int(time.time())
@@ -412,6 +412,14 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
             raise HTTPException(403,'Image link expired or invalid; reload the report')
         image_limit()
         try:
+            if panorama:
+                from . import streetview_tiles
+                match=re.fullmatch(r'google-streetview://([A-Za-z0-9_-]{1,200})/.*',reference)
+                if not match or not google_enabled() or not streetview_tiles.enabled():
+                    raise ValueError('Local panorama unavailable')
+                payload=await streetview_tiles.panorama_payload(match[1])
+                return Response(json.dumps(payload),media_type='application/json',
+                    headers={'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff'})
             data=await image_data(reference) if reference.startswith('google-place-photo://') else await google_image_data(reference)
             return Response(base64.b64decode(data.split(',',1)[1]),media_type=data.split(';',1)[0].removeprefix('data:'),
                 headers={'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff'})

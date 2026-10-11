@@ -1270,3 +1270,30 @@ def test_budget_panorama_profiles_keep_low_vision_detail(tmp_path, monkeypatch, 
         return SimpleNamespace(output_parsed=visual.VisualBatch(assessments=[_scoring_assessment(visual,row)]),usage=None)
     _scoring_client(monkeypatch,parse);monkeypatch.setattr(visual,'image_data',image)
     asyncio.run(visual.explore(settings,ExploreRequest(lat=0,lon=0),[row],{}))
+
+
+def test_local_panorama_delivery_uses_existing_signed_authorization(tmp_path, monkeypatch):
+    from urllib.parse import urlsplit,parse_qs,urlencode
+    from agentic_services.photo_scout import streetview_tiles as tiles
+    import agentic_services.photo_scout.routes as routes
+    calls=[]
+    async def sphere(pano):
+        calls.append(pano)
+        return {'image':'data:image/jpeg;base64,fixture','heading':90,'tilt':90,'roll':0,'copyright':'Fixture','expiresAt':9999999999}
+    monkeypatch.setattr(tiles,'panorama_payload',sphere)
+    monkeypatch.setattr(tiles,'enabled',lambda:True)
+    monkeypatch.setattr(routes,'google_enabled',lambda:True)
+    settings=Settings(openai_api_key=None,openai_model='test',database_path=tmp_path/'db',base_url='https://api.test',service_api_key='private')
+    client=TestClient(create_app(settings=settings));headers={'Authorization':'Bearer private'}
+    url='https://www.google.com/maps/@?map_action=pano&pano=fixture&heading=315'
+    signed=client.post('/photo-scout/v1/thumbnails',json={'sourceUrls':[url]},headers=headers).json()['imageUrls'][0]+'&panorama=true'
+    assert client.get(signed).status_code==401
+    altered=signed.replace('pano%3A','wrong%3A') if 'pano%3A' in signed else signed.replace('fixture','other')
+    assert client.get(altered,headers=headers).status_code==403
+    response=client.get(signed,headers=headers)
+    assert response.status_code==200 and response.json()['heading']==90
+    assert response.headers['cache-control']=='private, no-store'
+    assert calls==['fixture']
+    monkeypatch.setattr(tiles,'enabled',lambda:False)
+    assert client.get(signed,headers=headers).status_code==503
+    assert calls==['fixture']

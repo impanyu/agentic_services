@@ -655,3 +655,20 @@ requests. Scoring preserves `detail: low` for both z0 and z1 profile versions;
 this does not guarantee constant token counts across image sizes or models.
 Google pricing: https://developers.google.com/maps/billing-and-pricing/pricing
 OpenAI vision sizing: https://developers.openai.com/api/docs/guides/images-vision
+
+### Smooth local Street View interaction (October 10)
+
+`panorama-view.js` loads a complete tier-1 sphere once on interaction (or when a
+POI popup opens). The existing authenticated, signed `street-view-image` route
+accepts `panorama=true` and returns the full sphere plus compass orientation,
+source credit and freshness deadline. No provider credential is returned.
+Responses remain private/no-store; at most 12 fresh spheres are reused in browser
+memory. The backend uses the same original tile responses as scoring/previews.
+
+WebGL perspective rendering follows `requestAnimationFrame` for heading, pitch
+and FOV changes, independently of the 180 ms server-thumbnail cadence. POI,
+Shortlist and selfie preview surfaces share sphere data; their existing camera
+inheritance and save rules remain unchanged. No Google request is needed per
+turn/zoom. Credits remain visible. Missing WebGL or a failed sphere request keeps
+the static-preview fallback; paid Google SDK loading still requires explicit opt-in.
+Late responses for a closed surface or another panorama cannot replace the scene.

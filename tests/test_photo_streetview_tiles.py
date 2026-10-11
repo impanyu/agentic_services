@@ -206,3 +206,14 @@ def test_small_native_sphere_does_not_request_nonexistent_higher_level(provider,
     monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_TILE_ZOOM','1')
     asyncio.run(sources.google_image_data('google-streetview://fixture/90'))
     assert [r.url.path for r in calls if '/tiles/' in r.url.path]==['/v1/streetview/tiles/0/0/0']
+
+
+def test_browser_sphere_reuses_tiles_and_includes_orientation_without_credentials(provider, monkeypatch):
+    calls,_=provider
+    monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_TILE_ZOOM','1')
+    asyncio.run(sources.google_image_data('google-streetview://fixture/90'))
+    result=asyncio.run(tiles.panorama_payload('fixture'))
+    assert decode(result['image']).size==(1024,512)
+    assert result['heading']==90 and result['tilt']==90
+    assert set(result)=={'image','heading','tilt','roll','copyright','expiresAt'}
+    assert len(calls)==4
