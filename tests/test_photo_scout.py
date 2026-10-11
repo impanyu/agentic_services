@@ -1255,3 +1255,18 @@ def test_final_report_boosts_center_only_after_visual_matching(center_matches):
         assert report['spots'][0]['score']==95
         assert report['spots'][0]['visualScore']==checks[0].score==75
     else:assert len(report['spots'])==1
+
+
+@pytest.mark.parametrize('profile', ['google-tiles-z0-v1','google-tiles-z0-v2','google-tiles-z1-v2'])
+def test_budget_panorama_profiles_keep_low_vision_detail(tmp_path, monkeypatch, profile):
+    from types import SimpleNamespace
+    import agentic_services.photo_scout.scoring as visual
+    settings=Settings(openai_api_key='test',openai_model='test',database_path=tmp_path/'db',base_url='https://api.test')
+    row=_scoring_rows()[0];row['imageryProfile']=profile
+    async def image(url):return 'data:image/jpeg;base64,/9j/dGVzdA=='
+    async def parse(**kw):
+        content=kw['input'][0]['content']
+        assert [c['detail'] for c in content if c['type']=='input_image']==['low']
+        return SimpleNamespace(output_parsed=visual.VisualBatch(assessments=[_scoring_assessment(visual,row)]),usage=None)
+    _scoring_client(monkeypatch,parse);monkeypatch.setattr(visual,'image_data',image)
+    asyncio.run(visual.explore(settings,ExploreRequest(lat=0,lon=0),[row],{}))
