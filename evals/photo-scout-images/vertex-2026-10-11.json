@@ -1,0 +1,93 @@
+[
+  {
+    "case": "waterfront-real",
+    "provider": "vertex",
+    "model": "gemini-nano-banana-2.1",
+    "size": "1K",
+    "subjectSha256": "38d6dbffea9506039f2d413794c827983bbbc12628675e0d2454ea5a7d5cc9b9",
+    "backgroundSha256": "e50dd10015e3d4a4bade3a21240f65d9ac8eabb4f265b59dcea5c870197d3322",
+    "promptSha256": "3a2a400ccae21d681818156f2cbb791b7fc3b5888be552693ebf04f223df7d98",
+    "httpStatus": 200,
+    "requestId": "g7XLasn3E6q7u-gP0ZDs2QQ",
+    "finishReasons": [
+      "STOP"
+    ],
+    "usage": {
+      "promptTokenCount": 4539,
+      "candidatesTokenCount": 1120,
+      "totalTokenCount": 5659,
+      "trafficType": "ON_DEMAND",
+      "promptTokensDetails": [
+        {
+          "modality": "TEXT",
+          "tokenCount": 2299
+        },
+        {
+          "modality": "IMAGE",
+          "tokenCount": 2240
+        }
+      ],
+      "candidatesTokensDetails": [
+        {
+          "modality": "IMAGE",
+          "tokenCount": 1120
+        }
+      ]
+    },
+    "promptFeedback": {},
+    "state": "complete",
+    "outputFile": "0-gemini-nano-banana-2.1.png",
+    "dimensions": [
+      1024,
+      1024
+    ],
+    "seconds": 12.667,
+    "estimatedUsd": 0.040408
+  },
+  {
+    "case": "plaza-cartoon",
+    "provider": "vertex",
+    "model": "gemini-nano-banana-2.1",
+    "size": "1K",
+    "subjectSha256": "664084639bcdff7f442b391baa36706ca1448436babbdba68be50065e9497ca4",
+    "backgroundSha256": "01a8f5e3900b9044f1d73eb95641263a16fa164129ed8364353acc76ba3b40d0",
+    "promptSha256": "5f951a35d5fb7f21dcfa5810638b556d36c9b53116311b6c89319c79045bbfa7",
+    "httpStatus": 200,
+    "requestId": "g7XLaoXGDv2Tu-gPuvirQA",
+    "finishReasons": [
+      "STOP"
+    ],
+    "usage": {
+      "promptTokenCount": 4383,
+      "candidatesTokenCount": 1120,
+      "totalTokenCount": 6419,
+      "trafficType": "ON_DEMAND",
+      "promptTokensDetails": [
+        {
+          "modality": "TEXT",
+          "tokenCount": 2143
+        },
+        {
+          "modality": "IMAGE",
+          "tokenCount": 2240
+        }
+      ],
+      "candidatesTokensDetails": [
+        {
+          "modality": "IMAGE",
+          "tokenCount": 1120
+        }
+      ],
+      "thoughtsTokenCount": 916
+    },
+    "promptFeedback": {},
+    "state": "complete",
+    "outputFile": "1-gemini-nano-banana-2.1.png",
+    "dimensions": [
+      1024,
+      1024
+    ],
+    "seconds": 17.175,
+    "estimatedUsd": 0.047045
+  }
+]
