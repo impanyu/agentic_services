@@ -413,3 +413,26 @@ def test_background_task_returns_feedback_without_source_or_scoring_calls(tmp_pa
     assert report['state']=='complete' and report['result']['responseType']=='feedback'
     assert report['result']['action']==action and report['result']['inspectedImages']==0
     assert client.get('/photo-scout/v1/tasks').json()['items'][0]['context']['stage']=='feedback'
+
+@pytest.mark.parametrize('failure_count,expected_state',[(1,'complete'),(2,'failed')])
+def test_background_planning_timeout_retries_without_browser_and_recovers_in_same_job(tmp_path,monkeypatch,failure_count,expected_state):
+    settings,app,client=setup(tmp_path,monkeypatch)
+    client.get('/photo-scout/v1/tasks');cookie=client.cookies.get(GUEST_COOKIE)
+    attempts=[]
+    async def resolve(settings,payload):
+        attempts.append(payload.query)
+        if len(attempts)<=failure_count:raise TimeoutError('provider timeout')
+        return {'action':'unsupported','locations':[], 'feedback':'No searchable scene', 'explanation':'No searchable scene'}
+    monkeypatch.setattr(routes,'resolve_intent',resolve)
+    response=client.post('/photo-scout/v1/jobs',headers={'X-Request-Token':'T'*32},json={'lat':0,'lon':0,'query':'test scene'})
+    job=response.json()['jobId'];client.close()
+    assert asyncio.run(app.state.process_photo_preview())
+    reopened=TestClient(app,base_url='https://api.test',headers={'Authorization':'Bearer private'})
+    reopened.cookies.set(GUEST_COOKIE,cookie)
+    task=reopened.get('/photo-scout/v1/tasks').json()['items'][0]
+    assert task['id']==job and task['state']==expected_state
+    assert attempts==['test scene','test scene']
+    assert task['context']['planningAttempt']==2
+    with sqlite3.connect(settings.database_path) as db:
+        assert db.execute('SELECT count(*) FROM photo_scout_jobs').fetchone()[0]==1
+    assert not asyncio.run(app.state.process_photo_preview())

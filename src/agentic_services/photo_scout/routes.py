@@ -640,8 +640,21 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
             submitted=current_website_task(SearchTaskRequest.model_validate_json(job['payload']))
             context=tasks.context('search',job['id']) or submitted.model_dump()
             if submitted.selectedPoiIds is None:
-                context['stage']='planning';tasks.update_context('search',job['id'],context)
-                payload,plan=await interpret_search(submitted,website=True)
+                # The durable worker owns both attempts; browser disconnects never
+                # cancel planning. Retry a transient timeout once, not invalid plans,
+                # provider refusals, authentication failures or task cancellation.
+                for planning_attempt in (1, 2):
+                    context.update(stage='planning',planningAttempt=planning_attempt)
+                    tasks.update_context('search',job['id'],context)
+                    try:
+                        payload,plan=await interpret_search(submitted,website=True)
+                        break
+                    except (TimeoutError, APITimeoutError) as error:
+                        logging.getLogger(__name__).warning(
+                            'Photo Scout planning timeout: job=%s attempt=%s error=%s',
+                            job['id'], planning_attempt, type(error).__name__)
+                        if planning_attempt == 2:
+                            raise
                 planning_seconds=time.monotonic()-task_started
                 context.update({k:plan.get(k) for k in ('action','normalizedQuery','intentSummary','subjectRole','assumptions','explanation')})
                 if payload is None:
@@ -659,7 +672,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
                 queueSeconds=round(max(0,time.time()-job['created']-(time.monotonic()-task_started)),3))
             store.update(job['id'],state='complete',result=json.dumps(result),error=None,lease_until=0)
         except Exception as error:
-            logging.getLogger(__name__).warning('Photo Scout background search failed: %s fields=%s',type(error).__name__,[(e['loc'],e['type']) for e in error.errors(include_input=False,include_url=False)] if isinstance(error,ValidationError) else [])
+            logging.getLogger(__name__).warning('Photo Scout background search failed: job=%s stage=%s elapsed=%.3f error=%s fields=%s',job['id'],context.get('stage'),time.monotonic()-task_started,type(error).__name__,[(e['loc'],e['type']) for e in error.errors(include_input=False,include_url=False)] if isinstance(error,ValidationError) else [])
             store.update(job['id'],state='failed',lease_until=0,error=str(error.detail) if isinstance(error,HTTPException) else 'Could not prepare a valid search plan. Please try again.' if isinstance(error,ValidationError) and context.get('stage')=='planning' else 'Understanding this request took too long. Please try again.' if context.get('stage')=='planning' and isinstance(error,(TimeoutError,APITimeoutError)) else 'Search could not be completed. Please try again later.')
         return True
 
