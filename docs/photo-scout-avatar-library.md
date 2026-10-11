@@ -95,3 +95,23 @@ Built-in imagegen made 32 separate transparent-cutout requests. Thirty-one succe
 Selection references consulted: [Crunchyroll 2026 awards](https://www.crunchyroll.com/news/latest/2026/5/22/anime-awards-2026-winners-list?pubDate=20260523), [Zenless Zone Zero official characters](https://zenless.hoyoverse.com/en-us/main?catchSpider=1&page=feature), and [POP MART official THE MONSTERS catalog](https://www.popmart.com/us/collection/the-monsters?page=1). These support the contemporary franchise selection rather than a quantitative top-character claim.
 
 Validation: four installer tests and ten frontend catalog/autosave tests passed, including featured ordering with franchise-name filtering and preservation of private-upload order. Production checks confirmed all original 572 entries, the 603-entry catalog, all 31 featured additions, 62 public image URLs and the exact updated loader. New asset hashes were verified on the VM before the atomic catalog update.
+
+## October 11 contemporary public figures
+
+Added 33 independently generated contemporary public-figure cutouts: technology leaders, musicians, screen personalities and athletes, with international and Chinese-language figures. Exact category counts are Technology: 10, Music: 11, Screen icons: 7, Sports: 5. The catalog now contains 636 entries representing 625 distinct named people/characters. This is a curated cross-interest selection, not a measured popularity ranking. Names include Elon Musk, Jensen Huang, Lei Jun, Beyoncé, Ariana Grande, Lisa, Jennie, Zendaya, LeBron James, Shohei Ohtani, Eileen Gu, Wang Yibo, Xiao Zhan, Yang Mi, Jackson Wang, G.E.M., Joker Xue and Faye Wong.
+
+New entries use the existing featured group, Characters default tab, category/style filters and English/Chinese aliases. The original 603 manifest objects and all previous assets are preserved. New full-body images were inspected together on a contact sheet; most outputs are photographic-looking, so displayed style labels reflect that observed result rather than claiming the prompt's requested watercolor/clay/graphic-novel medium was achieved. These are AI-imagined likenesses, not authenticated photographs or endorsements. Private uploads, search, and selfie-generation behavior are unchanged.
+
+Built-in imagegen made 40 independent requests with transparent backgrounds. Thirty-three usable RGBA PNGs were installed with lightweight WebP thumbnails under `photo-scout-site/avatars/`. The [prompt set](photo-scout-avatar-celebrities-prompts.json) records intended directions; the [generation report](photo-scout-avatar-celebrities-results.json) records source paths, actual installed styles and failure diagnostics. Original tool outputs remain in the generated-images folder. Seven moderation failures were omitted without retry:
+
+- Taylor Swift: stage `output`, category `other`, request `64414662-c36f-4a69-9b57-94f46af113e0`.
+- Billie Eilish: stage `input`, category `public-figure`, request `216ddab3-b1c8-442f-a906-8aa5163aeed4`.
+- Dua Lipa: stage `output`, category `sexual`, request `44306b11-1166-47cf-a484-a71153a1dc23`.
+- Dwayne Johnson: stage `input`, category `public-figure`, request `88886f14-4444-4202-a919-c36b8e88ff3f`.
+- Scarlett Johansson: stage `input`, category `public-figure`, request `6fba647c-7f34-43df-ad62-4543b829c8e3`.
+- Lionel Messi: stage `output`, category `other`, request `4a395d00-5450-4f28-80ac-cce97d6acf86`.
+- Dilraba Dilmurat: stage `output`, category `sexual`, request `60570b87-6127-42e3-8b5a-e9f03d749d24`.
+
+The reported categories do not establish a more specific cause or a restriction applying to every depiction of these people. Four installer and ten frontend catalog/autosave tests passed.
+
+Production verification preserved all 603 previous manifest objects, checked all 66 new asset SHA-256 hashes on the VM before atomic replacement, and confirmed the public 636-entry catalog, 66 HTTP 200 image URLs and exact versioned loader. Static-only deployment retained a VM rollback backup and required no backend restart.

@@ -1,0 +1,626 @@
+{
+  "method": "built-in imagegen; one independent transparent-cutout request per person",
+  "items": [
+    {
+      "name": "Elon Musk",
+      "slug": "celebrity-elon-musk",
+      "category": "Technology",
+      "visualStyle": "Cinematic realism",
+      "aliases": [
+        "马斯克"
+      ],
+      "featured": true,
+      "prompt": "Use case: stylized or realistic public-figure avatar asset. Create an AI-imagined, recognizable likeness of Elon Musk, one adult person only, in Cinematic realism style. Single full-body standing character, head to shoes fully in frame, centered with generous transparent margin, friendly relaxed pose and natural anatomy. Dress in tasteful, recognizable contemporary public-appearance clothing, fully clothed. Preserve distinctive face, age, hair and features so the character is recognizable at thumbnail size. For cinematic or painterly realism use believable proportions and detailed facial likeness; for clay or illustration maintain recognizable individual identity rather than a generic person. Soft neutral lighting suitable for compositing into travel selfies. Actual transparent alpha background, no scene, no backdrop, no cast shadow rectangle. No captions, text, signatures, brands or logos. This is a playful fictional depiction, not an authentic photograph or endorsement.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-20b3aa0c-17fb-49a0-b47d-83b839d9cd9d.png",
+      "installedVisualStyle": "Photorealistic likeness"
+    },
+    {
+      "name": "Jensen Huang",
+      "slug": "celebrity-jensen-huang",
+      "category": "Technology",
+      "visualStyle": "Painterly realism",
+      "aliases": [
+        "黄仁勋",
+        "老黄"
+      ],
+      "featured": true,
+      "prompt": "Use case: stylized or realistic public-figure avatar asset. Create an AI-imagined, recognizable likeness of Jensen Huang, one adult person only, in Painterly realism style. Single full-body standing character, head to shoes fully in frame, centered with generous transparent margin, friendly relaxed pose and natural anatomy. Dress in tasteful, recognizable contemporary public-appearance clothing, fully clothed. Preserve distinctive face, age, hair and features so the character is recognizable at thumbnail size. For cinematic or painterly realism use believable proportions and detailed facial likeness; for clay or illustration maintain recognizable individual identity rather than a generic person. Soft neutral lighting suitable for compositing into travel selfies. Actual transparent alpha background, no scene, no backdrop, no cast shadow rectangle. No captions, text, signatures, brands or logos. This is a playful fictional depiction, not an authentic photograph or endorsement.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-11c708d7-d9a1-461c-94e7-c48f8d055558.png",
+      "installedVisualStyle": "Photorealistic likeness"
+    },
+    {
+      "name": "Sam Altman",
+      "slug": "celebrity-sam-altman",
+      "category": "Technology",
+      "visualStyle": "Editorial illustration",
+      "aliases": [
+        "山姆奥特曼"
+      ],
+      "featured": true,
+      "prompt": "Use case: stylized or realistic public-figure avatar asset. Create an AI-imagined, recognizable likeness of Sam Altman, one adult person only, in Editorial illustration style. Single full-body standing character, head to shoes fully in frame, centered with generous transparent margin, friendly relaxed pose and natural anatomy. Dress in tasteful, recognizable contemporary public-appearance clothing, fully clothed. Preserve distinctive face, age, hair and features so the character is recognizable at thumbnail size. For cinematic or painterly realism use believable proportions and detailed facial likeness; for clay or illustration maintain recognizable individual identity rather than a generic person. Soft neutral lighting suitable for compositing into travel selfies. Actual transparent alpha background, no scene, no backdrop, no cast shadow rectangle. No captions, text, signatures, brands or logos. This is a playful fictional depiction, not an authentic photograph or endorsement.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-b79b2c7f-f8fc-49d2-a4fe-8328128d4d40.png",
+      "installedVisualStyle": "Photorealistic likeness"
+    },
+    {
+      "name": "Bill Gates",
+      "slug": "celebrity-bill-gates",
+      "category": "Technology",
+      "visualStyle": "Cinematic realism",
+      "aliases": [
+        "比尔盖茨"
+      ],
+      "featured": true,
+      "prompt": "Use case: stylized or realistic public-figure avatar asset. Create an AI-imagined, recognizable likeness of Bill Gates, one adult person only, in Cinematic realism style. Single full-body standing character, head to shoes fully in frame, centered with generous transparent margin, friendly relaxed pose and natural anatomy. Dress in tasteful, recognizable contemporary public-appearance clothing, fully clothed. Preserve distinctive face, age, hair and features so the character is recognizable at thumbnail size. For cinematic or painterly realism use believable proportions and detailed facial likeness; for clay or illustration maintain recognizable individual identity rather than a generic person. Soft neutral lighting suitable for compositing into travel selfies. Actual transparent alpha background, no scene, no backdrop, no cast shadow rectangle. No captions, text, signatures, brands or logos. This is a playful fictional depiction, not an authentic photograph or endorsement.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-23328c71-b5d4-4a7e-b28e-557aabd82b23.png",
+      "installedVisualStyle": "Photorealistic likeness"
+    },
+    {
+      "name": "Tim Cook",
+      "slug": "celebrity-tim-cook",
+      "category": "Technology",
+      "visualStyle": "Watercolor",
+      "aliases": [
+        "蒂姆库克"
+      ],
+      "featured": true,
+      "prompt": "Use case: stylized or realistic public-figure avatar asset. Create an AI-imagined, recognizable likeness of Tim Cook, one adult person only, in Watercolor style. Single full-body standing character, head to shoes fully in frame, centered with generous transparent margin, friendly relaxed pose and natural anatomy. Dress in tasteful, recognizable contemporary public-appearance clothing, fully clothed. Preserve distinctive face, age, hair and features so the character is recognizable at thumbnail size. For cinematic or painterly realism use believable proportions and detailed facial likeness; for clay or illustration maintain recognizable individual identity rather than a generic person. Soft neutral lighting suitable for compositing into travel selfies. Actual transparent alpha background, no scene, no backdrop, no cast shadow rectangle. No captions, text, signatures, brands or logos. This is a playful fictional depiction, not an authentic photograph or endorsement.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-7ac1d06a-8180-452f-a586-fd782ebd7373.png",
+      "installedVisualStyle": "Photorealistic likeness"
+    },
+    {
+      "name": "Mark Zuckerberg",
+      "slug": "celebrity-mark-zuckerberg",
+      "category": "Technology",
+      "visualStyle": "Clay character",
+      "aliases": [
+        "马克扎克伯格"
+      ],
+      "featured": true,
+      "prompt": "Use case: stylized or realistic public-figure avatar asset. Create an AI-imagined, recognizable likeness of Mark Zuckerberg, one adult person only, in Clay character style. Single full-body standing character, head to shoes fully in frame, centered with generous transparent margin, friendly relaxed pose and natural anatomy. Dress in tasteful, recognizable contemporary public-appearance clothing, fully clothed. Preserve distinctive face, age, hair and features so the character is recognizable at thumbnail size. For cinematic or painterly realism use believable proportions and detailed facial likeness; for clay or illustration maintain recognizable individual identity rather than a generic person. Soft neutral lighting suitable for compositing into travel selfies. Actual transparent alpha background, no scene, no backdrop, no cast shadow rectangle. No captions, text, signatures, brands or logos. This is a playful fictional depiction, not an authentic photograph or endorsement.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-333f9e37-a3ac-4827-a682-05c6892979ba.png",
+      "installedVisualStyle": "Photorealistic likeness"
+    },
+    {
+      "name": "Jeff Bezos",
+      "slug": "celebrity-jeff-bezos",
+      "category": "Technology",
+      "visualStyle": "Cinematic realism",
+      "aliases": [
+        "杰夫贝索斯"
+      ],
+      "featured": true,
+      "prompt": "Use case: stylized or realistic public-figure avatar asset. Create an AI-imagined, recognizable likeness of Jeff Bezos, one adult person only, in Cinematic realism style. Single full-body standing character, head to shoes fully in frame, centered with generous transparent margin, friendly relaxed pose and natural anatomy. Dress in tasteful, recognizable contemporary public-appearance clothing, fully clothed. Preserve distinctive face, age, hair and features so the character is recognizable at thumbnail size. For cinematic or painterly realism use believable proportions and detailed facial likeness; for clay or illustration maintain recognizable individual identity rather than a generic person. Soft neutral lighting suitable for compositing into travel selfies. Actual transparent alpha background, no scene, no backdrop, no cast shadow rectangle. No captions, text, signatures, brands or logos. This is a playful fictional depiction, not an authentic photograph or endorsement.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-191ee1a0-7c95-4ad0-a2c6-4e19212c89eb.png",
+      "installedVisualStyle": "Photorealistic likeness"
+    },
+    {
+      "name": "Satya Nadella",
+      "slug": "celebrity-satya-nadella",
+      "category": "Technology",
+      "visualStyle": "Graphic novel",
+      "aliases": [
+        "萨蒂亚纳德拉"
+      ],
+      "featured": true,
+      "prompt": "Use case: stylized or realistic public-figure avatar asset. Create an AI-imagined, recognizable likeness of Satya Nadella, one adult person only, in Graphic novel style. Single full-body standing character, head to shoes fully in frame, centered with generous transparent margin, friendly relaxed pose and natural anatomy. Dress in tasteful, recognizable contemporary public-appearance clothing, fully clothed. Preserve distinctive face, age, hair and features so the character is recognizable at thumbnail size. For cinematic or painterly realism use believable proportions and detailed facial likeness; for clay or illustration maintain recognizable individual identity rather than a generic person. Soft neutral lighting suitable for compositing into travel selfies. Actual transparent alpha background, no scene, no backdrop, no cast shadow rectangle. No captions, text, signatures, brands or logos. This is a playful fictional depiction, not an authentic photograph or endorsement.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-45beb594-a2a5-4976-9b2e-0ada6d2119b6.png",
+      "installedVisualStyle": "Photorealistic likeness"
+    },
+    {
+      "name": "Sundar Pichai",
+      "slug": "celebrity-sundar-pichai",
+      "category": "Technology",
+      "visualStyle": "Painterly realism",
+      "aliases": [
+        "桑达尔皮查伊"
+      ],
+      "featured": true,
+      "prompt": "Use case: stylized or realistic public-figure avatar asset. Create an AI-imagined, recognizable likeness of Sundar Pichai, one adult person only, in Painterly realism style. Single full-body standing character, head to shoes fully in frame, centered with generous transparent margin, friendly relaxed pose and natural anatomy. Dress in tasteful, recognizable contemporary public-appearance clothing, fully clothed. Preserve distinctive face, age, hair and features so the character is recognizable at thumbnail size. For cinematic or painterly realism use believable proportions and detailed facial likeness; for clay or illustration maintain recognizable individual identity rather than a generic person. Soft neutral lighting suitable for compositing into travel selfies. Actual transparent alpha background, no scene, no backdrop, no cast shadow rectangle. No captions, text, signatures, brands or logos. This is a playful fictional depiction, not an authentic photograph or endorsement.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-4b61e57b-77d8-49ed-a12c-27a5c9a370c4.png",
+      "installedVisualStyle": "Photorealistic likeness"
+    },
+    {
+      "name": "Lei Jun",
+      "slug": "celebrity-lei-jun",
+      "category": "Technology",
+      "visualStyle": "Cinematic realism",
+      "aliases": [
+        "雷军"
+      ],
+      "featured": true,
+      "prompt": "Use case: stylized or realistic public-figure avatar asset. Create an AI-imagined, recognizable likeness of Lei Jun, one adult person only, in Cinematic realism style. Single full-body standing character, head to shoes fully in frame, centered with generous transparent margin, friendly relaxed pose and natural anatomy. Dress in tasteful, recognizable contemporary public-appearance clothing, fully clothed. Preserve distinctive face, age, hair and features so the character is recognizable at thumbnail size. For cinematic or painterly realism use believable proportions and detailed facial likeness; for clay or illustration maintain recognizable individual identity rather than a generic person. Soft neutral lighting suitable for compositing into travel selfies. Actual transparent alpha background, no scene, no backdrop, no cast shadow rectangle. No captions, text, signatures, brands or logos. This is a playful fictional depiction, not an authentic photograph or endorsement.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-dbe180aa-28d1-45a5-9452-57370528bc6e.png",
+      "installedVisualStyle": "Photorealistic likeness"
+    },
+    {
+      "name": "Taylor Swift",
+      "slug": "celebrity-taylor-swift",
+      "category": "Music",
+      "visualStyle": "Cinematic realism",
+      "aliases": [
+        "泰勒斯威夫特",
+        "霉霉"
+      ],
+      "featured": true,
+      "prompt": "Use case: stylized or realistic public-figure avatar asset. Create an AI-imagined, recognizable likeness of Taylor Swift, one adult person only, in Cinematic realism style. Single full-body standing character, head to shoes fully in frame, centered with generous transparent margin, friendly relaxed pose and natural anatomy. Dress in tasteful, recognizable contemporary public-appearance clothing, fully clothed. Preserve distinctive face, age, hair and features so the character is recognizable at thumbnail size. For cinematic or painterly realism use believable proportions and detailed facial likeness; for clay or illustration maintain recognizable individual identity rather than a generic person. Soft neutral lighting suitable for compositing into travel selfies. Actual transparent alpha background, no scene, no backdrop, no cast shadow rectangle. No captions, text, signatures, brands or logos. This is a playful fictional depiction, not an authentic photograph or endorsement.",
+      "state": "failed",
+      "diagnostics": "image generation failed: http 400 Bad Request: Some(\"{\\n  \\\"error\\\": {\\n    \\\"message\\\": \\\"Your request was rejected by the safety system. If you believe this is an error, contact us at help.openai.com and include the request ID 64414662-c36f-4a69-9b57-94f46af113e0.\\\",\\n    \\\"type\\\": \\\"image_generation_user_error\\\",\\n    \\\"param\\\": null,\\n    \\\"code\\\": \\\"moderation_blocked\\\",\\n    \\\"moderation_details\\\": {\\n      \\\"moderation_stage\\\": \\\"output\\\",\\n      \\\"categories\\\": [\\n        \\\"other\\\"\\n      ]\\n    }\\n  }\\n}\")",
+      "moderation": {
+        "code": "moderation_blocked",
+        "stage": "output",
+        "categories": [
+          "other"
+        ],
+        "requestId": "64414662-c36f-4a69-9b57-94f46af113e0"
+      }
+    },
+    {
+      "name": "Beyoncé",
+      "slug": "celebrity-beyonce",
+      "category": "Music",
+      "visualStyle": "Painterly realism",
+      "aliases": [
+        "碧昂丝"
+      ],
+      "featured": true,
+      "prompt": "Use case: stylized or realistic public-figure avatar asset. Create an AI-imagined, recognizable likeness of Beyoncé, one adult person only, in Painterly realism style. Single full-body standing character, head to shoes fully in frame, centered with generous transparent margin, friendly relaxed pose and natural anatomy. Dress in tasteful, recognizable contemporary public-appearance clothing, fully clothed. Preserve distinctive face, age, hair and features so the character is recognizable at thumbnail size. For cinematic or painterly realism use believable proportions and detailed facial likeness; for clay or illustration maintain recognizable individual identity rather than a generic person. Soft neutral lighting suitable for compositing into travel selfies. Actual transparent alpha background, no scene, no backdrop, no cast shadow rectangle. No captions, text, signatures, brands or logos. This is a playful fictional depiction, not an authentic photograph or endorsement.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-3b222c39-4b9b-492f-9a88-ea70eecf0213.png",
+      "installedVisualStyle": "Photorealistic likeness"
+    },
+    {
+      "name": "Billie Eilish",
+      "slug": "celebrity-billie-eilish",
+      "category": "Music",
+      "visualStyle": "Graphic novel",
+      "aliases": [
+        "比莉艾利什",
+        "碧梨"
+      ],
+      "featured": true,
+      "prompt": "Use case: stylized or realistic public-figure avatar asset. Create an AI-imagined, recognizable likeness of Billie Eilish, one adult person only, in Graphic novel style. Single full-body standing character, head to shoes fully in frame, centered with generous transparent margin, friendly relaxed pose and natural anatomy. Dress in tasteful, recognizable contemporary public-appearance clothing, fully clothed. Preserve distinctive face, age, hair and features so the character is recognizable at thumbnail size. For cinematic or painterly realism use believable proportions and detailed facial likeness; for clay or illustration maintain recognizable individual identity rather than a generic person. Soft neutral lighting suitable for compositing into travel selfies. Actual transparent alpha background, no scene, no backdrop, no cast shadow rectangle. No captions, text, signatures, brands or logos. This is a playful fictional depiction, not an authentic photograph or endorsement.",
+      "state": "failed",
+      "diagnostics": "image generation failed: http 400 Bad Request: Some(\"{\\n  \\\"error\\\": {\\n    \\\"message\\\": \\\"Your request was rejected by the safety system. If you believe this is an error, contact us at help.openai.com and include the request ID 216ddab3-b1c8-442f-a906-8aa5163aeed4.\\\",\\n    \\\"type\\\": \\\"image_generation_user_error\\\",\\n    \\\"param\\\": null,\\n    \\\"code\\\": \\\"moderation_blocked\\\",\\n    \\\"moderation_details\\\": {\\n      \\\"moderation_stage\\\": \\\"input\\\",\\n      \\\"categories\\\": [\\n        \\\"public-figure\\\"\\n      ]\\n    }\\n  }\\n}\")",
+      "moderation": {
+        "code": "moderation_blocked",
+        "stage": "input",
+        "categories": [
+          "public-figure"
+        ],
+        "requestId": "216ddab3-b1c8-442f-a906-8aa5163aeed4"
+      }
+    },
+    {
+      "name": "Ariana Grande",
+      "slug": "celebrity-ariana-grande",
+      "category": "Music",
+      "visualStyle": "Cinematic realism",
+      "aliases": [
+        "爱莉安娜格兰德",
+        "A妹"
+      ],
+      "featured": true,
+      "prompt": "Use case: stylized or realistic public-figure avatar asset. Create an AI-imagined, recognizable likeness of Ariana Grande, one adult person only, in Cinematic realism style. Single full-body standing character, head to shoes fully in frame, centered with generous transparent margin, friendly relaxed pose and natural anatomy. Dress in tasteful, recognizable contemporary public-appearance clothing, fully clothed. Preserve distinctive face, age, hair and features so the character is recognizable at thumbnail size. For cinematic or painterly realism use believable proportions and detailed facial likeness; for clay or illustration maintain recognizable individual identity rather than a generic person. Soft neutral lighting suitable for compositing into travel selfies. Actual transparent alpha background, no scene, no backdrop, no cast shadow rectangle. No captions, text, signatures, brands or logos. This is a playful fictional depiction, not an authentic photograph or endorsement.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-a146bb9e-10f2-4822-ac69-0f456ec840fd.png",
+      "installedVisualStyle": "Photorealistic likeness"
+    },
+    {
+      "name": "Bruno Mars",
+      "slug": "celebrity-bruno-mars",
+      "category": "Music",
+      "visualStyle": "Clay character",
+      "aliases": [
+        "布鲁诺马尔斯",
+        "火星哥"
+      ],
+      "featured": true,
+      "prompt": "Use case: stylized or realistic public-figure avatar asset. Create an AI-imagined, recognizable likeness of Bruno Mars, one adult person only, in Clay character style. Single full-body standing character, head to shoes fully in frame, centered with generous transparent margin, friendly relaxed pose and natural anatomy. Dress in tasteful, recognizable contemporary public-appearance clothing, fully clothed. Preserve distinctive face, age, hair and features so the character is recognizable at thumbnail size. For cinematic or painterly realism use believable proportions and detailed facial likeness; for clay or illustration maintain recognizable individual identity rather than a generic person. Soft neutral lighting suitable for compositing into travel selfies. Actual transparent alpha background, no scene, no backdrop, no cast shadow rectangle. No captions, text, signatures, brands or logos. This is a playful fictional depiction, not an authentic photograph or endorsement.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-d70015b2-842c-4e11-9893-565de6f3f1c0.png",
+      "installedVisualStyle": "Photorealistic likeness"
+    },
+    {
+      "name": "Ed Sheeran",
+      "slug": "celebrity-ed-sheeran",
+      "category": "Music",
+      "visualStyle": "Watercolor",
+      "aliases": [
+        "艾德希兰",
+        "黄老板"
+      ],
+      "featured": true,
+      "prompt": "Use case: stylized or realistic public-figure avatar asset. Create an AI-imagined, recognizable likeness of Ed Sheeran, one adult person only, in Watercolor style. Single full-body standing character, head to shoes fully in frame, centered with generous transparent margin, friendly relaxed pose and natural anatomy. Dress in tasteful, recognizable contemporary public-appearance clothing, fully clothed. Preserve distinctive face, age, hair and features so the character is recognizable at thumbnail size. For cinematic or painterly realism use believable proportions and detailed facial likeness; for clay or illustration maintain recognizable individual identity rather than a generic person. Soft neutral lighting suitable for compositing into travel selfies. Actual transparent alpha background, no scene, no backdrop, no cast shadow rectangle. No captions, text, signatures, brands or logos. This is a playful fictional depiction, not an authentic photograph or endorsement.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-3c763c4f-f857-45ce-9496-eea193c5af3f.png",
+      "installedVisualStyle": "Illustrated realism"
+    },
+    {
+      "name": "Dua Lipa",
+      "slug": "celebrity-dua-lipa",
+      "category": "Music",
+      "visualStyle": "Cinematic realism",
+      "aliases": [
+        "杜阿利帕"
+      ],
+      "featured": true,
+      "prompt": "Use case: stylized or realistic public-figure avatar asset. Create an AI-imagined, recognizable likeness of Dua Lipa, one adult person only, in Cinematic realism style. Single full-body standing character, head to shoes fully in frame, centered with generous transparent margin, friendly relaxed pose and natural anatomy. Dress in tasteful, recognizable contemporary public-appearance clothing, fully clothed. Preserve distinctive face, age, hair and features so the character is recognizable at thumbnail size. For cinematic or painterly realism use believable proportions and detailed facial likeness; for clay or illustration maintain recognizable individual identity rather than a generic person. Soft neutral lighting suitable for compositing into travel selfies. Actual transparent alpha background, no scene, no backdrop, no cast shadow rectangle. No captions, text, signatures, brands or logos. This is a playful fictional depiction, not an authentic photograph or endorsement.",
+      "state": "failed",
+      "diagnostics": "image generation failed: http 400 Bad Request: Some(\"{\\n  \\\"error\\\": {\\n    \\\"message\\\": \\\"Your request was rejected by the safety system. If you believe this is an error, contact us at help.openai.com and include the request ID 44306b11-1166-47cf-a484-a71153a1dc23. safety_violations=[sexual].\\\",\\n    \\\"type\\\": \\\"image_generation_user_error\\\",\\n    \\\"param\\\": null,\\n    \\\"code\\\": \\\"moderation_blocked\\\",\\n    \\\"moderation_details\\\": {\\n      \\\"moderation_stage\\\": \\\"output\\\",\\n      \\\"categories\\\": [\\n        \\\"sexual\\\"\\n      ]\\n    }\\n  }\\n}\")",
+      "moderation": {
+        "code": "moderation_blocked",
+        "stage": "output",
+        "categories": [
+          "sexual"
+        ],
+        "requestId": "44306b11-1166-47cf-a484-a71153a1dc23"
+      }
+    },
+    {
+      "name": "Jungkook",
+      "slug": "celebrity-jungkook",
+      "category": "Music",
+      "visualStyle": "Painterly realism",
+      "aliases": [
+        "田柾国",
+        "BTS",
+        "防弹少年团"
+      ],
+      "featured": true,
+      "prompt": "Use case: stylized or realistic public-figure avatar asset. Create an AI-imagined, recognizable likeness of Jungkook, one adult person only, in Painterly realism style. Single full-body standing character, head to shoes fully in frame, centered with generous transparent margin, friendly relaxed pose and natural anatomy. Dress in tasteful, recognizable contemporary public-appearance clothing, fully clothed. Preserve distinctive face, age, hair and features so the character is recognizable at thumbnail size. For cinematic or painterly realism use believable proportions and detailed facial likeness; for clay or illustration maintain recognizable individual identity rather than a generic person. Soft neutral lighting suitable for compositing into travel selfies. Actual transparent alpha background, no scene, no backdrop, no cast shadow rectangle. No captions, text, signatures, brands or logos. This is a playful fictional depiction, not an authentic photograph or endorsement.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-3bbd6129-2d5b-4bd9-8939-b9037f8d9e37.png",
+      "installedVisualStyle": "Photorealistic likeness"
+    },
+    {
+      "name": "Lisa",
+      "slug": "celebrity-lisa",
+      "category": "Music",
+      "visualStyle": "Cinematic realism",
+      "aliases": [
+        "丽莎",
+        "BLACKPINK"
+      ],
+      "featured": true,
+      "prompt": "Use case: stylized or realistic public-figure avatar asset. Create an AI-imagined, recognizable likeness of Lisa, one adult person only, in Cinematic realism style. Single full-body standing character, head to shoes fully in frame, centered with generous transparent margin, friendly relaxed pose and natural anatomy. Dress in tasteful, recognizable contemporary public-appearance clothing, fully clothed. Preserve distinctive face, age, hair and features so the character is recognizable at thumbnail size. For cinematic or painterly realism use believable proportions and detailed facial likeness; for clay or illustration maintain recognizable individual identity rather than a generic person. Soft neutral lighting suitable for compositing into travel selfies. Actual transparent alpha background, no scene, no backdrop, no cast shadow rectangle. No captions, text, signatures, brands or logos. This is a playful fictional depiction, not an authentic photograph or endorsement.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-bb62b231-5015-427a-88ec-04429a3856ce.png",
+      "installedVisualStyle": "Photorealistic likeness"
+    },
+    {
+      "name": "Jennie",
+      "slug": "celebrity-jennie",
+      "category": "Music",
+      "visualStyle": "Fashion illustration",
+      "aliases": [
+        "金珍妮",
+        "BLACKPINK"
+      ],
+      "featured": true,
+      "prompt": "Use case: stylized or realistic public-figure avatar asset. Create an AI-imagined, recognizable likeness of Jennie, one adult person only, in Fashion illustration style. Single full-body standing character, head to shoes fully in frame, centered with generous transparent margin, friendly relaxed pose and natural anatomy. Dress in tasteful, recognizable contemporary public-appearance clothing, fully clothed. Preserve distinctive face, age, hair and features so the character is recognizable at thumbnail size. For cinematic or painterly realism use believable proportions and detailed facial likeness; for clay or illustration maintain recognizable individual identity rather than a generic person. Soft neutral lighting suitable for compositing into travel selfies. Actual transparent alpha background, no scene, no backdrop, no cast shadow rectangle. No captions, text, signatures, brands or logos. This is a playful fictional depiction, not an authentic photograph or endorsement.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-755f827c-0b20-44fd-8450-b693ab85c6c1.png",
+      "installedVisualStyle": "Photorealistic likeness"
+    },
+    {
+      "name": "Dwayne Johnson",
+      "slug": "celebrity-dwayne-johnson",
+      "category": "Screen icons",
+      "visualStyle": "Cinematic realism",
+      "aliases": [
+        "道恩强森",
+        "巨石强森"
+      ],
+      "featured": true,
+      "prompt": "Use case: stylized or realistic public-figure avatar asset. Create an AI-imagined, recognizable likeness of Dwayne Johnson, one adult person only, in Cinematic realism style. Single full-body standing character, head to shoes fully in frame, centered with generous transparent margin, friendly relaxed pose and natural anatomy. Dress in tasteful, recognizable contemporary public-appearance clothing, fully clothed. Preserve distinctive face, age, hair and features so the character is recognizable at thumbnail size. For cinematic or painterly realism use believable proportions and detailed facial likeness; for clay or illustration maintain recognizable individual identity rather than a generic person. Soft neutral lighting suitable for compositing into travel selfies. Actual transparent alpha background, no scene, no backdrop, no cast shadow rectangle. No captions, text, signatures, brands or logos. This is a playful fictional depiction, not an authentic photograph or endorsement.",
+      "state": "failed",
+      "diagnostics": "image generation failed: http 400 Bad Request: Some(\"{\\n  \\\"error\\\": {\\n    \\\"message\\\": \\\"Your request was rejected by the safety system. If you believe this is an error, contact us at help.openai.com and include the request ID 88886f14-4444-4202-a919-c36b8e88ff3f.\\\",\\n    \\\"type\\\": \\\"image_generation_user_error\\\",\\n    \\\"param\\\": null,\\n    \\\"code\\\": \\\"moderation_blocked\\\",\\n    \\\"moderation_details\\\": {\\n      \\\"moderation_stage\\\": \\\"input\\\",\\n      \\\"categories\\\": [\\n        \\\"public-figure\\\"\\n      ]\\n    }\\n  }\\n}\")",
+      "moderation": {
+        "code": "moderation_blocked",
+        "stage": "input",
+        "categories": [
+          "public-figure"
+        ],
+        "requestId": "88886f14-4444-4202-a919-c36b8e88ff3f"
+      }
+    },
+    {
+      "name": "Zendaya",
+      "slug": "celebrity-zendaya",
+      "category": "Screen icons",
+      "visualStyle": "Fashion illustration",
+      "aliases": [
+        "赞达亚"
+      ],
+      "featured": true,
+      "prompt": "Use case: stylized or realistic public-figure avatar asset. Create an AI-imagined, recognizable likeness of Zendaya, one adult person only, in Fashion illustration style. Single full-body standing character, head to shoes fully in frame, centered with generous transparent margin, friendly relaxed pose and natural anatomy. Dress in tasteful, recognizable contemporary public-appearance clothing, fully clothed. Preserve distinctive face, age, hair and features so the character is recognizable at thumbnail size. For cinematic or painterly realism use believable proportions and detailed facial likeness; for clay or illustration maintain recognizable individual identity rather than a generic person. Soft neutral lighting suitable for compositing into travel selfies. Actual transparent alpha background, no scene, no backdrop, no cast shadow rectangle. No captions, text, signatures, brands or logos. This is a playful fictional depiction, not an authentic photograph or endorsement.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-2bdb61d6-9239-4dde-97c4-d068cfb736d0.png",
+      "installedVisualStyle": "Photorealistic likeness"
+    },
+    {
+      "name": "Ryan Reynolds",
+      "slug": "celebrity-ryan-reynolds",
+      "category": "Screen icons",
+      "visualStyle": "Cinematic realism",
+      "aliases": [
+        "瑞安雷诺兹"
+      ],
+      "featured": true,
+      "prompt": "Use case: stylized or realistic public-figure avatar asset. Create an AI-imagined, recognizable likeness of Ryan Reynolds, one adult person only, in Cinematic realism style. Single full-body standing character, head to shoes fully in frame, centered with generous transparent margin, friendly relaxed pose and natural anatomy. Dress in tasteful, recognizable contemporary public-appearance clothing, fully clothed. Preserve distinctive face, age, hair and features so the character is recognizable at thumbnail size. For cinematic or painterly realism use believable proportions and detailed facial likeness; for clay or illustration maintain recognizable individual identity rather than a generic person. Soft neutral lighting suitable for compositing into travel selfies. Actual transparent alpha background, no scene, no backdrop, no cast shadow rectangle. No captions, text, signatures, brands or logos. This is a playful fictional depiction, not an authentic photograph or endorsement.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-7efea14a-53d6-4cce-8ae3-a4b2dd12483f.png",
+      "installedVisualStyle": "Photorealistic likeness"
+    },
+    {
+      "name": "Margot Robbie",
+      "slug": "celebrity-margot-robbie",
+      "category": "Screen icons",
+      "visualStyle": "Painterly realism",
+      "aliases": [
+        "玛格特罗比"
+      ],
+      "featured": true,
+      "prompt": "Use case: stylized or realistic public-figure avatar asset. Create an AI-imagined, recognizable likeness of Margot Robbie, one adult person only, in Painterly realism style. Single full-body standing character, head to shoes fully in frame, centered with generous transparent margin, friendly relaxed pose and natural anatomy. Dress in tasteful, recognizable contemporary public-appearance clothing, fully clothed. Preserve distinctive face, age, hair and features so the character is recognizable at thumbnail size. For cinematic or painterly realism use believable proportions and detailed facial likeness; for clay or illustration maintain recognizable individual identity rather than a generic person. Soft neutral lighting suitable for compositing into travel selfies. Actual transparent alpha background, no scene, no backdrop, no cast shadow rectangle. No captions, text, signatures, brands or logos. This is a playful fictional depiction, not an authentic photograph or endorsement.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-bb02ab8b-f8fd-4b9f-973a-157348840633.png",
+      "installedVisualStyle": "Photorealistic likeness"
+    },
+    {
+      "name": "Timothée Chalamet",
+      "slug": "celebrity-timothee-chalamet",
+      "category": "Screen icons",
+      "visualStyle": "Watercolor",
+      "aliases": [
+        "提莫西查拉梅",
+        "甜茶"
+      ],
+      "featured": true,
+      "prompt": "Use case: stylized or realistic public-figure avatar asset. Create an AI-imagined, recognizable likeness of Timothée Chalamet, one adult person only, in Watercolor style. Single full-body standing character, head to shoes fully in frame, centered with generous transparent margin, friendly relaxed pose and natural anatomy. Dress in tasteful, recognizable contemporary public-appearance clothing, fully clothed. Preserve distinctive face, age, hair and features so the character is recognizable at thumbnail size. For cinematic or painterly realism use believable proportions and detailed facial likeness; for clay or illustration maintain recognizable individual identity rather than a generic person. Soft neutral lighting suitable for compositing into travel selfies. Actual transparent alpha background, no scene, no backdrop, no cast shadow rectangle. No captions, text, signatures, brands or logos. This is a playful fictional depiction, not an authentic photograph or endorsement.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-979fbd9b-e75e-40ab-9aa8-6291c1833ed6.png",
+      "installedVisualStyle": "Photorealistic likeness"
+    },
+    {
+      "name": "Scarlett Johansson",
+      "slug": "celebrity-scarlett-johansson",
+      "category": "Screen icons",
+      "visualStyle": "Cinematic realism",
+      "aliases": [
+        "斯嘉丽约翰逊"
+      ],
+      "featured": true,
+      "prompt": "Use case: stylized or realistic public-figure avatar asset. Create an AI-imagined, recognizable likeness of Scarlett Johansson, one adult person only, in Cinematic realism style. Single full-body standing character, head to shoes fully in frame, centered with generous transparent margin, friendly relaxed pose and natural anatomy. Dress in tasteful, recognizable contemporary public-appearance clothing, fully clothed. Preserve distinctive face, age, hair and features so the character is recognizable at thumbnail size. For cinematic or painterly realism use believable proportions and detailed facial likeness; for clay or illustration maintain recognizable individual identity rather than a generic person. Soft neutral lighting suitable for compositing into travel selfies. Actual transparent alpha background, no scene, no backdrop, no cast shadow rectangle. No captions, text, signatures, brands or logos. This is a playful fictional depiction, not an authentic photograph or endorsement.",
+      "state": "failed",
+      "diagnostics": "image generation failed: http 400 Bad Request: Some(\"{\\n  \\\"error\\\": {\\n    \\\"message\\\": \\\"Your request was rejected by the safety system. If you believe this is an error, contact us at help.openai.com and include the request ID 6fba647c-7f34-43df-ad62-4543b829c8e3.\\\",\\n    \\\"type\\\": \\\"image_generation_user_error\\\",\\n    \\\"param\\\": null,\\n    \\\"code\\\": \\\"moderation_blocked\\\",\\n    \\\"moderation_details\\\": {\\n      \\\"moderation_stage\\\": \\\"input\\\",\\n      \\\"categories\\\": [\\n        \\\"public-figure\\\"\\n      ]\\n    }\\n  }\\n}\")",
+      "moderation": {
+        "code": "moderation_blocked",
+        "stage": "input",
+        "categories": [
+          "public-figure"
+        ],
+        "requestId": "6fba647c-7f34-43df-ad62-4543b829c8e3"
+      }
+    },
+    {
+      "name": "Lionel Messi",
+      "slug": "celebrity-lionel-messi",
+      "category": "Sports",
+      "visualStyle": "Cinematic realism",
+      "aliases": [
+        "利昂内尔梅西"
+      ],
+      "featured": true,
+      "prompt": "Use case: stylized or realistic public-figure avatar asset. Create an AI-imagined, recognizable likeness of Lionel Messi, one adult person only, in Cinematic realism style. Single full-body standing character, head to shoes fully in frame, centered with generous transparent margin, friendly relaxed pose and natural anatomy. Dress in tasteful, recognizable contemporary public-appearance clothing, fully clothed. Preserve distinctive face, age, hair and features so the character is recognizable at thumbnail size. For cinematic or painterly realism use believable proportions and detailed facial likeness; for clay or illustration maintain recognizable individual identity rather than a generic person. Soft neutral lighting suitable for compositing into travel selfies. Actual transparent alpha background, no scene, no backdrop, no cast shadow rectangle. No captions, text, signatures, brands or logos. This is a playful fictional depiction, not an authentic photograph or endorsement.",
+      "state": "failed",
+      "diagnostics": "image generation failed: http 400 Bad Request: Some(\"{\\n  \\\"error\\\": {\\n    \\\"message\\\": \\\"Your request was rejected by the safety system. If you believe this is an error, contact us at help.openai.com and include the request ID 4a395d00-5450-4f28-80ac-cce97d6acf86.\\\",\\n    \\\"type\\\": \\\"image_generation_user_error\\\",\\n    \\\"param\\\": null,\\n    \\\"code\\\": \\\"moderation_blocked\\\",\\n    \\\"moderation_details\\\": {\\n      \\\"moderation_stage\\\": \\\"output\\\",\\n      \\\"categories\\\": [\\n        \\\"other\\\"\\n      ]\\n    }\\n  }\\n}\")",
+      "moderation": {
+        "code": "moderation_blocked",
+        "stage": "output",
+        "categories": [
+          "other"
+        ],
+        "requestId": "4a395d00-5450-4f28-80ac-cce97d6acf86"
+      }
+    },
+    {
+      "name": "LeBron James",
+      "slug": "celebrity-lebron-james",
+      "category": "Sports",
+      "visualStyle": "Graphic novel",
+      "aliases": [
+        "勒布朗詹姆斯"
+      ],
+      "featured": true,
+      "prompt": "Use case: stylized or realistic public-figure avatar asset. Create an AI-imagined, recognizable likeness of LeBron James, one adult person only, in Graphic novel style. Single full-body standing character, head to shoes fully in frame, centered with generous transparent margin, friendly relaxed pose and natural anatomy. Dress in tasteful, recognizable contemporary public-appearance clothing, fully clothed. Preserve distinctive face, age, hair and features so the character is recognizable at thumbnail size. For cinematic or painterly realism use believable proportions and detailed facial likeness; for clay or illustration maintain recognizable individual identity rather than a generic person. Soft neutral lighting suitable for compositing into travel selfies. Actual transparent alpha background, no scene, no backdrop, no cast shadow rectangle. No captions, text, signatures, brands or logos. This is a playful fictional depiction, not an authentic photograph or endorsement.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-57becdce-42dd-46f1-bbbd-b61664cb89be.png",
+      "installedVisualStyle": "Photorealistic likeness"
+    },
+    {
+      "name": "Kylian Mbappé",
+      "slug": "celebrity-kylian-mbappe",
+      "category": "Sports",
+      "visualStyle": "Cinematic realism",
+      "aliases": [
+        "基利安姆巴佩"
+      ],
+      "featured": true,
+      "prompt": "Use case: stylized or realistic public-figure avatar asset. Create an AI-imagined, recognizable likeness of Kylian Mbappé, one adult person only, in Cinematic realism style. Single full-body standing character, head to shoes fully in frame, centered with generous transparent margin, friendly relaxed pose and natural anatomy. Dress in tasteful, recognizable contemporary public-appearance clothing, fully clothed. Preserve distinctive face, age, hair and features so the character is recognizable at thumbnail size. For cinematic or painterly realism use believable proportions and detailed facial likeness; for clay or illustration maintain recognizable individual identity rather than a generic person. Soft neutral lighting suitable for compositing into travel selfies. Actual transparent alpha background, no scene, no backdrop, no cast shadow rectangle. No captions, text, signatures, brands or logos. This is a playful fictional depiction, not an authentic photograph or endorsement.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-1e83e0f7-5c99-4391-82f9-cddcc2f807c5.png",
+      "installedVisualStyle": "Photorealistic likeness"
+    },
+    {
+      "name": "Shohei Ohtani",
+      "slug": "celebrity-shohei-ohtani",
+      "category": "Sports",
+      "visualStyle": "Painterly realism",
+      "aliases": [
+        "大谷翔平"
+      ],
+      "featured": true,
+      "prompt": "Use case: stylized or realistic public-figure avatar asset. Create an AI-imagined, recognizable likeness of Shohei Ohtani, one adult person only, in Painterly realism style. Single full-body standing character, head to shoes fully in frame, centered with generous transparent margin, friendly relaxed pose and natural anatomy. Dress in tasteful, recognizable contemporary public-appearance clothing, fully clothed. Preserve distinctive face, age, hair and features so the character is recognizable at thumbnail size. For cinematic or painterly realism use believable proportions and detailed facial likeness; for clay or illustration maintain recognizable individual identity rather than a generic person. Soft neutral lighting suitable for compositing into travel selfies. Actual transparent alpha background, no scene, no backdrop, no cast shadow rectangle. No captions, text, signatures, brands or logos. This is a playful fictional depiction, not an authentic photograph or endorsement.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-2caf5666-5e23-441e-b865-e7734746883c.png",
+      "installedVisualStyle": "Photorealistic likeness"
+    },
+    {
+      "name": "Carlos Alcaraz",
+      "slug": "celebrity-carlos-alcaraz",
+      "category": "Sports",
+      "visualStyle": "Clay character",
+      "aliases": [
+        "卡洛斯阿尔卡拉斯"
+      ],
+      "featured": true,
+      "prompt": "Use case: stylized or realistic public-figure avatar asset. Create an AI-imagined, recognizable likeness of Carlos Alcaraz, one adult person only, in Clay character style. Single full-body standing character, head to shoes fully in frame, centered with generous transparent margin, friendly relaxed pose and natural anatomy. Dress in tasteful, recognizable contemporary public-appearance clothing, fully clothed. Preserve distinctive face, age, hair and features so the character is recognizable at thumbnail size. For cinematic or painterly realism use believable proportions and detailed facial likeness; for clay or illustration maintain recognizable individual identity rather than a generic person. Soft neutral lighting suitable for compositing into travel selfies. Actual transparent alpha background, no scene, no backdrop, no cast shadow rectangle. No captions, text, signatures, brands or logos. This is a playful fictional depiction, not an authentic photograph or endorsement.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-c7c39151-0985-45f5-86ea-d223e2bb59e6.png",
+      "installedVisualStyle": "Illustrated realism"
+    },
+    {
+      "name": "Eileen Gu",
+      "slug": "celebrity-eileen-gu",
+      "category": "Sports",
+      "visualStyle": "Cinematic realism",
+      "aliases": [
+        "谷爱凌"
+      ],
+      "featured": true,
+      "prompt": "Use case: stylized or realistic public-figure avatar asset. Create an AI-imagined, recognizable likeness of Eileen Gu, one adult person only, in Cinematic realism style. Single full-body standing character, head to shoes fully in frame, centered with generous transparent margin, friendly relaxed pose and natural anatomy. Dress in tasteful, recognizable contemporary public-appearance clothing, fully clothed. Preserve distinctive face, age, hair and features so the character is recognizable at thumbnail size. For cinematic or painterly realism use believable proportions and detailed facial likeness; for clay or illustration maintain recognizable individual identity rather than a generic person. Soft neutral lighting suitable for compositing into travel selfies. Actual transparent alpha background, no scene, no backdrop, no cast shadow rectangle. No captions, text, signatures, brands or logos. This is a playful fictional depiction, not an authentic photograph or endorsement.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-272166cc-d5f0-4f13-b3a9-82b8aec4fb66.png",
+      "installedVisualStyle": "Photorealistic likeness"
+    },
+    {
+      "name": "Wang Yibo",
+      "slug": "celebrity-wang-yibo",
+      "category": "Screen icons",
+      "visualStyle": "Cinematic realism",
+      "aliases": [
+        "王一博"
+      ],
+      "featured": true,
+      "prompt": "Use case: stylized or realistic public-figure avatar asset. Create an AI-imagined, recognizable likeness of Wang Yibo, one adult person only, in Cinematic realism style. Single full-body standing character, head to shoes fully in frame, centered with generous transparent margin, friendly relaxed pose and natural anatomy. Dress in tasteful, recognizable contemporary public-appearance clothing, fully clothed. Preserve distinctive face, age, hair and features so the character is recognizable at thumbnail size. For cinematic or painterly realism use believable proportions and detailed facial likeness; for clay or illustration maintain recognizable individual identity rather than a generic person. Soft neutral lighting suitable for compositing into travel selfies. Actual transparent alpha background, no scene, no backdrop, no cast shadow rectangle. No captions, text, signatures, brands or logos. This is a playful fictional depiction, not an authentic photograph or endorsement.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-73ee9917-cd4f-4777-8621-6f3adfe41cb6.png",
+      "installedVisualStyle": "Photorealistic likeness"
+    },
+    {
+      "name": "Xiao Zhan",
+      "slug": "celebrity-xiao-zhan",
+      "category": "Screen icons",
+      "visualStyle": "Painterly realism",
+      "aliases": [
+        "肖战"
+      ],
+      "featured": true,
+      "prompt": "Use case: stylized or realistic public-figure avatar asset. Create an AI-imagined, recognizable likeness of Xiao Zhan, one adult person only, in Painterly realism style. Single full-body standing character, head to shoes fully in frame, centered with generous transparent margin, friendly relaxed pose and natural anatomy. Dress in tasteful, recognizable contemporary public-appearance clothing, fully clothed. Preserve distinctive face, age, hair and features so the character is recognizable at thumbnail size. For cinematic or painterly realism use believable proportions and detailed facial likeness; for clay or illustration maintain recognizable individual identity rather than a generic person. Soft neutral lighting suitable for compositing into travel selfies. Actual transparent alpha background, no scene, no backdrop, no cast shadow rectangle. No captions, text, signatures, brands or logos. This is a playful fictional depiction, not an authentic photograph or endorsement.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-c4593340-fe48-4483-9a05-32367397d71c.png",
+      "installedVisualStyle": "Photorealistic likeness"
+    },
+    {
+      "name": "Dilraba Dilmurat",
+      "slug": "celebrity-dilraba-dilmurat",
+      "category": "Screen icons",
+      "visualStyle": "Cinematic realism",
+      "aliases": [
+        "迪丽热巴"
+      ],
+      "featured": true,
+      "prompt": "Use case: stylized or realistic public-figure avatar asset. Create an AI-imagined, recognizable likeness of Dilraba Dilmurat, one adult person only, in Cinematic realism style. Single full-body standing character, head to shoes fully in frame, centered with generous transparent margin, friendly relaxed pose and natural anatomy. Dress in tasteful, recognizable contemporary public-appearance clothing, fully clothed. Preserve distinctive face, age, hair and features so the character is recognizable at thumbnail size. For cinematic or painterly realism use believable proportions and detailed facial likeness; for clay or illustration maintain recognizable individual identity rather than a generic person. Soft neutral lighting suitable for compositing into travel selfies. Actual transparent alpha background, no scene, no backdrop, no cast shadow rectangle. No captions, text, signatures, brands or logos. This is a playful fictional depiction, not an authentic photograph or endorsement.",
+      "state": "failed",
+      "diagnostics": "image generation failed: http 400 Bad Request: Some(\"{\\n  \\\"error\\\": {\\n    \\\"message\\\": \\\"Your request was rejected by the safety system. If you believe this is an error, contact us at help.openai.com and include the request ID 60570b87-6127-42e3-8b5a-e9f03d749d24. safety_violations=[sexual].\\\",\\n    \\\"type\\\": \\\"image_generation_user_error\\\",\\n    \\\"param\\\": null,\\n    \\\"code\\\": \\\"moderation_blocked\\\",\\n    \\\"moderation_details\\\": {\\n      \\\"moderation_stage\\\": \\\"output\\\",\\n      \\\"categories\\\": [\\n        \\\"sexual\\\"\\n      ]\\n    }\\n  }\\n}\")",
+      "moderation": {
+        "code": "moderation_blocked",
+        "stage": "output",
+        "categories": [
+          "sexual"
+        ],
+        "requestId": "60570b87-6127-42e3-8b5a-e9f03d749d24"
+      }
+    },
+    {
+      "name": "Yang Mi",
+      "slug": "celebrity-yang-mi",
+      "category": "Screen icons",
+      "visualStyle": "Fashion illustration",
+      "aliases": [
+        "杨幂"
+      ],
+      "featured": true,
+      "prompt": "Use case: stylized or realistic public-figure avatar asset. Create an AI-imagined, recognizable likeness of Yang Mi, one adult person only, in Fashion illustration style. Single full-body standing character, head to shoes fully in frame, centered with generous transparent margin, friendly relaxed pose and natural anatomy. Dress in tasteful, recognizable contemporary public-appearance clothing, fully clothed. Preserve distinctive face, age, hair and features so the character is recognizable at thumbnail size. For cinematic or painterly realism use believable proportions and detailed facial likeness; for clay or illustration maintain recognizable individual identity rather than a generic person. Soft neutral lighting suitable for compositing into travel selfies. Actual transparent alpha background, no scene, no backdrop, no cast shadow rectangle. No captions, text, signatures, brands or logos. This is a playful fictional depiction, not an authentic photograph or endorsement.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-9bfa9bd5-6030-4140-ab79-7cbfb2345fb6.png",
+      "installedVisualStyle": "Photorealistic likeness"
+    },
+    {
+      "name": "Jackson Wang",
+      "slug": "celebrity-jackson-wang",
+      "category": "Music",
+      "visualStyle": "Cinematic realism",
+      "aliases": [
+        "王嘉尔"
+      ],
+      "featured": true,
+      "prompt": "Use case: stylized or realistic public-figure avatar asset. Create an AI-imagined, recognizable likeness of Jackson Wang, one adult person only, in Cinematic realism style. Single full-body standing character, head to shoes fully in frame, centered with generous transparent margin, friendly relaxed pose and natural anatomy. Dress in tasteful, recognizable contemporary public-appearance clothing, fully clothed. Preserve distinctive face, age, hair and features so the character is recognizable at thumbnail size. For cinematic or painterly realism use believable proportions and detailed facial likeness; for clay or illustration maintain recognizable individual identity rather than a generic person. Soft neutral lighting suitable for compositing into travel selfies. Actual transparent alpha background, no scene, no backdrop, no cast shadow rectangle. No captions, text, signatures, brands or logos. This is a playful fictional depiction, not an authentic photograph or endorsement.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-2f0df486-50ab-4668-92f1-1d601c06c266.png",
+      "installedVisualStyle": "Photorealistic likeness"
+    },
+    {
+      "name": "G.E.M.",
+      "slug": "celebrity-g-e-m",
+      "category": "Music",
+      "visualStyle": "Clay character",
+      "aliases": [
+        "邓紫棋"
+      ],
+      "featured": true,
+      "prompt": "Use case: stylized or realistic public-figure avatar asset. Create an AI-imagined, recognizable likeness of G.E.M., one adult person only, in Clay character style. Single full-body standing character, head to shoes fully in frame, centered with generous transparent margin, friendly relaxed pose and natural anatomy. Dress in tasteful, recognizable contemporary public-appearance clothing, fully clothed. Preserve distinctive face, age, hair and features so the character is recognizable at thumbnail size. For cinematic or painterly realism use believable proportions and detailed facial likeness; for clay or illustration maintain recognizable individual identity rather than a generic person. Soft neutral lighting suitable for compositing into travel selfies. Actual transparent alpha background, no scene, no backdrop, no cast shadow rectangle. No captions, text, signatures, brands or logos. This is a playful fictional depiction, not an authentic photograph or endorsement.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-36354525-7744-44b6-814b-68c08b9c9324.png",
+      "installedVisualStyle": "Illustrated realism"
+    },
+    {
+      "name": "Joker Xue",
+      "slug": "celebrity-joker-xue",
+      "category": "Music",
+      "visualStyle": "Painterly realism",
+      "aliases": [
+        "薛之谦"
+      ],
+      "featured": true,
+      "prompt": "Use case: stylized or realistic public-figure avatar asset. Create an AI-imagined, recognizable likeness of Joker Xue, one adult person only, in Painterly realism style. Single full-body standing character, head to shoes fully in frame, centered with generous transparent margin, friendly relaxed pose and natural anatomy. Dress in tasteful, recognizable contemporary public-appearance clothing, fully clothed. Preserve distinctive face, age, hair and features so the character is recognizable at thumbnail size. For cinematic or painterly realism use believable proportions and detailed facial likeness; for clay or illustration maintain recognizable individual identity rather than a generic person. Soft neutral lighting suitable for compositing into travel selfies. Actual transparent alpha background, no scene, no backdrop, no cast shadow rectangle. No captions, text, signatures, brands or logos. This is a playful fictional depiction, not an authentic photograph or endorsement.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-fa4eb359-a834-4975-8710-774e825502a6.png",
+      "installedVisualStyle": "Photorealistic likeness"
+    },
+    {
+      "name": "Faye Wong",
+      "slug": "celebrity-faye-wong",
+      "category": "Music",
+      "visualStyle": "Cinematic realism",
+      "aliases": [
+        "王菲"
+      ],
+      "featured": true,
+      "prompt": "Use case: stylized or realistic public-figure avatar asset. Create an AI-imagined, recognizable likeness of Faye Wong, one adult person only, in Cinematic realism style. Single full-body standing character, head to shoes fully in frame, centered with generous transparent margin, friendly relaxed pose and natural anatomy. Dress in tasteful, recognizable contemporary public-appearance clothing, fully clothed. Preserve distinctive face, age, hair and features so the character is recognizable at thumbnail size. For cinematic or painterly realism use believable proportions and detailed facial likeness; for clay or illustration maintain recognizable individual identity rather than a generic person. Soft neutral lighting suitable for compositing into travel selfies. Actual transparent alpha background, no scene, no backdrop, no cast shadow rectangle. No captions, text, signatures, brands or logos. This is a playful fictional depiction, not an authentic photograph or endorsement.",
+      "state": "complete",
+      "sourcePath": "/Users/yp/.codex/generated_images/01a0ffc3-24f3-7fe2-a19a-08ee1207751d/exec-d79caa92-bb87-4aa4-90ef-6255be277fe8.png",
+      "installedVisualStyle": "Photorealistic likeness"
+    }
+  ]
+}

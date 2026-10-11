@@ -6292,6 +6292,411 @@
       "featured": true,
       "imageUrl": "./avatars/characters/pompompurin.png",
       "thumbnailUrl": "./avatars/thumbnails/pompompurin.webp"
+    },
+    {
+      "id": "preset:celebrity-elon-musk",
+      "name": "Elon Musk",
+      "category": "Technology",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "马斯克"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/celebrity-elon-musk.png",
+      "thumbnailUrl": "./avatars/thumbnails/celebrity-elon-musk.webp"
+    },
+    {
+      "id": "preset:celebrity-jensen-huang",
+      "name": "Jensen Huang",
+      "category": "Technology",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "黄仁勋",
+        "老黄"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/celebrity-jensen-huang.png",
+      "thumbnailUrl": "./avatars/thumbnails/celebrity-jensen-huang.webp"
+    },
+    {
+      "id": "preset:celebrity-sam-altman",
+      "name": "Sam Altman",
+      "category": "Technology",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "山姆奥特曼"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/celebrity-sam-altman.png",
+      "thumbnailUrl": "./avatars/thumbnails/celebrity-sam-altman.webp"
+    },
+    {
+      "id": "preset:celebrity-bill-gates",
+      "name": "Bill Gates",
+      "category": "Technology",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "比尔盖茨"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/celebrity-bill-gates.png",
+      "thumbnailUrl": "./avatars/thumbnails/celebrity-bill-gates.webp"
+    },
+    {
+      "id": "preset:celebrity-tim-cook",
+      "name": "Tim Cook",
+      "category": "Technology",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "蒂姆库克"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/celebrity-tim-cook.png",
+      "thumbnailUrl": "./avatars/thumbnails/celebrity-tim-cook.webp"
+    },
+    {
+      "id": "preset:celebrity-mark-zuckerberg",
+      "name": "Mark Zuckerberg",
+      "category": "Technology",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "马克扎克伯格"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/celebrity-mark-zuckerberg.png",
+      "thumbnailUrl": "./avatars/thumbnails/celebrity-mark-zuckerberg.webp"
+    },
+    {
+      "id": "preset:celebrity-jeff-bezos",
+      "name": "Jeff Bezos",
+      "category": "Technology",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "杰夫贝索斯"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/celebrity-jeff-bezos.png",
+      "thumbnailUrl": "./avatars/thumbnails/celebrity-jeff-bezos.webp"
+    },
+    {
+      "id": "preset:celebrity-satya-nadella",
+      "name": "Satya Nadella",
+      "category": "Technology",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "萨蒂亚纳德拉"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/celebrity-satya-nadella.png",
+      "thumbnailUrl": "./avatars/thumbnails/celebrity-satya-nadella.webp"
+    },
+    {
+      "id": "preset:celebrity-sundar-pichai",
+      "name": "Sundar Pichai",
+      "category": "Technology",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "桑达尔皮查伊"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/celebrity-sundar-pichai.png",
+      "thumbnailUrl": "./avatars/thumbnails/celebrity-sundar-pichai.webp"
+    },
+    {
+      "id": "preset:celebrity-lei-jun",
+      "name": "Lei Jun",
+      "category": "Technology",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "雷军"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/celebrity-lei-jun.png",
+      "thumbnailUrl": "./avatars/thumbnails/celebrity-lei-jun.webp"
+    },
+    {
+      "id": "preset:celebrity-beyonce",
+      "name": "Beyoncé",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "碧昂丝"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/celebrity-beyonce.png",
+      "thumbnailUrl": "./avatars/thumbnails/celebrity-beyonce.webp"
+    },
+    {
+      "id": "preset:celebrity-ariana-grande",
+      "name": "Ariana Grande",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "爱莉安娜格兰德",
+        "A妹"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/celebrity-ariana-grande.png",
+      "thumbnailUrl": "./avatars/thumbnails/celebrity-ariana-grande.webp"
+    },
+    {
+      "id": "preset:celebrity-bruno-mars",
+      "name": "Bruno Mars",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "布鲁诺马尔斯",
+        "火星哥"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/celebrity-bruno-mars.png",
+      "thumbnailUrl": "./avatars/thumbnails/celebrity-bruno-mars.webp"
+    },
+    {
+      "id": "preset:celebrity-ed-sheeran",
+      "name": "Ed Sheeran",
+      "category": "Music",
+      "visualStyle": "Illustrated realism",
+      "aliases": [
+        "艾德希兰",
+        "黄老板"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/celebrity-ed-sheeran.png",
+      "thumbnailUrl": "./avatars/thumbnails/celebrity-ed-sheeran.webp"
+    },
+    {
+      "id": "preset:celebrity-jungkook",
+      "name": "Jungkook",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "田柾国",
+        "BTS",
+        "防弹少年团"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/celebrity-jungkook.png",
+      "thumbnailUrl": "./avatars/thumbnails/celebrity-jungkook.webp"
+    },
+    {
+      "id": "preset:celebrity-lisa",
+      "name": "Lisa",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "丽莎",
+        "BLACKPINK"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/celebrity-lisa.png",
+      "thumbnailUrl": "./avatars/thumbnails/celebrity-lisa.webp"
+    },
+    {
+      "id": "preset:celebrity-jennie",
+      "name": "Jennie",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "金珍妮",
+        "BLACKPINK"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/celebrity-jennie.png",
+      "thumbnailUrl": "./avatars/thumbnails/celebrity-jennie.webp"
+    },
+    {
+      "id": "preset:celebrity-zendaya",
+      "name": "Zendaya",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "赞达亚"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/celebrity-zendaya.png",
+      "thumbnailUrl": "./avatars/thumbnails/celebrity-zendaya.webp"
+    },
+    {
+      "id": "preset:celebrity-ryan-reynolds",
+      "name": "Ryan Reynolds",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "瑞安雷诺兹"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/celebrity-ryan-reynolds.png",
+      "thumbnailUrl": "./avatars/thumbnails/celebrity-ryan-reynolds.webp"
+    },
+    {
+      "id": "preset:celebrity-margot-robbie",
+      "name": "Margot Robbie",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "玛格特罗比"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/celebrity-margot-robbie.png",
+      "thumbnailUrl": "./avatars/thumbnails/celebrity-margot-robbie.webp"
+    },
+    {
+      "id": "preset:celebrity-timothee-chalamet",
+      "name": "Timothée Chalamet",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "提莫西查拉梅",
+        "甜茶"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/celebrity-timothee-chalamet.png",
+      "thumbnailUrl": "./avatars/thumbnails/celebrity-timothee-chalamet.webp"
+    },
+    {
+      "id": "preset:celebrity-lebron-james",
+      "name": "LeBron James",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "勒布朗詹姆斯"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/celebrity-lebron-james.png",
+      "thumbnailUrl": "./avatars/thumbnails/celebrity-lebron-james.webp"
+    },
+    {
+      "id": "preset:celebrity-kylian-mbappe",
+      "name": "Kylian Mbappé",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "基利安姆巴佩"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/celebrity-kylian-mbappe.png",
+      "thumbnailUrl": "./avatars/thumbnails/celebrity-kylian-mbappe.webp"
+    },
+    {
+      "id": "preset:celebrity-shohei-ohtani",
+      "name": "Shohei Ohtani",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "大谷翔平"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/celebrity-shohei-ohtani.png",
+      "thumbnailUrl": "./avatars/thumbnails/celebrity-shohei-ohtani.webp"
+    },
+    {
+      "id": "preset:celebrity-carlos-alcaraz",
+      "name": "Carlos Alcaraz",
+      "category": "Sports",
+      "visualStyle": "Illustrated realism",
+      "aliases": [
+        "卡洛斯阿尔卡拉斯"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/celebrity-carlos-alcaraz.png",
+      "thumbnailUrl": "./avatars/thumbnails/celebrity-carlos-alcaraz.webp"
+    },
+    {
+      "id": "preset:celebrity-eileen-gu",
+      "name": "Eileen Gu",
+      "category": "Sports",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "谷爱凌"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/celebrity-eileen-gu.png",
+      "thumbnailUrl": "./avatars/thumbnails/celebrity-eileen-gu.webp"
+    },
+    {
+      "id": "preset:celebrity-wang-yibo",
+      "name": "Wang Yibo",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "王一博"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/celebrity-wang-yibo.png",
+      "thumbnailUrl": "./avatars/thumbnails/celebrity-wang-yibo.webp"
+    },
+    {
+      "id": "preset:celebrity-xiao-zhan",
+      "name": "Xiao Zhan",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "肖战"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/celebrity-xiao-zhan.png",
+      "thumbnailUrl": "./avatars/thumbnails/celebrity-xiao-zhan.webp"
+    },
+    {
+      "id": "preset:celebrity-yang-mi",
+      "name": "Yang Mi",
+      "category": "Screen icons",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "杨幂"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/celebrity-yang-mi.png",
+      "thumbnailUrl": "./avatars/thumbnails/celebrity-yang-mi.webp"
+    },
+    {
+      "id": "preset:celebrity-jackson-wang",
+      "name": "Jackson Wang",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "王嘉尔"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/celebrity-jackson-wang.png",
+      "thumbnailUrl": "./avatars/thumbnails/celebrity-jackson-wang.webp"
+    },
+    {
+      "id": "preset:celebrity-g-e-m",
+      "name": "G.E.M.",
+      "category": "Music",
+      "visualStyle": "Illustrated realism",
+      "aliases": [
+        "邓紫棋"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/celebrity-g-e-m.png",
+      "thumbnailUrl": "./avatars/thumbnails/celebrity-g-e-m.webp"
+    },
+    {
+      "id": "preset:celebrity-joker-xue",
+      "name": "Joker Xue",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "薛之谦"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/celebrity-joker-xue.png",
+      "thumbnailUrl": "./avatars/thumbnails/celebrity-joker-xue.webp"
+    },
+    {
+      "id": "preset:celebrity-faye-wong",
+      "name": "Faye Wong",
+      "category": "Music",
+      "visualStyle": "Photorealistic likeness",
+      "aliases": [
+        "王菲"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/celebrity-faye-wong.png",
+      "thumbnailUrl": "./avatars/thumbnails/celebrity-faye-wong.webp"
     }
   ]
 }
