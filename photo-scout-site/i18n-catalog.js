@@ -451,7 +451,15 @@ window.PhotoScoutMessages={
     "Your photo is ready. It has been resized for upload.": "照片已就绪，并已调整尺寸以便上传。",
     "Camera access was not granted. Enable it in your browser settings, or use device camera / upload a photo.": "未获得相机权限。请在浏览器设置中允许相机，或使用设备相机、上传照片。",
     "Location access denied. On iPhone, allow Safari Websites in Settings → Privacy & Security → Location Services, and allow location for aisoup.net in Safari website settings. The displayed map is not your detected location.": "定位权限被拒绝。iPhone 请在“设置 → 隐私与安全性 → 定位服务”中允许 Safari 网站定位，并在 Safari 网站设置中允许 aisoup.net 定位。当前地图并非检测到的位置。",
-    "No device location received. The map has not been located. On iPhone: Settings → Privacy & Security → Location Services → Safari Websites → While Using. Also allow location for this website, then retry.": "未收到设备位置。iPhone 请在“设置 → 隐私与安全性 → 定位服务 → Safari 网站”中选择“使用期间”，并允许本网站定位，然后重试。"
+    "No device location received. The map has not been located. On iPhone: Settings → Privacy & Security → Location Services → Safari Websites → While Using. Also allow location for this website, then retry.": "未收到设备位置。iPhone 请在“设置 → 隐私与安全性 → 定位服务 → Safari 网站”中选择“使用期间”，并允许本网站定位，然后重试。",
+    "Uploaded photos are automatically saved privately in Avatar Library → My uploads.": "上传的照片会自动私密保存到角色图库 → 我的上传。",
+    "Selected from Avatar Library.": "已从角色图库选择。",
+    "Saving your photo to Avatar Library…": "正在将照片保存到角色图库…",
+    "Saved privately in Avatar Library → My uploads.": "已私密保存到角色图库 → 我的上传。",
+    "Your photo is ready for this selfie, but could not be saved to Avatar Library.": "照片可用于本次自拍，但未能保存到角色图库。",
+    "Your library can hold 50 avatars. Remove one before uploading another.": "图库最多保存 50 张图片，请移除一张后再上传。",
+    "Upload a valid JPG, PNG, WebP or HEIC image, up to 20 MB and 80 megapixels.": "请上传有效的 JPG、PNG、WebP 或 HEIC 图片，最大 20 MB、8000 万像素。",
+    "Your photo and this view will be sent to OpenAI to create an AI composite. Your uploaded photo is also saved privately in Avatar Library for reuse. Processing copies are removed after completion; signed-in photos are saved permanently; guest photos are deleted after 7 days without a visit.": "你的照片和此场景会发送给 OpenAI 生成 AI 合成图。上传的照片也会私密保存到角色图库以便复用。处理副本完成后删除；登录用户的照片永久保存，访客连续 7 天未访问后删除。"
   },
   "zh-Hant": {
     "Sign in": "登入",
@@ -904,6 +912,14 @@ window.PhotoScoutMessages={
     "Your photo is ready. It has been resized for upload.": "照片已就緒，並已調整尺寸以便上傳。",
     "Camera access was not granted. Enable it in your browser settings, or use device camera / upload a photo.": "未獲得相機許可權。請在瀏覽器設定中允許相機，或使用裝置相機、上傳照片。",
     "Location access denied. On iPhone, allow Safari Websites in Settings → Privacy & Security → Location Services, and allow location for aisoup.net in Safari website settings. The displayed map is not your detected location.": "定位許可權被拒絕。iPhone 請在“設定 → 隱私與安全性 → 定位服務”中允許 Safari 網站定位，並在 Safari 網站設定中允許 aisoup.net 定位。當前地圖並非檢測到的位置。",
-    "No device location received. The map has not been located. On iPhone: Settings → Privacy & Security → Location Services → Safari Websites → While Using. Also allow location for this website, then retry.": "未收到裝置位置。iPhone 請在“設定 → 隱私與安全性 → 定位服務 → Safari 網站”中選擇“使用期間”，並允許本網站定位，然後重試。"
+    "No device location received. The map has not been located. On iPhone: Settings → Privacy & Security → Location Services → Safari Websites → While Using. Also allow location for this website, then retry.": "未收到裝置位置。iPhone 請在“設定 → 隱私與安全性 → 定位服務 → Safari 網站”中選擇“使用期間”，並允許本網站定位，然後重試。",
+    "Uploaded photos are automatically saved privately in Avatar Library → My uploads.": "上傳的照片會自動私密儲存到角色相簿 → 我的上傳。",
+    "Selected from Avatar Library.": "已從角色相簿選擇。",
+    "Saving your photo to Avatar Library…": "正在將照片儲存到角色相簿…",
+    "Saved privately in Avatar Library → My uploads.": "已私密儲存到角色相簿 → 我的上傳。",
+    "Your photo is ready for this selfie, but could not be saved to Avatar Library.": "照片可用於本次自拍，但未能儲存到角色相簿。",
+    "Your library can hold 50 avatars. Remove one before uploading another.": "相簿最多儲存 50 張圖片，請移除一張後再上傳。",
+    "Upload a valid JPG, PNG, WebP or HEIC image, up to 20 MB and 80 megapixels.": "請上傳有效的 JPG、PNG、WebP 或 HEIC 圖片，最大 20 MB、8000 萬畫素。",
+    "Your photo and this view will be sent to OpenAI to create an AI composite. Your uploaded photo is also saved privately in Avatar Library for reuse. Processing copies are removed after completion; signed-in photos are saved permanently; guest photos are deleted after 7 days without a visit.": "你的照片和此場景會傳送給 OpenAI 生成 AI 合成圖。上傳的照片也會私密儲存到角色相簿以便複用。處理副本完成後刪除；登入使用者的照片永久儲存，訪客連續 7 天未訪問後刪除。"
   }
 };

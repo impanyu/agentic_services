@@ -37,6 +37,14 @@ window.PhotoScoutAvatars=class {
   if(!items.length&&!message){status.textContent=this.tab==='mine'?'Your library is empty. Upload a selfie, a character or an animal.':'Preset characters are loading.';}
   const note=document.createElement('p');note.className='small';note.textContent=this.tab==='mine'?'Your uploads are private. Signed-in libraries are saved permanently; guest libraries expire after 7 days without a visit. Up to 50 images.':'AI-generated avatars, including imagined likenesses of familiar people and characters. Your selection only applies to the current photo spot.';root.append(note);
  }
+ async saveUpload(file,prepared){
+  const session=this.session(),identity=session.id,epoch=session.epoch;
+  const item=await this.request('/photo-scout/v1/avatars',{method:'POST',headers:this.headers(),body:JSON.stringify({name:file.name.replace(/\.[^.]+$/,'').slice(0,80)||'My avatar',image:prepared.data})});
+  const current=this.session();if(identity!==current.id||epoch!==current.epoch)return null;
+  this.items=[item,...this.items.filter(existing=>existing.id!==item.id)];
+  if(this.tab==='mine'){if(this.menu.open)this.render(this.panel);if(this.dialog.open)this.render(this.dialog);}
+  return item;
+ }
  headers(){return {'Content-Type':'application/json',...(this.session().csrf?{'X-CSRF-Token':this.session().csrf}:{})};}
  async rasterize(blob){const image=new Image(),url=URL.createObjectURL(blob);try{await new Promise((resolve,reject)=>{image.onload=resolve;image.onerror=()=>reject(Error('Could not load this character'));image.src=url;});const canvas=document.createElement('canvas');canvas.width=canvas.height=768;const context=canvas.getContext('2d');context.fillStyle='#fff';context.fillRect(0,0,768,768);context.drawImage(image,0,0,768,768);return await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(Error('Could not prepare this character')),'image/png'));}finally{URL.revokeObjectURL(url);}}
 };

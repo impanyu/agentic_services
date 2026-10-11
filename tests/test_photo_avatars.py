@@ -35,3 +35,24 @@ def test_invalid_image_and_account_adoption_csrf_retention(tmp_path):
 def test_inactive_guest_is_pruned(tmp_path):
     settings,app,client,payload=fixture(tmp_path);client.post('/photo-scout/v1/avatars',json=payload,headers={'Origin':'https://aisoup.net'})
     with TaskStore(settings.database_path).db() as db:db.execute('UPDATE photo_guests SET expires=0');prune_records(db);assert db.execute('SELECT count(*) FROM photo_avatars').fetchone()[0]==0
+
+def test_duplicate_upload_reuses_private_item_even_when_library_full(tmp_path):
+    settings,app,client,payload=fixture(tmp_path);headers={'Origin':'https://aisoup.net'}
+    first=client.post('/photo-scout/v1/avatars',json=payload,headers=headers).json()
+    assert client.post('/photo-scout/v1/avatars',json={**payload,'name':'Another name'},headers=headers).json()['id']==first['id']
+    with TaskStore(settings.database_path).db() as db:
+        owner=db.execute('SELECT owner FROM photo_avatars WHERE id=?',(first['id'],)).fetchone()['owner']
+        db.executemany('INSERT INTO photo_avatars(id,owner,name,created,image) VALUES(?,?,?,?,?)',[(str(i),owner,'Other',time.time(),str(i).encode()) for i in range(49)])
+    assert client.post('/photo-scout/v1/avatars',json=payload,headers=headers).json()['id']==first['id']
+    other=TestClient(app,base_url='https://api.test')
+    assert other.post('/photo-scout/v1/avatars',json=payload,headers=headers).json()['id']!=first['id']
+    client.delete('/photo-scout/v1/avatars/'+first['id'],headers=headers)
+    assert client.post('/photo-scout/v1/avatars',json=payload,headers=headers).json()['id']!=first['id']
+
+def test_heic_studio_upload_is_normalized_for_library(tmp_path):
+    settings,app,client,payload=fixture(tmp_path);buf=io.BytesIO()
+    Image.new('RGB',(64,48),'blue').save(buf,'HEIF')
+    payload['image']='data:image/heic;base64,'+base64.b64encode(buf.getvalue()).decode()
+    uploaded=client.post('/photo-scout/v1/avatars',json=payload,headers={'Origin':'https://aisoup.net'})
+    assert uploaded.status_code==200
+    with Image.open(io.BytesIO(client.get(uploaded.json()['imageUrl']).content)) as image:assert image.format=='JPEG'
