@@ -27,7 +27,9 @@ Direct inspection found coherent subjects, plausible contact/shadows and recogni
 
 A separate GPT-6.1 Sol reviewer received the source subject/background and outputs labelled A/B/C without model/price/tier labels. It rated background fidelity on a 0–5 scale as Flare xhigh 2, Sunburst max 3, and Sunburst high 2; its concrete findings align with the visual concern above. This is one automated review of one case, not an objective quality ranking or proof of equivalence. There was no full three-way plaza review because two outputs were blocked.
 
-Sunburst high is the leading inexpensive candidate for a broader quality gate; Flare xhigh is a speed-focused candidate. Neither has demonstrated quality-equivalent replacement across the supported product use cases. **Production remains Sunburst max.** A stronger background-preservation method and representative tests for groups, animals, cartoons, fixed landmarks and differing light are needed before switching the default. No automatic paid retry/fallback or second full image generation was added.
+Sunburst high is the leading inexpensive candidate for a broader quality gate; Flare xhigh is a speed-focused candidate. Neither has demonstrated quality-equivalent replacement across the supported product use cases. Production remained Sunburst max during this comparison. A stronger background-preservation method and representative tests for groups, animals, cartoons, fixed landmarks and differing light remain worthwhile. No automatic paid retry/fallback or second full image generation was added.
+
+Following the comparison, the user explicitly approved switching the default to Sunburst **high** on October 11. The model stays `gpt-image-2.5-sunburst`, resolution stays 1024×1024, and new portrait task context records `generationConfig` with the actual model, quality and size. This change does not establish quality equivalence or turn the small-sample generation measurements into a production average.
 
 ## Other providers, researched but not run
 

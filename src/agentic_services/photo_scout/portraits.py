@@ -358,7 +358,10 @@ def create_portrait_router(settings,require_api):
                     image_model=os.getenv('PHOTO_SCOUT_IMAGE_MODEL','gpt-image-2.5-sunburst')
                     # New image models always preserve inputs at high fidelity.
                     legacy=image_model.startswith('gpt-image-1')
-                    edit_options={'input_fidelity':'high','quality':'high'} if legacy else {'quality':'max' if image_model.startswith('gpt-image-2.5') else 'high'}
+                    edit_options={'input_fidelity':'high','quality':'high'} if legacy else {'quality':'high'}
+                    context=tasks.context('portrait',row['id']) or {}
+                    context['generationConfig']={'model':image_model,'quality':edit_options['quality'],'size':'1024x1024'}
+                    tasks.update_context('portrait',row['id'],context)
                     stage='image_generation'
                     result=await observe('image-generation',image_model,client.images.edit(model=image_model,image=[('person.png',bytes(row['photo']),'image/png'),('scene.'+ext,raw,'image/'+('jpeg' if ext=='jpg' else ext))],prompt=portrait_prompt(payload.get('style','natural'),payload['pose'],payload.get('posture','auto'),payload.get('weather','original'),payload.get('expression','auto'),place=payload['place'],scene=preparation['scene'],composition=payload.get('composition','auto')),**edit_options,size='1024x1024',output_format='png',n=1))
                 stage='decode_result'

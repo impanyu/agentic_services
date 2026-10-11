@@ -115,7 +115,7 @@ def test_private_job_edits_both_images_and_removes_upload(tmp_path,monkeypatch,i
     if image_model=='gpt-image-1.5':
         assert calls[0]['input_fidelity']=='high';assert calls[0]['quality']=='high'
     else:
-        assert 'input_fidelity' not in calls[0];assert calls[0]['quality']=='max'
+        assert 'input_fidelity' not in calls[0];assert calls[0]['quality']=='high'
     assert 'fixed statue at left' in calls[0]['prompt']
     assert 'Test park' in calls[0]['prompt']
     assert portraits.COMPOSITIONS[composition] in calls[0]['prompt']
@@ -126,6 +126,7 @@ def test_private_job_edits_both_images_and_removes_upload(tmp_path,monkeypatch,i
     assert 'cheerful broad smile' in calls[0]['prompt']
     assert 'relight the entire scene and subjects together' in calls[0]['prompt']
     completed=client.get(path,headers=owned).json();assert completed['state']=='complete'
+    assert completed['context']['generationConfig']=={'model':image_model,'quality':'high','size':'1024x1024'}
     assert completed['context']['viewHeadingDegrees']==90 and completed['context']['viewPitchDegrees']==-20
     assert completed['context']['viewFovDegrees']==90
     assert completed['context']['backgroundPreparation']['comparedFovDegrees']==[90,60,45]
