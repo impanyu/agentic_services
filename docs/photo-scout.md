@@ -758,3 +758,14 @@ assessments. The variant was rejected and is **not** shipped. This single sample
 does not establish a general latency distribution or a quality guarantee.
 The <=10s average search target remains unverified; further work needs production
 stage measurements and representative planner/scoring/image-model comparisons.
+
+Production smoke verification after deployment returned 34 ranked places with no
+error: planning 7.084s, retrieval 1.581s, download/scoring 31.937s, pipeline
+40.621s, queue 2.205s. Fifteen scoring calls completed; their maximum model latency
+was 19.123s (summed overlapping latency 244.958s). Known cost was $0.165817 with
+zero unknown-cost events, but only one panorama tile was newly fetched because
+existing provider responses were reused. Do not treat that spend as a cold-search
+average. The preceding same-input live run returned 28 places with retrieval
+1.856s and download/scoring 31.709s; these runs do **not** demonstrate an overall
+speedup. The new stage visibility identifies model inference plus image loading
+as remaining work rather than incorrectly claiming the target achieved.
