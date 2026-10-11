@@ -122,10 +122,11 @@ async def candidates(client,pois):
 
 
 async def image_data(reference):
-    import base64,httpx
+    import base64
+    from .image_transport import image_transport
     match=re.fullmatch(r'google-place-photo://([A-Za-z0-9_-]{1,200})/([a-f0-9]{64})',reference)
     if not match:raise ValueError('Invalid place photo reference')
-    async with httpx.AsyncClient(timeout=25,follow_redirects=False) as client:
+    async with image_transport() as client:
         data=await place_photos(client,match[1],limit=1,selector=match[2])
         if not data['photos']:raise ValueError('Selected place photo is no longer available')
         async with client.stream('GET',data['photos'][0]['imageUrl']) as response:

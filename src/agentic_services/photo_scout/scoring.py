@@ -10,6 +10,7 @@ from typing import Literal
 from openai import AsyncOpenAI
 from pydantic import BaseModel, Field, model_validator
 
+from .image_transport import pooled_images
 from .score_cache import ScoreCache
 from .costs import observe
 from .styles import style_briefs
@@ -195,6 +196,7 @@ class ScoringOutput:
     model: str
 
 
+@pooled_images
 async def assess_images(settings,payload,rows,statuses=None):
     """Download, visually match and score batches; ranking is a separate tool."""
     rows=rows[:MAX_SCORED_IMAGES]
@@ -222,21 +224,25 @@ async def assess_images(settings,payload,rows,statuses=None):
     aliases={row['id']:str(i) for i,row in enumerate(missing)}
     batches=[missing[i:i+batch_size] for i in range(0,len(missing),batch_size)]
     batch_slots=asyncio.Semaphore(max(1,min(16,int(os.getenv('PHOTO_SCOUT_SCORING_CONCURRENCY','16')))));download_slots=asyncio.Semaphore(max(1,min(64,int(os.getenv('PHOTO_SCOUT_IMAGE_DOWNLOAD_CONCURRENCY','32')))))
-    async def download(row):
+    downloads={}
+    async def load_image(url):
         try:
             async with download_slots:
-                data=await asyncio.wait_for(image_data(row['imageUrl']),timeout=30)
-            return row,data
+                return await asyncio.wait_for(image_data(url),timeout=30)
         except Exception:
-            return row,None
+            return None
+    async def download(row):
+        url=row['imageUrl']
+        if url not in downloads:downloads[url]=asyncio.create_task(load_image(url))
+        return row,await downloads[url]
     async with AsyncOpenAI(api_key=settings.openai_api_key,timeout=180,max_retries=0) as client:
         async def score_loaded(usable,retry=True):
             from collections import Counter
             content=[{'type':'input_text','text':json.dumps({
                 'request':{'subjectRole':getattr(payload,'subjectRole','scene'),'requirements':[r.model_dump() for r in getattr(payload,'requirements',[])],'scoringIntent':payload.scoringIntent.strip(),'poiQueries':payload.poiQueries,'geographicKinds':payload.geographicKinds,'geographicCombination':getattr(payload,'geographicCombination','all'),'featureCombination':getattr(payload,'featureCombination','all'),'searchProgram':payload.searchProgram.model_dump() if getattr(payload,'searchProgram',None) else None,'searchBranches':[b.model_dump() for b in getattr(payload,'searchBranches',[])],'osmFeatures':[q.model_dump() for q in payload.osmFeatures],'preferences':payload.preferences.strip(),'photoStyles':sorted(payload.photoStyles or [])},
-                'photoStyleBriefs':style_briefs(payload.photoStyles)})}]
+                'photoStyleBriefs':style_briefs(payload.photoStyles)},separators=(',', ':'),ensure_ascii=False)}]
             for row,data in usable:
-                content.extend([{'type':'input_text','text':json.dumps({'image':{**{k:v for k,v in row.items() if k not in ('id','imageUrl','author','distanceMeters','poiDistanceMeters','explorationReason')},'id':aliases[row['id']]}})},
+                content.extend([{'type':'input_text','text':json.dumps({'image':{**{k:v for k,v in row.items() if k not in ('id','imageUrl','author','distanceMeters','poiDistanceMeters','explorationReason')},'id':aliases[row['id']]}},separators=(',', ':'),ensure_ascii=False)},
                     {'type':'input_image','image_url':data,'detail':'low' if str(row.get('imageryProfile','')).startswith(('google-tiles-z0-', 'google-tiles-z1-')) else 'high'}])
             response=None;valid=[];usages=[];requests=1
             try:
@@ -268,6 +274,7 @@ async def assess_images(settings,payload,rows,statuses=None):
             return {**result,'downloaded':len(usable),'downloadFailed':len(batch)-len(usable),'usage':None}
         async with asyncio.timeout(600):
             results=await asyncio.gather(*(score_batch(batch) for batch in batches))
+            if results:results[0].update(uniqueImageLoads=len(downloads),duplicateImageLoadsAvoided=len(missing)-len(downloads))
     fresh=[a for result in results for a in result['assessments']]
     assessments=cached+fresh
     if not assessments: raise ValueError('No images could be scored; retry the search')
@@ -333,7 +340,7 @@ def rank_assessments(payload,output,statuses):
     return {'topLimit':len(spots),'spots':spots,'poiResults':poi_results,'summary':summary,'sources':statuses,
         'inspectedImages':len(assessments),'inspectedImageSources':sorted({by_id[a.image_id]['provider'] for a in assessments}),
         'imageAssessments':audit,'analysisMethod':'fixed-batch-scoring',
-        'scoring':{'checkedImages':len(assessments),'filteredOutImages':filtered_out,'matchedImages':len(scored),'candidateImages':len(rows),'downloadedImages':downloaded,'scoredImages':len(scored),'cachedImages':len(cached),'newlyScoredImages':sum(a.matches_request for a in fresh),
+        'scoring':{'checkedImages':len(assessments),'filteredOutImages':filtered_out,'matchedImages':len(scored),'candidateImages':len(rows),'downloadedImages':downloaded,'scoredImages':len(scored),'cachedImages':len(cached),'uniqueImageLoads':sum(r.get('uniqueImageLoads',0) for r in results),'duplicateImageLoadsAvoided':sum(r.get('duplicateImageLoadsAvoided',0) for r in results),'newlyScoredImages':sum(a.matches_request for a in fresh),
             'downloadFailedImages':failed_downloads,'scoringFailedImages':failed_scoring,'batches':len(results)},
         'coverage':f'Checked {len(assessments)} of {len(rows)} sampled images; {filtered_out} excluded for not matching your request; {len(scored)} scored ({len(cached)} cached checks);  {failed_downloads} downloads failed; {failed_scoring} images could not be scored. Subjective scores, not complete nearby coverage.',
         'model':model,'usage':{'requests':sum(r.get('modelRequests',int(bool(r['downloaded']))) for r in results),

@@ -423,9 +423,10 @@ async def image_data(url):
         return await google_image_data(url)
     if not image_host(url):
         raise ValueError('Image provider host is not allowed')
-    async with httpx.AsyncClient(timeout=25,headers=HEADERS,follow_redirects=False) as client:
+    from .image_transport import image_transport
+    async with image_transport() as client:
         for hop in range(3):
-            async with client.stream('GET',url) as r:
+            async with client.stream('GET',url,headers=HEADERS) as r:
                 if r.is_redirect:
                     from urllib.parse import urljoin
                     target=urljoin(url,r.headers.get('location',''))
@@ -479,7 +480,8 @@ async def google_image_data(reference):
     if streetview_tiles.enabled():
         return await streetview_tiles.image_data(match[1],int(match[2]),int(match[3] or 0),int(match[4] or 120))
     record_google_image_request('static-streetview')
-    async with httpx.AsyncClient(timeout=25,follow_redirects=False) as client:
+    from .image_transport import image_transport
+    async with image_transport() as client:
         async with client.stream('GET','https://maps.googleapis.com/maps/api/streetview',params={
             'pano':match[1],'heading':match[2],'pitch':int(match[3] or 0),'fov':int(match[4] or 120),'size':'640x640',
             'return_error_code':'true','key':os.environ['PHOTO_SCOUT_GOOGLE_API_KEY']}) as response:

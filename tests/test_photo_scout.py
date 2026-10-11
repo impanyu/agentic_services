@@ -568,7 +568,7 @@ def test_fixed_pipeline_reports_partial_failures(tmp_path,monkeypatch):
     result=asyncio.run(visual.explore(settings,ExploreRequest(lat=0,lon=0),_scoring_rows(),{}))
     assert len(result['spots'])==11 and result['inspectedImages']==11
     assert all(s['recommend'] is False for s in result['spots'])
-    assert result['scoring']=={'checkedImages':11,'filteredOutImages':0,'matchedImages':11,'candidateImages':13,'downloadedImages':12,'scoredImages':11,'downloadFailedImages':1,'scoringFailedImages':1,'batches':3,'cachedImages':0,'newlyScoredImages':11}
+    assert result['scoring']=={'checkedImages':11,'filteredOutImages':0,'matchedImages':11,'candidateImages':13,'downloadedImages':12,'scoredImages':11,'downloadFailedImages':1,'scoringFailedImages':1,'batches':3,'cachedImages':0,'newlyScoredImages':11,'uniqueImageLoads':13,'duplicateImageLoadsAvoided':0}
     assert len(result['imageAssessments'])==11 and 'could not be scored' in result['coverage']
 
 
@@ -1297,3 +1297,25 @@ def test_local_panorama_delivery_uses_existing_signed_authorization(tmp_path, mo
     monkeypatch.setattr(tiles,'enabled',lambda:False)
     assert client.get(signed,headers=headers).status_code==503
     assert calls==['fixture']
+
+def test_duplicate_direction_resources_download_once_but_score_each_binding(tmp_path,monkeypatch):
+    import json
+    from types import SimpleNamespace
+    from agentic_services.photo_scout import scoring as visual
+    from agentic_services.photo_scout.routes import ExploreRequest
+    settings=Settings(openai_api_key='test',openai_model='test',database_path=tmp_path/'db',base_url='https://api.test')
+    rows=_scoring_rows()[:3]
+    for row in rows:row['imageUrl']='https://upload.wikimedia.org/shared.jpg'
+    loaded=[];messages=[]
+    async def image(url):loaded.append(url);await asyncio.sleep(.001);return 'data:image/jpeg;base64,/9j/dGVzdA=='
+    async def parse(**kw):
+        content=kw['input'][0]['content'];messages.extend(c['text'] for c in content if c['type']=='input_text')
+        batch=[json.loads(c['text'])['image'] for c in content[1:] if c['type']=='input_text']
+        return SimpleNamespace(output_parsed=visual.VisualBatch(assessments=[_scoring_assessment(visual,r) for r in batch]),usage=None)
+    _scoring_client(monkeypatch,parse);monkeypatch.setattr(visual,'image_data',image)
+    result=asyncio.run(visual.explore(settings,ExploreRequest(lat=0,lon=0),rows,{}))
+    assert len(loaded)==1 and result['scoring']['checkedImages']==3
+    assert result['scoring']['duplicateImageLoadsAvoided']==2
+    assert {a['image_id'] for a in result['imageAssessments']}=={r['id'] for r in rows}
+    assert all(json.loads(text)==json.loads(json.dumps(json.loads(text))) for text in messages)
+    assert sum(len(text) for text in messages)<sum(len(json.dumps(json.loads(text))) for text in messages)

@@ -138,6 +138,7 @@ def summary():
         return {'runId':context.id,'basis':'Standard API list prices before free tiers; not a billing statement',
                 'estimatedKnownUsd':round(sum(r[2] or 0 for r in rows),6),
                 'unknownCostEvents':sum(r[3] for r in rows),
+                'reusedBackgroundReviews':context.counts.get('background-review-reused',0),
                 'placesBudgetReached':bool(context.counts.get('places-budget-reached')),
                 'placesPhotoBudgetReached':bool(context.counts.get('places-photo-budget-reached')),
                 'modelLatencySeconds':{stage:{'calls':len(values),'sum':round(sum(values),3),'max':round(max(values),3)}

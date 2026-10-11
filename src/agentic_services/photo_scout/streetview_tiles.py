@@ -19,6 +19,7 @@ import sqlite3
 import time
 
 import httpx
+from .image_transport import image_transport
 import numpy as np
 from PIL import Image, ImageDraw
 
@@ -107,7 +108,7 @@ async def _json(client, method, path, *, params, body=None):
 
 
 async def _create_session(key):
-    async with httpx.AsyncClient(timeout=25, follow_redirects=False) as client:
+    async with image_transport() as client:
         data = await _json(client, 'POST', '/createSession', params={'key': key},
             body={'mapType': 'streetview', 'language': 'en-US', 'region': 'US'})
     if not isinstance(data.get('session'), str):
@@ -150,7 +151,7 @@ async def _load_panorama(pano, key, identity):
     namespace = f'{pano}:z{tile_zoom()}'
     first = await asyncio.to_thread(_tile_store, identity, namespace+':0:0')
     session = None
-    async with httpx.AsyncClient(timeout=25, follow_redirects=False) as client:
+    async with image_transport() as client:
         if first:
             meta = first[1].copy()
         else:
