@@ -43,7 +43,7 @@ def photo_selector(photo):
     return hashlib.sha256(json.dumps(metadata,sort_keys=True).encode()).hexdigest()
 
 
-async def place_photos(client, place_id, *, limit=3, width=800, selector=None):
+async def place_photos(client, place_id, *, limit=3, width=800, selector=None, first_usable=False):
     """Fetch a fresh, bounded photo selection with attribution. No API key in output."""
     place_id=place_id.removeprefix('google:')
     if not re.fullmatch(r'[A-Za-z0-9_-]{1,200}',place_id):
@@ -53,10 +53,10 @@ async def place_photos(client, place_id, *, limit=3, width=800, selector=None):
     limit=max(1,min(10,limit));width=max(1,min(1600,width))
     headers={'X-Goog-Api-Key':key}
     async def details():
-        reserve_photo_request('places-details-pro')
-        record('places-details-pro', status='attempted')
+        reserve_photo_request('places-details-ids')
+        record('places-details-ids', status='attempted')
         return await get_json(client,'https://places.googleapis.com/v1/places/'+place_id,
-            headers={**headers,'X-Goog-FieldMask':'id,displayName,googleMapsUri,photos'})
+            headers={**headers,'X-Goog-FieldMask':'id,photos'})
     data=await reuse_request(('place-photo-details',place_id),details)
     if data.get('id')!=place_id:raise ValueError('Photo response place mismatch')
     async def media(photo):
@@ -83,9 +83,21 @@ async def place_photos(client, place_id, *, limit=3, width=800, selector=None):
     # Ambiguous metadata cannot safely identify a photo across refreshed requests.
     counts={photo_selector(p):sum(photo_selector(x)==photo_selector(p) for x in selected) for p in selected}
     selected=[p for p in selected if counts[photo_selector(p)]==1][:limit]
-    photos=await asyncio.gather(*(media(p) for p in selected),return_exceptions=True)
+    if first_usable:
+        # Regional sampling retains one Places photo per camera association.
+        # Do not pay for the discarded second image; keep it as failure fallback.
+        photos=[]
+        for photo in selected:
+            try:row=await media(photo)
+            except Exception:
+                # Ordinary provider failures retain the next-photo fallback.
+                # Cancellation propagates (CancelledError is a BaseException).
+                continue
+            if isinstance(row,dict):photos.append(row);break
+    else:
+        photos=await asyncio.gather(*(media(p) for p in selected),return_exceptions=True)
     return {'placeId':place_id,'title':text(data.get('displayName',{}).get('text')),
-        'sourceUrl':attribution_url(data.get('googleMapsUri')),
+        'sourceUrl':attribution_url(data.get('googleMapsUri')) or 'https://www.google.com/maps/search/?api=1&query=place&query_place_id='+place_id,
         'photos':[p for p in photos if isinstance(p,dict)],'availablePhotos':len(data.get('photos',[])),
         'cachePolicy':'no-store','attribution':'Google Maps','usage':'photo-candidate'}
 
@@ -96,12 +108,12 @@ async def candidates(client,pois):
     async def fetch(poi):
         async with slots:
             async with asyncio.timeout(12):
-                data=await place_photos(client,poi['id'],limit=2)
+                data=await place_photos(client,poi['id'],limit=2,first_usable=True)
         return [{**photo,'imageUrl':photo['photoReference'],'provider':'google-places-photos',
-            'title':data['title'],'lat':poi['lat'],'lon':poi['lon'],'poi':poi,'poiCandidates':[poi],
+            'title':poi.get('name') or data['title'],'lat':poi['lat'],'lon':poi['lon'],'poi':poi,'poiCandidates':[poi],
             'author':'; '.join(a['displayName'] for a in photo['authorAttributions']),
             'license':'Google Maps Platform terms','licenseUrl':'https://cloud.google.com/maps-platform/terms',
-            'sourceUrl':data['sourceUrl'],'cacheable':False,'viewHeadingDegrees':None,
+            'sourceUrl':poi.get('sourceUrl') or data['sourceUrl'],'cacheable':False,'viewHeadingDegrees':None,
             'description':'Contributor photo associated with this POI. Camera coordinates and direction are unknown; inspect the image for relevance.'}
             for photo in data['photos']]
     results=await asyncio.gather(*(fetch(p) for p in pois[:8] if str(p.get('id','')).startswith('google:')),return_exceptions=True)

@@ -24,7 +24,7 @@ current = ContextVar('photo_scout_task_spend', default=None)
 # USD per million tokens (Standard), and per provider call, before free tiers.
 RATES = {'gpt-6-astra':(10,1,50), 'gpt-6.1-sol':(2,.1,10), 'gpt-6-luna':(.1,.01,.5)}
 WRITE_RATES = {'gpt-6-astra':12.5,'gpt-6.1-sol':2.5,'gpt-6-luna':.125}
-CALL_RATES = {'places-text':.032, 'places-details-pro':.017, 'places-photo':.007, 'routes-essentials':.005,
+CALL_RATES = {'places-text':.032, 'places-details-pro':.017, 'places-details-ids':0, 'places-photo':.007, 'routes-essentials':.005,
               'streetview-tile-z0':.002, 'streetview-tile-z1':.002, 'static-streetview':.007}
 
 
@@ -103,7 +103,7 @@ def reserve_places_request():
 def reserve_photo_request(stage):
     context=current.get()
     if context is None:return
-    limits={'places-details-pro':8,'places-photo':16}
+    limits={'places-details-pro':8,'places-details-ids':8,'places-photo':16}
     count=context.counts.get(stage,0)
     if count>=limits[stage]:
         context.counts['places-photo-budget-reached']=True

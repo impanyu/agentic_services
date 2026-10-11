@@ -610,15 +610,17 @@ low tile-fetch estimate above does not establish permission to use those tiles
 for AI scoring or synthesis. Commercial AI-use economics require an authorized
 source/license; switching transport alone does not establish that permission.
 
-Places contributor photos are also accounted separately: current Details Pro
-fields ($0.017 per attempt) and photo media ($0.007) before allowances. Reuse fresh
+Places contributor photos are accounted separately. Photo lookup now requests
+only `id,photos`, the no-cost Details Essentials IDs Only SKU; it reuses the
+POI name and Maps link from discovery instead of asking for Pro fields again.
+Photo media remains $0.007 per successful billable request before allowances. Reuse fresh
 details and media responses within the job so scoring does not repeat discovery's
 paid requests. No photo names/media URLs are persisted across tasks. The text
 search cap is separate from these bounded (up to eight POIs, two photos each) calls.
 
 The whole job, including every route anchor, shares a separate Places photo cap
-of eight Details Pro and sixteen photo media requests (potential $0.248 before
-allowances). Reaching it can reduce contributor-photo coverage and sets
+of eight photo metadata lookups and sixteen photo media requests (potential
+$0.112 media cost before allowances). Reaching it can reduce contributor-photo coverage and sets
 `placesPhotoBudgetReached`; Street View and open-image retrieval still proceed.
 
 
@@ -672,3 +674,60 @@ inheritance and save rules remain unchanged. No Google request is needed per
 turn/zoom. Credits remain visible. Missing WebGL or a failed sphere request keeps
 the static-preview fallback; paid Google SDK loading still requires explicit opt-in.
 Late responses for a closed surface or another panorama cannot replace the scene.
+
+
+### Places request efficiency (October 10)
+
+Places category searches fetch their first pages concurrently. Pagination then
+counts distinct usable candidates inside the selected radius, not raw rows. It
+continues until the shared candidate target and each term's fair share are met,
+or the provider runs out of pages / the existing job request budget is reached.
+Duplicate and outside-radius pages still trigger further discovery. Distinct terms
+are retained; near-synonyms are not collapsed heuristically. Request sharing is
+scoped to one job and includes the entire page body/cursor. Provider status exposes
+`pagesFetched`, `queryPages`, and `paginationPolicy` where that source status is
+retained by the search program. A deterministic fixture compares the same ordered
+50 candidates against the prior round-robin algorithm while eliminating two unused
+third-page requests.
+
+Regional Places image sampling already retained only the first usable image at a
+POI (35 m spatial deduplication), despite requesting two photo media resources.
+It now fetches the first usable image and tries the second only if the first fails.
+Explicit photo probes and selected-photo previews keep their existing behavior.
+The photograph/name/link/author bindings and selector validation remain unchanged;
+no ephemeral photo names or media URLs are persisted. Image scoring, Street View
+quality, all eight headings, source eligibility and search candidate limits are
+unchanged. This is not a hard $0.30 budget or a quality-reducing early cutoff.
+
+Photo metadata uses `id,photos` only, which Google documents under Place Details
+Essentials IDs Only, with unlimited free usage. The prior `displayName` and
+`googleMapsUri` fields triggered Pro billing, though discovery already supplied them.
+References:
+https://developers.google.com/maps/documentation/places/web-service/place-details
+https://developers.google.com/maps/billing-and-pricing/pricing
+
+
+The three live follow-up searches completed with the following observed known
+Standard-list API estimates (no free quota deduction, no fixed hosting/payment
+fees, and no selfie generation):
+
+| Sample | Known estimate, USD | Places Text requests | Place media requests | Google tile requests | Ranked places |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| San Francisco, default 5 km | 0.298272 | 2 | 8 | 58 | 35 |
+| Chicago, architecture 20 km | 0.358144 | 3 | 8 | 70 | 41 |
+| San Francisco, walking route | 0.257359 | 4 | 3 | 38 | 2 |
+
+The known-cost mean is $0.304592, versus the earlier z1 projection of $0.497633.
+All observed Google tile counts match two tiles per eligible panorama, so the
+mean is not reduced by subtracting reused panorama downloads. Chicago had one
+failed intent call with missing usage; its unknown additional cost is excluded
+from the known subtotal and must not be represented as zero. The $0.30 mean target
+is therefore not yet confirmed achieved. Two samples are below it individually.
+Follow-ups reparse the input and use live providers, so comparisons of rankings
+and count are not a controlled recall/quality evaluation. The previous samples
+returned 35, 27 and 2 places respectively. Deterministic regressions validate
+retained candidate order, multi-category coverage, duplicate/out-of-radius
+pagination, photo selection/name/link binding, and next-photo failure fallback.
+The Photo Scout Python suite passes 378 tests. Run IDs for private accounting:
+`b02014f490274fd497092f85fe942528`, `10426a7e8b23411ba0a29c3866c76d7f`,
+`da69d9812bae45aface179b66374c3b2`.

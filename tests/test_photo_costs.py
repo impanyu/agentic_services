@@ -88,7 +88,7 @@ def test_places_photos_discovery_and_scoring_do_not_repeat_paid_calls(tmp_path,m
         discovered=await place_photos.place_photos(None,'abc',limit=2)
         await asyncio.gather(*(place_photos.place_photos(None,'abc',limit=1,
             selector=p['photoReference'].rsplit('/',1)[1]) for p in discovered['photos']))
-        assert costs.summary()['estimatedKnownUsd']==pytest.approx(.031)
+        assert costs.summary()['estimatedKnownUsd']==pytest.approx(.014)
     asyncio.run(run());assert len(calls)==3
     asyncio.run(run());assert len(calls)==6
 

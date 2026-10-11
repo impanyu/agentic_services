@@ -70,3 +70,67 @@ def test_mood_discovery_mapping_preserves_explicit_target():
     assert discovery_queries([],['artistic','waterside'])==['public art','waterfront promenades','street murals','lakeside parks']
     assert discovery_queries([],[],['museum'])==['museum']
     assert discovery_queries([],[])==['scenic places and tourist attractions']
+
+
+def test_multi_query_stops_after_shared_target_with_fair_category_coverage(monkeypatch):
+    import json
+    monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_API_KEY','fixture')
+    real=httpx.AsyncClient;calls=[]
+    def handler(request):
+        body=json.loads(request.content);calls.append(body)
+        prefix=body['textQuery'];start=20 if body.get('pageToken') else 0
+        return httpx.Response(200,json={'places':[
+            {'id':prefix+str(i),'displayName':{'text':prefix+str(i)},
+             'location':{'latitude':40+i*.00001,'longitude':-96}}
+            for i in range(start,start+20)],'nextPageToken':'second' if start==0 else 'third'})
+    monkeypatch.setattr(places.httpx,'AsyncClient',lambda **kw:real(transport=httpx.MockTransport(handler)))
+    rows,status=asyncio.run(places.nearby_places(40,-96,1000,['parks','gardens'],limit=30))
+    assert len(rows)==30 and len(calls)==2
+    assert sum(r['id'].startswith('google:parks') for r in rows)==15
+    assert sum(r['id'].startswith('google:gardens') for r in rows)==15
+    assert status['queryPages']=={'parks':1,'gardens':1}
+    rows,status=asyncio.run(places.nearby_places(40,-96,1000,['parks','gardens'],limit=50))
+    assert len(rows)==50 and status['pagesFetched']==4
+    assert sum(r['id'].startswith('google:parks') for r in rows)==25
+
+
+def test_pagination_continues_after_duplicate_and_outside_radius_pages(monkeypatch):
+    import json
+    monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_API_KEY','fixture')
+    real=httpx.AsyncClient;calls=[]
+    def handler(request):
+        body=json.loads(request.content);calls.append(body)
+        page=body.get('pageToken','first');prefix=body['textQuery']
+        if page=='first':
+            rows=[{'id':'shared'+str(i),'displayName':{'text':'Shared'},
+                   'location':{'latitude':40 if i<5 else 42,'longitude':-96}} for i in range(20)]
+        else:
+            start=20 if page=='second' else 40
+            rows=[{'id':prefix+str(i),'displayName':{'text':prefix},
+                   'location':{'latitude':40,'longitude':-96}} for i in range(start,start+20)]
+        return httpx.Response(200,json={'places':rows,**({'nextPageToken':'second' if page=='first' else 'third'} if page!='third' else {})})
+    monkeypatch.setattr(places.httpx,'AsyncClient',lambda **kw:real(transport=httpx.MockTransport(handler)))
+    rows,status=asyncio.run(places.nearby_places(40,-96,1000,['parks','gardens'],limit=50))
+    assert len(rows)==50 and len({r['id'] for r in rows})==50
+    assert status['pagesFetched']==6
+    assert all(r['lat']==40 for r in rows)
+
+
+def test_optimized_pages_preserve_legacy_round_robin_selected_candidates(monkeypatch):
+    import json
+    monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_API_KEY','fixture')
+    real=httpx.AsyncClient;calls=[]
+    def row(prefix,i):
+        return {'id':prefix+str(i),'displayName':{'text':prefix+str(i)},
+                'location':{'latitude':40+i*.00001,'longitude':-96}}
+    def handler(request):
+        body=json.loads(request.content);calls.append(body)
+        start={'first':0,'second':20,'third':40}[body.get('pageToken','first')]
+        return httpx.Response(200,json={'places':[row(body['textQuery'],i) for i in range(start,start+20)],
+            **({'nextPageToken':'second' if start==0 else 'third'} if start<40 else {})})
+    monkeypatch.setattr(places.httpx,'AsyncClient',lambda **kw:real(transport=httpx.MockTransport(handler)))
+    rows,status=asyncio.run(places.nearby_places(40,-96,1000,['parks','gardens'],limit=50))
+    # Legacy fetched 3 pages for EACH term then interleaved/truncated the same 50.
+    expected=['google:'+prefix+str(i) for i in range(25) for prefix in ['parks','gardens']]
+    assert [r['id'] for r in rows]==expected
+    assert len(calls)==4 # Two unused third pages eliminated, same selected set/order.

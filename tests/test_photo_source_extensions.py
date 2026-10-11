@@ -43,6 +43,8 @@ def test_place_photos_fetches_fresh_names_and_retains_authorship_without_leaking
         calls.append(req)
         assert req.headers['X-Goog-Api-Key']=='secret-test-key'
         assert 'secret-test-key' not in str(req.url)
+        if not req.url.path.endswith('/media'):
+            assert req.headers['X-Goog-FieldMask']=='id,photos'
         if req.url.path.endswith('/media'):
             assert req.url.params['skipHttpRedirect']=='true'
             return httpx.Response(200,json={'photoUri':'https://lh3.googleusercontent.com/valid'})
@@ -162,3 +164,27 @@ def test_photo_selector_survives_resource_rotation_but_rejects_ambiguity(monkeyp
         async with httpx.AsyncClient(transport=httpx.MockTransport(ambiguous)) as c:
             return await place_photos.place_photos(c,'abc',selector=selector)
     assert asyncio.run(run_ambiguous())['photos']==[]
+
+
+def test_regional_photo_downloads_only_retained_image_with_failure_fallback(monkeypatch):
+    monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_API_KEY','test')
+    calls=[];fail_first=False
+    async def get_json(client,url,params=None,headers=None):
+        calls.append(url)
+        if url.endswith('/abc'):
+            assert headers['X-Goog-FieldMask']=='id,photos'
+            return {'id':'abc','photos':[
+                {'name':'places/abc/photos/'+str(i),'widthPx':400+i,'heightPx':300}
+                for i in range(2)]}
+        if fail_first and '/0/media' in url:raise ValueError('Temporary media failure')
+        return {'photoUri':'https://lh3.googleusercontent.com/image'}
+    monkeypatch.setattr(place_photos,'get_json',get_json)
+    poi={'id':'google:abc','name':'Original name','lat':40,'lon':-96,
+         'sourceUrl':'https://www.google.com/maps/search/?api=1&query_place_id=abc'}
+    rows=asyncio.run(place_photos.candidates(None,[poi]))
+    assert len(rows)==1 and len(calls)==2
+    assert rows[0]['title']=='Original name' and rows[0]['sourceUrl']==poi['sourceUrl']
+    calls.clear();fail_first=True
+    rows=asyncio.run(place_photos.candidates(None,[poi]))
+    assert len(rows)==1 and len(calls)==3
+    assert rows[0]['id']!='' and rows[0]['poi']==poi
