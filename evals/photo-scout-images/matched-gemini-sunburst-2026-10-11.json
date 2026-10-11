@@ -1,0 +1,315 @@
+{
+  "date": "2026-10-11",
+  "scope": "Isolated matched generation API tests; production unchanged",
+  "resolution": "1024x1024",
+  "concurrencyPerProvider": 2,
+  "automaticRetries": false,
+  "cases": 4,
+  "sourceBackgrounds": 2,
+  "results": {
+    "vertex": [
+      {
+        "case": "plaza-cartoon",
+        "provider": "vertex",
+        "model": "gemini-nano-banana-2.1",
+        "size": "1K",
+        "subjectSha256": "664084639bcdff7f442b391baa36706ca1448436babbdba68be50065e9497ca4",
+        "backgroundSha256": "01a8f5e3900b9044f1d73eb95641263a16fa164129ed8364353acc76ba3b40d0",
+        "promptSha256": "5f951a35d5fb7f21dcfa5810638b556d36c9b53116311b6c89319c79045bbfa7",
+        "httpStatus": 200,
+        "requestId": "HsbLat3_EcGD3dAPg5OLoAk",
+        "finishReasons": [
+          "STOP"
+        ],
+        "usage": {
+          "promptTokenCount": 4383,
+          "candidatesTokenCount": 1120,
+          "totalTokenCount": 5503,
+          "trafficType": "ON_DEMAND",
+          "promptTokensDetails": [
+            {
+              "modality": "IMAGE",
+              "tokenCount": 2240
+            },
+            {
+              "modality": "TEXT",
+              "tokenCount": 2143
+            }
+          ],
+          "candidatesTokensDetails": [
+            {
+              "modality": "IMAGE",
+              "tokenCount": 1120
+            }
+          ]
+        },
+        "estimatedUsd": 0.040175,
+        "promptFeedback": {},
+        "state": "complete",
+        "outputFile": "1-gemini-nano-banana-2.1.png",
+        "dimensions": [
+          1024,
+          1024
+        ],
+        "seconds": 18.166
+      },
+      {
+        "case": "waterfront-real",
+        "provider": "vertex",
+        "model": "gemini-nano-banana-2.1",
+        "size": "1K",
+        "subjectSha256": "38d6dbffea9506039f2d413794c827983bbbc12628675e0d2454ea5a7d5cc9b9",
+        "backgroundSha256": "e50dd10015e3d4a4bade3a21240f65d9ac8eabb4f265b59dcea5c870197d3322",
+        "promptSha256": "3a2a400ccae21d681818156f2cbb791b7fc3b5888be552693ebf04f223df7d98",
+        "httpStatus": 200,
+        "requestId": "HsbLasSmE8GD3dAPg5OLoAk",
+        "finishReasons": [
+          "STOP"
+        ],
+        "usage": {
+          "promptTokenCount": 4539,
+          "candidatesTokenCount": 1120,
+          "totalTokenCount": 5659,
+          "trafficType": "ON_DEMAND",
+          "promptTokensDetails": [
+            {
+              "modality": "TEXT",
+              "tokenCount": 2299
+            },
+            {
+              "modality": "IMAGE",
+              "tokenCount": 2240
+            }
+          ],
+          "candidatesTokensDetails": [
+            {
+              "modality": "IMAGE",
+              "tokenCount": 1120
+            }
+          ]
+        },
+        "estimatedUsd": 0.040408,
+        "promptFeedback": {},
+        "state": "complete",
+        "outputFile": "0-gemini-nano-banana-2.1.png",
+        "dimensions": [
+          1024,
+          1024
+        ],
+        "seconds": 19.111
+      },
+      {
+        "case": "waterfront-animal",
+        "provider": "vertex",
+        "model": "gemini-nano-banana-2.1",
+        "size": "1K",
+        "subjectSha256": "000ee4d3212e81f0275d84a970b49415fec4c7edae336d80b6bd0477029df201",
+        "backgroundSha256": "e50dd10015e3d4a4bade3a21240f65d9ac8eabb4f265b59dcea5c870197d3322",
+        "promptSha256": "3a2a400ccae21d681818156f2cbb791b7fc3b5888be552693ebf04f223df7d98",
+        "httpStatus": 200,
+        "requestId": "McbLaua6C4-x3dAPltuh2Qc",
+        "finishReasons": [
+          "STOP"
+        ],
+        "usage": {
+          "promptTokenCount": 4539,
+          "candidatesTokenCount": 1120,
+          "totalTokenCount": 5659,
+          "trafficType": "ON_DEMAND",
+          "promptTokensDetails": [
+            {
+              "modality": "IMAGE",
+              "tokenCount": 2240
+            },
+            {
+              "modality": "TEXT",
+              "tokenCount": 2299
+            }
+          ],
+          "candidatesTokensDetails": [
+            {
+              "modality": "IMAGE",
+              "tokenCount": 1120
+            }
+          ]
+        },
+        "estimatedUsd": 0.040408,
+        "promptFeedback": {},
+        "state": "complete",
+        "outputFile": "3-gemini-nano-banana-2.1.png",
+        "dimensions": [
+          1024,
+          1024
+        ],
+        "seconds": 20.789
+      },
+      {
+        "case": "plaza-real-female",
+        "provider": "vertex",
+        "model": "gemini-nano-banana-2.1",
+        "size": "1K",
+        "subjectSha256": "2bcb826f4ae2987932dd508b08db286729d31a9a7bb2551853029b9b6fd4b8ca",
+        "backgroundSha256": "01a8f5e3900b9044f1d73eb95641263a16fa164129ed8364353acc76ba3b40d0",
+        "promptSha256": "5f951a35d5fb7f21dcfa5810638b556d36c9b53116311b6c89319c79045bbfa7",
+        "httpStatus": 200,
+        "requestId": "MMbLauSAELmD3dAPraXdoQU",
+        "finishReasons": [
+          "STOP"
+        ],
+        "usage": {
+          "promptTokenCount": 4383,
+          "candidatesTokenCount": 1120,
+          "totalTokenCount": 5503,
+          "trafficType": "ON_DEMAND",
+          "promptTokensDetails": [
+            {
+              "modality": "TEXT",
+              "tokenCount": 2143
+            },
+            {
+              "modality": "IMAGE",
+              "tokenCount": 2240
+            }
+          ],
+          "candidatesTokensDetails": [
+            {
+              "modality": "IMAGE",
+              "tokenCount": 1120
+            }
+          ]
+        },
+        "estimatedUsd": 0.040175,
+        "promptFeedback": {},
+        "state": "complete",
+        "outputFile": "2-gemini-nano-banana-2.1.png",
+        "dimensions": [
+          1024,
+          1024
+        ],
+        "seconds": 22.493
+      }
+    ],
+    "sunburst": [
+      {
+        "case": "waterfront-real",
+        "model": "gpt-image-2.5-sunburst",
+        "quality": "high",
+        "size": "1024x1024",
+        "subjectSha256": "38d6dbffea9506039f2d413794c827983bbbc12628675e0d2454ea5a7d5cc9b9",
+        "backgroundSha256": "e50dd10015e3d4a4bade3a21240f65d9ac8eabb4f265b59dcea5c870197d3322",
+        "promptSha256": "3a2a400ccae21d681818156f2cbb791b7fc3b5888be552693ebf04f223df7d98",
+        "state": "complete",
+        "usage": {
+          "input_tokens": 4882,
+          "input_tokens_details": {
+            "image_tokens": 2560,
+            "text_tokens": 2322
+          },
+          "output_tokens": 1756,
+          "total_tokens": 6638,
+          "output_tokens_details": {
+            "image_tokens": 1756,
+            "text_tokens": 0
+          }
+        },
+        "estimatedUsd": 0.08477,
+        "outputFile": "0-gpt-image-2.5-sunburst-high.png",
+        "requestId": "req_850477f8ccf44a0898407d1276f802be",
+        "seconds": 39.24
+      },
+      {
+        "case": "plaza-cartoon",
+        "model": "gpt-image-2.5-sunburst",
+        "quality": "high",
+        "size": "1024x1024",
+        "subjectSha256": "664084639bcdff7f442b391baa36706ca1448436babbdba68be50065e9497ca4",
+        "backgroundSha256": "01a8f5e3900b9044f1d73eb95641263a16fa164129ed8364353acc76ba3b40d0",
+        "promptSha256": "5f951a35d5fb7f21dcfa5810638b556d36c9b53116311b6c89319c79045bbfa7",
+        "state": "complete",
+        "usage": {
+          "input_tokens": 3715,
+          "input_tokens_details": {
+            "image_tokens": 1544,
+            "text_tokens": 2171
+          },
+          "output_tokens": 1756,
+          "total_tokens": 5471,
+          "output_tokens_details": {
+            "image_tokens": 1756,
+            "text_tokens": 0
+          }
+        },
+        "estimatedUsd": 0.075887,
+        "outputFile": "1-gpt-image-2.5-sunburst-high.png",
+        "requestId": "req_b59f18c40d3343a892a3d5a92629340f",
+        "seconds": 40.304
+      },
+      {
+        "case": "waterfront-animal",
+        "model": "gpt-image-2.5-sunburst",
+        "quality": "high",
+        "size": "1024x1024",
+        "subjectSha256": "000ee4d3212e81f0275d84a970b49415fec4c7edae336d80b6bd0477029df201",
+        "backgroundSha256": "e50dd10015e3d4a4bade3a21240f65d9ac8eabb4f265b59dcea5c870197d3322",
+        "promptSha256": "3a2a400ccae21d681818156f2cbb791b7fc3b5888be552693ebf04f223df7d98",
+        "state": "complete",
+        "usage": {
+          "input_tokens": 4882,
+          "input_tokens_details": {
+            "image_tokens": 2560,
+            "text_tokens": 2322
+          },
+          "output_tokens": 1756,
+          "total_tokens": 6638,
+          "output_tokens_details": {
+            "image_tokens": 1756,
+            "text_tokens": 0
+          }
+        },
+        "estimatedUsd": 0.08477,
+        "outputFile": "3-gpt-image-2.5-sunburst-high.png",
+        "requestId": "req_fae4889a9ede490daa0c490b1156a72b",
+        "seconds": 37.072
+      },
+      {
+        "case": "plaza-real-female",
+        "model": "gpt-image-2.5-sunburst",
+        "quality": "high",
+        "size": "1024x1024",
+        "subjectSha256": "2bcb826f4ae2987932dd508b08db286729d31a9a7bb2551853029b9b6fd4b8ca",
+        "backgroundSha256": "01a8f5e3900b9044f1d73eb95641263a16fa164129ed8364353acc76ba3b40d0",
+        "promptSha256": "5f951a35d5fb7f21dcfa5810638b556d36c9b53116311b6c89319c79045bbfa7",
+        "state": "complete",
+        "usage": {
+          "input_tokens": 4731,
+          "input_tokens_details": {
+            "image_tokens": 2560,
+            "text_tokens": 2171
+          },
+          "output_tokens": 1756,
+          "total_tokens": 6487,
+          "output_tokens_details": {
+            "image_tokens": 1756,
+            "text_tokens": 0
+          }
+        },
+        "estimatedUsd": 0.084015,
+        "outputFile": "2-gpt-image-2.5-sunburst-high.png",
+        "requestId": "req_483801edcc9e4eb4acce197fab6cda74",
+        "seconds": 39.532
+      }
+    ]
+  },
+  "averages": {
+    "vertex": {
+      "seconds": 20.13975,
+      "estimatedUsd": 0.0402915,
+      "complete": 4
+    },
+    "sunburst": {
+      "seconds": 39.037,
+      "estimatedUsd": 0.0823605,
+      "complete": 4
+    }
+  }
+}

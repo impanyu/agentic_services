@@ -4,7 +4,29 @@ Two controlled input cases were submitted to the direct Images edit API with the
 
 The cases are an Einstein-style preset avatar on a waterfront terrace and the existing SpongeBob preset in the Chengdu panda-sculpture plaza. They do not represent general customer uploads, groups, animals, all lighting conditions, or a production latency distribution. PNG outputs and the source images are local comparison artifacts; no private user portraits were used.
 
-## Fresh measured results
+## Expanded matched comparison: Gemini vs current Sunburst high
+
+On the user's request, Seedream is deferred. Four controlled cases were freshly run on **both** Gemini Nano Banana 2.1 and Sunburst high: Einstein at the waterfront, SpongeBob at the Chengdu panda plaza, a Lise Meitner preset at that plaza, and a Peter Rabbit preset at the waterfront. There are four distinct subject inputs but only two backgrounds. Each pair has identical subject, background and production-prompt SHA-256 hashes, 1024-square output, original weather and full-body composition. Calls were made during the same benchmark round with at most two concurrent calls per provider, with no retries. All eight requests returned images. This is not a general success-rate estimate or a production load test.
+
+| Case | Sunburst high API time / edit cost | Nano Banana 2.1 API time / edit cost |
+|---|---:|---:|
+| Waterfront / Einstein | 39.240 s / $0.084770 | 19.111 s / $0.040408 |
+| Panda plaza / SpongeBob | 40.304 s / $0.075887 | 18.166 s / $0.040175 |
+| Panda plaza / Lise Meitner | 39.532 s / $0.084015 | 22.493 s / $0.040175 |
+| Waterfront / Peter Rabbit | 37.072 s / $0.084770 | 20.789 s / $0.040408 |
+| **Four-case mean** | **39.037 s / $0.082361** | **20.140 s / $0.040292** |
+
+In this round Gemini used approximately **48.4% less generation time and 51.1% less generation cost**. Cost is estimated from actual returned usage and official standard rates, including prompt text, both image inputs, and output. It is not merely the advertised image-output price. Times exclude queueing, subject validation, background retrieval/analysis and delivery; these remain separate stages. This experiment does not establish the full application's Gemini latency or costs. Test-call cost total is $0.490608 for eight successful generations; independent reviewer calls are separate research expense, not runtime composition cost.
+
+Direct inspection found a consistent tradeoff: Gemini retained source camera framing and architecture placement more closely, while Sunburst sharpened/reconstructed the scene more aggressively. Sunburst's plaza real-person output changed the panda's proportions and cropped the central tower differently. Both models kept a panda sculpture, but neither reliably preserved its exact contours. Gemini retained more background softness and had weaker subject grounding, including a detached-looking shadow in the SpongeBob result and an underscaled woman beside the plaza crowd. Sunburst generally produced more convincing contact/shadows, but this does not compensate for fixed-landmark changes.
+
+A separate GPT-6.1 Sol reviewer received source references and outputs labelled A/B, with provider order alternating by case and no model/price labels. Across these four cases, it rated background fidelity at 3.5/5 for Gemini versus 2.5/5 for Sunburst, and lighting/contact at 2.75/5 versus 4.0/5. Those findings support the visual tradeoff above, but one automated reviewer is not an objective quality ranking. Detailed observations, labels and returned review usage are retained in `evals/photo-scout-images/matched-gemini-review-2026-10-11.json`.
+
+**Decision:** Gemini is a serious cost/speed candidate, but these results do not justify a quality-equivalent default replacement yet. Production remains Sunburst high. Keep Gemini as the next candidate for explicit user review and a provider integration/quality gate; do not add automatic paid retries or regenerate every image with two providers. A stronger landmark/scale/lighting preservation check is needed regardless of provider. Groups, user-upload photos with their own backgrounds, night scenes and other weather remain untested.
+
+Raw results: `evals/photo-scout-images/matched-gemini-sunburst-2026-10-11.json`. Full-resolution side-by-side page: `/tmp/photo-scout-expanded-comparison.html`; overview image: `/tmp/photo-scout-expanded-comparison.jpg`. No customer portraits were used; the images come from existing system presets. Three provider benchmark offline tests passed, including exact reference order/prompt and Gemini usage pricing. Production code/configuration was not changed.
+
+## Earlier Sunburst tier comparison
 
 | Case | Model | Quality | Generation API time | Estimated successful edit cost | Outcome |
 |---|---|---|---:|---:|---|

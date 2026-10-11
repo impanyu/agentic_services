@@ -1,0 +1,210 @@
+{
+  "reviewer": "gpt-6.1-sol",
+  "method": "One blinded A/B reviewer per case with alternating provider order; not objective or human-rated quality equivalence",
+  "results": [
+    {
+      "case": "waterfront-real",
+      "mapping": {
+        "A": "sunburst-high",
+        "B": "nano-banana-2.1"
+      },
+      "review": {
+        "results": [
+          {
+            "label": "A",
+            "subject_identity": 4,
+            "lighting_and_contact": 4,
+            "background_fidelity": 2,
+            "anatomy": 5,
+            "serious_defects": [
+              "The setting is reconstructed rather than faithfully retained: the building is taller in the frame, its facade details change, and the foreground planter moves substantially left.",
+              "The waterfront railing's structure and post spacing are replaced, changing fixed scene geometry."
+            ],
+            "observations": "The subject retains the distinctive white hair, mustache, facial character, three-piece suit, pocket chain and hands-in-pockets pose, though the face is somewhat softened and reinterpreted. Limbs and shoes are coherent. Bright hair and shoulder edging fits the upper-left sun, and the shoes have convincing ground contact with a substantial cast shadow. No studio-background leakage is apparent. However, sharpening does not explain the altered building proportions and position, shifted planters, or redesigned railing; the background is materially different from the supplied view."
+          },
+          {
+            "label": "B",
+            "subject_identity": 4,
+            "lighting_and_contact": 3,
+            "background_fidelity": 4,
+            "anatomy": 5,
+            "serious_defects": [
+              "The subject lacks a convincing extended cast shadow under the strong direct sun, despite prominent shadows from nearby scene objects."
+            ],
+            "observations": "The building, sun, cloud band, bridge, waterfront and foreground planter closely follow the source positions and camera viewpoint. Some railing detail and rooftop features appear reconstructed, but the overall fixed geometry is substantially retained. The subject preserves the recognizable face, mustache, white hair, clothing and pocket chain, although the hair is smoother and less wispy than the source. Body proportions, pocketed arms and shoes are anatomically sound. The shoes sit on the pavement, but their dark contact patches do not substitute for the expected directional shadow; the relatively flat studio-like illumination also makes the subject look pasted into the sunlit setting. No obvious source-background leakage is visible."
+          }
+        ]
+      },
+      "seconds": 16.83,
+      "usage": {
+        "input_tokens": 5000,
+        "input_tokens_details": {
+          "cache_write_tokens": 4997,
+          "cached_tokens": 0
+        },
+        "output_tokens": 615,
+        "output_tokens_details": {
+          "reasoning_tokens": 160
+        },
+        "total_tokens": 5615
+      }
+    },
+    {
+      "case": "plaza-cartoon",
+      "mapping": {
+        "A": "nano-banana-2.1",
+        "B": "sunburst-high"
+      },
+      "review": {
+        "results": [
+          {
+            "label": "A",
+            "subject_identity": 5,
+            "lighting_and_contact": 2,
+            "background_fidelity": 3,
+            "anatomy": 5,
+            "serious_defects": [
+              "The broad, detached-looking shadow beneath and in front of the shoes makes the subject appear to float rather than stand firmly on the pavement.",
+              "The background is reconstructed rather than faithfully retained: the foreground white-shirted child disappears, and the fixed panda sculpture's face and body contours change."
+            ],
+            "observations": "The cartoon closely preserves the source's blue eyes, eyelashes, freckles, two teeth, open mouth, sponge holes, clothing, and bent-arm pose. Limbs and shoes remain coherent, with no obvious source-background leakage. Placement is reasonably scaled beside nearby visitors, but the flat, bright subject lacks convincing environmental shading. The towers, blue restaurant sign, pool, and general viewpoint remain recognizable; crowd positions and some railing details are altered."
+          },
+          {
+            "label": "B",
+            "subject_identity": 4,
+            "lighting_and_contact": 4,
+            "background_fidelity": 3,
+            "anatomy": 5,
+            "serious_defects": [
+              "The fixed panda landmark is remodeled, with a more faceted muzzle and altered facial and body contours.",
+              "The background changes substantial scene content: the left foreground visitor's pose and position, the blue-dressed child's position, railing details, and foreground crowd arrangement are not preserved."
+            ],
+            "observations": "The subject retains distinctive blue eyes, eyelashes, freckles, front teeth, sponge texture, and clothing, although the raised thumbs-up replaces the source arm pose and facial proportions are redrawn. Arms, fingers, legs, and shoes are coherent. Shoe contact and a directional pavement shadow provide more believable grounding, though the glossy highlights and stronger sunlight exceed the source's relatively diffuse lighting. The larger foreground scale is plausible. Major buildings, restaurant signage, pool location, and broad camera viewpoint remain recognizable, but increased sharpness does not undo the scene reconstruction."
+          }
+        ]
+      },
+      "seconds": 13.51,
+      "usage": {
+        "input_tokens": 3486,
+        "input_tokens_details": {
+          "cache_write_tokens": 3483,
+          "cached_tokens": 0
+        },
+        "output_tokens": 506,
+        "output_tokens_details": {
+          "reasoning_tokens": 112
+        },
+        "total_tokens": 3992
+      }
+    },
+    {
+      "case": "plaza-real-female",
+      "mapping": {
+        "A": "sunburst-high",
+        "B": "nano-banana-2.1"
+      },
+      "review": {
+        "results": [
+          {
+            "label": "A",
+            "subject_identity": 4,
+            "lighting_and_contact": 4,
+            "background_fidelity": 2,
+            "anatomy": 4,
+            "serious_defects": [
+              "The fixed panda sculpture is remodeled: its head is larger and more tilted, with altered eye patches, muzzle and body silhouette.",
+              "The background is reconstructed rather than preserved. The central tower extends beyond the top edge, architectural proportions change, and the pool railing, steps and pavement geometry are redrawn.",
+              "Several source pedestrians are removed or repositioned, including the central pink-shirted and backpack-wearing figures."
+            ],
+            "observations": "The woman retains her recognizable gray swept-back hair, mature facial features, charcoal suit, white tied blouse and clasped-hand pose, although her face is slightly smoothed and reshaped. Her limbs and shoes are coherent, with no obvious broken anatomy or studio-background leakage. Shoe contact and a soft pavement shadow make placement reasonably believable, though her portrait-like facial illumination is somewhat cleaner than the surrounding crowd. The sharper rendering does not compensate for substantial changes to the supplied setting and fixed sculpture."
+          },
+          {
+            "label": "B",
+            "subject_identity": 4,
+            "lighting_and_contact": 3,
+            "background_fidelity": 3,
+            "anatomy": 4,
+            "serious_defects": [
+              "The subject is conspicuously underscaled relative to nearby pedestrians: despite standing farther forward, her head and body are substantially smaller.",
+              "The panda sculpture's facial geometry, eye patches and visible body contours are changed rather than faithfully retained.",
+              "Background content is altered, including removal of the blue-dressed girl and nearby pink-bloused woman, changes to the left building's signage, and reconstructed railing and paving details."
+            ],
+            "observations": "The woman's hairstyle, age cues, suit, blouse and clasped hands remain recognizable, with modest facial simplification. Her arms, legs and footwear look anatomically coherent. Both shoes appear to meet the pavement, but the weak localized shadow and markedly small scale make her feel inserted rather than fully integrated. This image retains more of the source's cloudy light, tower placement, central crowd arrangement and foreground sandals, but it still regenerates landmark details and portions of the scene instead of preserving the original pixels."
+          }
+        ]
+      },
+      "seconds": 15.41,
+      "usage": {
+        "input_tokens": 5173,
+        "input_tokens_details": {
+          "cache_write_tokens": 5170,
+          "cached_tokens": 0
+        },
+        "output_tokens": 593,
+        "output_tokens_details": {
+          "reasoning_tokens": 81
+        },
+        "total_tokens": 5766
+      }
+    },
+    {
+      "case": "waterfront-animal",
+      "mapping": {
+        "A": "nano-banana-2.1",
+        "B": "sunburst-high"
+      },
+      "review": {
+        "results": [
+          {
+            "label": "A",
+            "subject_identity": 5,
+            "lighting_and_contact": 3,
+            "background_fidelity": 4,
+            "anatomy": 5,
+            "serious_defects": [],
+            "observations": "Preserves the rabbit's distinctive asymmetric ears, glossy eyes, muzzle, whiskers, blue coat, three gold buttons and original pose. Both paws and feet are intact, with no visible source-background leakage. The sun, cloud bank, waterfront, planters and right-hand building remain closely aligned with the source viewpoint. Some railing detail appears reconstructed rather than simply sharpened. The feet have a dark grounding shadow, but the rabbit remains evenly front-lit despite the strong sun behind and to its left; its soft shadow is less convincing than the pronounced directional shadows of nearby posts and plants."
+          },
+          {
+            "label": "B",
+            "subject_identity": 5,
+            "lighting_and_contact": 4,
+            "background_fidelity": 3,
+            "anatomy": 5,
+            "serious_defects": [
+              "The setting is reconstructed with changed landmark geometry and framing: the building's facade proportions and openings differ, and the waterfront railing's bar layout and post spacing are altered.",
+              "The source viewpoint is not faithfully retained: the sun and waterfront horizon sit higher, and the relative positions and apparent sizes of the building and foreground planter change."
+            ],
+            "observations": "Faithfully retains the rabbit's facial features, ear shapes, textured illustration style, coat details and pose; limbs and feet are coherent. A directional ground shadow extends toward the lower right and connects reasonably to the feet, although the rabbit's face and chest remain brighter and more evenly lit than expected under backlighting. No unwanted source-background halo is apparent. The clearer pavement, water and architecture do not compensate for the altered setting: cloud shapes, building details, railing geometry and scene framing depart from the supplied background."
+          }
+        ]
+      },
+      "seconds": 15.99,
+      "usage": {
+        "input_tokens": 5000,
+        "input_tokens_details": {
+          "cache_write_tokens": 4997,
+          "cached_tokens": 0
+        },
+        "output_tokens": 594,
+        "output_tokens_details": {
+          "reasoning_tokens": 168
+        },
+        "total_tokens": 5594
+      }
+    }
+  ],
+  "meanScoresOutOf5": {
+    "sunburst-high": {
+      "subject_identity": 4.25,
+      "lighting_and_contact": 4,
+      "background_fidelity": 2.5,
+      "anatomy": 4.75
+    },
+    "nano-banana-2.1": {
+      "subject_identity": 4.5,
+      "lighting_and_contact": 2.75,
+      "background_fidelity": 3.5,
+      "anatomy": 4.75
+    }
+  }
+}
