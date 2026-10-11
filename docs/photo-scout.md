@@ -731,3 +731,30 @@ pagination, photo selection/name/link binding, and next-photo failure fallback.
 The Photo Scout Python suite passes 378 tests. Run IDs for private accounting:
 `b02014f490274fd497092f85fe942528`, `10426a7e8b23411ba0a29c3866c76d7f`,
 `da69d9812bae45aface179b66374c3b2`.
+
+### End-to-end latency audit (2026-10-10)
+
+The eight latest completed searches before this change recorded retrieval of
+1.188–4.688 seconds and image download/scoring of 16.004–56.038 seconds.
+These legacy totals exclude website planning and queue time. They are not
+end-to-end customer latency measurements.
+
+Website reports now include `planningSeconds`, `pipelineSeconds` (planning
+through completion), and `queueSeconds`; direct execution reports retain
+`totalSeconds` and add planning time. Cost accounting includes model-call latency
+by stage (`calls`, summed duration, maximum duration). Parallel call durations
+overlap: their sum must not be treated as wall time. Portrait task context stores
+its accounting and processing/queue duration after completion or generation failure.
+
+This pass increases concurrent scoring batches from 12 to 16, reads valid cached
+assessments in bulk, and loads available portrait FOV projections concurrently
+while preserving their order. Candidate limits, eight headings, resolution,
+model selection, eligibility rules, and Max portrait quality remain unchanged.
+
+A separate controlled scoring check reused identical downloaded bytes for 16
+views, with score reuse disabled. The existing output instructions took 22.283s
+and $0.003253; a concise variant took 22.703s and $0.003474. Both returned all 16
+assessments. The variant was rejected and is **not** shipped. This single sample
+does not establish a general latency distribution or a quality guarantee.
+The <=10s average search target remains unverified; further work needs production
+stage measurements and representative planner/scoring/image-model comparisons.

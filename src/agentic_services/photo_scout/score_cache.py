@@ -45,15 +45,25 @@ class ScoreCache:
         return hashlib.sha256(json.dumps(data, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
 
     def get(self, key):
+        return self.get_many([key]).get(key)
+
+    def get_many(self, keys):
+        """Read one request's assessments together instead of opening per view."""
         if not self.enabled:
-            return None
+            return {}
         try:
+            found={};keys=list(dict.fromkeys(keys));now=time.time()
             with sqlite3.connect(self.path, timeout=15) as db:
-                row = db.execute('SELECT assessment FROM photo_scout_score_cache WHERE cache_key=? AND expires>?', (key, time.time())).fetchone()
-            return json.loads(row[0]) if row else None
+                for offset in range(0,len(keys),500):
+                    chunk=keys[offset:offset+500]
+                    rows=db.execute('SELECT cache_key,assessment FROM photo_scout_score_cache WHERE expires>? AND cache_key IN ('+','.join('?' for _ in chunk)+')',(now,*chunk)).fetchall()
+                    for key,value in rows:
+                        try:found[key]=json.loads(value)
+                        except ValueError:continue
+            return found
         except (sqlite3.Error, ValueError) as error:
             self.disable(error)
-            return None
+            return {}
 
     def put(self, entries):
         if not self.enabled or not entries:

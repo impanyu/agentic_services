@@ -18,6 +18,7 @@ class TaskSpend:
     id: str = field(default_factory=lambda: uuid.uuid4().hex)
     counts: dict = field(default_factory=dict)
     requests: dict = field(default_factory=dict)
+    latencies: dict = field(default_factory=dict)
 
 
 current = ContextVar('photo_scout_task_spend', default=None)
@@ -79,11 +80,16 @@ def record(stage, model='', usage=None, status='success', quantity=1):
 
 
 async def observe(stage, model, operation):
+    started = time.monotonic()
     try:
         response = await operation
     except Exception:
         record(stage, model, status='failed-usage-unknown')
         raise
+    finally:
+        context = current.get()
+        if context is not None:
+            context.latencies.setdefault(stage, []).append(time.monotonic()-started)
     record(stage, model, getattr(response, 'usage', None))
     return response
 
@@ -134,6 +140,8 @@ def summary():
                 'unknownCostEvents':sum(r[3] for r in rows),
                 'placesBudgetReached':bool(context.counts.get('places-budget-reached')),
                 'placesPhotoBudgetReached':bool(context.counts.get('places-photo-budget-reached')),
+                'modelLatencySeconds':{stage:{'calls':len(values),'sum':round(sum(values),3),'max':round(max(values),3)}
+                                       for stage,values in context.latencies.items()},
                 'stages':[{'stage':s,'requests':n,'estimatedUsd':None if unknown else round(cost or 0,6),
                            'unknownCostEvents':unknown} for s,n,cost,unknown in rows]}
     except sqlite3.Error:

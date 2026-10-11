@@ -455,6 +455,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
             if not parsed and (payload.query.strip() or not (payload.searchProgram or payload.searchBranches or payload.selectedPoiIds is not None)):
                 payload,plan=await interpret_search(payload)
                 if payload is None:return intent_feedback(plan)
+            planning_seconds=time.monotonic()-started
             retrieval_started=time.monotonic()
             async def before_score(images):
                 nonlocal retrieval_seconds,scoring_started
@@ -516,7 +517,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
                 rows,statuses,pois=await catalog(payload,allow_expired)
                 await before_score(Images(rows,statuses,pois,visual_exploration(payload)))
                 result=await explore(settings,payload,rows,statuses)
-            result['timings']={'retrievalSeconds':round(retrieval_seconds,3),'scoringSeconds':round(time.monotonic()-scoring_started,3),'totalSeconds':round(time.monotonic()-started,3)}
+            result['timings']={'planningSeconds':round(planning_seconds,3),'retrievalSeconds':round(retrieval_seconds,3),'scoringSeconds':round(time.monotonic()-scoring_started,3),'totalSeconds':round(time.monotonic()-started,3)}
             assessed={p['poi']['id'] for p in result.get('poiResults',[]) if p.get('poi')}
             result.setdefault('poiResults',[]).extend({'poi':p,'name':p['name'],'score':None,
                 'assessmentStatus':'no_verified_view','viewHeadingDegrees':None,
@@ -634,12 +635,14 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
         job=store.claim_preview()
         if not job: return False
         context={}
+        task_started=time.monotonic();planning_seconds=0
         try:
             submitted=current_website_task(SearchTaskRequest.model_validate_json(job['payload']))
             context=tasks.context('search',job['id']) or submitted.model_dump()
             if submitted.selectedPoiIds is None:
                 context['stage']='planning';tasks.update_context('search',job['id'],context)
                 payload,plan=await interpret_search(submitted,website=True)
+                planning_seconds=time.monotonic()-task_started
                 context.update({k:plan.get(k) for k in ('action','normalizedQuery','intentSummary','subjectRole','assumptions','explanation')})
                 if payload is None:
                     context['stage']='feedback';tasks.update_context('search',job['id'],context)
@@ -651,6 +654,9 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
             context.update(payload.model_dump(exclude={'query'}));context['query']=submitted.query
             context['stage']='sources';tasks.update_context('search',job['id'],context)
             result=await run(payload,allow_expired=True,task_id=job['id'],parsed=True)
+            result.setdefault('timings',{}).update(planningSeconds=round(planning_seconds,3),
+                pipelineSeconds=round(time.monotonic()-task_started,3),
+                queueSeconds=round(max(0,time.time()-job['created']-(time.monotonic()-task_started)),3))
             store.update(job['id'],state='complete',result=json.dumps(result),error=None,lease_until=0)
         except Exception as error:
             logging.getLogger(__name__).warning('Photo Scout background search failed: %s fields=%s',type(error).__name__,[(e['loc'],e['type']) for e in error.errors(include_input=False,include_url=False)] if isinstance(error,ValidationError) else [])

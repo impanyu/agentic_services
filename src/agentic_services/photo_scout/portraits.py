@@ -146,12 +146,14 @@ async def prepare_background(client,reference,model,framing='auto'):
     pano,heading=match[1],int(match[2]);pitch=int(match[3] or 0);original_fov=int(match[4] or 120)
     fovs=list(dict.fromkeys([min(original_fov,fov) for fov in (90,60,45)])) if framing=='auto' else [original_fov if framing=='current' else int(framing)]
     refs=[f'google-streetview://{pano}/{heading}/{pitch}/{fov}' for fov in fovs]
-    images=[];available=[]
-    for ref in refs:
+    async def load(ref):
         try:
             data=await image_data(ref)
-            images.append(data);available.append(ref)
-        except Exception:continue
+            return ref,data
+        except Exception:return None
+    loaded=await asyncio.gather(*(load(ref) for ref in refs))
+    available=[item[0] for item in loaded if item]
+    images=[item[1] for item in loaded if item]
     if not images:raise ValueError('Background images unavailable')
     content=[]
     for i,(ref,image) in enumerate(zip(available,images)):
@@ -308,7 +310,7 @@ def create_portrait_router(settings,require_api):
             image=ImageOps.exif_transpose(image).convert('RGB');image.thumbnail((160,160))
             buffer=io.BytesIO();image.save(buffer,format='JPEG',quality=78,optimize=True)
         return Response(buffer.getvalue(),media_type='image/jpeg',headers={'Cache-Control':'private, max-age=300','X-Content-Type-Options':'nosniff'})
-    from .costs import observe, tracked_task
+    from .costs import observe, tracked_task, summary
 
     @tracked_task(settings.database_path,'selfie')
     async def process():
@@ -366,5 +368,11 @@ def create_portrait_router(settings,require_api):
             diagnostics=record_failure(row['id'],stage,error,started)
             message=portrait_failure_message(error,diagnostics)
             with db() as c:c.execute("UPDATE photo_portraits SET state='failed',photo=NULL,payload=NULL,error=? WHERE id=?",(message,row['id']))
+        context=tasks.context('portrait',row['id']) or {}
+        context['costAccounting']=summary()
+        elapsed=time.monotonic()-started
+        context['timings']={'processingSeconds':round(elapsed,3),
+            'queueSeconds':round(max(0,time.time()-row['created']-elapsed),3)}
+        tasks.update_context('portrait',row['id'],context)
         return True
     return router,process

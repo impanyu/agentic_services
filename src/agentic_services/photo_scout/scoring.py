@@ -206,9 +206,10 @@ async def assess_images(settings,payload,rows,statuses=None):
     if not rows:return ScoringOutput(rows,[],[],[],[],model)
     cache=ScoreCache(settings.database_path)
     keys={r['id']:cache.key(r,payload,model,INSTRUCTIONS) for r in rows}
+    saved_assessments=cache.get_many(keys[r['id']] for r in rows if r.get('cacheable',True))
     cached=[];missing=[]
     for row in rows:
-        saved=cache.get(keys[row['id']]) if row.get('cacheable',True) else None
+        saved=saved_assessments.get(keys[row['id']]) if row.get('cacheable',True) else None
         try:
             assessment=ImageAssessment.model_validate(saved) if saved else None
         except ValueError:
@@ -220,7 +221,7 @@ async def assess_images(settings,payload,rows,statuses=None):
     batch_size=max(1,min(32,int(os.getenv('PHOTO_SCOUT_SCORING_BATCH_SIZE','16'))))
     aliases={row['id']:str(i) for i,row in enumerate(missing)}
     batches=[missing[i:i+batch_size] for i in range(0,len(missing),batch_size)]
-    batch_slots=asyncio.Semaphore(max(1,min(16,int(os.getenv('PHOTO_SCOUT_SCORING_CONCURRENCY','12')))));download_slots=asyncio.Semaphore(max(1,min(64,int(os.getenv('PHOTO_SCOUT_IMAGE_DOWNLOAD_CONCURRENCY','32')))))
+    batch_slots=asyncio.Semaphore(max(1,min(16,int(os.getenv('PHOTO_SCOUT_SCORING_CONCURRENCY','16')))));download_slots=asyncio.Semaphore(max(1,min(64,int(os.getenv('PHOTO_SCOUT_IMAGE_DOWNLOAD_CONCURRENCY','32')))))
     async def download(row):
         try:
             async with download_slots:
