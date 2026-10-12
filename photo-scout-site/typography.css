@@ -47,3 +47,10 @@ body{font-size:var(--scout-text)}
 .search-progress .progress-heading strong{font-size:var(--scout-label)}
 .search-progress .progress-heading p,.search-progress .progress-steps li{font-size:var(--scout-caption)}
 @media(max-width:760px){.scout-dock .dock-links,.scout-dock .dock-links a,.scout-dock .free-tag{font-size:11px}}
+
+/* Compact collection labels keep the mobile tab bar balanced on one line. */
+@media(max-width:480px){.photo-library-tabs [role=tab]{font-size:13px;min-height:42px;padding-inline:3px}}
+@media(max-width:360px){.photo-library-tabs [role=tab]{font-size:12px}}
+
+/* Long progress labels and uploaded names should wrap inside their panels. */
+.progress-steps{flex-wrap:wrap}.progress-heading>div,.studio-image-card,.studio-heading h2{min-width:0}.studio-image-card figcaption,.studio-status,.studio-heading h2{overflow-wrap:anywhere}

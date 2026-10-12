@@ -125,8 +125,8 @@
 .favorite-view strong{overflow-wrap:anywhere;}.favorite-view small{font-size:.75rem;color:#87798d;}
 .favorite-remove{font-size:.75rem!important;flex:none;}
 .comment-thread>summary{cursor:pointer;font-size:.9rem;font-weight:650;}
-.photo-library-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;padding:4px;margin:0 0 16px;background:#f0eaf5;border-radius:14px;}
-.photo-library-tabs [role="tab"]{min-width:0;min-height:40px;padding:8px 4px;border:0;border-radius:10px;background:transparent;color:#86758f;font-size:.78rem;white-space:nowrap;}
+.photo-library-tabs{display:grid;grid-template-columns:1.2fr .8fr .85fr 1.45fr;gap:4px;padding:4px;margin:0 0 16px;background:#f0eaf5;border-radius:14px;}
+.photo-library-tabs [role="tab"]{min-width:0;min-height:40px;padding:8px 4px;border:0;border-radius:10px;background:transparent;color:#86758f;font-size:.78rem;white-space:normal;overflow-wrap:anywhere;line-height:1.4;}
 .photo-library-tabs [aria-selected="true"]{background:#fff;color:#67447e;box-shadow:0 2px 8px #4f326316;font-weight:650;}
 .photo-library-tabs [role="tab"]:focus-visible{outline:2px solid #9473ad;outline-offset:1px;}
 #photo-library-items .photo-history-entry{margin-bottom:8px;}
@@ -211,3 +211,6 @@
 .local-panorama-active>.street-view-tools,.local-panorama-active>.street-view-gesture-hint{z-index:4}
 .local-panorama-credit{position:absolute;left:0;right:0;bottom:0;z-index:3;pointer-events:none;padding:2px 4px;background:#1e1e1e;color:white;font:10px/14px sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .local-panorama-active>.street-view-tools{bottom:23px}
+
+/* Keep all four photo collections in one row, with space proportional to label length. */
+@media(max-width:360px){.photo-library-tabs{gap:2px;padding:3px}.photo-library-tabs [role="tab"]{padding-inline:2px;font-size:12px}}

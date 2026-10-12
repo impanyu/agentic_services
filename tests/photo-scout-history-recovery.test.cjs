@@ -35,7 +35,7 @@ test('removed searches stay removed; unchecked searches stay unchecked',async()=
  assert.equal(f.ctx.searchHistory.length,1);assert.equal(f.ctx.searchHistory[0].checked,false);
 });
 test('account map and task recovery are not blocked by slow guest uploads',async()=>{
- let paints=0,finished=false;const elements=new Map(),ctx={authUser:null,csrfToken:null,
+ let paints=0,finished=false;const elements=new Map(),ctx={authUser:null,csrfToken:null,pointWallet:null,
   searchHistory:[{id:'guest',created:1,result:{spots:[]}}],pendingHistory:new Map(),HISTORY_KEY:'history',
   json:async url=>url.endsWith('/auth/me')?{configured:true,user:{id:'alice'},csrfToken:'test'}:{items:[{id:'remote',created:2,result:{spots:[]}}]},
   el:id=>{if(!elements.has(id))elements.set(id,{});return elements.get(id);},renderHistory:()=>{},drawHistoryMap:()=>paints++,

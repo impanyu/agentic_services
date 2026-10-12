@@ -55,6 +55,7 @@ def portrait_failure_message(error,diagnostics):
     return error.detail if isinstance(error,HTTPException) else 'Could not compose this photo. Please try another photo or view.'
 
 class PortraitRequest(BaseModel):
+    creditLimitPoints: int = Field(default=100,ge=10,le=2000)
     portrait: str = Field(default='',max_length=27000000)
     portraits: list[str] = Field(default_factory=list,max_length=9)
 
@@ -318,6 +319,8 @@ def create_portrait_router(settings,require_api):
             if len(body)>27100000:raise HTTPException(413,'Photo upload is too large')
         try:payload=PortraitRequest.model_validate_json(body)
         except Exception as e:raise HTTPException(422,'Invalid photo request') from e
+        from .billing import authorize_task
+        authorize_task(settings.database_path,request)
         references=payload.portraits or [payload.portrait]
         photo=await asyncio.to_thread(clean_subjects,references)
         ref=background_reference(payload.provider,payload.background)
@@ -332,7 +335,7 @@ def create_portrait_router(settings,require_api):
             if limit>0 and c.execute('SELECT runs FROM photo_portrait_budget WHERE day=?',(day,)).fetchone()[0]>=limit:raise HTTPException(429,'Free photo studio capacity reached for today')
             c.execute('UPDATE photo_portrait_budget SET runs=runs+1 WHERE day=?',(day,))
             c.execute('INSERT INTO photo_portraits VALUES(?,?,?,?,?,?,?,?,?)',(job,hashlib.sha256(token.encode()).hexdigest(),now,expiry,'queued',json.dumps({'referenceCount':len(references),'reference':ref,'place':payload.place,'pose':payload.pose,'style':payload.style,'composition':payload.composition,'posture':payload.posture,'weather':payload.weather,'expression':payload.expression,'framing':payload.framing}),photo,None,None))
-            tasks.bind_in(c,'portrait',job,identity,{'name':payload.place,'provider':payload.provider,'sourceUrl':payload.background,'poi':{'lat':payload.lat,'lon':payload.lon},'viewHeadingDegrees':int(ref.split('/')[3]) if payload.provider=='google-street-view' else None,'viewPitchDegrees':(int(ref.split('/')[4]) if len(ref.split('/'))>4 else 0) if payload.provider=='google-street-view' else None,'subjectReferenceCount':len(references),'generation':{'style':payload.style,'composition':payload.composition,'posture':payload.posture,'weather':payload.weather,'expression':payload.expression,'framing':payload.framing,'directions':payload.pose}})
+            tasks.bind_in(c,'portrait',job,identity,{'creditLimitPoints':payload.creditLimitPoints,'name':payload.place,'provider':payload.provider,'sourceUrl':payload.background,'poi':{'lat':payload.lat,'lon':payload.lon},'viewHeadingDegrees':int(ref.split('/')[3]) if payload.provider=='google-street-view' else None,'viewPitchDegrees':(int(ref.split('/')[4]) if len(ref.split('/'))>4 else 0) if payload.provider=='google-street-view' else None,'subjectReferenceCount':len(references),'generation':{'style':payload.style,'composition':payload.composition,'posture':payload.posture,'weather':payload.weather,'expression':payload.expression,'framing':payload.framing,'directions':payload.pose}})
         response.headers['Cache-Control']='private, no-store'
         return {'id':job,'token':token,'state':'queued','expiresInSeconds':None if identity[1] else retention,'aiGenerated':True}
     @router.get('/photo-scout/v1/portraits/{job}')
@@ -363,6 +366,8 @@ def create_portrait_router(settings,require_api):
             row=c.execute("SELECT * FROM photo_portraits WHERE state='queued' ORDER BY created LIMIT 1").fetchone()
             if not row:return False
             c.execute("UPDATE photo_portraits SET state='checking' WHERE id=?",(row['id'],))
+        from .billing import track_run
+        track_run(settings.database_path,row['id'])
         started=time.monotonic();stage='load_request'
         try:
             payload=json.loads(row['payload'])
@@ -443,5 +448,7 @@ def create_portrait_router(settings,require_api):
             context['timings']={'processingSeconds':round(elapsed,3),
                 'queueSeconds':round(max(0,time.time()-row['created']-elapsed),3)}
             tasks.update_context('portrait',row['id'],context)
+            from .billing import settle_task
+            settle_task(settings.database_path,row['id'])
         return True
     return router,process

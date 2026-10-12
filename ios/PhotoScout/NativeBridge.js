@@ -3,7 +3,27 @@
   if (location.origin !== 'https://photo-scout.aisoup.net' || window.top !== window) return;
   const send = message => window.webkit.messageHandlers.scout.postMessage(message);
   // Refresh the account in place: reloading discards File inputs and studio edits.
-  window.PhotoScoutNative = Object.freeze({finishSignIn: async (code, verifier) => {
+  window.PhotoScoutNative = Object.freeze({
+    purchasePoints: async product => {
+      const response = await fetch('/api/v1/billing/apple/account', {method:'POST',credentials:'include',headers:{'Content-Type':'application/json','X-CSRF-Token':csrfToken||''}});
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.detail || 'Apple purchases unavailable');
+      const productId = Object.keys(data.products).find(id => data.products[id] === product);
+      if (!productId) throw new Error('Unknown Apple point product');
+      return await send({action:'purchasePoints',productId,appAccountToken:data.appAccountToken});
+    },
+    pointProducts: async () => await send({action:'pointProducts'}),
+    restorePoints: async () => await send({action:'restorePoints'}),
+    managePoints: async () => await send({action:'managePoints'}),
+    acceptTransaction: async signedTransaction => {
+      if (!authUser || !csrfToken) throw new Error('Sign in to recover this purchase');
+      const response = await fetch('/api/v1/billing/apple/transaction', {method:'POST',credentials:'include',headers:{'Content-Type':'application/json','X-CSRF-Token':csrfToken},body:JSON.stringify({signedTransaction})});
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.detail || 'Purchase verification failed');
+      await pointWallet?.load();
+      return result;
+    },
+    finishSignIn: async (code, verifier) => {
     const response = await fetch('/api/v1/auth/native/exchange', {
       method: 'POST', credentials: 'include', headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({code, verifier})
@@ -11,6 +31,8 @@
     if (!response.ok) throw new Error('Sign-in exchange failed');
     await loadAccount();
     if (!authUser) throw new Error('Account could not refresh');
+    await pointWallet?.load();
+    if (pointWallet) pointWallet.menu.open = true;
     window.dispatchEvent(new Event('focus'));
     return true;
   }});

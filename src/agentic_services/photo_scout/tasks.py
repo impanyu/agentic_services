@@ -142,6 +142,8 @@ class TaskStore:
             """,(user,guest,now-SEARCH_RETENTION,now)).fetchone()[0]
         if active>=ACTIVE_TASK_LIMIT:
             raise HTTPException(429,'You already have 5 active tasks (searches and selfies combined). Wait for a task to finish, then try again.')
+        from .billing import BillingStore
+        BillingStore.reserve_in(db,job,kind,user,context)
         db.execute('INSERT OR IGNORE INTO photo_task_owners VALUES(?,?,?,?,?,?)',(kind,job,guest,user,time.time(),json.dumps(context)))
     def allowed(self,kind,job,request):
         guest,user=self.identity(request)

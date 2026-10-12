@@ -39,6 +39,7 @@ from .photo_scout.migration import create_migration_router
 from .photo_scout.publications import create_publications_router
 from .photo_scout.avatars import create_avatars_router
 from .photo_scout.tasks import create_tasks_router
+from .photo_scout.billing import create_billing_router
 from .contact import send_contact_email, send_email
 from .models import (
     CapabilitiesResponse,
@@ -397,6 +398,7 @@ def create_app(
     app.include_router(portrait_router)
     app.state.process_photo_portrait=portrait_process
     app.include_router(create_accounts_router(resolved_settings,require_service_api_key))
+    app.include_router(create_billing_router(resolved_settings,require_service_api_key))
     app.include_router(create_tasks_router(resolved_settings,require_service_api_key))
     app.include_router(create_migration_router(resolved_settings,require_service_api_key))
     app.include_router(create_avatars_router(resolved_settings,require_service_api_key))

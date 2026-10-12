@@ -29,11 +29,12 @@ test('featured presets lead the grid and still filter correctly without reorderi
  class Node{constructor(){this.children=[];this.style={};this.value='';}append(...children){this.children.push(...children);}replaceChildren(...children){this.children=children;}setAttribute(k,v){this[k]=v;}addEventListener(k,v){this[k]=v;}querySelector(){return new Node();}close(){}}
  const panel=new Node(),menu=new Node();menu.querySelector=()=>panel;
  const context={window:{},document:{getElementById:()=>menu,createElement:()=>new Node(),body:new Node()}};vm.runInNewContext(fs.readFileSync('photo-scout-site/avatars.js','utf8'),context);
+ let observerCallback;context.IntersectionObserver=class{constructor(callback){observerCallback=callback;}observe(){}disconnect(){}};
  const library=new context.window.PhotoScoutAvatars({session:()=>({id:'guest'})});
  library.presetItems=[{name:'Older scholar',category:'Chinese history'},{name:'Furina',category:'Game characters',featured:true,aliases:['原神']},{name:'New anime',category:'Anime',featured:true}];library.render(panel);
  const names=()=>panel.children.find(x=>x.className==='avatar-grid').children.map(x=>x.children[0].children[1].textContent);
  assert.deepEqual(names(),['Furina','New anime','Older scholar']);assert.deepEqual(library.presetItems.map(x=>x.name),['Older scholar','Furina','New anime']);
  const search=panel.children.find(x=>x.className==='avatar-filters').children[0];search.value='原神';search.input();assert.deepEqual(names(),['Furina']);
- library.presetItems=Array.from({length:1121},(_,i)=>({name:'Person '+i}));library.query='';library.render(panel);assert.equal(names().length,48);panel.children.find(x=>x.className==='avatar-load-more').onclick();assert.equal(names().length,96);
+ library.presetItems=Array.from({length:1121},(_,i)=>({name:'Person '+i}));library.query='';library.render(panel);assert.equal(names().length,48);const firstCard=panel.children.find(x=>x.className==='avatar-grid').children[0];observerCallback([{isIntersecting:true}]);assert.equal(names().length,96);assert.equal(panel.children.find(x=>x.className==='avatar-grid').children[0],firstCard);assert.ok(!panel.children.some(x=>x.className==='avatar-load-more'));assert.equal(panel.children.find(x=>x.className?.includes('avatar-count')).textContent,'');
  library.tab='mine';library.items=[{name:'Latest upload'},{name:'Earlier upload',featured:true}];library.render(panel);assert.deepEqual(names(),['Latest upload','Earlier upload']);
 });

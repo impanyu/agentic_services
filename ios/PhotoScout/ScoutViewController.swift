@@ -5,10 +5,14 @@ import AuthenticationServices
 import CryptoKit
 import CoreLocation
 import Security
+import StoreKit
 
 final class ScoutViewController: UIViewController, WKNavigationDelegate, WKUIDelegate,
     WKScriptMessageHandlerWithReply, ASWebAuthenticationPresentationContextProviding,
     CLLocationManagerDelegate, WKDownloadDelegate {
+    private var storeUpdates: Task<Void, Never>?
+    private let pointProductIds = Set(["points_500", "points_1000", "points_2500", "monthly_1200", "monthly_3250", "monthly_7000"].map { "net.aisoup.photoscout." + $0 })
+    private var purchaseInProgress = false
     private var webView: WKWebView!
     private var authentication: ASWebAuthenticationSession?
     private let locationManager = CLLocationManager()
@@ -71,6 +75,12 @@ final class ScoutViewController: UIViewController, WKNavigationDelegate, WKUIDel
         locationManager.delegate = self
         NotificationCenter.default.addObserver(self, selector: #selector(resumed), name: UIApplication.didBecomeActiveNotification, object: nil)
         loadHome()
+        storeUpdates = Task { [weak self] in
+            for await transaction in StoreKit.Transaction.updates {
+                guard let self else { return }
+                _ = await self.deliverPointTransaction(transaction)
+            }
+        }
     }
 
     @objc private func loadHome() {
@@ -84,7 +94,7 @@ final class ScoutViewController: UIViewController, WKNavigationDelegate, WKUIDel
             self?.webView.stopLoading()
             self?.showLoadError()
         }
-        webView.load(URLRequest(url: ScoutPolicy.home))
+        webView.load(URLRequest(url: ScoutPolicy.home, cachePolicy: .reloadIgnoringLocalCacheData))
     }
 
     @objc private func resumed() {
@@ -202,6 +212,17 @@ final class ScoutViewController: UIViewController, WKNavigationDelegate, WKUIDel
         if !session.start() { authentication = nil; alert("Sign-in could not start. Please try again.") }
     }
 
+    private func deliverPointTransaction(_ verification: VerificationResult<StoreKit.Transaction>) async -> Bool {
+        guard case .verified(let transaction) = verification, pointProductIds.contains(transaction.productID),
+              ScoutPolicy.isFirstParty(webView.url) else { return false }
+        do {
+            _ = try await webView.callAsyncJavaScript("return await window.PhotoScoutNative.acceptTransaction(signedTransaction);",
+                arguments: ["signedTransaction": verification.jwsRepresentation], in: nil, in: .page)
+            await transaction.finish()
+            return true
+        } catch { return false }
+    }
+
     private func alert(_ message: String) {
         guard presentedViewController == nil else { return }
         let alert = UIAlertController(title: "Photo Scout", message: message, preferredStyle: .alert)
@@ -218,6 +239,49 @@ final class ScoutViewController: UIViewController, WKNavigationDelegate, WKUIDel
             replyHandler(nil, "Untrusted request"); return
         }
         switch action {
+        case "pointProducts":
+            Task {
+                do {
+                    let products = try await Product.products(for: pointProductIds)
+                    replyHandler(["prices": Dictionary(uniqueKeysWithValues: products.map { ($0.id, $0.displayPrice) })], nil)
+                } catch { replyHandler(nil, "Apple point products could not load.") }
+            }
+        case "purchasePoints":
+            guard !purchaseInProgress, let productId = body["productId"] as? String,
+                  pointProductIds.contains(productId), let token = body["appAccountToken"] as? String,
+                  let accountToken = UUID(uuidString: token) else { replyHandler(nil, "Invalid or pending point purchase."); return }
+            purchaseInProgress = true
+            Task {
+                defer { purchaseInProgress = false }
+                do {
+                    guard let product = try await Product.products(for: [productId]).first else {
+                        replyHandler(nil, "This Apple product is not available yet."); return
+                    }
+                    switch try await product.purchase(options: [.appAccountToken(accountToken)]) {
+                    case .success(let transaction):
+                        let delivered = await deliverPointTransaction(transaction)
+                        replyHandler(delivered ? ["state":"paid"] : nil, delivered ? nil : "Payment received; point verification is pending. Restore purchases after signing in to the purchasing account.")
+                    case .pending: replyHandler(["state":"pending"], nil)
+                    case .userCancelled: replyHandler(nil, "Purchase cancelled.")
+                    @unknown default: replyHandler(nil, "Unknown Apple purchase result.")
+                    }
+                } catch { replyHandler(nil, "Apple purchase could not complete. Please retry.") }
+            }
+        case "restorePoints":
+            Task {
+                do {
+                    try await AppStore.sync()
+                    for await transaction in StoreKit.Transaction.unfinished { _ = await deliverPointTransaction(transaction) }
+                    for await transaction in StoreKit.Transaction.currentEntitlements { _ = await deliverPointTransaction(transaction) }
+                    replyHandler(["state":"restored"], nil)
+                } catch { replyHandler(nil, "Purchases could not be restored. Please retry.") }
+            }
+        case "managePoints":
+            Task {
+                guard let scene = view.window?.windowScene else { replyHandler(nil, "Subscription management is unavailable."); return }
+                do { try await AppStore.showManageSubscriptions(in: scene); replyHandler(["state":"opened"], nil) }
+                catch { replyHandler(nil, "Subscription management could not open.") }
+            }
         case "location":
             guard locationReplies.count < 8 else { replyHandler(nil, "Location request already pending"); return }
             locationReplies.append(replyHandler)

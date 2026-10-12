@@ -78,6 +78,7 @@ class ExploreRequest(BaseModel):
 
 
 class SearchTaskRequest(ExploreRequest):
+    creditLimitPoints: int = Field(default=250,ge=10,le=2000)
     query: str = Field(default='',max_length=1000)
 
 
@@ -609,6 +610,8 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
     @router.post('/photo-scout/v1/preview')
     async def free_exploration(payload: ExploreRequest,authorization: str | None=Header(None)):
         require_api(authorization)
+        from .billing import enabled as credits_enabled
+        if credits_enabled():raise HTTPException(409,'Start a point-funded background task through /v1/jobs')
         if not settings.service_api_key: raise HTTPException(503,'Private gateway credential is required')
         if not free_preview(): raise HTTPException(403,'Free website testing is not enabled')
         source_limit()
@@ -629,6 +632,8 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
         payload=current_website_task(payload)
         # Validate signed place selection before durable admission, without fetching images.
         if payload.selectedPoiIds is not None: await chosen_pois(payload)
+        from .billing import authorize_task
+        authorize_task(settings.database_path,request)
         identity=tasks.identity(request,response)
         job=store.enqueue_preview(payload,x_request_token,lambda db,job:tasks.bind_in(db,'search',job,identity,payload.model_dump()))
         response.headers['Cache-Control']='private, no-store'
@@ -639,6 +644,8 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
         if lock.locked(): return False
         job=store.claim_preview()
         if not job: return False
+        from .billing import track_run
+        track_run(settings.database_path,job['id'])
         from .experience import begin as begin_experience
         begin_experience(settings)
         from .costs import current
@@ -694,6 +701,9 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
                 logging.getLogger(__name__).warning('Photo Scout required sources failed: job=%s sources=%s',job['id'],json.dumps(failures))
             logging.getLogger(__name__).warning('Photo Scout background search failed: job=%s stage=%s elapsed=%.3f error=%s fields=%s',job['id'],context.get('stage'),time.monotonic()-task_started,type(error).__name__,[(e['loc'],e['type']) for e in error.errors(include_input=False,include_url=False)] if isinstance(error,ValidationError) else [])
             store.update(job['id'],state='failed',lease_until=0,error=str(error.detail) if isinstance(error,HTTPException) else 'Could not prepare a valid search plan. Please try again.' if isinstance(error,ValidationError) and context.get('stage')=='planning' else 'Understanding this request took too long. Please try again.' if context.get('stage')=='planning' and isinstance(error,(TimeoutError,APITimeoutError)) else 'A required map source is temporarily unavailable. Please try again later.' if isinstance(error,SearchUnavailable) else 'Search could not be completed. Please try again later.')
+        finally:
+            from .billing import settle_task
+            settle_task(settings.database_path,job['id'])
         return True
 
     router.process_preview=process_preview
