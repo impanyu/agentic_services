@@ -16,7 +16,7 @@ function boot({origin = 'https://photo-scout.aisoup.net', child = false, receive
   }
   const context = {window, navigator, location: {origin, reload: () => assert.fail('must preserve editor')}, File, FileReader, DOMException, Event, setTimeout, clearTimeout,
     fetch: async (url, options) => {requests.push({url, options}); return {ok: exchangeOK};},
-    loadAccount: async () => {accountRefreshes++;}, authUser: {id: 'user'}};
+    loadAccount: async () => {accountRefreshes++;}, authUser: {id: 'user'}, pointWallet:{load:async()=>{},finishSignIn:()=>{events.push('close-account-page')}}};
   vm.runInNewContext(script, context);
   return {navigator, calls, window, events, requests, context, accountRefreshes: () => accountRefreshes};
 }
@@ -58,7 +58,7 @@ test('native login refreshes account without replacing unsaved editor state', as
   await app.window.PhotoScoutNative.finishSignIn('code', 'verifier');
   assert.equal(app.window.selectedPhoto, selectedPhoto);
   assert.equal(app.accountRefreshes(), 1);
-  assert.deepEqual(app.events, ['focus']);
+  assert.deepEqual(app.events, ['close-account-page','focus']);
   assert.equal(app.requests[0].url, '/api/v1/auth/native/exchange');
   assert.equal(app.requests[0].options.credentials, 'include');
   assert.deepEqual(JSON.parse(app.requests[0].options.body), {code:'code',verifier:'verifier'});

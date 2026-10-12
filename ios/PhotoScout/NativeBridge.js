@@ -4,6 +4,7 @@
   const send = message => window.webkit.messageHandlers.scout.postMessage(message);
   // Refresh the account in place: reloading discards File inputs and studio edits.
   window.PhotoScoutNative = Object.freeze({
+    signIn: async () => await send({action:'signIn'}),
     purchasePoints: async product => {
       const response = await fetch('/api/v1/billing/apple/account', {method:'POST',credentials:'include',headers:{'Content-Type':'application/json','X-CSRF-Token':csrfToken||''}});
       const data = await response.json();
@@ -32,7 +33,7 @@
     await loadAccount();
     if (!authUser) throw new Error('Account could not refresh');
     await pointWallet?.load();
-    if (pointWallet) pointWallet.menu.open = true;
+    pointWallet?.finishSignIn();
     window.dispatchEvent(new Event('focus'));
     return true;
   }});

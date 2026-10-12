@@ -1,20 +1,20 @@
 import UIKit
 import WebKit
 import SafariServices
-import AuthenticationServices
 import CryptoKit
 import CoreLocation
 import Security
 import StoreKit
 
 final class ScoutViewController: UIViewController, WKNavigationDelegate, WKUIDelegate,
-    WKScriptMessageHandlerWithReply, ASWebAuthenticationPresentationContextProviding,
+    WKScriptMessageHandlerWithReply, SFSafariViewControllerDelegate,
     CLLocationManagerDelegate, WKDownloadDelegate {
     private var storeUpdates: Task<Void, Never>?
     private let pointProductIds = Set(["points_500", "points_1000", "points_2500", "monthly_1200", "monthly_3250", "monthly_7000"].map { "net.aisoup.photoscout." + $0 })
     private var purchaseInProgress = false
     private var webView: WKWebView!
-    private var authentication: ASWebAuthenticationSession?
+    private var authentication: SFSafariViewController?
+    private var authenticationVerifier: String?
     private let locationManager = CLLocationManager()
     private var locationReplies: [(Any?, String?) -> Void] = []
     private var locationTimer: Timer?
@@ -174,10 +174,8 @@ final class ScoutViewController: UIViewController, WKNavigationDelegate, WKUIDel
         decisionHandler(trusted && type == .camera ? .prompt : .deny)
     }
 
-    func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor { view.window! }
-
     private func signIn() {
-        guard authentication == nil else { return }
+        guard authentication == nil, presentedViewController == nil else { return }
         var bytes = [UInt8](repeating: 0, count: 32)
         guard SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes) == errSecSuccess else {
             alert("Sign-in could not start. Please try again."); return
@@ -186,30 +184,37 @@ final class ScoutViewController: UIViewController, WKNavigationDelegate, WKUIDel
         let verifier = encode(Data(bytes))
         let proof = encode(Data(SHA256.hash(data: Data(verifier.utf8))))
         let url = URL(string: "api/v1/auth/login?native_challenge=\(proof)", relativeTo: ScoutPolicy.home)!.absoluteURL
-        let session = ASWebAuthenticationSession(url: url, callbackURLScheme: ScoutPolicy.callbackScheme) { [weak self] callback, error in
-            DispatchQueue.main.async {
-                guard let self else { return }
-                self.authentication = nil
-                if let error = error as? ASWebAuthenticationSessionError, error.code == .canceledLogin { return }
-                if callback?.query == "error=cancelled" { return }
-                guard error == nil, let callback, let code = ScoutPolicy.callbackCode(callback), ScoutPolicy.isFirstParty(self.webView.url) else {
-                    self.alert("Sign-in could not finish. Please try again."); return
-                }
-                // Arguments never become source code. The same-origin fetch sets
-                // an HttpOnly cookie inside WebKit and attaches guest work there.
-                self.webView.callAsyncJavaScript("""
-                    return await window.PhotoScoutNative.finishSignIn(code, verifier);
-                    """, arguments: ["code": code, "verifier": verifier], in: nil, in: .page) { [weak self] result in
-                        switch result {
-                        case .success: break
-                        case .failure: self?.alert("Sign-in could not finish. Please try again.")
-                        }
-                    }
+        authenticationVerifier = verifier
+        let browser = SFSafariViewController(url: url)
+        browser.delegate = self
+        browser.modalPresentationStyle = .fullScreen
+        authentication = browser
+        present(browser, animated: true)
+    }
+
+    func safariViewControllerDidFinish(_ controller: SFSafariViewController) {
+        guard controller === authentication else { return }
+        authentication = nil
+        authenticationVerifier = nil
+        controller.dismiss(animated: true)
+    }
+
+    // Only an in-progress, PKCE-bound sign-in can accept a custom-scheme return.
+    func finishAuthentication(_ callback: URL) {
+        guard callback.scheme == ScoutPolicy.callbackScheme, callback.host == "auth", callback.path.isEmpty,
+              let browser = authentication, let verifier = authenticationVerifier else { return }
+        let code = ScoutPolicy.callbackCode(callback)
+        guard code != nil || callback.query == "error=cancelled" else { return }
+        authentication = nil
+        authenticationVerifier = nil
+        browser.dismiss(animated: true) { [weak self] in
+            guard let self, let code else { return }
+            guard ScoutPolicy.isFirstParty(self.webView.url) else { return }
+            self.webView.callAsyncJavaScript("return await window.PhotoScoutNative.finishSignIn(code, verifier);",
+                arguments: ["code": code, "verifier": verifier], in: nil, in: .page) { [weak self] result in
+                if case .failure = result { self?.alert("Sign-in could not finish. Please try again.") }
             }
         }
-        session.presentationContextProvider = self
-        authentication = session
-        if !session.start() { authentication = nil; alert("Sign-in could not start. Please try again.") }
     }
 
     private func deliverPointTransaction(_ verification: VerificationResult<StoreKit.Transaction>) async -> Bool {
@@ -239,6 +244,9 @@ final class ScoutViewController: UIViewController, WKNavigationDelegate, WKUIDel
             replyHandler(nil, "Untrusted request"); return
         }
         switch action {
+        case "signIn":
+            signIn()
+            replyHandler(["started": authentication != nil], nil)
         case "pointProducts":
             Task {
                 do {
