@@ -104,3 +104,14 @@ The planner also now includes broad building-existence alternatives when
 residential subtype coverage is uncertain, using them as discovery clues subject
 to the same visual residential requirement. Regression totals after this fix:
 443 scoped Python tests and the previously passing 156 frontend/domain tests.
+
+After the geometry fix, production search `ps_b3243d395d20bcc9e16eccadd8f6cc74`
+completed despite refreshing during scoring, with one queue claim and no planning
+retry. Fresh OSM now supplied 240 residential candidates and 120 broader building
+candidates; the merged set had 412 candidates before the imagery budget. It
+checked 315 images: 310 were classified nonmatching, five matching directions
+collapsed to two locations. Planning took 23.047 s, retrieval 10.735 s, scoring
+35.048 s, pipeline 68.849 s. This verifies restored geometry ingestion and the
+broader source plan, not improved final villa recall. That quality issue remains
+an image-match/candidate-allocation question, and model exclusions require review
+before treating them as ground truth.
