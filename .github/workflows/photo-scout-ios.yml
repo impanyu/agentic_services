@@ -13,6 +13,8 @@ jobs:
         device: [iPhone, iPad]
     steps:
       - uses: actions/checkout@v4
+        with:
+          sparse-checkout: ios
       - name: Select simulator
         env:
           DEVICE_FAMILY: ${{ matrix.device }}
