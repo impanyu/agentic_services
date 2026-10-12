@@ -16,7 +16,7 @@
  while(sources.size>12)sources.delete(sources.keys().next().value);return entry.promise;}
  function draw(state){state.frame=null;if(!state.ready||!state.surface.isConnected)return;
  const {canvas,surface,gl,program}=state,rect=surface.getBoundingClientRect(),ratio=Math.min(global.devicePixelRatio||1,2);
- const width=Math.max(1,Math.round(rect.width*ratio)),height=Math.max(1,Math.round(rect.height*ratio));if(canvas.width!==width||canvas.height!==height){canvas.width=width;canvas.height=height;}
+ const width=Math.max(1,Math.round((canvas.clientWidth||rect.width)*ratio)),height=Math.max(1,Math.round((canvas.clientHeight||rect.height)*ratio));if(canvas.width!==width||canvas.height!==height){canvas.width=width;canvas.height=height;}
  const v=global.PhotoScoutStreetView.view(state.getSpot()),b=basis(v.heading,v.pitch);gl.viewport(0,0,width,height);gl.useProgram(program);
  for(const [name,value] of Object.entries(b))gl.uniform3fv(gl.getUniformLocation(program,name),value);
  gl.uniform1f(gl.getUniformLocation(program,'tangent'),Math.tan(v.fov*Math.PI/360));gl.uniform1f(gl.getUniformLocation(program,'aspect'),height/width);gl.drawArrays(gl.TRIANGLE_STRIP,0,4);

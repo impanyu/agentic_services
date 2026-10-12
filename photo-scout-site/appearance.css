@@ -97,8 +97,14 @@
 /* Keep the account header below the iPhone status bar; general popover padding must not override it. */
 @media(max-width:760px){.photo-app .map-overlay-controls .points-menu[open]>.history-menu{padding:calc(28px + env(safe-area-inset-top)) 18px calc(18px + env(safe-area-inset-bottom))}.profile-page-heading{align-items:center}.profile-page-heading button{min-height:44px;min-width:64px;padding:10px 16px}}
 /* A panorama has a stable layout before its thumbnail or GPU texture arrives. */
-.popup-photo-preview>.street-view-preview{height:160px;min-height:160px;border-radius:10px;isolation:isolate;background:#eef0f3}
-.popup-photo-preview>.street-view-preview>img{height:100%;object-fit:cover}
+.popup-photo-preview>.street-view-preview{height:204px;min-height:204px;border-radius:10px;isolation:isolate;background:#eef0f3}
+/* Reserve a separate control strip: GPU content never overlaps zoom symbols. */
+.popup-photo-preview>.street-view-preview>img{height:160px;object-fit:cover}
+.popup-photo-preview>.street-view-preview>canvas.local-panorama,.popup-photo-preview>.street-view-preview>.native-street-view{bottom:44px;height:160px}
+.popup-photo-preview>.street-view-preview>.local-panorama-credit{bottom:44px}
+.popup-photo-preview>.street-view-preview>.street-view-tools{left:6px;right:6px;bottom:4px;height:36px;background:#eef0f3;transform:translateZ(0);isolation:isolate}
+.popup-photo-preview .street-view-caption{color:#555c67;background:none;backdrop-filter:none;padding:0;font-size:10px}
+.popup-photo-preview .street-view-zoom button{position:relative;isolation:isolate;background:#fff}
 .street-view-preview>.street-view-tools{z-index:6}.street-view-preview>.street-view-gesture-hint{z-index:5}
 .photo-app .street-view-zoom button{width:36px;height:36px;min-height:36px;padding:0;flex:none;color:#343941;background:#fffffff2;border:1px solid #d8dce2;box-shadow:0 1px 4px #17212c16;opacity:1}
 .photo-app .street-view-zoom-symbol{position:relative;display:block;width:18px;height:18px;flex:none;pointer-events:none}
