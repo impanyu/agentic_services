@@ -31,10 +31,13 @@ class OSMFeatureQuery(BaseModel):
     filters:list[TagFilter]=Field(default_factory=list,max_length=6)
     numericFilters:list[NumericFilter]=Field(default_factory=list,max_length=4)
     proximityMeters:int=Field(default=150,ge=0,le=500)
+    selectionHints:list[Literal['large-footprint','small-footprint','more-storeys']]=Field(default_factory=list,max_length=3,
+        description='Soft candidate priorities only; never hard constraints. Building footprint/levels do not establish visual style or luxury.')
     @model_validator(mode='after')
     def bounded(self):
         if self.kind=='tagged' and not any(f.required for f in self.filters):raise ValueError('At least one tag filter required')
         if self.kind=='intersection' and (self.filters or self.numericFilters):raise ValueError('Intersections use road topology')
+        if self.selectionHints and not any(f.required and f.key=='building' for f in self.filters):raise ValueError('Building selection hints require a building filter')
         return self
 
 def number(value,key):
@@ -42,6 +45,7 @@ def number(value,key):
     match=re.fullmatch(r'\s*(-?\d+(?:\.\d+)?)\s*(m|meters?|ft|feet|\')?\s*',value)
     if not match:return None
     n=float(match[1]);unit=match[2]
+    if not math.isfinite(n):return None
     if unit and key not in ('height','min_height','width'):return None
     return n*.3048 if unit in ('ft','feet',"'") else n
 
@@ -63,6 +67,7 @@ def make_query(lat,lon,radius,queries):
         if q.kind=='intersection':
             parts.append(f'way{bbox}["highway"~"^(residential|service|unclassified|tertiary|secondary|primary|living_street|pedestrian)$"];out geom 1800;')
         else:
+            output='out center tags'+(' geom' if any(h in q.selectionHints for h in ('large-footprint','small-footprint')) else '')
             selectors=''.join('['+json.dumps(f.key,ensure_ascii=False)+('='+json.dumps(f.value,ensure_ascii=False) if f.value is not None else '')+']' for f in q.filters if f.required)
             dense = radius >= 1000 and any(f.required and f.key == 'building' for f in q.filters)
             tiles = 4 if radius > 5000 else 2
@@ -74,10 +79,35 @@ def make_query(lat,lon,radius,queries):
                         south=max(-85,lat-dy+2*dy*y/tiles);north=min(85,lat-dy+2*dy*(y+1)/tiles)
                         west=lon-dx+2*dx*x/tiles;east=lon-dx+2*dx*(x+1)/tiles
                         tile=f'({south},{west},{north},{east})'
-                        parts.append(f'nwr{tile}{selectors};out center tags {1200//(tiles*tiles)};')
+                        parts.append(f'nwr{tile}{selectors};{output} {1200//(tiles*tiles)};')
             else:
-                parts.append(f'nwr{bbox}{selectors};out center tags 1200;')
+                parts.append(f'nwr{bbox}{selectors};{output} 1200;')
     return '[out:json][timeout:8][maxsize:16777216];'+''.join(dict.fromkeys(parts))
+
+def footprint_area(element):
+    geometry=element.get('geometry',[])
+    if element.get('type')!='way' or len(geometry)<3:return None
+    if any(not all(isinstance(p.get(k),(int,float)) and math.isfinite(p[k]) for k in ('lat','lon')) for p in geometry):return None
+    lat0=geometry[0]['lat'];lon0=geometry[0]['lon']
+    points=[((p['lon']-lon0)*111320*math.cos(math.radians(lat0)),(p['lat']-lat0)*111320) for p in geometry]
+    area=abs(sum(a[0]*b[1]-b[0]*a[1] for a,b in zip(points,points[1:]+points[:1])))/2
+    return round(area,1) if math.isfinite(area) and area>0 else None
+
+def prioritize(rows,query):
+    if not query.selectionHints:return rows
+    for row in rows:
+        area=row.get('footprintAreaMeters2');levels=number(row.get('osmTags',{}).get('building:levels'),'building:levels')
+        rank=[]
+        for hint in query.selectionHints:
+            if hint in ('large-footprint','small-footprint'):
+                rank.append((0,-area if hint=='large-footprint' else area) if area else (1,0))
+            else:rank.append((0,-levels) if levels is not None else (1,0))
+        row['selectionPriority']=rank
+    return rows
+
+def signature(queries,*,hints=True):
+    # Empty new fields must not invalidate existing exact-query caches.
+    return [q.model_dump(exclude={'selectionHints'} if not hints or not q.selectionHints else set()) for q in queries]
 
 def decode(data,queries,lat,lon,radius):
     elements=data.get('elements',[]);groups=[]
@@ -111,21 +141,26 @@ def decode(data,queries,lat,lon,radius):
             seen.add(ident)
             out.append({'id':ident,'name':text(tags.get('name') or q.label),'lat':coord['lat'],'lon':coord['lon'],'category':'map-feature','categoryGroups':[],
                 'distanceMeters':round(d),'provider':'openstreetmap-features','sourceUrl':f"https://www.openstreetmap.org/{e['type']}/{e['id']}",
-                'visuallyAnalyzed':False,'osmTags':tags,'unknownAttributes':unknown,'featureQueryIndex':i})
-        groups.append(spread_points(out,lat,lon,radius)[:120])
+                'visuallyAnalyzed':False,'osmTags':tags,'unknownAttributes':unknown,'featureQueryIndex':i,
+                **({'footprintAreaMeters2':footprint_area(e)} if q.selectionHints else {})})
+        groups.append(spread_points(prioritize(out,q),lat,lon,radius)[:120])
     return groups
 
 async def fetch_features(lat,lon,radius,queries,database_path):
     if not queries:return [],{'status':'not_requested','provider':'openstreetmap-features'}
-    key=hashlib.sha256(json.dumps(['spatial-v2',lat,lon,radius,[q.model_dump() for q in queries]],sort_keys=True).encode()).hexdigest()
-    legacy_key=hashlib.sha256(json.dumps([lat,lon,radius,[q.model_dump() for q in queries]],sort_keys=True).encode()).hexdigest()
+    key=hashlib.sha256(json.dumps(['spatial-v2',lat,lon,radius,signature(queries)],sort_keys=True).encode()).hexdigest()
+    legacy_key=hashlib.sha256(json.dumps([lat,lon,radius,signature(queries,hints=False)],sort_keys=True).encode()).hexdigest()
     legacy=None
     with sqlite3.connect(database_path) as db:
         db.execute('CREATE TABLE IF NOT EXISTS photo_osm_feature_cache (key TEXT PRIMARY KEY,data TEXT NOT NULL,expires REAL NOT NULL)')
         row=db.execute('SELECT data FROM photo_osm_feature_cache WHERE key=? AND expires>?',(key,time.time())).fetchone()
         if row:return json.loads(row[0]),{'status':'ok','provider':'openstreetmap-features','cached':True,'bounded':True}
-        older=db.execute('SELECT data FROM photo_osm_feature_cache WHERE key=? AND expires>?',(legacy_key,time.time())).fetchone()
-        if older:legacy=json.loads(older[0])
+        fallback_keys=[legacy_key]
+        if any(q.selectionHints for q in queries):
+            fallback_keys.insert(0,hashlib.sha256(json.dumps(['spatial-v2',lat,lon,radius,signature(queries,hints=False)],sort_keys=True).encode()).hexdigest())
+        older=next((row for fallback in fallback_keys if (row:=db.execute('SELECT data FROM photo_osm_feature_cache WHERE key=? AND expires>?',(fallback,time.time())).fetchone())),None)
+        if older:legacy=[prioritize(group,q) for group,q in zip(json.loads(older[0]),queries)]
+    failures=[]
     try:
         query=make_query(lat,lon,radius,queries);data=None
         async with asyncio.timeout(10):
@@ -135,7 +170,11 @@ async def fetch_features(lat,lon,radius,queries,database_path):
                         candidate=await get_json(client,endpoint,{'data':query},method='POST',max_bytes=16_000_000)
                         if candidate.get('remark') or not isinstance(candidate.get('elements'),list):raise ValueError('Incomplete OSM response')
                         data=candidate;break
-                    except (httpx.HTTPError,ValueError):continue
+                    except (httpx.HTTPError,ValueError) as error:
+                        from urllib.parse import urlsplit
+                        failures.append({'host':urlsplit(endpoint).hostname,'errorType':type(error).__name__,
+                            **({'httpStatus':error.response.status_code} if isinstance(error,httpx.HTTPStatusError) else {})})
+                        continue
         if data is None:raise ValueError('OSM unavailable')
         groups=decode(data,queries,lat,lon,radius)
         with sqlite3.connect(database_path) as db:
@@ -145,7 +184,7 @@ async def fetch_features(lat,lon,radius,queries,database_path):
     except (httpx.HTTPError,ValueError,TimeoutError):
         if legacy is not None:
             return legacy,{'status':'ok','provider':'openstreetmap-features','cached':True,'bounded':True,'spatialFallback':'legacy_cache','groupCounts':[len(g) for g in legacy]}
-        return [],{'status':'unavailable','provider':'openstreetmap-features'}
+        return [],{'status':'unavailable','provider':'openstreetmap-features','attempts':failures}
 
 def matches_features(place,groups,queries,combination="all"):
     # Multiple feature requirements are AND, while matches within each group are OR.

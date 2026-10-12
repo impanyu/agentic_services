@@ -216,7 +216,8 @@ def test_resolve_and_human_workflow_execute_generated_program(tmp_path,monkeypat
             assert len(response.json()['sources']['google-places']['executionTrace'])==(10 if complete else 7)
             if complete:assert [s['tool'] for s in response.json()['executionTrace'][-3:]]==['collect_images','score_images','rank_results']
         tool=client.get('/photo-scout/v1/search-tools',headers=h)
-        assert tool.status_code==200 and len(tool.json()['tools'])==15
+        assert tool.status_code==200 and len(tool.json()['tools'])==16
+        assert next(t for t in tool.json()['tools'] if t['name']=='sample_near_places')['inputTypes']==['places']
         catalog=client.post('/photo-scout/v1/pois',headers=h,json=parameters).json()
         selected={**parameters,'selectedPoiIds':['cafe-lake'],'poiCatalogToken':catalog['poiCatalogToken']}
         assert client.post('/photo-scout/v1/preview',headers=h,json=selected).status_code==200
@@ -368,3 +369,76 @@ def test_center_imagery_keeps_full_radius_and_passes_priority_to_collection():
     async def score(*args):return ScoringOutput([],[],[],[],[],'test')
     asyncio.run(execute_program(program,p,providers(),Path('/unused'),'google-places',
         PipelineHooks(p,collect,score,lambda *args:{'spots':[]},before)))
+
+
+def test_independent_source_union_survives_one_failure_but_all_failed_is_explicit():
+    ps=providers()
+    async def failed(*args):return [],{'status':'unavailable'}
+    from agentic_services.photo_scout.osm_features import OSMFeatureQuery
+    ps.osm_features=failed
+    plan={'steps':[{'id':'named','tool':'search_places','queries':['mansions']},
+        {'id':'homes','tool':'search_features','osmFeatures':[{'label':'Homes','filters':[{'key':'building','value':'house'}]}]},
+        {'id':'points','tool':'feature_points','inputs':['homes']},
+        {'id':'both','tool':'union','inputs':['named','points']}],'output':'both'}
+    result=run(plan,ps)
+    assert result.places and result.status['unavailableSources']==['homes']
+    assert all(p['searchPathCount']==1 for p in result.places)
+    ps.places=providers(unavailable=True).places
+    with pytest.raises(SearchUnavailable):run(plan,ps)
+
+
+def test_missing_required_or_negated_geometry_never_admits_unfiltered_places():
+    ps=providers()
+    async def failed(*args):return [],[],{'status':'unavailable'}
+    ps.geography=failed
+    for exclude in (False,True):
+        plan={'steps':[{'id':'named','tool':'search_places','queries':['coffee shops']},
+            {'id':'lake','tool':'search_geography','geographicKinds':['lake']},
+            {'id':'filtered','tool':'filter_geography','inputs':['named','lake'],'exclude':exclude}],
+            'output':'filtered'}
+        with pytest.raises(SearchUnavailable):run(plan,ps)
+
+
+def test_or_branch_failure_retains_only_independently_satisfied_branch():
+    ps=providers()
+    async def geography(lat,lon,radius,kinds,path):
+        if kinds==['lake']:return [],[],{'status':'unavailable'}
+        return [forest()],[],{'status':'ok'}
+    ps.geography=geography
+    result=run(mixed(),ps)
+    assert [p['id'] for p in result.places]==['restaurant-forest']
+    assert result.status['unavailableSources']==['lake']
+    rows=[{'lat':0,'lon':-.005,'poi':{'id':'cafe-lake'}},
+          {'lat':0,'lon':.015,'poi':{'id':'restaurant-forest'}}]
+    matches=result.program_execution.filter_images(rows)
+    assert len(matches)==1 and matches[0]['eligibleSearchPaths'][0]['targetQueries']==[['restaurants']]
+
+
+def test_guided_sampling_uses_verified_anchors_and_never_expands_user_scope():
+    plan={'steps':[{'id':'anchors','tool':'search_places','queries':['historic homes'],'discoveryHints':True},
+        {'id':'near','tool':'sample_near_places','inputs':['anchors'],'radiusMeters':750}],'output':'near'}
+    result=run(plan)
+    assert len(result.places)>2 and len(result.places)<=50
+    from agentic_services.photo_scout.sources import distance
+    assert all(distance((0,0),(r['lat'],r['lon']))<=3000 for r in result.places)
+    assert {p['discoveryAnchor']['id'] for p in result.places}=={'park-lake','park-forest'}
+    rows=[{'id':'near','lat':0,'lon':-.005}, {'id':'far','lat':0,'lon':-.025}]
+    retained=result.program_execution.filter_images(rows)
+    assert [r['id'] for r in retained]==['near']
+    assert retained[0]['eligibleSearchPaths'][0]['targetQueries']==[]
+    assert [s['tool'] for s in result.status['executionTrace']]==['search_places','sample_near_places']
+
+
+def test_guided_sampling_failure_can_fall_back_by_union_without_claiming_a_match():
+    plan={'steps':[{'id':'a','tool':'search_places','queries':['districts'],'discoveryHints':True},
+        {'id':'n','tool':'sample_near_places','inputs':['a']},
+        {'id':'b','tool':'search_places','queries':['mansions']},
+        {'id':'u','tool':'union','inputs':['n','b']}],'output':'u'}
+    ps=providers()
+    original=ps.places
+    async def places(lat,lon,radius,queries,**kwargs):
+        if queries==['districts']:return [],{'status':'unavailable'}
+        return await original(lat,lon,radius,queries,**kwargs)
+    ps.places=places
+    result=run(plan,ps);assert result.places and all(not p['id'].startswith('guided:') for p in result.places)
+    assert result.status['unavailableSources']==['a']

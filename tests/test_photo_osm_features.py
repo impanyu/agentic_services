@@ -72,3 +72,33 @@ def test_feature_conditions_are_part_of_scoring_cache_identity():
  base=ExploreRequest(lat=0,lon=0)
  request=ExploreRequest(lat=0,lon=0,osmFeatures=[feature()])
  assert ScoreCache.key({'id':'same-view'},base,'model','prompt')!=ScoreCache.key({'id':'same-view'},request,'model','prompt')
+
+
+def test_footprint_hint_prioritizes_large_candidates_without_excluding_small_or_unknown():
+    def building(id,size,levels=None):
+        return {'type':'way','id':id,'center':{'lat':0,'lon':0},'tags':{'building':'house',**({'building:levels':str(levels)} if levels else {})},
+            'geometry':[{'lat':0,'lon':0},{'lat':0,'lon':size},{'lat':size,'lon':size},{'lat':size,'lon':0},{'lat':0,'lon':0}]}
+    q=OSMFeatureQuery(label='Homes',filters=[TagFilter(key='building',value='house')],selectionHints=['large-footprint'])
+    elements=[building(1,.0001),building(2,.0004),{'type':'way','id':3,'center':{'lat':0,'lon':0},'tags':{'building':'house'}}]
+    rows=decode({'elements':elements},[q],0,0,1000)[0]
+    assert [p['id'] for p in rows]==['osm:way:2','osm:way:1','osm:way:3']
+    assert rows[0]['footprintAreaMeters2']>rows[1]['footprintAreaMeters2']>0
+    assert len(rows)==3 and rows[-1]['footprintAreaMeters2'] is None
+    assert 'out center tags geom' in make_query(0,0,1000,[q])
+    q=q.model_copy(update={'selectionHints':['small-footprint']})
+    assert decode({'elements':elements},[q],0,0,1000)[0][0]['id']=='osm:way:1'
+
+
+def test_storeys_hint_is_soft_and_does_not_add_a_guessed_threshold():
+    q=feature(selectionHints=['more-storeys'])
+    elements=[node(1,building='yes',**{'building:levels':'2'}),node(2,building='yes',**{'building:levels':'12'}),node(3,building='yes')]
+    rows=decode({'elements':elements},[q],0,0,1000)[0]
+    assert [p['id'] for p in rows]==['osm:node:2','osm:node:1','osm:node:3']
+    assert not q.numericFilters
+    assert ' geom ' not in make_query(0,0,1000,[q])
+    with pytest.raises(ValidationError,match='Building selection hints'):
+        OSMFeatureQuery(label='Lights',filters=[TagFilter(key='highway',value='traffic_signals')],selectionHints=['more-storeys'])
+
+
+def test_nonfinite_provider_attribute_is_unknown_instead_of_a_serialized_priority():
+    assert number('9'*400,'building:levels') is None

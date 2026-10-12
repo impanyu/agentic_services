@@ -16,8 +16,14 @@ from .geography import GeographicKind,filter_places,geographic_places,Geographic
 from .osm_features import OSMFeatureQuery,matches_features
 from .spatial_sampling import spread_points
 
-Tool=Literal['search_places','search_geography','search_features','sample_geography',
+Tool=Literal['search_places','search_geography','search_features','sample_geography','sample_near_places',
              'feature_points','filter_geography','filter_features','union','intersection','area_imagery','point_imagery','center_imagery','collect_images','score_images','rank_results']
+
+class ProgramSourceUnavailable(ValueError):
+    def __init__(self,statuses):
+        super().__init__('Required search source is temporarily unavailable')
+        self.source_failures=[{'stepId':step,**{key:status[key] for key in ('provider','status','errorType','attempts') if key in status}}
+                              for step,status in statuses.items() if status.get('status')!='ok']
 
 class SearchStep(BaseModel):
     model_config=ConfigDict(extra='forbid')
@@ -32,6 +38,7 @@ class SearchStep(BaseModel):
     discoveryHints:bool=False
     weights:list[int]=Field(default_factory=list,max_length=6)
     visualIntent:str=Field(default='',max_length=1000)
+    radiusMeters:int=Field(default=750,ge=100,le=2000)
 
     @model_validator(mode='after')
     def validate_arguments(self):
@@ -45,6 +52,7 @@ class SearchStep(BaseModel):
         if self.combination!='all' and self.tool not in ('search_geography','search_features','sample_geography','feature_points','filter_geography','filter_features'):raise ValueError('This tool has no combination argument')
         if self.weights and (self.tool!='union' or len(self.weights)!=len(self.inputs) or any(w<1 or w>4 for w in self.weights)):
             raise ValueError('Union weights must match inputs and be between one and four')
+        if self.radiusMeters!=750 and self.tool!='sample_near_places':raise ValueError('Sampling radius applies only to sample_near_places')
         return self
 
 # Input and output types are also the registry contract exposed to the planner.
@@ -52,6 +60,7 @@ CONTRACTS={
  'search_places':([], 'places'), 'search_geography':([], 'geography'),
  'search_features':([], 'features'), 'sample_geography':(['geography'],'places'),
  'feature_points':(['features'],'places'), 'filter_geography':(['places','geography'],'places'),
+ 'sample_near_places':(['places'],'places'),
  'filter_features':(['places','features'],'places'), 'union':('places','places'),
  'intersection':('places','places'), 'area_imagery':([],'area'), 'point_imagery':([],'area'), 'center_imagery':([],'area'),
  'collect_images':(['locations'],'images'),'score_images':(['images'],'assessments'),
@@ -124,6 +133,7 @@ class Places:
     # Each ID has alternative successful paths through the program. A path is
     # the conjunction of its source targets, spatial filters and visual intents.
     paths:dict[str,list[dict]]=field(default_factory=dict)
+    unavailable:bool=False
 
 @dataclass
 class Geography:
@@ -131,12 +141,14 @@ class Geography:
     paths:list[dict]
     kinds:list[str]
     combination:str="all"
+    unavailable:bool=False
 
 @dataclass
 class Features:
     groups:list[list[dict]]
     queries:list[OSMFeatureQuery]
     combination:str="all"
+    unavailable:bool=False
 
 @dataclass
 class Area:
@@ -182,8 +194,7 @@ class Tools:
         rows,status=await self.provider(self.providers.places,p.lat,p.lon,p.radius,s.queries,limit=60)
         self.statuses[s.id]=status
         if status.get('status')!='ok':
-            if s.discoveryHints:return Places([],{})
-            raise ValueError('Places search is temporarily unavailable')
+            return Places([],{},unavailable=True)
         return Places(rows,{r['id']:[self.empty_path(s,targets=[] if s.discoveryHints else [s.id])] for r in rows})
 
     def optional_source(self,s):
@@ -196,7 +207,7 @@ class Tools:
         self.statuses[s.id]=status
         if status.get('status')!='ok':
             if self.optional_source(s):return Geography([],[],s.geographicKinds,s.combination)
-            raise ValueError('Geographic search is temporarily unavailable')
+            return Geography([],[],s.geographicKinds,s.combination,unavailable=True)
         return Geography(fs,paths,s.geographicKinds,s.combination)
 
     async def search_features(self,s,inputs):
@@ -205,22 +216,59 @@ class Tools:
         self.statuses[s.id]=status
         if status.get('status')!='ok':
             if self.optional_source(s):return Features([],s.osmFeatures,s.combination)
-            raise ValueError('Mapped-feature search is temporarily unavailable')
+            return Features([],s.osmFeatures,s.combination,unavailable=True)
         return Features(groups,s.osmFeatures,s.combination)
 
     async def sample_geography(self,s,inputs):
         region=inputs[0];p=self.p
+        if region.unavailable:return Places([],{},unavailable=True)
         rows=geographic_places(p.lat,p.lon,p.radius,region.features,region.paths,region.kinds,limit=50,combination="any" if region.combination=="any" else s.combination)
         return Places(rows,{r['id']:[self.empty_path(s,filters=[s.id])] for r in rows})
 
     async def feature_points(self,s,inputs):
         features=inputs[0]
+        if features.unavailable:return Places([],{},unavailable=True)
         rows=list({p['id']:p for group in features.groups for p in group
             if matches_features(p,features.groups,features.queries,combination="any" if features.combination=="any" else s.combination)}.values())
         rows=spread_points(rows,self.p.lat,self.p.lon,self.p.radius)
         return Places(rows,{r['id']:[self.empty_path(s,filters=[s.id])] for r in rows})
 
+    async def sample_near_places(self,s,inputs):
+        import math
+        from .sources import distance
+        anchors=inputs[0]
+        if anchors.unavailable:return Places([],{},unavailable=True)
+        groups=[];radius=min(s.radiusMeters,self.p.radius)
+        for anchor in anchors.rows[:6]:
+            if distance((self.p.lat,self.p.lon),(anchor['lat'],anchor['lon']))>self.p.radius:continue
+            group=[]
+            for index,(fraction,angle) in enumerate([(0,0)]+[(f,a) for f in (.5,1) for a in range(0,360,45)]):
+                heading=math.radians(angle);lat=anchor['lat']+radius*fraction*math.cos(heading)/111320
+                lon=anchor['lon']+radius*fraction*math.sin(heading)/(111320*max(.01,math.cos(math.radians(anchor['lat']))))
+                lon=(lon+180)%360-180
+                if abs(lat)>85 or distance((self.p.lat,self.p.lon),(lat,lon))>self.p.radius:continue
+                group.append({'id':f"guided:{anchor['id']}:{index}",'name':'View near '+anchor['name'],
+                    'lat':lat,'lon':lon,'provider':'guided-sampling','category':'photo-location','categoryGroups':[],
+                    'distanceMeters':round(distance((self.p.lat,self.p.lon),(lat,lon))),
+                    'sourceUrl':anchor.get('sourceUrl'),'discoveryAnchor':{'id':anchor['id'],'name':anchor['name']},
+                    'visuallyAnalyzed':False})
+            groups.append(group)
+        # Interleave anchors so the first neighborhood does not consume the budget.
+        rows=[]
+        for index in range(17):
+            for group in groups:
+                if index>=len(group):continue
+                point=group[index]
+                if any(distance((point['lat'],point['lon']),(old['lat'],old['lon']))<35 for old in rows):continue
+                rows.append(point)
+                if len(rows)>=50:break
+            if len(rows)>=50:break
+        return Places(rows,{r['id']:[self.empty_path(s,filters=[s.id])] for r in rows})
+
     def matches(self,row,s,source):
+        if s.tool=='sample_near_places':
+            from .sources import distance
+            return any(distance((row['lat'],row['lon']),(a['lat'],a['lon']))<=min(s.radiusMeters,self.p.radius) for a in source.rows[:6])
         if isinstance(source,Geography):
             combination="any" if source.combination=="any" else s.combination
             key=(id(source),combination)
@@ -235,12 +283,17 @@ class Tools:
 
     async def filter_geography(self,s,inputs):
         value,region=inputs
+        # Missing geometry must not turn a required or negated condition into
+        # an unfiltered search. Carry its failure to an explicit OR or delivery.
+        if value.unavailable or region.unavailable:return Places([],{},unavailable=True)
         rows=[r for r in value.rows if self.matches(r,s,region)]
         return append_condition(Places(rows,{r['id']:value.paths[r['id']] for r in rows}),s,s.id)
 
     async def filter_features(self,s,inputs):return await self.filter_geography(s,inputs)
 
     async def union(self,s,inputs):
+        available=[value for value in inputs if not value.unavailable]
+        if not available:return Places([],{},unavailable=True)
         by_id={};paths={};rows=[];seen=set()
         for value in inputs:
             for row in value.rows:
@@ -255,6 +308,7 @@ class Tools:
         return Places(rows,{r['id']:unique_paths(paths[r['id']]) for r in rows})
 
     async def intersection(self,s,inputs):
+        if any(value.unavailable for value in inputs):return Places([],{},unavailable=True)
         shared=set.intersection(*(set(v.paths) for v in inputs))
         rows=[r for r in inputs[0].rows if r['id'] in shared];paths={}
         for row in rows:
@@ -276,6 +330,7 @@ class Tools:
     async def collect_images(self,s,inputs):
         if self.pipeline is None:raise ValueError('Image tools require the full discovery execution context')
         locations=inputs[0]
+        if getattr(locations,'unavailable',False):raise ProgramSourceUnavailable(self.statuses)
         if self.pipeline.selected_ids is not None:
             if not isinstance(locations,Places) or not set(self.pipeline.selected_ids).issubset(locations.paths):
                 raise ValueError('Selected places changed; search again')
@@ -391,6 +446,7 @@ async def execute_program(program,parameters,providers,database_path,poi_provide
     try:
         for step in program.steps:tasks[step.id]=asyncio.create_task(run(step))
         output=await tasks[program.output]
+        if getattr(output,'unavailable',False):raise ProgramSourceUnavailable(tools.statuses)
     finally:
         for task in list(tasks.values())+list(tools.memo.values()):
             if not task.done():task.cancel()

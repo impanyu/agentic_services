@@ -16,7 +16,7 @@ def spread_points(rows, lat, lon, radius, *, cells=8):
         buckets.setdefault((x,y), []).append(row)
     queues = []
     for key, values in buckets.items():
-        values.sort(key=lambda p: (bool(p.get('unknownAttributes')), p.get('distanceMeters', 0)))
+        values.sort(key=lambda p: (p.get('selectionPriority',[]),bool(p.get('unknownAttributes')),p.get('distanceMeters', 0)))
         queues.append((key, deque(values)))
     queues.sort(key=lambda pair: pair[1][0].get('distanceMeters', 0))
     result = []

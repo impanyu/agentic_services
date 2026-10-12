@@ -37,7 +37,7 @@ def test_provider_outage_preserves_same_query_cache_without_leaking_other_condit
     import asyncio,hashlib,json,sqlite3,time
     import agentic_services.photo_scout.osm_features as module
     query=OSMFeatureQuery(label='Houses',filters=[TagFilter(key='building',value='house')])
-    old_key=hashlib.sha256(json.dumps([40,-96,20000,[query.model_dump()]],sort_keys=True).encode()).hexdigest()
+    old_key=hashlib.sha256(json.dumps([40,-96,20000,[query.model_dump(exclude={'selectionHints'})]],sort_keys=True).encode()).hexdigest()
     path=tmp_path/'db';saved=[[{'id':'existing-house','lat':40,'lon':-96}]]
     with sqlite3.connect(path) as db:
         db.execute('CREATE TABLE photo_osm_feature_cache (key TEXT PRIMARY KEY,data TEXT NOT NULL,expires REAL NOT NULL)')

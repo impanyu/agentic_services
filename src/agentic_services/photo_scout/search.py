@@ -196,7 +196,8 @@ async def search_locations(parameters: SearchParameters, *, database_path: Path,
         counts={'returnedCandidates':len(places),'programSteps':len(execution.trace),
                 'sourceSearches':sum(s.tool.startswith('search_') for s in parameters.searchProgram.steps)}
         status={'status':'ok','provider':poi_provider,'count':len(places),'searchPlan':plan.model_dump(),
-                'searchCounts':counts,'executionTrace':execution.trace}
+                'searchCounts':counts,'executionTrace':execution.trace,
+                'unavailableSources':[s['id'] for s in execution.trace if s.get('source') and s['source'].get('status')!='ok']}
         return SearchResult(places,features,status,plan,program_execution=execution)
     if plan.mergeStrategy=='branch-union':
         # Share identical in-flight provider lookups between branches. A branch

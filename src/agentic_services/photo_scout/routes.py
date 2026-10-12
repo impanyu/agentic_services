@@ -342,7 +342,7 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
         store.reserve_intent()
         response.headers['Cache-Control']='private, no-store'
         try:
-            async with asyncio.timeout(45): return await resolve_intent(settings,payload)
+            async with asyncio.timeout(105): return await resolve_intent(settings,payload)
         except Exception as error:
             logging.getLogger(__name__).warning('Photo Scout text resolution failed: %s',type(error).__name__)
             raise HTTPException(503,'Search planning is temporarily unavailable. Please try again later.') from error
@@ -634,6 +634,8 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
         if lock.locked(): return False
         job=store.claim_preview()
         if not job: return False
+        from .costs import current
+        if current.get() is not None:current.get().job_id=job['id']
         context={}
         task_started=time.monotonic();planning_seconds=0
         try:
@@ -672,8 +674,13 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
                 queueSeconds=round(max(0,time.time()-job['created']-(time.monotonic()-task_started)),3))
             store.update(job['id'],state='complete',result=json.dumps(result),error=None,lease_until=0)
         except Exception as error:
+            failures=getattr(error,'source_failures',None) or getattr(error.__cause__,'source_failures',None)
+            if failures:
+                context['sourceFailures']=failures
+                tasks.update_context('search',job['id'],context)
+                logging.getLogger(__name__).warning('Photo Scout required sources failed: job=%s sources=%s',job['id'],json.dumps(failures))
             logging.getLogger(__name__).warning('Photo Scout background search failed: job=%s stage=%s elapsed=%.3f error=%s fields=%s',job['id'],context.get('stage'),time.monotonic()-task_started,type(error).__name__,[(e['loc'],e['type']) for e in error.errors(include_input=False,include_url=False)] if isinstance(error,ValidationError) else [])
-            store.update(job['id'],state='failed',lease_until=0,error=str(error.detail) if isinstance(error,HTTPException) else 'Could not prepare a valid search plan. Please try again.' if isinstance(error,ValidationError) and context.get('stage')=='planning' else 'Understanding this request took too long. Please try again.' if context.get('stage')=='planning' and isinstance(error,(TimeoutError,APITimeoutError)) else 'Search could not be completed. Please try again later.')
+            store.update(job['id'],state='failed',lease_until=0,error=str(error.detail) if isinstance(error,HTTPException) else 'Could not prepare a valid search plan. Please try again.' if isinstance(error,ValidationError) and context.get('stage')=='planning' else 'Understanding this request took too long. Please try again.' if context.get('stage')=='planning' and isinstance(error,(TimeoutError,APITimeoutError)) else 'A required map source is temporarily unavailable. Please try again later.' if isinstance(error,SearchUnavailable) else 'Search could not be completed. Please try again later.')
         return True
 
     router.process_preview=process_preview

@@ -143,9 +143,51 @@ Other queries kind=tagged, English label, proximityMeters=150 by default (30 for
 Tag filters have key,value (null means existence),required. Category tags required=true;
 secondary mapped material/colour may use required=false to preserve unannotated unknowns,
 then confirm in pixels. Numeric filters use key,minimum,maximum: explicit height uses
-height meters; unspecified high-rise can use building existence + building:levels>=10 as
-an approximate discovery hint, not proof of height. Supported tags are not a whitelist;
+height meters; unspecified high-rise can use building existence + selectionHints
+['more-storeys'], not an invented mandatory floor-count threshold. Supported tags are not a whitelist;
 unsupported fine attributes remain visual. Missing map attributes are not visual proof.
+
+RETRIEVAL REWRITING AND CANDIDATE PRIORITIES
+Translate intent into a discovery strategy, not just synonyms. Places indexes named
+venues/business categories; ordinary homes, individual buildings and visual attributes
+often have poor Places coverage. Combine useful named/category searches with mapped
+physical objects using OR when either can discover the requested subject. Keep actual
+relational constraints as AND filters, not optional alternatives.
+For buildings, selectionHints on each OSM feature query can prioritize large-footprint,
+small-footprint or more-storeys across spatial cells without excluding other buildings.
+Use these only when the current intent makes the proxy useful. Large/grand homes can
+use house/detached tags, large-footprint priority and useful named mansion/house searches;
+luxurious appearance stays a shared visual condition. 'Villa' in a business name is not
+proof of a villa. High-rise glass buildings can use building tags/more-storeys priority,
+with visible glass checked from images. Geometry/levels are approximate discovery clues,
+not proof of luxury, style, use or photo quality. Missing metadata stays eligible.
+Never invent numeric thresholds for qualitative words; numericFilters are for explicit
+measurable requirements. For red roofs or quiet streets, discover plausible categories
+and locations, leaving visible details to image review. Do not send fine visual
+descriptions as literal business names. Preserve proper names and all required visual
+conditions rather than replacing a difficult request with generic scenery.
+
+TOOL BOUNDARIES AND GEOGRAPHIC HYPOTHESES
+Places discovers indexed names, categories and neighborhoods, not visual luxury,
+roof color, facade material or the presence of a photographic view. OSM supplies
+mapped objects/tags/geometry; absence of a tag is not absence of the real feature.
+Use world knowledge to propose plausible search leads, not to assert where a subject
+exists. Known estate districts, low-density residential neighborhoods, historic house
+museums or former residences may be useful leads for grand villas. Current use as a
+museum/hotel does not automatically disqualify villa-like architecture, but an ordinary
+museum/hotel/office does not satisfy the villa request. Preserve the physical subject.
+Search leads with search_places(discoveryHints=true), then sample_near_places takes
+that place set as inputs and samples around up to six provider-verified anchors,
+with radiusMeters 100..2000 (default 750). All points remain in the user's search circle,
+and total imagery candidates remain 50. The tool makes no extra source calls itself.
+It is also useful for testing likely areas for other hard-to-index visual subjects.
+Use geographically plausible specific names only when the supplied location/context
+supports them; never invent their coordinates. The provider verifies locations and
+the executor clips to the actual selected area. Mark such leads as assumptions,
+not confirmed matches or new mandatory conditions. Keep broad/direct alternatives
+so a mistaken neighborhood hypothesis does not remove other matching locations.
+Candidate-source OR and guided sampling do not weaken any required visual conditions.
+After all sources merge, collect, visually check, score and rank once as usual.
 
 SOURCE COVERAGE
 Before emitting steps, independently assess which retrieval tools can meaningfully
@@ -295,4 +337,8 @@ searchProgram={steps:[{id:'views',tool:'area_imagery'},
 {id:'scores',tool:'score_images',inputs:['images']},
 {id:'rank',tool:'rank_results',inputs:['scores']}],output:'rank'}.
 Return route=null for ordinary nearby searches.
+Keep prose concise without losing user conditions or tool semantics. Avoid repeating
+the same explanation in several fields. Delivery steps need no visualIntent; use an
+empty string there. SourceCoverage reasons can be one brief sentence. Preserve every
+necessary logical branch, proper name, constraint and visual requirement in full.
 """

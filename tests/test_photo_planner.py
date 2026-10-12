@@ -7,6 +7,14 @@ from agentic_services.photo_scout.planner import PlannerIntent, PlannerProgram
 from agentic_services.photo_scout.score_cache import ScoreCache
 
 
+@pytest.fixture(autouse=True)
+def model_transport(monkeypatch):
+    # These tests cover intent/schema behavior; streaming is tested separately.
+    async def response(client,request,trace):
+        return await client.responses.parse(**request)
+    monkeypatch.setattr(intent,'stream_plan',response)
+
+
 def output():
     return dict(locationQuery=None,useMapCenter=True,radiusMeters=5000,photoStyles=[],
         sourceCoverage=[{'subject':'motels','usefulTools':['search_places'],'stepIds':['p'],'reason':'Named businesses; map tagging adds little to this category search.'}],
@@ -205,3 +213,15 @@ def test_empty_input_is_repaired_to_ui_search_not_conversational_feedback(monkey
     r=asyncio.run(intent.parse_intent(SimpleNamespace(openai_api_key='fixture',openai_model='test'),intent.IntentRequest(query='  ',lat=0,lon=0)))
     assert r.action=='search' and r.searchProgram.complete and len(calls)==2
     assert 'UI-driven search' in calls[1]['input']
+
+
+def test_unfinished_tag_value_is_repaired_instead_of_querying_a_nonexistent_feature():
+    from copy import deepcopy
+    data=output()
+    data['searchProgram']['steps'][0]={'id':'p','tool':'search_features','osmFeatures':[{'label':'Lights','filters':[{'key':'highway','value':'traffic_signals_elapsed_placeholder_FIXME_FINAL_VALUE_traffic_signals_REMOVE_ME_pending'}]}]}
+    data['sourceCoverage']=[{'subject':'Traffic signals','usefulTools':['search_features'],'stepIds':['p'],'reason':'Mapped lights'}]
+    data['searchProgram']['steps'][1]['inputs']=['points']
+    data['searchProgram']['steps'].insert(1,{'id':'points','tool':'feature_points','inputs':['p']})
+    with pytest.raises(ValidationError,match='Unfinished retrieval parameter'):PlannerIntent.model_validate(data)
+    corrected=deepcopy(data);corrected['searchProgram']['steps'][0]['osmFeatures'][0]['filters'][0]['value']='traffic_signals'
+    assert PlannerIntent.model_validate(corrected).searchProgram.compile().complete

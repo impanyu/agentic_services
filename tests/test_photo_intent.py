@@ -7,6 +7,14 @@ from agentic_services.photo_scout.routes import PhotoStore
 from agentic_services.config import Settings
 from agentic_services.main import create_app
 
+@pytest.fixture(autouse=True)
+def model_transport(monkeypatch):
+    # These tests cover intent/schema behavior; streaming is tested separately.
+    async def response(client,request,trace):
+        return await client.responses.parse(**request)
+    monkeypatch.setattr(intent,'stream_plan',response)
+
+
 def plan(**changes):
     return intent.PhotoIntent(**({'locationQuery':None,'useMapCenter':True,'photoStyles':['waterside'],'radiusMeters':1000,'limit':3,'preferences':'Quiet waterside','explanation':'Find nearby waterside places','clarification':None}|changes))
 

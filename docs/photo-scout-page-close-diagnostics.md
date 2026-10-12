@@ -23,3 +23,61 @@ The original successful villa search found 284 raw candidates, selected 50 locat
 Dense building retrieval now divides the bounds into cells under the existing per-query total output budget, and candidate ordering round-robins spatial cells before truncation. Scoring requirements are unchanged. Fresh cache keys avoid reusing the old concentrated ordering; a still-valid legacy cache can supply the exact same query when providers fail.
 
 The production-network fresh Overpass probe on October 11 returned unavailable, so increased live coverage has not yet been demonstrated. Do not claim the new release already returns more villa matches. The cached fallback preserves availability when an exact valid older entry exists.
+
+## Streaming investigation and six additional lifecycle cases
+
+A production-network synthetic probe with no browser reproduced the old
+non-streaming failure: one response succeeded in 21.318 s and one hit ReadTimeout
+at 40.393 s before response headers. Two streaming equivalents completed in
+16.836/17.708 s, with headers in 0.450/0.499 s and first text in 3.406/4.480 s.
+This isolates a provider/planning failure from browser closure in that probe;
+it cannot establish causality for the two original failures.
+
+Planning now streams under a 60-second wall deadline with a 40-second inactivity
+limit. Only the final complete validated plan executes. Safe timings include
+headers, first text, final response, output character/delta counts, usage,
+provider request ID and exception type. Output is bounded to 4096 tokens and
+prose is concise. There remains one bounded transient retry in the job worker;
+this is not a guarantee that every provider response will finish.
+
+The following six real Chrome cases ran after the core streaming deployment.
+Each recovered the same persisted job; every queue claim count was exactly one.
+Browser beacons identify owned active tasks and can associate several active
+jobs with one leaving page, so action timestamps and job identities must be
+checked together. Results were also confirmed visibly in Search history.
+
+| Action | Job | Planning seconds | Pipeline seconds | Result locations | Planning attempts |
+| --- | --- | ---: | ---: | ---: | ---: |
+| Close | `ps_c0a452563431cc758a1bc6296cef18a0` | 13.611 | 49.470 | 4 | 1 |
+| Refresh | `ps_3ae81de07ed19737711ba79cb619be80` | 13.319 | 55.990 | 32 | 1 |
+| Close and reopen | `ps_4261a9cc85d3bf2e192c3fad57f9c047` | 7.071 | 39.535 | 23 | 1 |
+| Close | `ps_d8d0402172b92dc611d258fb7602a552` | 12.847 | 53.370 | 3 | 1 |
+| Refresh | `ps_1dfcce58f0f0f8d04bb46b7dabdbb2b2` | 69.071 | 106.218 | 22 | 2 |
+| Close and reopen | `ps_c10d1c30b51bdf07506f8627d1feae4b` | 6.146 | 42.289 | 22 | 1 |
+
+The fifth case kept emitting text until 59.937 s and reached the wall deadline;
+it was not an idle connection. The retry succeeded. The old trace did not retain
+partial output size, so its exact long-generation cause remains unknown. New
+output character/delta counts address that diagnostic gap, without recording
+raw user text or generated plan bodies in production timing logs.
+
+The two new villa results (4 and 3 locations) used available Places candidates
+while the independent OSM building source was unavailable. This demonstrates
+partial-source delivery and unchanged visual filtering, not improved fresh OSM
+coverage. Fresh Overpass probes still produced 500/504/unavailable responses.
+
+Synthetic capability-aware planner probes generated building footprint hints,
+named residence alternatives and, in one medium-reasoning run, guided sampling
+around verified residence leads. A separate three-case probe had a 60 s villa
+planning timeout; neither structural tests nor those successful examples justify
+claiming all planning tails are resolved. Production reasoning remains low.
+
+Three final low-reasoning synthetic plans completed in 16.584, 20.603 and
+11.022 seconds. The explicit neighborhood exploration case proposed Sheridan
+Boulevard Historic District and the Country Club neighborhood as assumptions,
+looked them up with Places, then used `sample_near_places` alongside mapped
+houses and named residence alternatives. This is planner evidence, not a live
+verification that either neighborhood contains matching villas.
+
+Local regression validation: 441 Python tests and 156 frontend/domain tests
+passed. These counts cover scoped suites, not every test in the repository.

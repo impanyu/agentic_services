@@ -26,6 +26,8 @@ def prune_records(db):
     tables={r[0] for r in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
     if 'photo_client_events' in tables:
         db.execute('DELETE FROM photo_client_events WHERE received<?',(now-7*86400,))
+    if 'photo_planning_traces' in tables:
+        db.execute('DELETE FROM photo_planning_traces WHERE created<?',(now-7*86400,))
     owners='photo_task_owners' in tables
     for table,kind in [('photo_scout_jobs','search'),('photo_portraits','portrait')]:
         if table not in tables:continue

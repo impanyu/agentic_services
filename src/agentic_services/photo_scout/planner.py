@@ -38,6 +38,11 @@ class SampleStep(Step):
     inputs: list[str] = Field(min_length=1,max_length=1)
     combination: Literal['all','any'] = 'all'
 
+class GuidedSampleStep(Step):
+    tool: Literal['sample_near_places']
+    inputs: list[str] = Field(min_length=1,max_length=1)
+    radiusMeters: int = Field(default=750,ge=100,le=2000)
+
 class FilterStep(Step):
     tool: Literal['filter_geography','filter_features']
     inputs: list[str] = Field(min_length=2,max_length=2)
@@ -60,7 +65,7 @@ class DeliveryStep(Step):
     tool: Literal['collect_images','score_images','rank_results']
     inputs: list[str] = Field(min_length=1,max_length=1)
 
-PlannerStep = PlaceStep | GeographyStep | FeatureStep | SampleStep | FilterStep | UnionStep | IntersectionStep | ImageryStep | DeliveryStep
+PlannerStep = PlaceStep | GeographyStep | FeatureStep | SampleStep | GuidedSampleStep | FilterStep | UnionStep | IntersectionStep | ImageryStep | DeliveryStep
 
 class PlannerProgram(BaseModel):
     model_config = ConfigDict(extra='forbid')
@@ -112,6 +117,16 @@ class PlannerIntent(BaseModel):
                 raise ValueError('Non-search actions must not execute a search or impose search conditions')
             return self
         if self.searchProgram is None:raise ValueError('Search actions require a complete executable program')
+        # Syntactically valid strings can still contain unfinished generation
+        # artifacts. Reject them for repair instead of querying nonexistent tags.
+        import re
+        for step in self.searchProgram.steps:
+            for feature in getattr(step,'osmFeatures',[]):
+                for tag in feature.filters:
+                    value=tag.value or ''
+                    markers=re.findall(r'(?:^|[_\s])(FIXME|REMOVE_ME|FINAL_VALUE|PLACEHOLDER)(?=$|[_\s])',value,re.I)
+                    if len(value)>60 and len(markers)>=2:
+                        raise ValueError('Unfinished retrieval parameter; use complete literal OSM tag values without generation markers')
         steps={s.id:s for s in self.searchProgram.steps}
         retrieval={s.id for s in steps.values() if s.tool in ('search_places','search_features','search_geography')}
         covered={ref for c in self.sourceCoverage for ref in c.stepIds}
