@@ -163,3 +163,14 @@ in Apple's own interface.
   enabled in iOS, review the applicable storefront payment requirements before shipping.
 
 Review reference: https://developer.apple.com/app-store/review/guidelines/
+
+## Native login deployment check
+
+Deploy `photo_scout/accounts.py` and `photo_scout/native_auth.py` together and rebuild
+the backend image. The app checks `auth/me.nativeAuthReady` before opening OAuth;
+missing native support must not silently sign in only the browser. After restart,
+run `python scripts/verify_photo_scout_native_auth.py` against the public ingress.
+This checks the native challenge, custom-scheme cancellation return, and exchange
+endpoint rejection of invalid proofs. It does not substitute for completing Google
+login on an actual iPhone and confirming that the browser closes and the original
+WebKit page shows the signed-in user, history and points.

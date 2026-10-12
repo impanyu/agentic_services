@@ -67,7 +67,7 @@ def create_accounts_router(settings,require_api):
     @router.get('/photo-scout/v1/auth/me')
     def me(request:Request):
         row=session(request)
-        return JSONResponse({'configured':all(config()),'user':json.loads(row['user_json']) if row else None,'csrfToken':row['csrf'] if row else None},headers={'Cache-Control':'private, no-store'})
+        return JSONResponse({'configured':all(config()),'nativeAuthReady':True,'user':json.loads(row['user_json']) if row else None,'csrfToken':row['csrf'] if row else None},headers={'Cache-Control':'private, no-store'})
     @router.get('/photo-scout/v1/auth/login')
     def login(request:Request,native_challenge:str=''):
         require_api(request.headers.get('authorization'))

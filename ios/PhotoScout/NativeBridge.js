@@ -4,7 +4,11 @@
   const send = message => window.webkit.messageHandlers.scout.postMessage(message);
   // Refresh the account in place: reloading discards File inputs and studio edits.
   window.PhotoScoutNative = Object.freeze({
-    signIn: async () => await send({action:'signIn'}),
+    signIn: async () => {
+      const response = await fetch('/api/v1/auth/me', {credentials:'include',cache:'no-store'});
+      if (!response.ok || !(await response.json()).nativeAuthReady) throw new Error('App sign-in is temporarily unavailable. Please try again shortly.');
+      return await send({action:'signIn'});
+    },
     purchasePoints: async product => {
       const response = await fetch('/api/v1/billing/apple/account', {method:'POST',credentials:'include',headers:{'Content-Type':'application/json','X-CSRF-Token':csrfToken||''}});
       const data = await response.json();
