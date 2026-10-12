@@ -113,7 +113,7 @@ async function switchMapStyle(style){
  }catch{fallback('The selected basemap is unavailable.');}
 }
 // Only one map popover is open; keep it clear of expanded search settings.
-const mapMenus=[...document.querySelectorAll('.map-overlay-controls details')];
+const mapMenus=[...document.querySelectorAll('.map-overlay-controls>details')];
 for(const menu of mapMenus)menu.addEventListener('toggle',()=>{if(!menu.open)return;for(const other of mapMenus)if(other!==menu)other.open=false;controls.open=false;});
 controls.addEventListener('toggle',()=>{if(controls.open)for(const menu of mapMenus)menu.open=false;});
 function closeMenusOutside(target){
@@ -138,6 +138,7 @@ const searchArea=L.circle(INITIAL_LOCATION,{radius:Number(el('radius').value),co
 const journeyLayer=L.layerGroup().addTo(map);let activeRouteGeometry=null,activeRouteBounds=null,restoredRoute=null,routeCreditShown=false;
 const overlayControl=L.control.layers(null,{'Route':journeyLayer,'Search radius':searchArea,'Current search results':photoLocationLayer,'Other search history':otherPhotoLocationLayer},{collapsed:true}).addTo(map);
 document.querySelector('.map-overlay-controls').append(overlayControl.getContainer());
+const overlaysToggle=overlayControl.getContainer().querySelector('.leaflet-control-layers-toggle');overlaysToggle.setAttribute('aria-label','Map overlays');overlaysToggle.removeAttribute('title');overlaysToggle.innerHTML='<svg class="rail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><path d="M9 6h5a4 4 0 0 1 0 8h-4a4 4 0 0 0 0 8h5"/></svg><span class="rail-label">Map overlays</span>';
 function syncMapSelection(){const lat=Number(el('lat').value),lon=Number(el('lon').value);if(!Number.isFinite(lat)||!Number.isFinite(lon)||Math.abs(lat)>85||Math.abs(lon)>180)return;searchArea.setLatLng([lat,lon]).setRadius(Number(el('radius').value));el('map-selection').textContent=`${lat.toFixed(5)}, ${lon.toFixed(5)}`;el('coordinate-readout').textContent=el('map-selection').textContent;el('map-radius').textContent=`Searching within ${Number(el('radius').value)>=1000?Number(el('radius').value)/1000+' km':el('radius').value+' m'}`;}
 selected.on('dragend',()=>{const p=selected.getLatLng();pick(p.lat,p.lng);});
 function saveMapVisit(){

@@ -5,7 +5,7 @@ function boot({user=null,available=0,native=false}={}){
   append(...nodes){for(const n of nodes){if(n.parentElement)n.parentElement.children=n.parentElement.children.filter(x=>x!==n);n.parentElement=this;this.children.push(n)}}
   prepend(n){this.append(n);this.children.unshift(this.children.pop())}
   replaceChildren(){this.children=[]}
-  setAttribute(){}
+  setAttribute(name,value){this.attributes??={};this.attributes[name]=value}
   addEventListener(name,fn){this.listeners[name]=fn}
   querySelector(){return root}
   showModal(){this.open=true}
@@ -36,4 +36,4 @@ test('funded users proceed and insufficient balances open top-up without login',
 });
 test('native wallet with unavailable products renders without a reference error',async()=>{const f=boot({native:true});await f.wallet.load();assert.ok(f.descendants(f.root).some(e=>e.textContent.includes('In-app purchases are coming soon')))});
 
-test('guest entry signs in directly and profile copy has no internal pricing controls',async()=>{const f=boot();await f.wallet.load();let prevented=false;f.root.listeners.click({preventDefault(){prevented=true}});assert.equal(prevented,true);assert.equal(f.logins(),1);assert.equal(f.menu.open,false);const texts=f.descendants(f.root).map(e=>e.textContent).join(' ' );assert.match(texts,/\$1 = 100 points/);assert.doesNotMatch(texts,/Maximum charge|recorded API|cost ×|point limit/);assert.equal(f.descendants(f.root).filter(e=>e.tagName==='input').length,0);const owner=boot({user:'owner'});await owner.wallet.load();assert.equal(owner.get('profile-title').textContent,'Profile');});
+test('guest entry signs in directly and profile copy has no internal pricing controls',async()=>{const f=boot();await f.wallet.load();let prevented=false;f.root.listeners.click({preventDefault(){prevented=true}});assert.equal(prevented,true);assert.equal(f.logins(),1);assert.equal(f.menu.open,false);const texts=f.descendants(f.root).map(e=>e.textContent).join(' ' );assert.match(texts,/\$1 = 100 points/);assert.doesNotMatch(texts,/Maximum charge|recorded API|cost ×|point limit/);assert.equal(f.descendants(f.root).filter(e=>e.tagName==='input').length,0);const owner=boot({user:'owner'});await owner.wallet.load();assert.equal(owner.get('profile-title').textContent,'Profile');assert.equal(owner.menu.attributes['data-authenticated'],'true');assert.equal(f.menu.attributes['data-authenticated'],'false');});

@@ -46,7 +46,7 @@ window.PhotoScoutBilling=class {
  }
  render(message=''){
   const root=this.root;root.replaceChildren();const make=(tag,text,cls)=>{const e=document.createElement(tag);if(text!==undefined&&text!==null)e.textContent=text;if(cls)e.className=cls;return e;},data=this.data,fmt=n=>Number(n||0).toLocaleString(undefined,{maximumFractionDigits:3});
-  const profile=this.session();document.querySelector('.profile-identity').hidden=!profile.id;document.getElementById('profile-title').textContent=profile.id?'Profile':'Sign in';document.getElementById('profile-name').textContent=profile.name||'';document.getElementById('profile-email').textContent=profile.email||'';document.getElementById('profile-avatar').textContent=profile.name?profile.name.trim().slice(0,1).toUpperCase():'◎';
+  const profile=this.session();document.querySelector('.profile-identity').hidden=!profile.id;document.getElementById('profile-title').textContent=profile.id?'Profile':'Sign in';document.getElementById('profile-name').textContent=profile.name||'';document.getElementById('profile-email').textContent=profile.email||'';this.menu.setAttribute('data-authenticated',String(Boolean(profile.id)));document.getElementById('profile-summary').setAttribute('aria-label',profile.id?'Profile & points':'Sign in');
   root.append(make('h3','Points & bills'));const status=make('p',message,'points-status');status.setAttribute('role','status');root.append(status);
   const native=/PhotoScout-iOS\//.test(navigator.userAgent);
   if(!data){if(message){const retry=make('button','Retry loading points');retry.type='button';retry.onclick=()=>this.load();root.append(retry);}else root.append(make('p','Loading points…','small'));return;}
