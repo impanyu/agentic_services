@@ -697,9 +697,7 @@ function syncSavedPhotoMap(){
  const groups=new Map();for(const task of photos){const p=task.context.poi,key=p.lat.toFixed(6)+','+p.lon.toFixed(6);if(!groups.has(key))groups.set(key,[]);groups.get(key).push(task);}
  for(const group of groups.values()){
   const latest=group[0],pos=latest.context.poi,icon=node('span',null,'saved-selfie-map-icon'),image=node('img');image.alt='';image.src=api+apiPrefix+'/v1/portraits/'+encodeURIComponent(latest.id)+'/thumbnail';image.decoding='async';image.addEventListener('error',()=>{image.hidden=true;icon.classList.add('thumbnail-unavailable');});icon.append(image);if(group.length>1)icon.append(node('span',String(group.length),'saved-selfie-map-count'));
-  const popup=node('div',null,'saved-selfie-map-popup');popup.append(node('strong',latest.context.name||'My photos'));
-  for(const task of group){const button=node('button',null,'saved-selfie-map-entry'),thumb=node('img');button.type='button';thumb.alt='';thumb.loading='lazy';thumb.src=api+apiPrefix+'/v1/portraits/'+encodeURIComponent(task.id)+'/thumbnail';button.append(thumb,node('span',new Date(task.created*1000).toLocaleString()));button.addEventListener('click',()=>viewSavedPhoto(task));popup.append(button);}
-  L.marker([pos.lat,pos.lon],{title:(latest.context.name||'My photo')+' · '+group.length+' photo'+(group.length===1?'':'s'),zIndexOffset:1000,icon:L.divIcon({className:'saved-selfie-map-pin',html:icon,iconSize:[44,44],iconAnchor:[22,44],popupAnchor:[0,-44]})}).addTo(savedSelfieLayer).bindPopup(popup,{autoPan:false,keepInView:false});
+  L.marker([pos.lat,pos.lon],{title:(latest.context.name||'My photo')+' · '+group.length+' photo'+(group.length===1?'':'s'),zIndexOffset:1000,icon:L.divIcon({className:'saved-selfie-map-pin',html:icon,iconSize:[44,44],iconAnchor:[22,44]})}).addTo(savedSelfieLayer).on('click',()=>viewSavedTask(latest));
  }
 }
 const selfieActivityLayer=L.layerGroup().addTo(map);
@@ -888,7 +886,8 @@ const savedPhotoComments=node('div',null,'saved-photo-comments');
 const savedPhotoBackground=node('section',null,'saved-photo-background');
 const savedPhotoActions=node('div',null,'saved-photo-actions');savedPhotoActions.setAttribute('role','group');savedPhotoActions.setAttribute('aria-label','Photo actions');savedPhotoActions.append(savedPhotoSave,savedPhotoDownload);
 const savedPhotoNav=node('nav',null,'saved-photo-nav');savedPhotoNav.setAttribute('aria-label','Navigate to this photo location');
-savedPhoto.append(savedPhotoTop,savedPhotoPlace,savedPhotoImage,savedPhotoStatus,savedPhotoComments,savedPhotoBackground,savedPhotoActions,savedPhotoHint);document.body.append(savedPhoto);
+const savedPhotoGallery=node('nav',null,'saved-photo-gallery');savedPhotoGallery.setAttribute('aria-label','Photos at this location');
+savedPhoto.append(savedPhotoTop,savedPhotoPlace,savedPhotoGallery,savedPhotoImage,savedPhotoStatus,savedPhotoComments,savedPhotoBackground,savedPhotoActions,savedPhotoHint);document.body.append(savedPhoto);
 let savedPhotoGeneration=0,savedPhotoTimer=null,savedPhotoFile=null,savedPhotoUrl=null;
 function savedPhotoNavigation(context){
  const {lat,lon}=context?.poi||{};
@@ -929,7 +928,14 @@ async function viewPortraitProgress(task){
  }catch(error){if(generation!==portraitProgressGeneration)return;portraitProgressStatus.textContent='Could not refresh progress. Reconnecting…';}
  portraitProgressTimer=setTimeout(refresh,4000);};await refresh();
 }
+function renderSavedPhotoGallery(task,publication){
+ const photos=publication?[]:taskRecords.filter(t=>t.kind==='portrait'&&t.state==='complete'&&samePhotoPlace(task.context||{},t.context||{})).sort((a,b)=>b.created-a.created);
+ const index=photos.findIndex(t=>t.id===task.id);savedPhotoGallery.replaceChildren();savedPhotoGallery.hidden=photos.length<2||index<0;if(savedPhotoGallery.hidden)return;
+ const previous=node('button','Previous photo'),next=node('button','Next photo');previous.type=next.type='button';previous.disabled=index===0;next.disabled=index===photos.length-1;
+ previous.addEventListener('click',()=>viewSavedPhoto(photos[index-1]));next.addEventListener('click',()=>viewSavedPhoto(photos[index+1]));savedPhotoGallery.append(previous,node('span',`${index+1} / ${photos.length}`),next);
+}
 async function viewSavedPhoto(task,publication=null){
+ map.closePopup?.();renderSavedPhotoGallery(task,publication);
  focusMapSpot(publication?.context||task.context,{openPopup:false});
  if(!publication&&['queued','checking','running'].includes(task.state)){await viewPortraitProgress(task);return;}
  delete savedPhoto.dataset.publication;delete savedPhoto.dataset.photoId;
