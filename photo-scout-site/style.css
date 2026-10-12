@@ -249,3 +249,6 @@ html:has(body.photo-app),body.photo-app{height:100%;overflow:hidden}.photo-app m
 @media(max-width:600px){.route-settings{grid-template-columns:1fr;gap:.5rem}.route-settings input{padding:.55rem}.route-settings p{font-size:.75rem}.map-controls[open]{max-height:55dvh;overflow-y:auto}}
 
 .route-result-sort{display:flex;align-items:center;gap:12px;margin:14px 0;color:#675572;font-size:13px}.route-result-sort select{flex:1;min-width:0;border:1px solid #ddcfe8;border-radius:12px;padding:10px;background:#f6f0fa;color:#543968}
+
+.studio-subject-list{display:flex;gap:10px;overflow-x:auto;padding:4px 0 12px}.studio-subject{flex:0 0 104px;display:flex;flex-direction:column;gap:5px;min-width:0}.studio-subject img{width:104px;height:104px;object-fit:cover;border-radius:12px}.studio-subject>span{font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.studio-subject button{font-size:12px;padding:5px}
+.studio-subject button{border:1px solid #dfd0ef;border-radius:8px;background:#f3edf9;color:#634781;cursor:pointer}.studio-subject button:disabled{opacity:.5;cursor:default}

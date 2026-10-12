@@ -769,3 +769,12 @@ average. The preceding same-input live run returned 28 places with retrieval
 1.856s and download/scoring 31.709s; these runs do **not** demonstrate an overall
 speedup. The new stage visibility identifies model inference plus image loading
 as remaining work rather than incorrectly claiming the target achieved.
+
+
+### Multiple subject references
+
+Take a Selfie accepts up to six reference photos, including mixed uploads, camera captures and avatar selections. Selecting another photo appends it; the strip previews each reference and allows individual removal. Selection remains scoped to the current place/search and account. A single reference can still contain several people or mixed human/cartoon/animal subjects.
+
+The request accepts either legacy `portrait` or a nonempty `portraits` array (never both). The combined encoded references are capped at 27 MB within the existing bounded request body; normalized image bytes are capped at 20 MB. Each reference is independently checked, with at most three checks concurrently. An invalid or empty reference fails the entire composition with its reference number, before background preparation or image generation. There is no silent subject exclusion.
+
+The durable private job stores the references together in the existing photo blob and removes them on completion/failure. Both image providers receive every subject image separately, in selection order, followed by the single background image. Group prompts explicitly preserve identities across all references, including groups inside individual inputs, and disallow merged faces, omitted subjects, panels or collages. Reference count is supplied to the generation planner and retained in task context; raw inputs are never returned in task history. More references can increase API input costs. Subject preservation is model-generated and still needs visual evaluation.

@@ -40,7 +40,7 @@ async def plan_image(client, settings, payload):
         model, reason, source = OPENAI_IMAGE, 'Only OpenAI image generation is configured; retain high quality.', 'availability'
     else:
         model = getattr(settings, 'photo_scout_intent_model', None) or settings.openai_model
-        task = {key: payload.get(key) for key in ('place', 'pose', 'style', 'composition', 'posture', 'weather', 'expression', 'framing')}
+        task = {key: payload.get(key) for key in ('referenceCount', 'place', 'pose', 'style', 'composition', 'posture', 'weather', 'expression', 'framing')}
         try:
             response = await observe('image-planning', model, client.responses.parse(
                 model=model, instructions='''Plan the image-generation step of a portrait workflow.

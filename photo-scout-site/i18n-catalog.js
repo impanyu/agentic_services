@@ -1,6 +1,20 @@
 /* UI messages only: never translate API enums, user input or provider attribution. */
 window.PhotoScoutMessages={
   "zh-Hans": {
+    "6 / 6 reference photos · All selected people will appear together.": "6 / 6 张参考图 · 将所有选中的人物合成为一张合影",
+    "5 / 6 reference photos · All selected people will appear together.": "5 / 6 张参考图 · 将所有选中的人物合成为一张合影",
+    "4 / 6 reference photos · All selected people will appear together.": "4 / 6 张参考图 · 将所有选中的人物合成为一张合影",
+    "3 / 6 reference photos · All selected people will appear together.": "3 / 6 张参考图 · 将所有选中的人物合成为一张合影",
+    "2 / 6 reference photos · All selected people will appear together.": "2 / 6 张参考图 · 将所有选中的人物合成为一张合影",
+    "1 / 6 reference photos · All selected people will appear together.": "1 / 6 张参考图 · 将所有选中的人物合成为一张合影",
+    "0 / 6 reference photos · All selected people will appear together.": "0 / 6 张参考图 · 将所有选中的人物合成为一张合影",
+    "People · Tap to add": "合影人物 · 点击添加",
+    "Add a selfie or avatar": "添加自拍或人物头像",
+    "Add up to 6 photos or avatars · 20 MB combined after resizing": "最多添加 6 张照片或头像 · 缩放后合计不超过 20 MB",
+    "0 / 6 reference photos · Add a selfie or avatar for each person.": "0 / 6 张参考图 · 为每个人添加自拍或头像",
+    "Your photo is ready. Add another person or create the group photo.": "照片已准备好。可以继续添加人物，或生成合影。",
+    "Choose up to 6 reference photos. Remove a photo before adding more.": "最多选择 6 张参考图。请先移除一张，再继续添加。",
+    "Combined photos exceed 20 MB. Remove a photo or use smaller images.": "照片合计超过 20 MB。请移除部分照片或使用较小的图片。",
     "Sign in": "登录",
     "Sign out": "退出登录",
     "Map layers": "地图图层",

@@ -29,7 +29,9 @@ async def google_response(model, subject, background, background_mime, prompt):
     if model != DEFAULT_MODEL:
         raise ImageProviderError('unsupported_image_model')
     parts = [{'text': prompt}]
-    for raw, mime in ((subject, 'image/png'), (background, background_mime)):
+    subjects=subject if isinstance(subject,list) else [subject]
+    if not 1<=len(subjects)<=6:raise ImageProviderError('invalid_subject_count')
+    for raw, mime in [(photo,'image/png') for photo in subjects]+[(background,background_mime)]:
         parts.append({'inlineData': {'mimeType': mime, 'data': base64.b64encode(raw).decode()}})
     body = {'contents': [{'role': 'user', 'parts': parts}],
             'generationConfig': {'responseModalities': ['TEXT', 'IMAGE'],
