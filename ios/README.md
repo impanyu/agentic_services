@@ -8,7 +8,7 @@ reimplementation or an offline copy of the website.
 
 ## Open and run
 
-1. Install full Xcode (16 or newer) and an iOS simulator runtime.
+1. Install full Xcode (26.3 is verified in CI) and an iOS simulator runtime.
 2. Open `PhotoScout.xcodeproj`, choose the **PhotoScout** scheme and an iPhone or
    iPad simulator, then Run. There are no third-party native dependencies.
 3. For a physical device, select your Apple Development Team under Signing &
@@ -63,8 +63,16 @@ Apple references: [system authentication](https://developer.apple.com/documentat
 
 Implemented source, backend integration and automated checks are in this change.
 The implementation machine has Command Line Tools but **no full Xcode / iOS SDK**.
-Swift parsing, origin-policy checks, backend tests and JavaScript bridge tests can
-run there; an iOS build, simulator run and device tests have **not** been completed.
+Remote CI uses Xcode 26.3 and iOS 26 simulators. Both iPhone and iPad builds and
+XCTest runs passed on 2026-10-12, including loading the production website in
+WKWebView with its native bridge. Backend regression: 570 passed; JavaScript
+bridge: 4 passed. Physical-device tests have **not** been completed.
+
+Build evidence: https://github.com/impanyu/agentic_services/actions/runs/38294090954
+
+The first Xcode 16.4 / iOS 18.5 runtime attempt compiled but could not launch
+because that simulator was missing libswiftWebKit.dylib; CI now pins Xcode 26.3
+and selects an iOS 26 runtime.
 The native login exchange endpoint is **deployed**. Production health and invalid-code
 rejection were verified; this does not substitute for a real-device Google login.
 
