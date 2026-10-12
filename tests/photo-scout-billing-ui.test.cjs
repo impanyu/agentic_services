@@ -37,3 +37,16 @@ test('funded users proceed and insufficient balances open top-up without login',
 test('native wallet with unavailable products renders without a reference error',async()=>{const f=boot({native:true});await f.wallet.load();assert.ok(f.descendants(f.root).some(e=>e.textContent.includes('In-app purchases are coming soon')))});
 
 test('guest entry signs in directly and profile copy has no internal pricing controls',async()=>{const f=boot();await f.wallet.load();let prevented=false;f.root.listeners.click({preventDefault(){prevented=true}});assert.equal(prevented,true);assert.equal(f.logins(),1);assert.equal(f.menu.open,false);const texts=f.descendants(f.root).map(e=>e.textContent).join(' ' );assert.match(texts,/\$1 = 100 points/);assert.doesNotMatch(texts,/Maximum charge|recorded API|cost ×|point limit/);assert.equal(f.descendants(f.root).filter(e=>e.tagName==='input').length,0);const owner=boot({user:'owner'});await owner.wallet.load();assert.equal(owner.get('profile-title').textContent,'Profile');assert.equal(owner.menu.attributes['data-authenticated'],'true');assert.equal(f.menu.attributes['data-authenticated'],'false');});
+
+test('customer billing hides raw stage names, task IDs, ledger notes and pricing metadata',async()=>{
+ const f=boot({user:'owner',available:1000});await f.wallet.load();
+ f.wallet.data.pending=[{kind:'search',limitPoints:250,job:'private-job-id'}];
+ f.wallet.data.ledger=[{created:1,reason:'Recorded API cost ×3 ×100',reference:'private-reference',points:100}];
+ f.wallet.data.subscriptions=[{product:'internal-plan-id',state:'active'}];
+ f.wallet.data.bills=[{created:1,kind:'search',points:3,basis:'Recorded API cost ×3 ×100',pricing:{multiplier:3},items:[{stage:'private-provider-model-cost',points:3}]}];
+ f.wallet.render();
+ const detail=f.descendants(f.root).find(e=>e.tagName==='details'&&e.children.some(c=>c.tagName==='summary'&&c.textContent.includes('Search')));detail.open=true;detail.listeners.toggle();
+ const text=f.descendants(f.root).map(e=>e.textContent).join(' ');
+ assert.doesNotMatch(text,/Recorded API|×3|×100|private-|internal-plan|multiplier/);
+ assert.match(text,/Place search · 250 points reserved/);assert.match(text,/Other services/);assert.match(text,/Monthly plan · Active/);assert.match(text,/Points added/);
+});
