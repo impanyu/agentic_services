@@ -214,3 +214,6 @@
 
 /* Keep all four photo collections in one row, with space proportional to label length. */
 @media(max-width:360px){.photo-library-tabs{gap:2px;padding:3px}.photo-library-tabs [role="tab"]{padding-inline:2px;font-size:12px}}
+
+/* Text input inherits the dock scrollbar color; keep its scroll chrome invisible. */
+.prompt-row textarea{scrollbar-width:none;scrollbar-color:auto}.prompt-row textarea::-webkit-scrollbar{display:none}
