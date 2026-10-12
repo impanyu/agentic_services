@@ -130,3 +130,5 @@
 .saved-selfie-map-icon.thumbnail-unavailable::after{content:"";display:block;width:20px;height:16px;margin:8px auto;border:2px solid white;border-radius:4px}
 
 .saved-photo-gallery{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:8px 0 12px;font-size:12px;color:#686d76}.saved-photo-gallery[hidden]{display:none}.saved-photo-gallery button{min-height:36px;padding:6px 10px;border:1px solid #e1e4e9;border-radius:9px;background:#f7f6fa;color:#55466b;font-size:12px;cursor:pointer}.saved-photo-gallery button:disabled{opacity:.4;cursor:default}
+
+.saved-photo-actions>.studio-save,.saved-photo-actions>a.studio-save:visited{color:#fff;background:var(--scout-plum)}
