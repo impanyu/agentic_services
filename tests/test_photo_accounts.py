@@ -1,3 +1,4 @@
+import pytest
 import hashlib,json,sqlite3,time
 from pathlib import Path
 from fastapi import FastAPI,HTTPException
@@ -70,13 +71,16 @@ def test_history_retains_all_account_records_and_validates_views(tmp_path,monkey
     assert client.post('/photo-scout/v1/history',headers=headers,json={**item(),'result':{'spots':'invalid'}}).status_code==422
 
 
-def test_google_callback_verifies_signature_audience_nonce_and_creates_session(tmp_path,monkeypatch):
+@pytest.mark.parametrize("canonical",[False,True])
+def test_google_callback_verifies_signature_audience_nonce_and_creates_session(tmp_path,monkeypatch,canonical):
     import base64
     from urllib.parse import parse_qs,urlsplit
     from cryptography.hazmat.primitives.asymmetric import rsa
     import httpx,jwt
     import agentic_services.photo_scout.accounts as accounts
     client,path=fixture(tmp_path,monkeypatch)
+    if canonical:client.headers['X-Forwarded-Host']='photo-scout.aisoup.net'
+    expected_callback='https://photo-scout.aisoup.net/api/v1/auth/callback' if canonical else 'https://api.aisoup.net/photo-scout/v1/auth/callback'
     private=rsa.generate_private_key(public_exponent=65537,key_size=2048)
     numbers=private.public_key().public_numbers()
     encode=lambda v:base64.urlsafe_b64encode(v.to_bytes((v.bit_length()+7)//8,'big')).decode().rstrip('=')
@@ -84,6 +88,7 @@ def test_google_callback_verifies_signature_audience_nonce_and_creates_session(t
     active={'nonce':'','aud':'client'}
     def handler(request):
         if request.url.path.endswith('/token'):
+            assert parse_qs(request.content.decode())['redirect_uri']==[expected_callback]
             claims={'iss':'https://accounts.google.com','sub':'verified-user','aud':active['aud'],'iat':int(time.time()),'exp':int(time.time())+600,'nonce':active['nonce'],'email_verified':True,'email':'user@example.test','name':'Test user'}
             return httpx.Response(200,json={'id_token':jwt.encode(claims,private,algorithm='RS256',headers={'kid':'fixture'})})
         return httpx.Response(200,json={'keys':[jwk]})
@@ -102,6 +107,11 @@ def test_google_callback_verifies_signature_audience_nonce_and_creates_session(t
     assert client.get('/photo-scout/v1/auth/callback',params={'state':state,'code':'fixture'},follow_redirects=False).status_code==302
     me=client.get('/photo-scout/v1/auth/me').json()
     assert me['user']['id']=='google:verified-user' and me['csrfToken']
+    state=start()
+    assert client.get('/photo-scout/v1/auth/callback',params={'state':state,'code':'fixture'},follow_redirects=False).status_code==302
+    with sqlite3.connect(path) as db:
+        families=db.execute('SELECT DISTINCT family FROM photo_session_families').fetchall()
+        assert len(families)==1 and db.execute('SELECT COUNT(*) FROM photo_session_families').fetchone()[0]==2
 
 def test_removed_history_does_not_return_after_stale_browser_sync(tmp_path,monkeypatch):
     client,path=fixture(tmp_path,monkeypatch);headers=seed(client,path,'alice')

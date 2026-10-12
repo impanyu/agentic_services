@@ -197,7 +197,7 @@ export async function createMcpHandler(options: McpHandlerOptions): Promise<(req
       title: 'Web Evidence by Agentic Services',
       version: '0.3.1',
       description: 'Paid claim verification with cited web evidence, complete provider-source provenance, reproducible snapshots, and content hashes.',
-      websiteUrl: `${options.publicBaseUrl}/web-evidence/`,
+      websiteUrl: 'https://web-evidence.aisoup.net/',
       icons: [{ src: `${options.publicBaseUrl}/favicon.ico`, mimeType: 'image/svg+xml' }],
     })
 

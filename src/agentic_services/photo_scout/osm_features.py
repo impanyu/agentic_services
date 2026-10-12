@@ -5,6 +5,7 @@ from typing import Literal
 import httpx
 from pydantic import BaseModel,ConfigDict,Field,model_validator
 from .sources import HEADERS,get_json,distance,text
+from .spatial_sampling import spread_points
 
 class TagFilter(BaseModel):
     model_config=ConfigDict(extra='forbid')
@@ -63,7 +64,19 @@ def make_query(lat,lon,radius,queries):
             parts.append(f'way{bbox}["highway"~"^(residential|service|unclassified|tertiary|secondary|primary|living_street|pedestrian)$"];out geom 1800;')
         else:
             selectors=''.join('['+json.dumps(f.key,ensure_ascii=False)+('='+json.dumps(f.value,ensure_ascii=False) if f.value is not None else '')+']' for f in q.filters if f.required)
-            parts.append(f'nwr{bbox}{selectors};out center tags 1200;')
+            dense = radius >= 1000 and any(f.required and f.key == 'building' for f in q.filters)
+            tiles = 4 if radius > 5000 else 2
+            if dense:
+                # Bound the total output as before, but request a share from each
+                # cell instead of accepting only the first OSM IDs in a city.
+                for y in range(tiles):
+                    for x in range(tiles):
+                        south=max(-85,lat-dy+2*dy*y/tiles);north=min(85,lat-dy+2*dy*(y+1)/tiles)
+                        west=lon-dx+2*dx*x/tiles;east=lon-dx+2*dx*(x+1)/tiles
+                        tile=f'({south},{west},{north},{east})'
+                        parts.append(f'nwr{tile}{selectors};out center tags {1200//(tiles*tiles)};')
+            else:
+                parts.append(f'nwr{bbox}{selectors};out center tags 1200;')
     return '[out:json][timeout:8][maxsize:16777216];'+''.join(dict.fromkeys(parts))
 
 def decode(data,queries,lat,lon,radius):
@@ -99,16 +112,20 @@ def decode(data,queries,lat,lon,radius):
             out.append({'id':ident,'name':text(tags.get('name') or q.label),'lat':coord['lat'],'lon':coord['lon'],'category':'map-feature','categoryGroups':[],
                 'distanceMeters':round(d),'provider':'openstreetmap-features','sourceUrl':f"https://www.openstreetmap.org/{e['type']}/{e['id']}",
                 'visuallyAnalyzed':False,'osmTags':tags,'unknownAttributes':unknown,'featureQueryIndex':i})
-        groups.append(sorted(out,key=lambda p:(bool(p['unknownAttributes']),p['distanceMeters']))[:120])
+        groups.append(spread_points(out,lat,lon,radius)[:120])
     return groups
 
 async def fetch_features(lat,lon,radius,queries,database_path):
     if not queries:return [],{'status':'not_requested','provider':'openstreetmap-features'}
-    key=hashlib.sha256(json.dumps([lat,lon,radius,[q.model_dump() for q in queries]],sort_keys=True).encode()).hexdigest()
+    key=hashlib.sha256(json.dumps(['spatial-v2',lat,lon,radius,[q.model_dump() for q in queries]],sort_keys=True).encode()).hexdigest()
+    legacy_key=hashlib.sha256(json.dumps([lat,lon,radius,[q.model_dump() for q in queries]],sort_keys=True).encode()).hexdigest()
+    legacy=None
     with sqlite3.connect(database_path) as db:
         db.execute('CREATE TABLE IF NOT EXISTS photo_osm_feature_cache (key TEXT PRIMARY KEY,data TEXT NOT NULL,expires REAL NOT NULL)')
         row=db.execute('SELECT data FROM photo_osm_feature_cache WHERE key=? AND expires>?',(key,time.time())).fetchone()
         if row:return json.loads(row[0]),{'status':'ok','provider':'openstreetmap-features','cached':True,'bounded':True}
+        older=db.execute('SELECT data FROM photo_osm_feature_cache WHERE key=? AND expires>?',(legacy_key,time.time())).fetchone()
+        if older:legacy=json.loads(older[0])
     try:
         query=make_query(lat,lon,radius,queries);data=None
         async with asyncio.timeout(10):
@@ -126,6 +143,8 @@ async def fetch_features(lat,lon,radius,queries,database_path):
             db.execute('INSERT OR REPLACE INTO photo_osm_feature_cache VALUES(?,?,?)',(key,json.dumps(groups),time.time()+86400))
         return groups,{'status':'ok','provider':'openstreetmap-features','cached':False,'bounded':True,'groupCounts':[len(g) for g in groups]}
     except (httpx.HTTPError,ValueError,TimeoutError):
+        if legacy is not None:
+            return legacy,{'status':'ok','provider':'openstreetmap-features','cached':True,'bounded':True,'spatialFallback':'legacy_cache','groupCounts':[len(g) for g in legacy]}
         return [],{'status':'unavailable','provider':'openstreetmap-features'}
 
 def matches_features(place,groups,queries,combination="all"):

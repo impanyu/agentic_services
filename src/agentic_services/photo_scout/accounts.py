@@ -1,5 +1,6 @@
 """Google OAuth sessions and account-owned Photo Scout search history."""
 from __future__ import annotations
+from .web_origin import allowed_web_origin, web_home, oauth_callback
 import base64
 import hashlib
 import hmac
@@ -43,6 +44,7 @@ def create_accounts_router(settings,require_api):
     with db() as d:
         d.execute('CREATE TABLE IF NOT EXISTS photo_oauth_states (hash TEXT PRIMARY KEY, verifier TEXT NOT NULL, nonce TEXT NOT NULL, expires REAL NOT NULL)')
         d.execute('CREATE TABLE IF NOT EXISTS photo_sessions (hash TEXT PRIMARY KEY, user_id TEXT NOT NULL, user_json TEXT NOT NULL, csrf TEXT NOT NULL, expires REAL NOT NULL)')
+        d.execute('CREATE TABLE IF NOT EXISTS photo_session_families (hash TEXT PRIMARY KEY, family TEXT NOT NULL)')
         d.execute('CREATE TABLE IF NOT EXISTS photo_removed_items (owner TEXT NOT NULL, kind TEXT NOT NULL, job TEXT NOT NULL, PRIMARY KEY(owner,kind,job))')
         d.execute('CREATE TABLE IF NOT EXISTS photo_account_history (user_id TEXT NOT NULL, id TEXT NOT NULL, created INTEGER NOT NULL, record TEXT NOT NULL, PRIMARY KEY(user_id,id))')
     def session(request):
@@ -53,7 +55,7 @@ def create_accounts_router(settings,require_api):
     def user_session(request,write=False):
         row=session(request)
         if not row:raise HTTPException(401,'Sign in to access account history')
-        if write and (request.headers.get('origin')!=origin or not hmac.compare_digest(request.headers.get('x-csrf-token',''),row['csrf'])):
+        if write and (not allowed_web_origin(request.headers.get('origin')) or not hmac.compare_digest(request.headers.get('x-csrf-token',''),row['csrf'])):
             raise HTTPException(403,'Invalid account request')
         return row
     def cookie(response,name,value,age):
@@ -73,7 +75,7 @@ def create_accounts_router(settings,require_api):
             d.execute('DELETE FROM photo_oauth_states WHERE expires<?',(time.time(),))
             d.execute('INSERT INTO photo_oauth_states VALUES(?,?,?,?)',(digest(state),verifier,nonce,time.time()+600))
         challenge=base64.urlsafe_b64encode(hashlib.sha256(verifier.encode()).digest()).decode().rstrip('=')
-        url='https://accounts.google.com/o/oauth2/v2/auth?'+urlencode({'client_id':client,'redirect_uri':callback,'response_type':'code','scope':'openid email profile','state':state,'nonce':nonce,'code_challenge':challenge,'code_challenge_method':'S256','prompt':'select_account'})
+        url='https://accounts.google.com/o/oauth2/v2/auth?'+urlencode({'client_id':client,'redirect_uri':oauth_callback(request),'response_type':'code','scope':'openid email profile','state':state,'nonce':nonce,'code_challenge':challenge,'code_challenge_method':'S256','prompt':'select_account'})
         return cookie(RedirectResponse(url,status_code=302),STATE_COOKIE,state,600)
     @router.get('/photo-scout/v1/auth/callback')
     async def finish(request:Request,state:str='',code:str='',error:str=''):
@@ -85,12 +87,12 @@ def create_accounts_router(settings,require_api):
             pending=d.execute('SELECT * FROM photo_oauth_states WHERE hash=? AND expires>?',(digest(state),time.time())).fetchone()
             d.execute('DELETE FROM photo_oauth_states WHERE hash=?',(digest(state),))
         if not pending:raise HTTPException(400,'Sign-in expired; please try again')
-        if error:return cookie(RedirectResponse(origin+'/photo-scout/?login=cancelled',302),STATE_COOKIE,'',0)
+        if error:return cookie(RedirectResponse(web_home(request)+'?login=cancelled',302),STATE_COOKIE,'',0)
         client,secret=config()
         if not code or len(code)>4000:raise HTTPException(400,'Missing sign-in code')
         try:
             async with httpx.AsyncClient(timeout=20,follow_redirects=False) as c:
-                response=await c.post('https://oauth2.googleapis.com/token',data={'client_id':client,'client_secret':secret,'code':code,'code_verifier':pending['verifier'],'grant_type':'authorization_code','redirect_uri':callback})
+                response=await c.post('https://oauth2.googleapis.com/token',data={'client_id':client,'client_secret':secret,'code':code,'code_verifier':pending['verifier'],'grant_type':'authorization_code','redirect_uri':oauth_callback(request)})
                 response.raise_for_status();id_token=response.json()['id_token']
                 header=jwt.get_unverified_header(id_token)
                 keys=await c.get('https://www.googleapis.com/oauth2/v3/certs');keys.raise_for_status()
@@ -100,16 +102,28 @@ def create_accounts_router(settings,require_api):
         except Exception as e:raise HTTPException(400,'Google sign-in could not be verified; please try again') from e
         user={'id':'google:'+claims['sub'],'name':str(claims.get('name') or claims.get('email') or 'Google user')[:200],'email':str(claims.get('email',''))[:320]}
         token=secrets.token_urlsafe(32);csrf=secrets.token_urlsafe(32)
+        previous=session(request)
         with db() as d:
             d.execute('DELETE FROM photo_sessions WHERE expires<?',(time.time(),))
+            family=digest(token)
+            if previous and previous['user_id']==user['id']:
+                related=d.execute('SELECT family FROM photo_session_families WHERE hash=?',(previous['hash'],)).fetchone()
+                family=related['family'] if related else previous['hash']
+                d.execute('INSERT OR IGNORE INTO photo_session_families VALUES(?,?)',(previous['hash'],family))
             d.execute('INSERT INTO photo_sessions VALUES(?,?,?,?,?)',(digest(token),user['id'],json.dumps(user),csrf,time.time()+30*86400))
+            d.execute('INSERT INTO photo_session_families VALUES(?,?)',(digest(token),family))
         TaskStore(settings.database_path).attach_user(request,user['id'])
-        response=cookie(RedirectResponse(origin+'/photo-scout/',302),COOKIE,token,30*86400)
+        response=cookie(RedirectResponse(web_home(request),302),COOKIE,token,30*86400)
         return cookie(response,STATE_COOKIE,'',0)
     @router.post('/photo-scout/v1/auth/logout')
     def logout(request:Request):
         row=user_session(request,True)
-        with db() as d:d.execute('DELETE FROM photo_sessions WHERE hash=?',(row['hash'],))
+        with db() as d:
+            family=d.execute('SELECT family FROM photo_session_families WHERE hash=?',(row['hash'],)).fetchone()
+            if family:
+                d.execute('DELETE FROM photo_sessions WHERE hash IN (SELECT hash FROM photo_session_families WHERE family=?)',(family['family'],))
+                d.execute('DELETE FROM photo_session_families WHERE family=?',(family['family'],))
+            else:d.execute('DELETE FROM photo_sessions WHERE hash=?',(row['hash'],))
         return cookie(JSONResponse({'ok':True}),COOKIE,'',0)
     def map_history_result(result):
         result.pop('imageAssessments',None)

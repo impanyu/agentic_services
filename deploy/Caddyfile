@@ -18,6 +18,14 @@ status.aisoup.net {
 }
 
 aisoup.net, www.aisoup.net {
+
+	handle /photo-scout/migration.html {
+		root * /mnt/disks/agentic-services/app/photo-scout-site
+		rewrite * /migration.html
+		header Cache-Control "private, no-store"
+		header Content-Security-Policy "default-src 'self'; script-src 'self'; frame-ancestors https://photo-scout.aisoup.net"
+		file_server
+	}
 	handle /photo-scout {
 		redir * /photo-scout/ permanent
 	}
@@ -203,3 +211,5 @@ api.aisoup.net {
 		}
 	}
 }
+
+import /mnt/disks/agentic-services/app/deploy/app-subdomains.caddy

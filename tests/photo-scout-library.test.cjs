@@ -4,7 +4,7 @@ function fixture(){
  function node(tag,text,cls){return {tag,textContent:text,className:cls,dataset:{},children:[],hidden:false,setAttribute(key,value){this[key]=value;},append(...items){this.children.push(...items);},replaceChildren(...items){this.children=items;},addEventListener(event,fn){this[event]=fn;},focus(){this.focused=true;}};}
  const el=id=>{if(!elements.has(id))elements.set(id,node('div'));return elements.get(id);};
  const tabs=['mine','liked','saved','commented'].map(tab=>{const b=node('button');b.dataset.photoTab=tab;return b;});
- const context={el,node,document:{querySelectorAll:()=>tabs},json:path=>new Promise((resolve,reject)=>requests.push({path,resolve,reject})),authUser:{name:'Alice'},URLSearchParams,Date,api:'https://api.test',openPublication:item=>opened.push(item)};
+ const context={el,node,document:{querySelectorAll:()=>tabs},json:path=>new Promise((resolve,reject)=>requests.push({path,resolve,reject})),authUser:{name:'Alice'},URLSearchParams,Date,api:'https://api.test',apiPrefix:'/photo-scout',openPublication:item=>opened.push(item)};
  const source=readFileSync('photo-scout-site/app.js','utf8');vm.runInNewContext(source.slice(source.indexOf("let photoLibraryTab='mine'")),context);
  return {context,el,tabs,requests,opened};
 }

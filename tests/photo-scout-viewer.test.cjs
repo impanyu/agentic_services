@@ -1,7 +1,7 @@
 const {test}=require('node:test');const assert=require('node:assert/strict');const vm=require('node:vm');const {readFileSync}=require('node:fs');
 function fixture(){
  const e=()=>({dataset:{},hidden:false,open:false,children:[],replaceChildren(...c){this.children=c;},removeAttribute(key){delete this[key];},setAttribute(key,value){this[key]=value;},showModal(){this.open=true;},close(){this.open=false;}}),calls=[];
- const c={focusMapSpot:(spot)=>calls.push(["focus",spot?.poi]),savedPhoto:e(),savedPhotoComments:e(),commentSection:()=>e(),savedPhotoSharing:e(),savedPhotoTitle:e(),savedPhotoPublish:e(),savedPhotoImage:e(),savedPhotoSave:e(),savedPhotoDownload:e(),savedPhotoHint:e(),savedPhotoStatus:e(),studio:e(),portraitProgress:e(),savedPhotoGeneration:0,savedPhotoTimer:null,savedPhotoUrl:null,savedPhotoFile:null,ownPublications:new Map(),publishButton:(kind,id)=>({kind,id}),viewPortraitProgress:async()=>{},clearTimeout(){},setTimeout(){},URL:{revokeObjectURL(){},createObjectURL:()=> 'blob:viewer'},File:class{constructor(parts,name){this.name=name;}},api:'https://api.aisoup.net',authUser:null,readPhoto:async()=> 'data:image/png;base64,test',renderSavedPhotoParams:(context)=>calls.push(['context',context?.name]),renderPhotoSharing:()=>calls.push(['sharing']),fetch:async url=>{calls.push(['image',url]);return {ok:true,blob:async()=>({})};},json:async path=>{calls.push(['report',path]);return {state:'complete',context:{name:'Private spot'}};}};
+ const c={focusMapSpot:(spot)=>calls.push(["focus",spot?.poi]),savedPhoto:e(),savedPhotoComments:e(),commentSection:()=>e(),savedPhotoSharing:e(),savedPhotoTitle:e(),savedPhotoPublish:e(),savedPhotoImage:e(),savedPhotoSave:e(),savedPhotoDownload:e(),savedPhotoHint:e(),savedPhotoStatus:e(),studio:e(),portraitProgress:e(),savedPhotoGeneration:0,savedPhotoTimer:null,savedPhotoUrl:null,savedPhotoFile:null,ownPublications:new Map(),publishButton:(kind,id)=>({kind,id}),viewPortraitProgress:async()=>{},clearTimeout(){},setTimeout(){},URL:{revokeObjectURL(){},createObjectURL:()=> 'blob:viewer'},File:class{constructor(parts,name){this.name=name;}},api:'https://api.aisoup.net',apiPrefix:'/photo-scout',authUser:null,readPhoto:async()=> 'data:image/png;base64,test',renderSavedPhotoParams:(context)=>calls.push(['context',context?.name]),renderPhotoSharing:()=>calls.push(['sharing']),fetch:async url=>{calls.push(['image',url]);return {ok:true,blob:async()=>({})};},json:async path=>{calls.push(['report',path]);return {state:'complete',context:{name:'Private spot'}};}};
  const s=readFileSync('photo-scout-site/app.js','utf8');vm.runInNewContext(s.slice(s.indexOf('async function viewSavedPhoto('),s.indexOf("savedPhotoClose.addEventListener")),c);return {c,calls};
 }
 test('public photos use the same viewer and prepare a file for Share without private API access',async()=>{
@@ -24,4 +24,10 @@ test('actions appear immediately while image loads, with file actions disabled u
 test('switching photos removes previous download while next image loads',async()=>{
  const {c}=fixture();await c.viewSavedPhoto({id:'one',created:100});let release;c.fetch=async()=>{await new Promise(resolve=>release=resolve);return {ok:true,blob:async()=>({})};};
  const pending=c.viewSavedPhoto({id:'two',created:100});assert.equal(c.savedPhotoDownload.href,undefined);assert.equal(c.savedPhotoSave.disabled,true);await new Promise(resolve=>setImmediate(resolve));release();await pending;
+});
+test('private photo viewing uses the canonical App API without a duplicate service prefix',async()=>{
+ const {c,calls}=fixture();c.api='https://photo-scout.aisoup.net/api';c.apiPrefix='';
+ await c.viewSavedPhoto({id:'canonical-photo',created:100,state:'complete'});
+ assert.equal(calls.find(x=>x[0]==='image')[1],'https://photo-scout.aisoup.net/api/v1/portraits/canonical-photo/image');
+ assert.equal(c.savedPhotoSave.hidden,false);
 });

@@ -1,4 +1,5 @@
 """Server-owned task recovery for anonymous browsers and Google accounts."""
+from .web_origin import allowed_web_origin
 import hmac
 import os
 import hashlib
@@ -23,6 +24,8 @@ def prune_records(db):
     """Account data is permanent; guest data expires as one unit after inactivity."""
     now=time.time()
     tables={r[0] for r in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+    if 'photo_client_events' in tables:
+        db.execute('DELETE FROM photo_client_events WHERE received<?',(now-7*86400,))
     owners='photo_task_owners' in tables
     for table,kind in [('photo_scout_jobs','search'),('photo_portraits','portrait')]:
         if table not in tables:continue
@@ -47,6 +50,8 @@ def prune_records(db):
         if 'photo_avatars' in tables:
             db.execute("DELETE FROM photo_avatars WHERE owner LIKE 'guest:%' AND NOT EXISTS (SELECT 1 FROM photo_guests g WHERE 'guest:'||g.hash=owner AND g.expires>?)",(now,))
         db.execute('DELETE FROM photo_guests WHERE expires<=?',(now,))
+        if 'photo_guest_aliases' in tables:
+            db.execute('DELETE FROM photo_guest_aliases WHERE NOT EXISTS (SELECT 1 FROM photo_guests g WHERE g.hash=canonical)')
 
 class HiddenPoiRequest(BaseModel):
     searchId: str = Field(min_length=1,max_length=80)
@@ -67,6 +72,11 @@ class RemovedItemRequest(BaseModel):
     id: str = Field(min_length=1,max_length=80)
     removed: bool = True
 
+class ClientEventRequest(BaseModel):
+    event: Literal['page_hidden','page_left']
+    clientMillis: int = Field(ge=0,le=10**15)
+    jobs: list[str] = Field(max_length=5)
+
 class TaskStore:
     def __init__(self,path):
         self.path=path
@@ -74,6 +84,7 @@ class TaskStore:
             db.execute('CREATE TABLE IF NOT EXISTS photo_removed_items (owner TEXT NOT NULL, kind TEXT NOT NULL, job TEXT NOT NULL, PRIMARY KEY(owner,kind,job))')
             db.execute('CREATE TABLE IF NOT EXISTS photo_hidden_pois (owner TEXT NOT NULL, search TEXT NOT NULL, poi TEXT NOT NULL, PRIMARY KEY(owner,search,poi))')
             db.execute('CREATE TABLE IF NOT EXISTS photo_guests (hash TEXT PRIMARY KEY, expires REAL NOT NULL)')
+            db.execute('CREATE TABLE IF NOT EXISTS photo_guest_aliases (alias TEXT PRIMARY KEY, canonical TEXT NOT NULL)')
             db.execute('CREATE TABLE IF NOT EXISTS photo_task_owners (kind TEXT NOT NULL, job TEXT NOT NULL, guest TEXT, user_id TEXT, created REAL NOT NULL, context TEXT NOT NULL, PRIMARY KEY(kind,job))')
             db.execute('CREATE INDEX IF NOT EXISTS photo_task_owner_user ON photo_task_owners(user_id,created)')
             db.execute('CREATE INDEX IF NOT EXISTS photo_task_owner_guest ON photo_task_owners(guest,created)')
@@ -86,7 +97,10 @@ class TaskStore:
         with self.db() as db:
             token=request.cookies.get(GUEST_COOKIE,'')
             if token and len(token)<=200:
-                row=db.execute('SELECT hash FROM photo_guests WHERE hash=? AND expires>?',(digest(token),now)).fetchone()
+                candidate=digest(token)
+                alias=db.execute('SELECT canonical FROM photo_guest_aliases WHERE alias=?',(candidate,)).fetchone()
+                if alias:candidate=alias['canonical']
+                row=db.execute('SELECT hash FROM photo_guests WHERE hash=? AND expires>?',(candidate,now)).fetchone()
                 if row:
                     guest=row['hash']
                     if response is not None and touch:
@@ -186,6 +200,27 @@ class TaskStore:
 
 def create_tasks_router(settings,require_api):
     router=APIRouter(tags=['Photo Scout']);store=TaskStore(settings.database_path)
+    with store.db() as db:
+        db.execute('CREATE TABLE IF NOT EXISTS photo_client_events (job TEXT NOT NULL,event TEXT NOT NULL,client_millis INTEGER NOT NULL,received REAL NOT NULL,stage TEXT)')
+        db.execute('CREATE INDEX IF NOT EXISTS photo_client_event_job ON photo_client_events(job,received)')
+    @router.post('/photo-scout/v1/client-events',status_code=204,include_in_schema=False)
+    async def client_event(request:Request):
+        require_api(request.headers.get('authorization'))
+        if not allowed_web_origin(request.headers.get('origin')):raise HTTPException(403,'Invalid task event origin')
+        body=bytearray()
+        async for chunk in request.stream():
+            body.extend(chunk)
+            if len(body)>4096:raise HTTPException(413,'Task event too large')
+        try:payload=ClientEventRequest.model_validate_json(body)
+        except ValueError:raise HTTPException(422,'Invalid task event') from None
+        permitted=[job for job in payload.jobs if len(job)<=80 and store.allowed('search',job,request)]
+        with store.db() as db:
+            db.execute('DELETE FROM photo_client_events WHERE received<?',(time.time()-7*86400,))
+            for job in permitted:
+                row=db.execute('SELECT context FROM photo_task_owners WHERE kind=? AND job=?',('search',job)).fetchone()
+                stage=json.loads(row['context']).get('stage') if row else None
+                db.execute('INSERT INTO photo_client_events VALUES(?,?,?,?,?)',(job,payload.event,payload.clientMillis,time.time(),stage))
+        return Response(status_code=204,headers={'Cache-Control':'private, no-store'})
     @router.get('/photo-scout/v1/tasks')
     def tasks(request:Request,response:Response,visit:bool=False):
         require_api(request.headers.get('authorization'));response.headers['Cache-Control']='private, no-store'
@@ -197,7 +232,7 @@ def create_tasks_router(settings,require_api):
         from .publications import poi_key
         require_api(request.headers.get('authorization'))
         response.headers['Cache-Control']='private, no-store'
-        if request.headers.get('origin')!=os.getenv('PHOTO_SCOUT_WEB_ORIGIN','https://aisoup.net').rstrip('/'):
+        if not allowed_web_origin(request.headers.get('origin')):
             raise HTTPException(403,'Invalid viewpoint request')
         guest,user=store.identity(request)
         if not guest and not user:raise HTTPException(401,'Open Photo Scout before editing a view')
@@ -245,7 +280,7 @@ def create_tasks_router(settings,require_api):
     def hide_poi(payload:HiddenPoiRequest,request:Request,response:Response):
         response.headers['Cache-Control']='private, no-store'
         require_api(request.headers.get('authorization'))
-        if request.headers.get('origin')!=os.getenv('PHOTO_SCOUT_WEB_ORIGIN','https://aisoup.net').rstrip('/'):
+        if not allowed_web_origin(request.headers.get('origin')):
             raise HTTPException(403,'Invalid history request')
         guest,user=store.identity(request)
         if not guest and not user:raise HTTPException(401,'Open Photo Scout before editing history')
@@ -273,7 +308,7 @@ def create_tasks_router(settings,require_api):
     def remove_item(payload:RemovedItemRequest,request:Request,response:Response):
         require_api(request.headers.get('authorization'))
         response.headers['Cache-Control']='private, no-store'
-        if request.headers.get('origin')!=os.getenv('PHOTO_SCOUT_WEB_ORIGIN','https://aisoup.net').rstrip('/'):
+        if not allowed_web_origin(request.headers.get('origin')):
             raise HTTPException(403,'Invalid history request')
         guest,user=store.identity(request)
         if not guest and not user:raise HTTPException(401,'Open Photo Scout before editing history')

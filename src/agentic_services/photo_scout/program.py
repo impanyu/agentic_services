@@ -14,6 +14,7 @@ from typing import Literal
 from pydantic import BaseModel,ConfigDict,Field,model_validator
 from .geography import GeographicKind,filter_places,geographic_places,GeographicMatcher
 from .osm_features import OSMFeatureQuery,matches_features
+from .spatial_sampling import spread_points
 
 Tool=Literal['search_places','search_geography','search_features','sample_geography',
              'feature_points','filter_geography','filter_features','union','intersection','area_imagery','point_imagery','center_imagery','collect_images','score_images','rank_results']
@@ -216,6 +217,7 @@ class Tools:
         features=inputs[0]
         rows=list({p['id']:p for group in features.groups for p in group
             if matches_features(p,features.groups,features.queries,combination="any" if features.combination=="any" else s.combination)}.values())
+        rows=spread_points(rows,self.p.lat,self.p.lon,self.p.radius)
         return Places(rows,{r['id']:[self.empty_path(s,filters=[s.id])] for r in rows})
 
     def matches(self,row,s,source):

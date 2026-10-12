@@ -20,6 +20,7 @@ from typing import Annotated, Literal
 from urllib.parse import urlparse
 
 import httpx
+from .app_urls import app_web_home
 from fastapi import APIRouter, Header, HTTPException, Query, Request
 from pydantic import BaseModel, Field
 
@@ -413,7 +414,7 @@ def create_niche_router(settings: Settings) -> APIRouter:
         return {"available": billing_ready(), "priceUsdPerMonth": "9.99"}
 
     @router.post("/subscription/checkout")
-    async def subscription_checkout() -> dict:
+    async def subscription_checkout(request: Request) -> dict:
         if not billing_ready():
             raise HTTPException(status_code=503, detail="Subscriptions are not available until the first reviewed evaluation is published and billing is ready")
         key, price, _ = stripe_config()
@@ -427,8 +428,8 @@ def create_niche_router(settings: Settings) -> APIRouter:
             response = await client.post("https://api.stripe.com/v1/checkout/sessions", auth=(key, ""), data={
                 "mode": "subscription", "line_items[0][price]": price,
                 "line_items[0][quantity]": "1",
-                "success_url": "https://aisoup.net/niche-discovery/?subscription=success",
-                "cancel_url": "https://aisoup.net/niche-discovery/?subscription=cancelled",
+                "success_url": app_web_home(request,"niche-discovery")+"?subscription=success",
+                "cancel_url": app_web_home(request,"niche-discovery")+"?subscription=cancelled",
                 "metadata[serviceId]": "niche-discovery",
                 "subscription_data[metadata][serviceId]": "niche-discovery",
             })
@@ -439,7 +440,7 @@ def create_niche_router(settings: Settings) -> APIRouter:
         return {"checkoutUrl": data["url"], "priceUsdPerMonth": "9.99"}
 
     @router.post("/subscription/portal")
-    async def subscription_portal(authorization: str | None = Header(default=None)) -> dict:
+    async def subscription_portal(request: Request, authorization: str | None = Header(default=None)) -> dict:
         scheme, _, credential = (authorization or "").partition(" ")
         customer = store.customer_for_token(credential) if scheme.lower() == "bearer" and credential.startswith("nd_") else None
         if not customer:
@@ -447,7 +448,7 @@ def create_niche_router(settings: Settings) -> APIRouter:
         key, _, _ = stripe_config()
         async with httpx.AsyncClient(timeout=15) as client:
             response = await client.post("https://api.stripe.com/v1/billing_portal/sessions", auth=(key, ""), data={
-                "customer": customer, "return_url": "https://aisoup.net/niche-discovery/",
+                "customer": customer, "return_url": app_web_home(request,"niche-discovery"),
             })
         response.raise_for_status()
         data = response.json()

@@ -21,6 +21,7 @@ from typing import Annotated
 
 import uvicorn
 import httpx
+from .app_urls import app_web_home
 from fastapi import FastAPI, Header, HTTPException, Query, Request, Response, status
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -34,6 +35,7 @@ from .contractor_routes import create_contractor_router
 from .photo_scout.routes import create_photo_router
 from .photo_scout.portraits import create_portrait_router
 from .photo_scout.accounts import create_accounts_router
+from .photo_scout.migration import create_migration_router
 from .photo_scout.publications import create_publications_router
 from .photo_scout.avatars import create_avatars_router
 from .photo_scout.tasks import create_tasks_router
@@ -284,7 +286,7 @@ def create_app(
     )
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["https://aisoup.net", "https://www.aisoup.net"],
+        allow_origins=["https://aisoup.net", "https://www.aisoup.net", "https://photo-scout.aisoup.net", "https://web-evidence.aisoup.net", "https://contractor-check.aisoup.net", "https://niche-discovery.aisoup.net"],
         allow_methods=["GET", "POST", "DELETE", "OPTIONS"],
         allow_headers=["Content-Type", "Authorization"],
     )
@@ -396,6 +398,7 @@ def create_app(
     app.state.process_photo_portrait=portrait_process
     app.include_router(create_accounts_router(resolved_settings,require_service_api_key))
     app.include_router(create_tasks_router(resolved_settings,require_service_api_key))
+    app.include_router(create_migration_router(resolved_settings,require_service_api_key))
     app.include_router(create_avatars_router(resolved_settings,require_service_api_key))
     app.include_router(create_publications_router(resolved_settings,require_service_api_key))
     app.include_router(contractor_router)
@@ -1018,8 +1021,8 @@ def create_app(
             "line_items[0][quantity]": "1",
             "client_reference_id": intent_id,
             "metadata[serviceId]": "web-evidence",
-            "success_url": "https://aisoup.net/web-evidence/report/?session_id={CHECKOUT_SESSION_ID}",
-            "cancel_url": "https://aisoup.net/web-evidence/",
+            "success_url": app_web_home(request,"web-evidence")+"report/?session_id={CHECKOUT_SESSION_ID}",
+            "cancel_url": app_web_home(request,"web-evidence"),
         })
         session_id, url = session.get("id"), session.get("url")
         if not isinstance(session_id, str) or not isinstance(url, str) or not url.startswith("https://checkout.stripe.com/"):

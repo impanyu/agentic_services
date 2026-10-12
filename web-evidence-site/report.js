@@ -1,3 +1,4 @@
+const reportApi=location.hostname==='web-evidence.aisoup.net'?location.origin+'/api':'https://api.aisoup.net/web-evidence';
 const status = document.getElementById('report-status');
 const target = document.getElementById('report');
 const sessionId = new URLSearchParams(location.search).get('session_id');
@@ -13,7 +14,7 @@ async function load() {
   target.replaceChildren();
   document.querySelector('#retry-report').disabled = true;
   try {
-    const response = await fetch(`https://api.aisoup.net/web-evidence/v1/report?session_id=${encodeURIComponent(sessionId)}`, { cache: 'no-store' });
+    const response = await fetch(`${reportApi}/v1/report?session_id=${encodeURIComponent(sessionId)}`, { cache: 'no-store' });
     const data = await response.json();
     if (!response.ok) throw new Error(typeof data.detail === 'string' ? data.detail : 'Report unavailable.');
     const report = data.report;

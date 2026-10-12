@@ -1,0 +1,205 @@
+(app_subdomain_proxy) {
+ reverse_proxy 127.0.0.1:8010 {
+  flush_interval -1
+  header_up X-Forwarded-Host {host}
+  header_down Set-Cookie "(?i)Path=/(photo-scout|web-evidence|contractor-check|niche-discovery)/" "Path=/api/"
+ }
+}
+
+photo-scout.aisoup.net {
+ handle /photo-scout {
+  redir * / 308
+ }
+ handle_path /photo-scout/* {
+  redir * {uri} 308
+ }
+ @api_root path /api /api/
+ redir @api_root /api/openapi.json 308
+ handle_path /api/* {
+  handle /healthz {
+   rewrite * /healthz
+   import app_subdomain_proxy photo-scout
+  }
+  handle /usage/events {
+   rewrite * /v1/usage/events
+   import app_subdomain_proxy photo-scout
+  }
+  handle /stripe/webhook {
+   rewrite * /v1/stripe/checkout-webhook
+   import app_subdomain_proxy photo-scout
+  }
+  @shared_photo-scout path /v1/orders/* /v1/receipts/*
+  handle @shared_photo-scout {
+   import app_subdomain_proxy photo-scout
+  }
+  handle {
+   rewrite * /photo-scout{uri}
+   import app_subdomain_proxy photo-scout
+  }
+ }
+ handle {
+  root * /mnt/disks/agentic-services/app/photo-scout-site
+  @html path / /index.html /*.html
+  header @html Cache-Control "no-cache, must-revalidate"
+  encode zstd gzip
+  header {
+   Strict-Transport-Security "max-age=31536000; includeSubDomains"
+   X-Content-Type-Options "nosniff"
+   Referrer-Policy "strict-origin-when-cross-origin"
+   Content-Security-Policy "default-src 'self'; connect-src 'self' https://api.aisoup.net https://tiles.openfreemap.org https://basemap.nationalmap.gov https://photon.komoot.io https://*.googleapis.com https://*.gstatic.com https://*.google.com data: blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' https://*.googleapis.com https://*.gstatic.com; img-src 'self' data: blob: https://*.googleapis.com https://*.gstatic.com https://*.google.com https://*.googleusercontent.com https://api.aisoup.net https://tile.openstreetmap.org https://server.arcgisonline.com https://basemap.nationalmap.gov https://upload.wikimedia.org https://*.fbcdn.net https://panoramax.ign.fr https://panoramax.openstreetmap.fr https://panoramax-storage-public-fast.s3.gra.perf.cloud.ovh.net; frame-src 'self' https://aisoup.net https://*.google.com; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
+  }
+  file_server
+ }
+}
+
+web-evidence.aisoup.net {
+ handle /web-evidence {
+  redir * / 308
+ }
+ handle_path /web-evidence/* {
+  redir * {uri} 308
+ }
+ @api_root path /api /api/
+ redir @api_root /api/openapi.json 308
+ handle_path /api/* {
+  handle /healthz {
+   rewrite * /healthz
+   import app_subdomain_proxy web-evidence
+  }
+  handle /usage/events {
+   rewrite * /v1/usage/events
+   import app_subdomain_proxy web-evidence
+  }
+  handle /stripe/webhook {
+   rewrite * /v1/stripe/checkout-webhook
+   import app_subdomain_proxy web-evidence
+  }
+  @shared_web-evidence path /v1/orders/* /v1/receipts/*
+  handle @shared_web-evidence {
+   import app_subdomain_proxy web-evidence
+  }
+  @human_web_evidence path /v1/checkout /v1/report
+  handle @human_web_evidence {
+   rewrite * /web-evidence{uri}
+   import app_subdomain_proxy web-evidence
+  }
+  handle {
+   import app_subdomain_proxy web-evidence
+  }
+ }
+ handle {
+  root * /mnt/disks/agentic-services/app/web-evidence-site
+  @html path / /index.html /*.html
+  header @html Cache-Control "no-cache, must-revalidate"
+  encode zstd gzip
+  header {
+   Strict-Transport-Security "max-age=31536000; includeSubDomains"
+   X-Content-Type-Options "nosniff"
+   Referrer-Policy "strict-origin-when-cross-origin"
+   Content-Security-Policy "default-src 'self'; connect-src 'self' https://api.aisoup.net; style-src 'self'; script-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
+  }
+  file_server
+ }
+}
+
+contractor-check.aisoup.net {
+ handle /contractor-check {
+  redir * / 308
+ }
+ handle_path /contractor-check/* {
+  redir * {uri} 308
+ }
+ @api_root path /api /api/
+ redir @api_root /api/openapi.json 308
+ handle_path /api/* {
+  handle /healthz {
+   rewrite * /healthz
+   import app_subdomain_proxy contractor-check
+  }
+  handle /usage/events {
+   rewrite * /v1/usage/events
+   import app_subdomain_proxy contractor-check
+  }
+  handle /stripe/webhook {
+   rewrite * /v1/stripe/checkout-webhook
+   import app_subdomain_proxy contractor-check
+  }
+  @shared_contractor-check path /v1/orders/* /v1/receipts/*
+  handle @shared_contractor-check {
+   import app_subdomain_proxy contractor-check
+  }
+  @documents_contractor_check path /.well-known/agent-service.json /openapi.json
+  handle @documents_contractor_check {
+   root * /mnt/disks/agentic-services/app/contractor-check-site/canonical-api
+   file_server
+  }
+  handle {
+   rewrite * /contractor-check{uri}
+   import app_subdomain_proxy contractor-check
+  }
+ }
+ handle {
+  root * /mnt/disks/agentic-services/app/contractor-check-site
+  @html path / /index.html /*.html
+  header @html Cache-Control "no-cache, must-revalidate"
+  encode zstd gzip
+  header {
+   Strict-Transport-Security "max-age=31536000; includeSubDomains"
+   X-Content-Type-Options "nosniff"
+   Referrer-Policy "strict-origin-when-cross-origin"
+   Content-Security-Policy "default-src 'self'; connect-src 'self' https://api.aisoup.net; style-src 'self'; script-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
+  }
+  file_server
+ }
+}
+
+niche-discovery.aisoup.net {
+ handle /niche-discovery {
+  redir * / 308
+ }
+ handle_path /niche-discovery/* {
+  redir * {uri} 308
+ }
+ @api_root path /api /api/
+ redir @api_root /api/openapi.json 308
+ handle_path /api/* {
+  handle /healthz {
+   rewrite * /healthz
+   import app_subdomain_proxy niche-discovery
+  }
+  handle /usage/events {
+   rewrite * /v1/usage/events
+   import app_subdomain_proxy niche-discovery
+  }
+  handle /stripe/webhook {
+   rewrite * /v1/stripe/checkout-webhook
+   import app_subdomain_proxy niche-discovery
+  }
+  @shared_niche-discovery path /v1/orders/* /v1/receipts/*
+  handle @shared_niche-discovery {
+   import app_subdomain_proxy niche-discovery
+  }
+  @documents_niche_discovery path /.well-known/agent-service.json
+  handle @documents_niche_discovery {
+   root * /mnt/disks/agentic-services/app/niche-discovery-site/canonical-api
+   file_server
+  }
+  handle {
+   rewrite * /niche-discovery{uri}
+   import app_subdomain_proxy niche-discovery
+  }
+ }
+ handle {
+  root * /mnt/disks/agentic-services/app/niche-discovery-site
+  @html path / /index.html /*.html
+  header @html Cache-Control "no-cache, must-revalidate"
+  encode zstd gzip
+  header {
+   Strict-Transport-Security "max-age=31536000; includeSubDomains"
+   X-Content-Type-Options "nosniff"
+   Referrer-Policy "strict-origin-when-cross-origin"
+   Content-Security-Policy "default-src 'self'; connect-src 'self' https://api.aisoup.net; style-src 'self'; script-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
+  }
+  file_server
+ }
+}

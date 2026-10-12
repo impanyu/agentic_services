@@ -1,4 +1,4 @@
-const API = 'https://api.aisoup.net/niche-discovery/v1';
+const API = (location.hostname==='niche-discovery.aisoup.net'?location.origin+'/api/v1':'https://api.aisoup.net/niche-discovery/v1');
 const results = document.querySelector('#results');
 const detail = document.querySelector('#detail');
 let accessToken = '';

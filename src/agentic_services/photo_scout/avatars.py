@@ -1,3 +1,4 @@
+from .web_origin import allowed_web_origin
 """Private, owner-scoped avatar images for the selfie picker."""
 import base64,hmac,io,os,secrets,time
 from fastapi import APIRouter,HTTPException,Request,Response
@@ -32,7 +33,7 @@ def create_avatars_router(settings,require_api):
         db.execute('CREATE INDEX IF NOT EXISTS photo_avatar_owner ON photo_avatars(owner,created)')
     def owner(request,response,write=False):
         require_api(request.headers.get('authorization'))
-        if write and request.headers.get('origin')!=os.getenv('PHOTO_SCOUT_WEB_ORIGIN','https://aisoup.net').rstrip('/'):
+        if write and not allowed_web_origin(request.headers.get('origin')):
             raise HTTPException(403,'Invalid avatar request')
         guest,user=store.identity(request,response)
         if write and user:

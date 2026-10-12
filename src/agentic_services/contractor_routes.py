@@ -10,6 +10,7 @@ from datetime import UTC, datetime
 from typing import Callable
 
 import httpx
+from .app_urls import app_web_home
 from fastapi import APIRouter, Header, HTTPException, Query, Request, Response
 from pydantic import BaseModel, Field
 
@@ -111,7 +112,7 @@ def create_contractor_router(
         report = await lookup(payload.license_number)
         number = validate_license_number(payload.license_number)
         intent_id = store.create_contractor_intent(number, report, HUMAN_PRICE_CENTS)
-        success_url = "https://aisoup.net/contractor-check/report/?session_id={CHECKOUT_SESSION_ID}"
+        success_url = app_web_home(request,"contractor-check")+"report/?session_id={CHECKOUT_SESSION_ID}"
         session = await stripe_request("POST", "checkout/sessions", data={
             "mode": "payment",
             "payment_method_types[0]": "card",
@@ -123,7 +124,7 @@ def create_contractor_router(
             "metadata[serviceId]": SERVICE_ID,
             "metadata[licenseNumber]": number,
             "success_url": success_url,
-            "cancel_url": "https://aisoup.net/contractor-check/",
+            "cancel_url": app_web_home(request,"contractor-check"),
         })
         session_id, url = session.get("id"), session.get("url")
         if not isinstance(session_id, str) or not isinstance(url, str) or not url.startswith("https://checkout.stripe.com/"):

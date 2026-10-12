@@ -10,5 +10,13 @@ data
 tests
 docs
 examples
+photo-scout-site
+web-evidence-site
+contractor-check-site
+niche-discovery-site
+company-site
+gateway
+scripts
+deploy
 
 .local/

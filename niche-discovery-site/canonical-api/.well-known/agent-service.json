@@ -1,0 +1,140 @@
+{
+  "manifestVersion": "0.1",
+  "service": {
+    "id": "https://niche-discovery.aisoup.net/api",
+    "name": "Niche Discovery",
+    "description": "Database-only niche market search for agents with per-call payment; human UI offers free daily searches and monthly subscriptions.",
+    "version": "0.2.0",
+    "homepage": "https://niche-discovery.aisoup.net/",
+    "tags": [
+      "market-research",
+      "niche-discovery",
+      "demand-signals"
+    ]
+  },
+  "provider": {
+    "id": "https://aisoup.net",
+    "name": "Dream Workshop LLC",
+    "contact": "contact@aisoup.net"
+  },
+  "capabilities": [
+    {
+      "id": "market.niche.discovery",
+      "summary": "Find and evaluate underserved market needs using linked demand signals.",
+      "domains": [
+        "market-research",
+        "product-discovery"
+      ]
+    }
+  ],
+  "transports": [
+    {
+      "id": "public-http",
+      "type": "http",
+      "url": "https://api.aisoup.net",
+      "specification": "https://niche-discovery.aisoup.net/api/openapi.json",
+      "authorization": "none"
+    },
+    {
+      "id": "subscriber-http",
+      "type": "http",
+      "url": "https://api.aisoup.net",
+      "specification": "https://niche-discovery.aisoup.net/api/openapi.json",
+      "authorization": "bearer"
+    },
+    {
+      "id": "per-call-http",
+      "type": "http",
+      "url": "https://api.aisoup.net",
+      "specification": "https://niche-discovery.aisoup.net/api/openapi.json",
+      "authorization": "x402-or-mpp"
+    }
+  ],
+  "operations": [
+    {
+      "id": "search-niches",
+      "capability": "market.niche.discovery",
+      "transport": "per-call-http",
+      "summary": "Search existing database records; up to 20 complete evaluations. No real-time generation. User query interests may inspire later background research.",
+      "method": "GET",
+      "path": "/niche-discovery/v1/search/pay-per-call",
+      "inputSchema": {
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object"
+      },
+      "timeoutSeconds": 10,
+      "idempotent": true
+    },
+    {
+      "id": "get-niche-per-call",
+      "capability": "market.niche.discovery",
+      "transport": "per-call-http",
+      "summary": "Buy one full evaluation using Base USDC.",
+      "method": "GET",
+      "path": "/niche-discovery/v1/niches/{niche_id}/pay-per-call",
+      "inputSchema": {
+        "type": "object"
+      },
+      "outputSchema": {
+        "type": "object"
+      },
+      "timeoutSeconds": 10,
+      "idempotent": true
+    }
+  ],
+  "offers": [
+    {
+      "id": "single-evaluation",
+      "operation": "get-niche-per-call",
+      "model": "per_call",
+      "amount": "0.25",
+      "currency": "USD",
+      "unit": "evaluation",
+      "paymentMethods": [
+        {
+          "protocol": "x402",
+          "network": "eip155:8453",
+          "asset": "USDC"
+        },
+        {
+          "protocol": "mpp",
+          "network": "eip155:8453",
+          "asset": "USDC"
+        }
+      ]
+    },
+    {
+      "id": "database-search",
+      "operation": "search-niches",
+      "model": "per_call",
+      "amount": "0.05",
+      "currency": "USD",
+      "unit": "search",
+      "paymentMethods": [
+        {
+          "protocol": "mpp",
+          "network": "eip155:8453",
+          "asset": "USDC"
+        }
+      ]
+    }
+  ],
+  "provenance": {
+    "summary": "Published evaluations link to reviewed source signals and expose observation dates, source-domain count, scoring weights, and uncertainty.",
+    "freshness": "Signals carry original observation dates; reports include update timestamps.",
+    "coverage": "Cross-industry; coverage depends on configured and permitted external sources."
+  },
+  "policies": {
+    "terms": "https://niche-discovery.aisoup.net/terms/",
+    "privacy": "https://niche-discovery.aisoup.net/privacy/",
+    "dataRetentionDays": 365,
+    "allowedUse": [
+      "Market research and product discovery"
+    ],
+    "prohibitedUse": [
+      "Representing editorial scores as verified market size or guaranteed demand"
+    ]
+  }
+}

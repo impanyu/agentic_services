@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from typing import Literal
 
 from openai import AsyncOpenAI
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, model_validator, ValidationError
 
 from .image_transport import pooled_images
 from .score_cache import ScoreCache
@@ -256,7 +256,8 @@ async def assess_images(settings,payload,rows,statuses=None):
                 valid=[a.model_copy(update={'image_id':expected[a.image_id]}) for a in output.assessments if a.image_id in expected and counts[a.image_id]==1] if output else []
                 cache.put([(keys[a.image_id],a.model_dump()) for a in valid if next(r for r in rows if r['id']==a.image_id).get('cacheable',True)])
             except Exception as error:
-                logging.getLogger(__name__).warning('Photo Scout batch scoring failed: %s; images=%s',type(error).__name__,len(usable))
+                fields=[(e['loc'],e['type']) for e in error.errors(include_input=False,include_url=False)] if isinstance(error,ValidationError) else []
+                logging.getLogger(__name__).warning('Photo Scout batch scoring failed: %s; images=%s fields=%s request_id=%s',type(error).__name__,len(usable),fields,getattr(error,'request_id',None))
             if response is not None and response.usage:usages.append(response.usage)
             finished={a.image_id for a in valid};remaining=[pair for pair in usable if pair[0]['id'] not in finished]
             if remaining and retry:

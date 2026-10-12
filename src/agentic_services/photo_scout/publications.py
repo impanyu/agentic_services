@@ -1,3 +1,4 @@
+from .web_origin import allowed_web_origin
 """Owner-authorized public snapshots, independent of private task retention."""
 import hmac
 import io
@@ -63,7 +64,7 @@ def create_publications_router(settings,require_api):
         return 'user:'+user if user else 'guest:'+guest if guest else None
     def write_owner(request):
         require_api(request.headers.get('authorization'))
-        if request.headers.get('origin')!=os.getenv('PHOTO_SCOUT_WEB_ORIGIN','https://aisoup.net').rstrip('/'):
+        if not allowed_web_origin(request.headers.get('origin')):
             raise HTTPException(403,'Invalid publication request')
         identity=owner(request)
         if not identity:raise HTTPException(401,'Open Photo Scout before publishing')
@@ -75,7 +76,7 @@ def create_publications_router(settings,require_api):
         return identity
     def metadata(row,mine=False):
         data={'id':row['id'],'kind':row['kind'],'title':row['title'],'created':row['created'],'mine':mine,
-              'url':'https://aisoup.net/photo-scout/?published='+row['id']}
+              'url':'https://photo-scout.aisoup.net/?published='+row['id']}
         if row['kind']=='photo':data['imageUrl']=settings.base_url.rstrip('/')+'/photo-scout/v1/publications/'+row['id']+'/image'
         return data
     def comment_publication(db,ident,poi=''):

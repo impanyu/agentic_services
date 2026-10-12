@@ -26,7 +26,7 @@
   };
   const event = stage => {
     if (!state || optedOut) return;
-    fetch('https://api.aisoup.net/v1/usage/events', { method: 'POST',
+    fetch((location.hostname==='contractor-check.aisoup.net'?location.origin+'/api/usage/events':'https://api.aisoup.net/v1/usage/events'), { method: 'POST',
       headers: { 'Content-Type': 'application/json', ...headers() },
       body: JSON.stringify({ service, stage }), keepalive: true,
     }).catch(() => {});

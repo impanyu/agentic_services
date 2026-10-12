@@ -1,3 +1,4 @@
+import { browserOrigins, allowedBrowserOrigin, forwardedApp, publicRequestURL, canonicalDiscovery } from './app-domains.js'
 import { serve } from '@hono/node-server'
 import { createHash, createHmac, randomBytes, randomUUID } from 'node:crypto'
 import { Hono, type MiddlewareHandler } from 'hono'
@@ -170,6 +171,16 @@ const contractorMcpHandler = await createContractorMcpHandler({
 
 const photoMcpHandler=await createPhotoMcpHandler({facilitator,recipient,upstreamUrl,internalApiKey,publicBaseUrl,price:photoOperation.price})
 const app = new Hono()
+app.use('*',async(c,next)=>{
+  await next()
+  const service=forwardedApp(c.req.header('X-Forwarded-Host'))
+  if(!service || !(c.req.path.endsWith('/openapi.json') || c.req.path.includes('/.well-known/')) || !c.res.headers.get('Content-Type')?.includes('application/json'))return
+  const original=c.res,document=await original.clone().json()
+  const headers=new Headers(original.headers);headers.delete('Content-Length')
+  c.res=new Response(JSON.stringify(canonicalDiscovery(document,service)),{status:original.status,headers})
+  // Hono merges previous response headers when replacing c.res.
+  c.res.headers.delete('Content-Length')
+})
 app.all('/photo-scout/mcp',c=>process.env.PHOTO_SCOUT_ENABLED==='1'&&photoPriceCents>=50?photoMcpHandler(withPublicUrl(c.req.raw)):c.text('Photo Scout is unavailable',503))
 app.get('/photo-scout/.well-known/mcp/server.json',c=>c.json({
  $schema:'https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json',
@@ -180,8 +191,8 @@ app.get('/photo-scout/.well-known/mcp/server.json',c=>c.json({
 }))
 
 app.use('/niche-discovery/*', async (c, next) => {
-  const origin = c.req.header('Origin')
-  const allowed = origin === 'https://aisoup.net' || origin === 'https://www.aisoup.net'
+  const origin = c.req.header('Origin') ?? ''
+  const allowed = allowedBrowserOrigin(origin,'niche-discovery')
   if (c.req.method === 'OPTIONS') {
     if (!allowed) return c.body(null, 403)
     return new Response(null, { status: 204, headers: {
@@ -563,8 +574,9 @@ app.all('*', async (c) => {
     || path === '/web-evidence/v1/checkout' || path === '/web-evidence/v1/report'
     || path.startsWith('/photo-scout/')
     || path === '/v1/usage/events'
-  const origin = c.req.header('Origin')
-  const allowed = origin === 'https://aisoup.net' || origin === 'https://www.aisoup.net'
+  const origin = c.req.header('Origin') ?? ''
+  const service=path.startsWith('/photo-scout/')?'photo-scout':path.startsWith('/contractor-check/')?'contractor-check':path.startsWith('/web-evidence/')?'web-evidence':undefined
+  const allowed = allowedBrowserOrigin(origin,service)
   if (humanPath && c.req.method === 'OPTIONS') {
     if (!allowed) return c.body(null, 403)
     return new Response(null, { status: 204, headers: {
@@ -577,7 +589,8 @@ app.all('*', async (c) => {
   }
   if (path === '/photo-scout/v1/discover') return c.text('Use the paid discovery endpoint', 403)
   const upstream = await proxyRequest(c.req.raw, path)
-  if (!humanPath || !allowed) return upstream
+  if (!humanPath) return upstream
+  if (!allowed) {const headers=new Headers(upstream.headers);headers.delete('Access-Control-Allow-Origin');headers.delete('Access-Control-Allow-Credentials');return new Response(upstream.body,{status:upstream.status,headers})}
   const headers = new Headers(upstream.headers)
   headers.set('Access-Control-Allow-Origin', origin)
   headers.set('Access-Control-Allow-Credentials', 'true')
@@ -722,8 +735,7 @@ function toHonoPayment(
 }
 
 function withPublicUrl(request: Request): Request {
-  const incoming = new URL(request.url)
-  const publicUrl = new URL(incoming.pathname + incoming.search, publicBaseUrl)
+  const publicUrl = publicRequestURL(request.url, request.headers.get('X-Forwarded-Host'), publicBaseUrl)
   return new Request(publicUrl, request)
 }
 

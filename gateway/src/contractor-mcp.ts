@@ -57,7 +57,7 @@ export async function createContractorMcpHandler(options: ContractorMcpOptions):
       title: 'California C-10 Contractor Check',
       version: '0.1.0',
       description: 'Paid source-linked CSLB license preflight for California electrical contractors.',
-      websiteUrl: `${options.publicBaseUrl}/contractor-check/`,
+      websiteUrl: 'https://contractor-check.aisoup.net/',
     })
     server.registerTool('list_contractor_check_prices', {
       title: 'List contractor check prices',

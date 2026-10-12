@@ -130,7 +130,7 @@ export async function createPhotoMcpHandler(options: PhotoMcpOptions): Promise<(
       title: 'Photo Scout',
       version: '0.1.0',
       description: 'Image-grounded photo spot discovery with ranked viewpoints and camera headings.',
-      websiteUrl: 'https://aisoup.net/photo-scout/',
+      websiteUrl: 'https://photo-scout.aisoup.net/',
     })
     server.registerTool('list_photo_scout_prices', {
       title: 'List Photo Scout prices',

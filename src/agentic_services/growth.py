@@ -143,7 +143,7 @@ def create_growth_router(store: GrowthStore, require_admin, require_service):
     @router.post("/v1/usage/events", status_code=202, include_in_schema=False)
     async def record_event(request: Request, authorization: str | None = Header(default=None)):
         require_service(authorization)
-        if request.headers.get("origin") not in {"https://aisoup.net", "https://www.aisoup.net"}:
+        if request.headers.get("origin") not in {"https://aisoup.net", "https://www.aisoup.net", "https://photo-scout.aisoup.net", "https://web-evidence.aisoup.net", "https://contractor-check.aisoup.net", "https://niche-discovery.aisoup.net"}:
             raise HTTPException(403, "Unsupported origin")
         body = bytearray()
         async for chunk in request.stream():

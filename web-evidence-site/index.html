@@ -9,8 +9,8 @@
     <meta property="og:title" content="Web Evidence by Dream Workshop">
     <meta property="og:description" content="Verifiable web research an agent can discover, purchase, and call.">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://aisoup.net/web-evidence/">
-    <link rel="canonical" href="https://aisoup.net/web-evidence/">
+    <meta property="og:url" content="https://web-evidence.aisoup.net/">
+    <link rel="canonical" href="https://web-evidence.aisoup.net/">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="styles.css">
     <script type="application/ld+json">
@@ -19,12 +19,12 @@
         "@type": "SoftwareApplication",
         "name": "Web Evidence",
         "description": "Claim verification for people and agents with cited evidence, source provenance, snapshots, and hashes.",
-        "url": "https://aisoup.net/web-evidence/",
-        "documentation": "https://api.aisoup.net/web-evidence/openapi.json",
+        "url": "https://web-evidence.aisoup.net/",
+        "documentation": "https://web-evidence.aisoup.net/api/openapi.json",
         "provider": { "@type": "Organization", "name": "Dream Workshop LLC", "url": "https://aisoup.net" }
       }
     </script>
-  <script src="usage.js" defer></script></head>
+  <script src="usage.js?v=20261011subdomains1" defer></script></head>
   <body>
     <header class="nav">
       <a class="company" href="https://aisoup.net" aria-label="Dream Workshop home">
@@ -33,7 +33,7 @@
       </a>
       <div class="nav-links">
         <a href="#verify">Verify a claim</a><a href="#pricing">Pricing</a>
-        <a href="https://api.aisoup.net/web-evidence/openapi.json">OpenAPI ↗</a>
+        <a href="https://web-evidence.aisoup.net/api/openapi.json">OpenAPI ↗</a>
         <a class="nav-button" href="https://aisoup.net/">All services ↗</a>
       </div>
     </header>
@@ -98,12 +98,12 @@
           <div class="section-index">02 / Request</div>
           <h2>A small contract<br>for a hard problem.</h2>
           <p>Choose a research depth. Send one claim plus optional source, freshness, language, or jurisdiction constraints.</p>
-          <a href="https://api.aisoup.net/web-evidence/openapi.json">Read the complete OpenAPI specification ↗</a>
+          <a href="https://web-evidence.aisoup.net/api/openapi.json">Read the complete OpenAPI specification ↗</a>
         </div>
         <div class="terminal" aria-label="Example API request">
           <div class="terminal-bar"><span></span><span></span><span></span><b>POST /web-evidence/v1/claims/verify</b></div>
           <pre><code><i>curl</i> -X POST \
-  https://api.aisoup.net/web-evidence/v1/claims/verify \
+  https://web-evidence.aisoup.net/api/v1/claims/verify \
   -H <q>"Content-Type: application/json"</q> \
   -d <q>'{</q>
     <q>"claim"</q>: <q>"The Base mainnet chain ID is 8453."</q>,
@@ -122,19 +122,19 @@
           <p>Human Standard reports are $2 each with Stripe Checkout. Agent API calls use the prices below; MPP Stripe has a $0.50 minimum charge.</p>
         </div>
         <div class="tiers">
-          <a href="https://api.aisoup.net/web-evidence/openapi.json" class="tier">
+          <a href="https://web-evidence.aisoup.net/api/openapi.json" class="tier">
             <div><span>Quick</span><strong>$0.02</strong></div>
             <p>1 tool action · up to 3 cited sources · no snapshots</p><i>↗</i>
           </a>
-          <a href="https://api.aisoup.net/web-evidence/openapi.json" class="tier featured">
+          <a href="https://web-evidence.aisoup.net/api/openapi.json" class="tier featured">
             <div><span>Standard</span><strong>$0.05</strong></div>
             <p>3 tool actions · up to 8 cited sources · 3 snapshots</p><i>↗</i>
           </a>
-          <a href="https://api.aisoup.net/web-evidence/openapi.json" class="tier">
+          <a href="https://web-evidence.aisoup.net/api/openapi.json" class="tier">
             <div><span>Deep</span><strong>$0.12</strong></div>
             <p>7 tool actions · up to 15 cited sources · 8 snapshots</p><i>↗</i>
           </a>
-          <a href="https://api.aisoup.net/web-evidence/openapi.json" class="tier">
+          <a href="https://web-evidence.aisoup.net/api/openapi.json" class="tier">
             <div><span>Research</span><strong>$0.25</strong></div>
             <p>15 tool actions · up to 20 cited sources · all-source snapshots</p><i>↗</i>
           </a>
@@ -146,12 +146,12 @@
         <div class="rails-grid">
           <h2>Discover.<br>Pay.<br>Verify.</h2>
           <div class="rail-list">
-            <a href="https://api.aisoup.net/web-evidence/.well-known/agent-service.json"><span>Agent service manifest</span><b>JSON ↗</b></a>
-            <a href="https://api.aisoup.net/web-evidence/.well-known/mcp/server.json"><span>MCP server metadata</span><b>MCP ↗</b></a>
+            <a href="https://web-evidence.aisoup.net/api/.well-known/agent-service.json"><span>Agent service manifest</span><b>JSON ↗</b></a>
+            <a href="https://web-evidence.aisoup.net/api/.well-known/mcp/server.json"><span>MCP server metadata</span><b>MCP ↗</b></a>
             <a href="https://smithery.ai/servers/impanyu/web-evidence"><span>Smithery directory listing</span><b>DIRECTORY ↗</b></a>
-            <a href="https://api.aisoup.net/web-evidence/.well-known/agent-card.json"><span>Agent-to-Agent card</span><b>A2A ↗</b></a>
-            <a href="https://api.aisoup.net/web-evidence/.well-known/x402"><span>Payment discovery</span><b>x402 ↗</b></a>
-            <a href="https://api.aisoup.net/web-evidence/llms.txt"><span>Plain-text agent guide</span><b>LLMS.TXT ↗</b></a>
+            <a href="https://web-evidence.aisoup.net/api/.well-known/agent-card.json"><span>Agent-to-Agent card</span><b>A2A ↗</b></a>
+            <a href="https://web-evidence.aisoup.net/api/.well-known/x402"><span>Payment discovery</span><b>x402 ↗</b></a>
+            <a href="https://web-evidence.aisoup.net/api/llms.txt"><span>Plain-text agent guide</span><b>LLMS.TXT ↗</b></a>
             <a href="https://api.aisoup.net/openapi.json"><span>Agent support API</span><b>OPENAPI ↗</b></a>
           </div>
         </div>
@@ -162,7 +162,7 @@
           <span>Web Evidence by Dream Workshop</span>
           <h2>Make the next answer<br>inspectable.</h2>
         </div>
-        <a class="button button--light" href="https://api.aisoup.net/web-evidence/openapi.json">Open API specification <span>↗</span></a>
+        <a class="button button--light" href="https://web-evidence.aisoup.net/api/openapi.json">Open API specification <span>↗</span></a>
       </section>
     </main>
 
@@ -171,6 +171,6 @@
       <div><a href="privacy/">Privacy</a><a href="https://wiki.aisoup.net">AgenticWiKi ↗</a><a href="https://api.aisoup.net/">All agent services ↗</a><a href="https://status.aisoup.net">Status ↗</a></div>
       <span>© 2026</span>
     </footer>
-    <script src="app.js" defer></script>
+    <script src="app.js?v=20261011subdomains1" defer></script>
   </body>
 </html>

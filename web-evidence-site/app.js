@@ -7,7 +7,7 @@ form.addEventListener('submit', async (event) => {
   button.textContent = 'Opening secure checkout…';
   error.hidden = true;
   try {
-    const response = await fetch('https://api.aisoup.net/web-evidence/v1/checkout', {
+    const response = await fetch((location.hostname==='web-evidence.aisoup.net'?location.origin+'/api/v1/checkout':'https://api.aisoup.net/web-evidence/v1/checkout'), {
       method: 'POST', headers: { 'Content-Type': 'application/json', ...window.DWUsage?.headers() },
       body: JSON.stringify({ claim: document.getElementById('claim').value.trim() }),
     });
