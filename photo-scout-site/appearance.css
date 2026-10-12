@@ -101,7 +101,10 @@
 .popup-photo-preview>.street-view-preview>img{height:100%;object-fit:cover}
 .street-view-preview>.street-view-tools{z-index:6}.street-view-preview>.street-view-gesture-hint{z-index:5}
 .photo-app .street-view-zoom button{width:36px;height:36px;min-height:36px;padding:0;flex:none;color:#343941;background:#fffffff2;border:1px solid #d8dce2;box-shadow:0 1px 4px #17212c16;opacity:1}
-.photo-app .street-view-zoom button svg{display:block;width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;pointer-events:none}
+.photo-app .street-view-zoom-symbol{position:relative;display:block;width:18px;height:18px;flex:none;pointer-events:none}
+.photo-app .street-view-zoom-symbol::before,.photo-app .street-view-zoom-plus::after{content:"";position:absolute;display:block;background:#343941;border-radius:1px}
+.photo-app .street-view-zoom-symbol::before{width:16px;height:2px;left:1px;top:8px}
+.photo-app .street-view-zoom-plus::after{width:2px;height:16px;left:8px;top:1px}
 .photo-app .street-view-zoom button:focus-visible{outline:2px solid #70529b;outline-offset:2px}
 
 /* Sign out stays next to the account identity, visible without an extra disclosure or a long bill scroll. */
