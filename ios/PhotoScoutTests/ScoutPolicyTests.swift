@@ -21,6 +21,24 @@ final class ScoutPolicyTests: XCTestCase {
         XCTAssertNotNil(Bundle(for: ScoutViewController.self).url(forResource: "NativeBridge", withExtension: "js"))
     }
     @MainActor
+    func testConnectionFailureOffersRetry() throws {
+        let controller = ScoutViewController()
+        controller.loadViewIfNeeded()
+        let webView = try XCTUnwrap(controller.view.subviews.compactMap { $0 as? WKWebView }.first)
+        webView.stopLoading()
+        controller.webView(webView, didFailProvisionalNavigation: nil,
+                           withError: URLError(.notConnectedToInternet))
+        let overlay = try XCTUnwrap(controller.view.subviews.compactMap { $0 as? UIStackView }.first)
+        let retry = try XCTUnwrap(overlay.arrangedSubviews.compactMap { $0 as? UIButton }.first)
+        XCTAssertFalse(overlay.isHidden)
+        XCTAssertFalse(retry.isHidden)
+        XCTAssertTrue(webView.isHidden)
+        retry.sendActions(for: .touchUpInside)
+        XCTAssertTrue(retry.isHidden)
+        XCTAssertTrue(overlay.arrangedSubviews.compactMap { $0 as? UIActivityIndicatorView }.first?.isAnimating == true)
+        webView.stopLoading()
+    }
+    @MainActor
     func testProductionWebsiteLoadsWithNativeBridge() async throws {
         let controller = ScoutViewController()
         controller.loadViewIfNeeded()

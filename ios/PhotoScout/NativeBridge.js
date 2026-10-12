@@ -2,6 +2,18 @@
   'use strict';
   if (location.origin !== 'https://photo-scout.aisoup.net' || window.top !== window) return;
   const send = message => window.webkit.messageHandlers.scout.postMessage(message);
+  // Refresh the account in place: reloading discards File inputs and studio edits.
+  window.PhotoScoutNative = Object.freeze({finishSignIn: async (code, verifier) => {
+    const response = await fetch('/api/v1/auth/native/exchange', {
+      method: 'POST', credentials: 'include', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({code, verifier})
+    });
+    if (!response.ok) throw new Error('Sign-in exchange failed');
+    await loadAccount();
+    if (!authUser) throw new Error('Account could not refresh');
+    window.dispatchEvent(new Event('focus'));
+    return true;
+  }});
   const supported = data => Boolean(data && Array.isArray(data.files) && data.files.length === 1 &&
     data.files[0] instanceof File && ['image/png', 'image/jpeg', 'image/webp'].includes(data.files[0].type) &&
     data.files[0].size > 0 && data.files[0].size <= 20 * 1024 * 1024);
@@ -20,10 +32,20 @@
   }});
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition = (success, failure, options = {}) => {
+      let settled = false;
+      const timeout = Number.isFinite(options.timeout) ? Math.max(0, options.timeout) : 30000;
+      const finish = (callback, result) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        callback?.(result);
+      };
+      const timer = setTimeout(() => finish(failure, {code: 3, message: 'Location timed out'}), timeout);
+      if (timeout === 0) return;
       send({action: 'location', precise: Boolean(options.enableHighAccuracy)}).then(result => {
-        if (result.error) failure?.({code: result.code, message: result.error});
-        else success(result);
-      }, error => failure?.({code: 2, message: String(error)}));
+        if (result.error) finish(failure, {code: result.code, message: result.error});
+        else finish(success, result);
+      }, error => finish(failure, {code: 2, message: String(error)}));
     };
   }
 })();

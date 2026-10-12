@@ -16,7 +16,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          sparse-checkout: ios
+          sparse-checkout: |
+            ios
+            tests
+      - name: Test native JavaScript bridge
+        run: node --test tests/photo-scout-ios-bridge.test.cjs
       - name: Select simulator
         env:
           DEVICE_FAMILY: ${{ matrix.device }}

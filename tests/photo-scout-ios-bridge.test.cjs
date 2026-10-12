@@ -4,16 +4,21 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 const {File} = require('node:buffer');
 const script = fs.readFileSync('ios/PhotoScout/NativeBridge.js', 'utf8');
-function boot({origin = 'https://photo-scout.aisoup.net', child = false, receive = async () => ({completed: true})} = {}) {
+function boot({origin = 'https://photo-scout.aisoup.net', child = false, receive = async () => ({completed: true}), exchangeOK = true} = {}) {
   const calls = [];
-  const window = {webkit: {messageHandlers: {scout: {postMessage: async payload => { calls.push(payload); return receive(payload); }}}}};
+  const events = [], requests = [];
+  let accountRefreshes = 0;
+  const window = {dispatchEvent: event => events.push(event.type), webkit: {messageHandlers: {scout: {postMessage: async payload => { calls.push(payload); return receive(payload); }}}}};
   window.top = child ? {} : window;
   const navigator = {geolocation: {}};
   class FileReader {
     async readAsDataURL(file) { this.result = `data:${file.type};base64,${Buffer.from(await file.arrayBuffer()).toString('base64')}`; this.onload(); }
   }
-  vm.runInNewContext(script, {window, navigator, location: {origin}, File, FileReader, DOMException});
-  return {navigator, calls};
+  const context = {window, navigator, location: {origin, reload: () => assert.fail('must preserve editor')}, File, FileReader, DOMException, Event, setTimeout, clearTimeout,
+    fetch: async (url, options) => {requests.push({url, options}); return {ok: exchangeOK};},
+    loadAccount: async () => {accountRefreshes++;}, authUser: {id: 'user'}};
+  vm.runInNewContext(script, context);
+  return {navigator, calls, window, events, requests, context, accountRefreshes: () => accountRefreshes};
 }
 test('bridge is absent on other origins and child frames', () => {
   assert.equal(boot({origin: 'https://evil.test'}).navigator.share, undefined);
@@ -45,4 +50,41 @@ test('location success and denied authorization reach existing web callbacks', a
   const denied = boot({receive: async () => ({error: 'Permission denied', code: 1})});
   const error = await new Promise(resolve => denied.navigator.geolocation.getCurrentPosition(() => assert.fail('unexpected success'), resolve));
   assert.equal(error.code, 1);
+});
+test('native login refreshes account without replacing unsaved editor state', async () => {
+  const app = boot();
+  const selectedPhoto = new File(['portrait'], 'selfie.png', {type: 'image/png'});
+  app.window.selectedPhoto = selectedPhoto;
+  await app.window.PhotoScoutNative.finishSignIn('code', 'verifier');
+  assert.equal(app.window.selectedPhoto, selectedPhoto);
+  assert.equal(app.accountRefreshes(), 1);
+  assert.deepEqual(app.events, ['focus']);
+  assert.equal(app.requests[0].url, '/api/v1/auth/native/exchange');
+  assert.equal(app.requests[0].options.credentials, 'include');
+  assert.deepEqual(JSON.parse(app.requests[0].options.body), {code:'code',verifier:'verifier'});
+});
+test('failed login exchange or account refresh does not report success', async () => {
+  const app = boot({exchangeOK:false});
+  await assert.rejects(app.window.PhotoScoutNative.finishSignIn('code','proof'));
+  assert.equal(app.accountRefreshes(), 0);
+  assert.deepEqual(app.events, []);
+  const stale = boot(); stale.context.authUser = null;
+  await assert.rejects(stale.window.PhotoScoutNative.finishSignIn('code','proof'));
+  assert.deepEqual(stale.events, []);
+});
+test('location timeout completes once and ignores late native results', async () => {
+  let resolveNative, successes = 0, failures = 0;
+  const app = boot({receive: () => new Promise(resolve => {resolveNative=resolve;})});
+  const result = await new Promise(resolve => app.navigator.geolocation.getCurrentPosition(
+    () => successes++, error => {failures++; resolve(error);}, {timeout:5}));
+  assert.equal(result.code, 3);
+  resolveNative({coords:{latitude:40,longitude:-96}});
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(successes,0); assert.equal(failures,1);
+});
+test('zero location timeout does not request native permission', async () => {
+  const app = boot();
+  const error = await new Promise(resolve => app.navigator.geolocation.getCurrentPosition(
+    () => assert.fail('unexpected position'), resolve, {timeout:0}));
+  assert.equal(error.code,3); assert.equal(app.calls.length,0);
 });

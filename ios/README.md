@@ -30,7 +30,8 @@ Choose a simulator name installed on your machine for the second command. A
 manual GitHub Actions workflow (`Photo Scout iOS`) builds and runs the native
 unit tests on iPhone and iPad macOS runners when dispatched. It also loads the live
 website in WKWebView and uploads simulator screenshots, app bundles and test results.
-The checkout includes only `ios/`, avoiding the large website artwork assets.
+The checkout includes `ios/` and `tests/`, avoiding the large website artwork assets.
+CI also runs the JavaScript bridge regression tests.
 
 ## Native integration
 
@@ -39,7 +40,8 @@ The checkout includes only `ios/`, avoiding the large website artwork assets.
   No additional navigation bar covers the map or duplicates website controls.
 - Camera preview and file input use WebKit's system permission / photo picker UI.
 - Location requests use Core Location with foreground-only permission, denial
-  feedback and a timeout. The web map remains usable without location permission.
+  feedback and a timeout. Each JavaScript caller's timeout is respected, including
+  ignoring late native replies after expiry. The web map remains usable without location permission.
 - Image Share opens the iOS share sheet. Download uses WKDownload and offers Save
   to Files / sharing. The sheet has an iPad popover anchor and deletes temporary
   files after dismissal.
@@ -53,6 +55,9 @@ The checkout includes only `ios/`, avoiding the large website artwork assets.
   for an HttpOnly WebKit cookie. Guest tasks are attached in the web view's session;
   account history remains server-side. Signing out revokes related browser/app
   sessions using the existing session-family rules.
+- Successful native sign-in refreshes account state in place, preserving selected
+  selfie files and studio edits instead of reloading the whole page. A failed
+  account refresh reports an error and leaves those edits intact.
 - On foreground return, the website's task recovery resumes. iOS does not keep
   the webpage running while suspended; server jobs continue independently.
 

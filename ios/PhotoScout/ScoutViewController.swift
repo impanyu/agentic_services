@@ -188,16 +188,10 @@ final class ScoutViewController: UIViewController, WKNavigationDelegate, WKUIDel
                 // Arguments never become source code. The same-origin fetch sets
                 // an HttpOnly cookie inside WebKit and attaches guest work there.
                 self.webView.callAsyncJavaScript("""
-                    const response = await fetch('/api/v1/auth/native/exchange', {
-                      method: 'POST', credentials: 'include',
-                      headers: {'Content-Type': 'application/json'},
-                      body: JSON.stringify({code, verifier})
-                    });
-                    if (!response.ok) throw new Error('Sign-in exchange failed');
-                    return true;
+                    return await window.PhotoScoutNative.finishSignIn(code, verifier);
                     """, arguments: ["code": code, "verifier": verifier], in: nil, in: .page) { [weak self] result in
                         switch result {
-                        case .success: self?.webView.reload()
+                        case .success: break
                         case .failure: self?.alert("Sign-in could not finish. Please try again.")
                         }
                     }
