@@ -24,7 +24,7 @@ try{const saved=JSON.parse(localStorage.getItem(MAP_VISIT_KEY)||'null');if(saved
 const INITIAL_LOCATION=previousMapVisit?.selected||DEFAULT_LOCATION;
 const map=L.map('map',{zoomControl:false,worldCopyJump:true}).setView(previousMapVisit?.center||DEFAULT_LOCATION,previousMapVisit?.zoom??9);
 L.control.zoom({position:'bottomright'}).addTo(map);
-const controls=el('map-controls');controls.open=false;L.DomEvent.disableClickPropagation(controls);L.DomEvent.disableScrollPropagation(controls);L.DomEvent.disableClickPropagation(document.querySelector('.map-toolbar'));L.DomEvent.disableClickPropagation(el('prompt-form'));L.DomEvent.disableScrollPropagation(document.querySelector('.prompt-panel'));L.DomEvent.disableClickPropagation(document.querySelector('.scout-dock'));L.DomEvent.disableScrollPropagation(document.querySelector('.scout-dock'));L.DomEvent.disableClickPropagation(el('center-pin'));L.DomEvent.disableClickPropagation(document.querySelector('.map-account'));
+const controls=el('map-controls');controls.open=false;L.DomEvent.disableClickPropagation(controls);L.DomEvent.disableScrollPropagation(controls);L.DomEvent.disableClickPropagation(document.querySelector('.map-toolbar'));L.DomEvent.disableClickPropagation(el('prompt-form'));L.DomEvent.disableScrollPropagation(document.querySelector('.prompt-panel'));L.DomEvent.disableClickPropagation(document.querySelector('.scout-dock'));L.DomEvent.disableScrollPropagation(document.querySelector('.scout-dock'));L.DomEvent.disableClickPropagation(el('center-pin'));L.DomEvent.disableClickPropagation(el('points-menu'));
 const streetTiles=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'});
 let rasterLayer=null,previewLayer=null,previewTimer=null;
 let vectorLayer=null,activeMapStyle='streets',mapStyleGeneration=0,vectorReady=false,mapLoadTimer=null,vectorMoveHandler=null;
@@ -518,7 +518,7 @@ async function queueHistory(records){for(const h of records)pendingHistory.set(h
 async function loadAccount(){
  try{
   const state=await json('/photo-scout/v1/auth/me');authUser=state.user;csrfToken=state.csrfToken;
-  el('account-login').disabled=!state.configured;el('account-login').textContent='Sign in';el('account-login').title=state.configured?'Sign in with Google':'Google sign-in is not configured yet';el('account-login').hidden=Boolean(authUser);el('account-logout').hidden=!authUser;el('account-name').textContent=authUser?authUser.name:'Sign in to save history';
+  el('account-login').disabled=!state.configured;el('account-login').textContent='Sign in';el('account-login').title=state.configured?'Sign in with Google':'Google sign-in is not configured yet';el('account-login').hidden=true;el('account-logout').hidden=!authUser;el('profile-settings').hidden=!authUser;el('account-name').textContent=authUser?authUser.name:'Sign in to save history';
   if(authUser){
    const guest=searchHistory,remote=await json('/photo-scout/v1/history'),merged=new Map(remote.items.map(h=>[h.id,h]));
    for(const h of guest)merged.set(h.id,h);
@@ -1159,7 +1159,5 @@ if(typeof window!=='undefined'&&window.PhotoScoutAvatars)avatarLibrary=new windo
 }});
 
 if(window.PhotoScoutBilling){pointWallet=new window.PhotoScoutBilling({request:json,session:()=>({id:authUser?.id,name:authUser?.name,email:authUser?.email,csrf:csrfToken}),signIn:()=>el("account-login").click()});pointWallet.load();}
-const searchLimitNote=node("p",null,"task-point-limit");el("prompt-status").before(searchLimitNote);
-const taskLimitNote=node("p",null,"task-point-limit");studioGenerate.before(taskLimitNote);const paintTaskLimit=()=>{searchLimitNote.textContent=pointWallet?.data?.enabled?`Search: up to ${pointWallet.searchLimit} points reserved · itemized bill after completion`:"";taskLimitNote.textContent=pointWallet?.data?.enabled?`Up to ${pointWallet.portraitLimit} points reserved · final charge is itemized in Points & bills`:"";};window.addEventListener("photo-scout-credit-limits",paintTaskLimit);el("points-menu").addEventListener("toggle",paintTaskLimit);
 
 if(window.PhotoScoutUpdates)window.PhotoScoutUpdates.start(()=>studio.open||!!activeSearch||searchBusy||studioBusy||studioAdding||Array.from(document.querySelectorAll("dialog")).some(d=>d.open)||["INPUT","TEXTAREA","SELECT"].includes(document.activeElement?.tagName)||el("prompt-query").value.trim()!=="",()=>{el("prompt-query").value="";});

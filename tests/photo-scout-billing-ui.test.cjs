@@ -22,7 +22,7 @@ function boot({user=null,available=0,native=false}={}){
  return {wallet,root,home,menu,calls,get,logins:()=>logins,descendants};
 }
 test('guest sees wallet controls and paid submission opens an account page without submitting a task',async()=>{
- const f=boot();await f.wallet.load();assert.equal(f.get('profile-title').textContent,'Profile');
+ const f=boot();await f.wallet.load();assert.equal(f.get('profile-title').textContent,'Sign in');
  assert.ok(f.descendants(f.root).some(e=>e.textContent==='0 points available'));
  assert.equal(await f.wallet.prepare('search'),false);assert.equal(f.wallet.access.open,true);assert.equal(f.root.parentElement,f.wallet.access);assert.equal(f.logins(),0);assert.ok(f.calls.every(p=>p==='/photo-scout/v1/billing'));
  f.wallet.access.close();assert.equal(f.root.parentElement,f.home);
@@ -34,4 +34,6 @@ test('funded users proceed and insufficient balances open top-up without login',
  const funded=boot({user:'owner',available:100000});assert.equal(await funded.wallet.prepare('search'),true);assert.equal(funded.wallet.access.open,false);
  const empty=boot({user:'owner'});assert.equal(await empty.wallet.prepare('portrait'),false);assert.equal(empty.wallet.access.open,true);assert.equal(empty.wallet.accessLogin.hidden,true);empty.wallet.finishSignIn();assert.equal(empty.wallet.access.open,false);assert.equal(empty.menu.open,false);
 });
-test('native wallet with unavailable products renders without a reference error',async()=>{const f=boot({native:true});await f.wallet.load();assert.ok(f.descendants(f.root).some(e=>e.textContent.includes('iOS build are not available')))});
+test('native wallet with unavailable products renders without a reference error',async()=>{const f=boot({native:true});await f.wallet.load();assert.ok(f.descendants(f.root).some(e=>e.textContent.includes('In-app purchases are coming soon')))});
+
+test('guest entry signs in directly and profile copy has no internal pricing controls',async()=>{const f=boot();await f.wallet.load();let prevented=false;f.root.listeners.click({preventDefault(){prevented=true}});assert.equal(prevented,true);assert.equal(f.logins(),1);assert.equal(f.menu.open,false);const texts=f.descendants(f.root).map(e=>e.textContent).join(' ' );assert.match(texts,/\$1 = 100 points/);assert.doesNotMatch(texts,/Maximum charge|recorded API|cost ×|point limit/);assert.equal(f.descendants(f.root).filter(e=>e.tagName==='input').length,0);const owner=boot({user:'owner'});await owner.wallet.load();assert.equal(owner.get('profile-title').textContent,'Profile');});
