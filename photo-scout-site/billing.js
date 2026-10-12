@@ -14,7 +14,7 @@ window.PhotoScoutBilling=class {
   this.accessLogin=document.createElement('button');this.accessLogin.type='button';this.accessLogin.className='billing-access-login';this.accessLogin.textContent='Sign in with Google';this.accessLogin.onclick=()=>this.signIn();
   this.access.append(heading,this.accessReason,this.accessLogin);document.body.append(this.access);this.home=this.root.parentElement;
   const pageHeader=document.createElement('header');pageHeader.className='profile-page-heading';const profileTitle=document.createElement('h2');profileTitle.textContent='Profile';const back=document.createElement('button');back.type='button';back.textContent='Back';back.onclick=()=>this.menu.open=false;pageHeader.append(profileTitle,back);this.home.prepend(pageHeader);
-  this.access.addEventListener('close',()=>{this.home.append(this.root);const settings=document.querySelector('.profile-settings');if(settings)this.home.append(settings);});
+  this.access.addEventListener('close',()=>{this.home.append(this.root);});
  }
  openAccess(reason){this.accessReason.textContent=reason;this.accessLogin.hidden=Boolean(this.session().id);this.menu.open=false;this.access.append(this.root);if(!this.access.open)this.access.showModal();}
  finishSignIn(){if(this.access.open)this.access.close();this.menu.open=false;}
@@ -46,7 +46,7 @@ window.PhotoScoutBilling=class {
  }
  render(message=''){
   const root=this.root;root.replaceChildren();const make=(tag,text,cls)=>{const e=document.createElement(tag);if(text!==undefined&&text!==null)e.textContent=text;if(cls)e.className=cls;return e;},data=this.data,fmt=n=>Number(n||0).toLocaleString(undefined,{maximumFractionDigits:3});
-  const profile=this.session();document.querySelector('.profile-identity').hidden=!profile.id;document.getElementById('profile-title').textContent=profile.id?'Profile':'Sign in';document.getElementById('profile-name').textContent=profile.name||'';document.getElementById('profile-email').textContent=profile.email||'';this.menu.setAttribute('data-authenticated',String(Boolean(profile.id)));document.getElementById('profile-summary').setAttribute('aria-label',profile.id?'Profile & points':'Sign in');
+  const profile=this.session();document.querySelector('.profile-identity').hidden=!profile.id;document.getElementById('profile-settings').hidden=!profile.id;document.getElementById('account-logout').hidden=!profile.id;document.getElementById('profile-title').textContent=profile.id?'Profile':'Sign in';document.getElementById('profile-name').textContent=profile.name||'';document.getElementById('profile-email').textContent=profile.email||'';this.menu.setAttribute('data-authenticated',String(Boolean(profile.id)));document.getElementById('profile-summary').setAttribute('aria-label',profile.id?'Profile & points':'Sign in');
   root.append(make('h3','Points & bills'));const status=make('p',message,'points-status');status.setAttribute('role','status');root.append(status);
   const native=/PhotoScout-iOS\//.test(navigator.userAgent);
   if(!data){if(message){const retry=make('button','Retry loading points');retry.type='button';retry.onclick=()=>this.load();root.append(retry);}else root.append(make('p','Loading points…','small'));return;}
