@@ -9,3 +9,20 @@ test('Leaflet layout updates reuse the opened POI content instead of replacing i
  for(let i=0;i<5;i++){const content=marker.factory();assert.equal(content,original);assert.equal(content.children.find(c=>c.tag==='preview').loaded,true)}
  assert.equal(scope.selectedPoiView.popup,original);assert.deepEqual(loads,[original]);marker.handlers.popupclose();marker.factory();marker.handlers.popupopen();assert.deepEqual(loads,[original,original]);
 });
+
+function positionFixture(){
+ const source=fs.readFileSync('photo-scout-site/app.js','utf8'),events={},frames=[],observers=[],windowEvents={};
+ const scope={el:id=>({hidden:true,getBoundingClientRect:()=>id==='map'?{width:390,height:844,bottom:844}:{right:0}}),document:{querySelector:()=>({getBoundingClientRect:()=>({top:742})})},L:{point:(x,y)=>({x,y})},map:{on(name,fn){(events[name]??=[]).push(fn)}},requestAnimationFrame:fn=>frames.push(fn),window:{addEventListener:(name,fn)=>windowEvents[name]=fn,ResizeObserver:class{constructor(fn){observers.push(fn)}observe(){}disconnect(){}}}};
+ vm.runInNewContext(source.slice(source.indexOf('function fitPoiPopup('),source.indexOf("map.on('popupclose',event=>{const popup=")),scope);
+ const makePopup=()=>({options:{},pans:0,updates:0,isOpen:()=>true,getElement:()=>({querySelector:()=>({})}),update(){this.updates++;if(this.options.autoPan)this.pans++}});
+ return {makePopup,fire:(name,event={})=>(events[name]||[]).forEach(fn=>fn(event)),flush:()=>frames.splice(0).forEach(fn=>fn()),resize:()=>{observers.at(-1)();windowEvents.resize()},scope};
+}
+test('POI opening pans once; late content and viewport resizing never recenter after a drag',()=>{
+ const f=positionFixture(),popup=f.makePopup();f.fire('popupopen',{popup});f.flush();assert.equal(popup.pans,1);assert.equal(popup.options.keepInView,false);assert.equal(popup.options.autoPan,false);
+ f.fire('dragstart');for(let i=0;i<5;i++)f.resize();assert.equal(popup.pans,1);assert.ok(popup.updates>1);
+ f.fire('popupclose',{popup});f.fire('popupopen',{popup});f.flush();assert.equal(popup.pans,2);
+});
+test('user gestures cancel pending positioning and a stale popup frame cannot pan a newer selection',()=>{
+ for(const gesture of ['dragstart','zoomstart']){const f=positionFixture(),popup=f.makePopup();f.fire('popupopen',{popup});f.fire(gesture);f.flush();assert.equal(popup.pans,0);}
+ const f=positionFixture(),old=f.makePopup(),current=f.makePopup();f.fire('popupopen',{popup:old});f.fire('popupopen',{popup:current});f.flush();assert.equal(old.pans,0);assert.equal(current.pans,1);
+});
