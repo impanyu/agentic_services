@@ -93,3 +93,13 @@
 @media(max-width:360px){.photo-app .scout-dock .map-controls>summary{font-size:11px}.photo-app .scout-dock .dock-actions button{font-size:11px;padding-inline:8px}.photo-app .scout-dock #parameter-summary{max-width:90px}}
 @media(max-height:500px) and (orientation:landscape){.photo-app .map-overlay-controls{gap:0;padding:4px}.photo-app .map-overlay-controls>details,.photo-app .map-overlay-controls>details>summary,.photo-app .map-overlay-controls>.center-map{height:36px;min-height:36px}.rail-divider{margin:2px 0}}
 @media(prefers-reduced-motion:reduce){.avatar-pick,.photo-app .scout-dock .prompt-row button{transition:none}}
+
+/* Keep the account header below the iPhone status bar; general popover padding must not override it. */
+@media(max-width:760px){.photo-app .map-overlay-controls .points-menu[open]>.history-menu{padding:calc(28px + env(safe-area-inset-top)) 18px calc(18px + env(safe-area-inset-bottom))}.profile-page-heading{align-items:center}.profile-page-heading button{min-height:44px;min-width:64px;padding:10px 16px}}
+/* A panorama has a stable layout before its thumbnail or GPU texture arrives. */
+.popup-photo-preview>.street-view-preview{height:160px;min-height:160px;border-radius:10px;isolation:isolate;background:#eef0f3}
+.popup-photo-preview>.street-view-preview>img{height:100%;object-fit:cover}
+.street-view-preview>.street-view-tools{z-index:6}.street-view-preview>.street-view-gesture-hint{z-index:5}
+.photo-app .street-view-zoom button{width:36px;height:36px;min-height:36px;padding:0;flex:none;color:#343941;background:#fffffff2;border:1px solid #d8dce2;box-shadow:0 1px 4px #17212c16;opacity:1}
+.photo-app .street-view-zoom button svg{display:block;width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;pointer-events:none}
+.photo-app .street-view-zoom button:focus-visible{outline:2px solid #70529b;outline-offset:2px}

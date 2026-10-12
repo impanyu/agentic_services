@@ -25,8 +25,8 @@
  if(state.frame==null)state.frame=global.requestAnimationFrame(()=>draw(state));return true;}
  function detach(surface){const state=states.get(surface);if(!state)return;state.cancelled=true;if(state.frame!=null)global.cancelAnimationFrame(state.frame);state.resize?.disconnect();state.canvas.remove();state.credit?.remove();state.gl.deleteTexture(state.texture);state.gl.deleteBuffer(state.buffer);state.gl.deleteProgram(state.program);surface.classList.remove('local-panorama-active');states.delete(surface);}
  async function attach(surface,{getSpot,loadPanorama}){if(getSpot()?.provider!=='google-street-view')return false;
- const pano=new URL(getSpot().sourceUrl).searchParams.get('pano'),old=states.get(surface);if(old?.pano===pano)return old.loading;if(old)detach(surface);
- const canvas=document.createElement('canvas'),gl=canvas.getContext('webgl',{alpha:false,antialias:false,preserveDrawingBuffer:false});if(!gl)return false;
+ const pano=new URL(getSpot().sourceUrl).searchParams.get('pano'),old=states.get(surface);if(old?.pano===pano){refresh(surface);return old.loading;}if(old)detach(surface);
+ const canvas=document.createElement('canvas'),gl=canvas.getContext('webgl',{alpha:false,antialias:false,preserveDrawingBuffer:true});if(!gl)return false;
  canvas.className='local-panorama';canvas.setAttribute('aria-hidden','true');
  const state={surface,canvas,gl,getSpot,pano,ready:false,cancelled:false,frame:null};states.set(surface,state);
  state.loading=(async()=>{try{const {image,metadata}=await source(pano,loadPanorama);if(state.cancelled||!surface.isConnected||new URL(getSpot().sourceUrl).searchParams.get('pano')!==pano){if(states.get(surface)===state)detach(surface);return false;}
@@ -34,7 +34,7 @@
  const buffer=gl.createBuffer();state.buffer=buffer;gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);const a=gl.getAttribLocation(program,'a');gl.enableVertexAttribArray(a);gl.vertexAttribPointer(a,2,gl.FLOAT,false,0,0);
  const texture=gl.createTexture();state.texture=texture;gl.bindTexture(gl.TEXTURE_2D,texture);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGB,gl.RGB,gl.UNSIGNED_BYTE,image);
  const b=basis(metadata.heading||0,90-(metadata.tilt??90),metadata.roll||0);for(const [name,value] of Object.entries(b))gl.uniform3fv(gl.getUniformLocation(program,'p'+name[0].toUpperCase()+name.slice(1)),value);
- const credit=document.createElement('span');credit.className='local-panorama-credit';credit.textContent='Google · '+(metadata.copyright||'Google');state.credit=credit;surface.append(canvas,credit);state.ready=true;surface.classList.add('local-panorama-active');draw(state);
+ const credit=document.createElement('span');credit.className='local-panorama-credit';credit.textContent='Google · '+(metadata.copyright||'Google');state.credit=credit;surface.append(canvas,credit);state.ready=true;surface.classList.add('local-panorama-active');refresh(surface);
  if(global.ResizeObserver){state.resize=new ResizeObserver(()=>refresh(surface));state.resize.observe(surface);}canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();if(states.get(surface)===state)detach(surface);});return true;
  }catch{if(states.get(surface)===state)detach(surface);return false;}})();return state.loading;
  }

@@ -368,17 +368,18 @@ function popupPhotoPreview(spot,searchId){
 }
 function loadPopupPhoto(popup,force=false){
  for(const box of popup.querySelectorAll('.popup-photo-preview')){
-  const image=box.querySelector('img'),spot=box.photoSpot;if(!image)continue;const surface=image.parentElement;if(spot.provider==='google-street-view'&&window.PhotoScoutNativeStreetView)activateNativeStreetView(surface,()=>box.photoSpot, surface.streetViewSearchId);
+  const image=box.querySelector('img'),spot=box.photoSpot;if(!image)continue;const surface=image.parentElement;if(spot.provider==='google-street-view'&&(window.PhotoScoutLocalPanorama||window.PhotoScoutNativeStreetView)){const source=spot.sourceUrl;activateNativeStreetView(surface,()=>box.photoSpot,surface.streetViewSearchId).then(ready=>{if(ready&&surface.isConnected&&box.photoSpot.sourceUrl===source){image.hidden=false;if(box.previewStatus)box.previewStatus.hidden=true;box.dataset.loaded='true';}});}
   if(!box.previewStatus){box.previewStatus=node('span','','image-unavailable');box.previewStatus.hidden=true;box.append(box.previewStatus);}
   const status=box.previewStatus;
   function refresh(){
    box.dataset.loaded='';status.textContent='Loading preview…';status.hidden=false;
-   refreshThumbnail(image,box.photoSpot,()=>{image.hidden=true;status.textContent='Preview unavailable — open the original view.';status.hidden=false;});
+   refreshThumbnail(image,box.photoSpot,()=>{if(window.PhotoScoutLocalPanorama?.isActive(surface)||window.PhotoScoutNativeStreetView?.isActive(surface)){status.hidden=true;return;}image.hidden=true;status.textContent='Preview unavailable — open the original view.';status.hidden=false;});
   }
   if(!box.dataset.bound){
    box.dataset.bound='true';
    image.addEventListener('load',()=>{image.hidden=false;status.hidden=true;box.dataset.loaded='true';});
    image.addEventListener('error',()=>{
+    if(window.PhotoScoutLocalPanorama?.isActive(surface)||window.PhotoScoutNativeStreetView?.isActive(surface)){image.hidden=false;status.hidden=true;return;}
     box.dataset.loaded='';image.hidden=true;
     if(['google-street-view','google-places-photos'].includes(box.photoSpot.provider)&&Number(box.dataset.retries||0)<1){
      box.dataset.retries=String(Number(box.dataset.retries||0)+1);refresh();
