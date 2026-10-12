@@ -48,7 +48,7 @@ CI also runs the JavaScript bridge regression tests.
 - External HTTPS links open a dismissible system browser. Native capabilities are
   restricted to the canonical HTTPS origin's main frame; third-party map frames
   receive no access to the bridge.
-- Google sign-in uses a full-screen SFSafariViewController, with the scene delegate receiving the custom-scheme return. A random verifier remains in
+- Google sign-in uses ASWebAuthenticationSession. A random verifier remains in
   memory; its S256 challenge is bound to the server OAuth state. After Google's
   existing signature/audience/nonce checks, a 60-second, one-use handoff code
   returns through `net.aisoup.photoscout://auth`. A same-origin POST exchanges it
@@ -61,7 +61,7 @@ CI also runs the JavaScript bridge regression tests.
 - On foreground return, the website's task recovery resumes. iOS does not keep
   the webpage running while suspended; server jobs continue independently.
 
-Apple references: [system browser](https://developer.apple.com/documentation/safariservices/sfsafariviewcontroller),
+Apple references: [system authentication](https://developer.apple.com/documentation/authenticationservices/aswebauthenticationsession),
 [WebKit downloads](https://developer.apple.com/documentation/webkit/wkdownload).
 
 ## Validation and release status
