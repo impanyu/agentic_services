@@ -52,11 +52,13 @@ def test_existing_new_guest_records_merge_without_losing_either_history(tmp_path
     with TaskStore(settings.database_path).db() as db:
         for job,guest in [('legacy',old_guest),('new',new_guest)]:db.execute('INSERT INTO photo_task_owners VALUES(?,?,?,?,?,?)',('search',job,guest,None,time.time(),'{}'))
         db.execute('INSERT INTO photo_hidden_pois VALUES(?,?,?)',('guest:'+new_guest,'new','poi'))
+        db.execute('INSERT INTO photo_avatar_names VALUES(?,?,?)',('guest:'+new_guest,'preset:totoro','Travel buddy'))
     assert new.post(PREFIX+'import',json=transfer(legacy,new)).status_code==200
     assert identity(settings,new)[0]==old_guest
     with sqlite3.connect(settings.database_path) as db:
         assert db.execute('SELECT DISTINCT guest FROM photo_task_owners').fetchall()==[(old_guest,)]
         assert db.execute('SELECT owner FROM photo_hidden_pois').fetchone()[0]=='guest:'+old_guest
+        assert db.execute('SELECT owner,name FROM photo_avatar_names').fetchone()==('guest:'+old_guest,'Travel buddy')
 
 def test_account_transfer_preserves_user_and_permanent_records(tmp_path):
     settings,legacy,new=setup(tmp_path);seed_session(settings,legacy,'alice','legacy-session')

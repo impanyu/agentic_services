@@ -12,6 +12,9 @@ class AvatarUpload(BaseModel):
     name:str=Field(min_length=1,max_length=80)
     image:str=Field(max_length=28000000)
 
+class AvatarName(BaseModel):
+    name:str=Field(min_length=1,max_length=80)
+
 def normalize_image(data):
     try:
         prefix,encoded=data.split(',',1)
@@ -31,6 +34,7 @@ def create_avatars_router(settings,require_api):
     with store.db() as db:
         db.execute('CREATE TABLE IF NOT EXISTS photo_avatars (id TEXT PRIMARY KEY,owner TEXT NOT NULL,name TEXT NOT NULL,created REAL NOT NULL,image BLOB NOT NULL,removed INTEGER NOT NULL DEFAULT 0)')
         db.execute('CREATE INDEX IF NOT EXISTS photo_avatar_owner ON photo_avatars(owner,created)')
+        db.execute('CREATE TABLE IF NOT EXISTS photo_avatar_names (owner TEXT NOT NULL,avatar TEXT NOT NULL,name TEXT NOT NULL,PRIMARY KEY(owner,avatar))')
     def owner(request,response,write=False):
         require_api(request.headers.get('authorization'))
         if write and not allowed_web_origin(request.headers.get('origin')):
@@ -48,7 +52,8 @@ def create_avatars_router(settings,require_api):
         with store.db() as db:
             prune_records(db)
             rows=db.execute('SELECT id,name,created FROM photo_avatars WHERE owner=? AND removed=0 ORDER BY created DESC',(identity,)).fetchall()
-        return {'items':[item(r) for r in rows],'limit':50,'retention':'permanent' if identity.startswith('user:') else 'seven_days_inactive'}
+            names=db.execute('SELECT avatar,name FROM photo_avatar_names WHERE owner=?',(identity,)).fetchall()
+        return {'items':[item(r) for r in rows],'presetNames':{r['avatar']:r['name'] for r in names},'limit':50,'retention':'permanent' if identity.startswith('user:') else 'seven_days_inactive'}
     @router.post('/photo-scout/v1/avatars')
     def upload(payload:AvatarUpload,request:Request,response:Response):
         identity=owner(request,response,True);data=normalize_image(payload.image)
@@ -60,6 +65,17 @@ def create_avatars_router(settings,require_api):
             record={'id':secrets.token_urlsafe(18),'name':payload.name.strip() or 'My avatar','created':time.time()}
             db.execute('INSERT INTO photo_avatars(id,owner,name,created,image) VALUES(?,?,?,?,?)',(record['id'],identity,record['name'],record['created'],data))
         return item(record)
+    @router.post('/photo-scout/v1/avatars/{avatar_id}/name')
+    def rename(avatar_id:str,payload:AvatarName,request:Request,response:Response):
+        identity=owner(request,response,True);name=payload.name.strip()
+        if not name or len(avatar_id)>160:raise HTTPException(422,'Enter a name up to 80 characters.')
+        with store.db() as db:
+            if avatar_id.startswith('preset:'):
+                db.execute('INSERT INTO photo_avatar_names(owner,avatar,name) VALUES(?,?,?) ON CONFLICT(owner,avatar) DO UPDATE SET name=excluded.name',(identity,avatar_id,name))
+            else:
+                result=db.execute('UPDATE photo_avatars SET name=? WHERE id=? AND owner=? AND removed=0',(name,avatar_id,identity))
+                if not result.rowcount:raise HTTPException(404,'Avatar not found')
+        return {'id':avatar_id,'name':name}
     @router.get('/photo-scout/v1/avatars/{avatar_id}/image')
     def image(avatar_id:str,request:Request,response:Response):
         identity=owner(request,response)

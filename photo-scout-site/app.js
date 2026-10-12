@@ -1116,4 +1116,16 @@ for(const button of document.querySelectorAll('[data-photo-tab]')){
 }
 el('photo-history').addEventListener('toggle',refreshPhotoLibraryIfOpen);el('photo-library-more').onclick=()=>loadPhotoLibrary(true);
 
-if(typeof window!=='undefined'&&window.PhotoScoutAvatars)avatarLibrary=new window.PhotoScoutAvatars({api,request:json,prepare:prepareStudioPhoto,session:()=>({id:authUser?.id||'guest',csrf:csrfToken,epoch:taskRecoveryGeneration}),canSelect:()=>studio.open&&!studioBusy,onSelect:async file=>{studioUpload.value='';await addStudioPhotos([file],{saveToLibrary:false});}});
+function avatarSelfiePlaces(){
+ const places=[],seen=new Set();
+ const sources=[...(displayedResult?[{id:displayedSearchId,label:'Current search',result:displayedResult}]:[]),...searchHistory];
+ for(const history of sources)for(const spot of allPoiViews(history.result,history.id)){const key=history.id+':'+poiHistoryKey(spot);if(seen.has(key))continue;seen.add(key);places.push({spot,searchId:history.id,label:spot.name+' · '+history.label});}
+ return places;
+}
+if(typeof window!=='undefined'&&window.PhotoScoutAvatars)avatarLibrary=new window.PhotoScoutAvatars({api,request:json,prepare:prepareStudioPhoto,session:()=>({id:authUser?.id||'guest',csrf:csrfToken,epoch:taskRecoveryGeneration}),canSelect:()=>studio.open&&!studioBusy&&!studioAdding,getPlaces:avatarSelfiePlaces,onSelect:async(file,place)=>{
+ if(studioBusy||studioAdding)throw Error('Wait for the current photo upload to finish.');
+ if(place)openPhotoStudio(place.spot,place.searchId);
+ if(!studio.open)throw Error('Choose an existing photo location first.');
+ const count=studioSubjects.length;studioUpload.value='';await addStudioPhotos([file],{saveToLibrary:false});
+ if(studioSubjects.length!==count+1)throw Error(studioStatus.textContent||'Could not add this avatar.');
+}});

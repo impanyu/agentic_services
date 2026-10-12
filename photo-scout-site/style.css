@@ -265,3 +265,5 @@ html:has(body.photo-app),body.photo-app{height:100%;overflow:hidden}.photo-app m
 .studio-add-person:disabled{opacity:.5;cursor:default}
 .studio-subject-list[hidden],.studio-person-frame[hidden]{display:none}
 @media(max-width:600px){.studio-person-preview{height:150px}.studio-person-preview .studio-person-frame,.studio-person-preview .studio-person-frame>img{height:150px}}
+
+.avatar-detail{width:min(540px,calc(100vw - 24px))}.avatar-detail-image{display:block;width:100%;max-height:300px;object-fit:contain;border-radius:16px;background:#f1ecf5}.avatar-detail-intro{line-height:1.5}.avatar-name-form{display:flex;align-items:end;gap:10px}.avatar-name-form label{flex:1;min-width:0}.avatar-name-form input,.avatar-selfie-options select{display:block;width:100%;min-height:44px;padding:10px;border:1px solid #dacfe3;border-radius:10px;background:#fff;color:#302438}.avatar-name-form button{min-height:44px;flex-shrink:0;padding:10px 14px;border:0;border-radius:10px;background:#eee7f5;color:#604575;cursor:pointer}.avatar-selfie-options{display:grid;gap:10px;margin-top:20px}.avatar-selfie-options h3{margin:0}.avatar-detail .avatar-status{min-height:1.4em}

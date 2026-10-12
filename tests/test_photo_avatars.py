@@ -56,3 +56,43 @@ def test_heic_studio_upload_is_normalized_for_library(tmp_path):
     uploaded=client.post('/photo-scout/v1/avatars',json=payload,headers={'Origin':'https://aisoup.net'})
     assert uploaded.status_code==200
     with Image.open(io.BytesIO(client.get(uploaded.json()['imageUrl']).content)) as image:assert image.format=='JPEG'
+
+def test_rename_is_private_validated_and_persists(tmp_path):
+    settings,app,client,payload=fixture(tmp_path);headers={'Origin':'https://aisoup.net'}
+    item=client.post('/photo-scout/v1/avatars',json=payload,headers=headers).json()
+    route='/photo-scout/v1/avatars/'+item['id']+'/name'
+    assert client.post(route,json={'name':'  New name  '},headers=headers).json()['name']=='New name'
+    assert client.get('/photo-scout/v1/avatars').json()['items'][0]['name']=='New name'
+    other=TestClient(app,base_url='https://api.test')
+    assert other.post(route,json={'name':'Hijack'},headers=headers).status_code==404
+    assert client.post(route,json={'name':' '},headers=headers).status_code==422
+    assert client.post(route,json={'name':'a'*81},headers=headers).status_code==422
+    assert client.post(route,json={'name':'Unsafe'}).status_code==403
+    preset='/photo-scout/v1/avatars/preset:totoro/name'
+    assert client.post(preset,json={'name':'My friend'},headers=headers).status_code==200
+    assert client.get('/photo-scout/v1/avatars').json()['presetNames']=={'preset:totoro':'My friend'}
+    assert other.get('/photo-scout/v1/avatars').json()['presetNames']=={}
+    client.delete('/photo-scout/v1/avatars/'+item['id'],headers=headers)
+    assert client.post(route,json={'name':'Removed'},headers=headers).status_code==404
+
+def test_preset_name_account_adoption_csrf_and_guest_retention(tmp_path):
+    settings,app,client,payload=fixture(tmp_path);headers={'Origin':'https://aisoup.net'}
+    route='/photo-scout/v1/avatars/preset:totoro/name'
+    client.post(route,json={'name':'Guest name'},headers=headers)
+    store=TaskStore(settings.database_path)
+    from starlette.requests import Request
+    request=Request({'type':'http','headers':[(b'cookie',(GUEST_COOKIE+'='+client.cookies.get(GUEST_COOKIE)).encode())]})
+    with store.db() as db:db.execute('CREATE TABLE photo_portraits(id TEXT,expires REAL)')
+    store.attach_user(request,'user-a')
+    with store.db() as db:
+        db.execute('CREATE TABLE photo_sessions(hash TEXT,user_id TEXT,expires REAL,csrf TEXT)')
+        db.execute('INSERT INTO photo_sessions VALUES(?,?,?,?)',(digest('session-a'),'user-a',time.time()+10000,'csrf-a'))
+        db.execute('UPDATE photo_guests SET expires=0');prune_records(db)
+    client.cookies.set(ACCOUNT_COOKIE,'session-a')
+    assert client.get('/photo-scout/v1/avatars').json()['presetNames']['preset:totoro']=='Guest name'
+    assert client.post(route,json={'name':'Account name'},headers=headers).status_code==403
+    assert client.post(route,json={'name':'Account name'},headers={**headers,'X-CSRF-Token':'csrf-a'}).status_code==200
+    other=TestClient(app,base_url='https://api.test');other.post(route,json={'name':'Expired'},headers=headers)
+    with store.db() as db:
+        db.execute('UPDATE photo_guests SET expires=0');prune_records(db)
+        assert db.execute('SELECT count(*) FROM photo_avatar_names').fetchone()[0]==1

@@ -19,6 +19,9 @@ def merge_guests(db, current, legacy):
     for table,columns in [('photo_hidden_pois','search,poi'),('photo_removed_items','kind,job')]:
         db.execute(f'INSERT OR IGNORE INTO {table} SELECT ?,{columns} FROM {table} WHERE owner=?',('guest:'+legacy,'guest:'+current))
         db.execute(f'DELETE FROM {table} WHERE owner=?',('guest:'+current,))
+    if db.execute("SELECT 1 FROM sqlite_master WHERE name='photo_avatar_names'").fetchone():
+        db.execute('INSERT OR IGNORE INTO photo_avatar_names SELECT ?,avatar,name FROM photo_avatar_names WHERE owner=?',('guest:'+legacy,'guest:'+current))
+        db.execute('DELETE FROM photo_avatar_names WHERE owner=?',('guest:'+current,))
     db.execute('UPDATE photo_guest_aliases SET canonical=? WHERE canonical=?',(legacy,current))
     db.execute('INSERT OR REPLACE INTO photo_guest_aliases VALUES(?,?)',(current,legacy))
 
