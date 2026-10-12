@@ -121,11 +121,11 @@ function closeMenusOutside(target){
  for(const menu of mapMenus)if(menu.open&&!menu.contains(target))menu.open=false;
  // Keep the submit target still between pointerdown and pointerup.
  if(controls.open&&!controls.contains(target)&&!target.closest?.('#prompt-form'))controls.open=false;
- if(!target.closest?.('.leaflet-control-layers'))overlayControl.collapse?.();
+
 }
 // Capture before Leaflet stops propagation, including taps on the map.
 document.addEventListener('pointerdown',event=>closeMenusOutside(event.target),true);
-document.addEventListener('keydown',event=>{if(event.key==='Escape'){for(const menu of mapMenus)menu.open=false;controls.open=false;overlayControl.collapse?.();}});
+document.addEventListener('keydown',event=>{if(event.key==='Escape'){for(const menu of mapMenus)menu.open=false;controls.open=false;}});
 
 if(window.ResizeObserver)new window.ResizeObserver(entries=>{document.body.style.setProperty('--scout-dock-height',entries[0].target.getBoundingClientRect().height+'px');}).observe(document.querySelector('.scout-dock'));
 document.querySelectorAll('[data-map-style]').forEach(b=>b.addEventListener('click',()=>switchMapStyle(b.dataset.mapStyle)));
@@ -137,9 +137,8 @@ function stopPoiScan(){clearInterval(scanTimer);scanTimer=null;scanRunning=false
 function startPoiScan(){if(scanRunning||!candidatePoiLayer.getLayers().length)return;scanRunning=true;el('map').classList.add('reviewing-views');const tick=()=>{if(document.hidden)return;const dots=candidatePoiLayer.getLayers();if(!dots.length){stopPoiScan();return;}if(scanDot)scanDot.setStyle({radius:6,color:'#fff',weight:2,fillColor:'#456951',fillOpacity:.9});scanDot=dots[scanIndex++%dots.length];scanDot.setStyle({radius:9,color:'#fff',weight:3,fillColor:'#9762d1',fillOpacity:1});scanLayer.clearLayers();const name=scanDot.getTooltip()?.getContent()?.textContent||'Nearby place';L.circleMarker(scanDot.getLatLng(),{radius:21,color:'#a26ce1',weight:3,fillColor:'#b889ed',fillOpacity:.15,interactive:false,className:'photo-scan-ring'}).addTo(scanLayer).bindTooltip(node('span','Checking '+name+'…'),{permanent:true,direction:'top',offset:[0,-22],className:'photo-scan-label'}).openTooltip();};tick();scanTimer=setInterval(tick,1400);}
 const searchArea=L.circle(INITIAL_LOCATION,{radius:Number(el('radius').value),color:'#375947',weight:1.5,dashArray:'5 7',fillColor:'#acd69a',fillOpacity:.12,interactive:false}).addTo(map);
 const journeyLayer=L.layerGroup().addTo(map);let activeRouteGeometry=null,activeRouteBounds=null,restoredRoute=null,routeCreditShown=false;
-const overlayControl=L.control.layers(null,{'Route':journeyLayer,'Search radius':searchArea,'Current search results':photoLocationLayer,'Other search history':otherPhotoLocationLayer},{collapsed:true}).addTo(map);
-document.querySelector('.map-overlay-controls').append(overlayControl.getContainer());
-const overlaysToggle=overlayControl.getContainer().querySelector('.leaflet-control-layers-toggle');overlaysToggle.setAttribute('aria-label','Map overlays');overlaysToggle.removeAttribute('title');overlaysToggle.innerHTML='<svg class="rail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><path d="M9 6h5a4 4 0 0 1 0 8h-4a4 4 0 0 0 0 8h5"/></svg><span class="rail-label">Map overlays</span>';
+const overlayControl=L.control.layers(null,{'Route':journeyLayer,'Search radius':searchArea,'Current search results':photoLocationLayer,'Other search history':otherPhotoLocationLayer},{collapsed:false}).addTo(map);
+document.querySelector('.map-overlays-panel').append(overlayControl.getContainer());
 function syncMapSelection(){const lat=Number(el('lat').value),lon=Number(el('lon').value);if(!Number.isFinite(lat)||!Number.isFinite(lon)||Math.abs(lat)>85||Math.abs(lon)>180)return;searchArea.setLatLng([lat,lon]).setRadius(Number(el('radius').value));el('map-selection').textContent=`${lat.toFixed(5)}, ${lon.toFixed(5)}`;el('coordinate-readout').textContent=el('map-selection').textContent;el('map-radius').textContent=`Searching within ${Number(el('radius').value)>=1000?Number(el('radius').value)/1000+' km':el('radius').value+' m'}`;}
 selected.on('dragend',()=>{const p=selected.getLatLng();pick(p.lat,p.lng);});
 function saveMapVisit(){
