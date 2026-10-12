@@ -1131,13 +1131,25 @@ for(const button of document.querySelectorAll('[data-photo-tab]')){
 }
 el('photo-history').addEventListener('toggle',refreshPhotoLibraryIfOpen);el('photo-library-more').onclick=()=>loadPhotoLibrary(true);
 
+function previewAvatarPlace(place,root){
+ const original=place?.spot||studioSpot;if(!original){root.append(node('p','Choose an existing photo location.','small'));return;}
+ const searchId=place?.searchId??studioSearchId,spot=place?{...original,...poiViewOverrides.get(searchId+':'+poiHistoryKey(original)),...savedSelfieView(searchId,original)}:original;
+ focusMapSpot(spot,{searchId,openPopup:false});
+ const image=node('img',null,'avatar-place-image');image.alt='Background preview: '+spot.name;image.referrerPolicy='no-referrer';root.append(image,node('h4',spot.name));
+ const position=spot.poi||spot,details=[spot.provider==='google-street-view'?'Google Street View':spot.provider==='google-places-photos'?'Google Places photo':spot.provider,photoBearing(spot).heading!=null?photoBearing(spot).label:null,position.address,Number.isFinite(position.lat)&&Number.isFinite(position.lon)?position.lat.toFixed(5)+', '+position.lon.toFixed(5):null].filter(Boolean);
+ root.append(node('p',details.join(' · '),'small'));
+ if(spot.visible_evidence)root.append(node('p',spot.visible_evidence,'avatar-place-description'));
+ if(spot.sourceUrl)root.append(link(spot.provider==='google-street-view'?'Open original Street View ↗':'Open original photo ↗',spot.sourceUrl));
+ const unavailable=()=>{image.hidden=true;if(!root.querySelector('.image-unavailable'))root.append(node('p','Preview unavailable — use the original view link.','image-unavailable'));};image.addEventListener('error',unavailable);
+ if(spot.provider==='google-street-view'||spot.imageReference)refreshThumbnail(image,spot,unavailable);else if(spot.imageUrl)image.src=spot.imageUrl;else unavailable();
+}
 function avatarSelfiePlaces(){
  const places=[],seen=new Set();
  const sources=[...(displayedResult?[{id:displayedSearchId,label:'Current search',result:displayedResult}]:[]),...searchHistory];
  for(const history of sources)for(const spot of allPoiViews(history.result,history.id)){const key=history.id+':'+poiHistoryKey(spot);if(seen.has(key))continue;seen.add(key);places.push({spot,searchId:history.id,label:spot.name+' · '+history.label});}
  return places;
 }
-if(typeof window!=='undefined'&&window.PhotoScoutAvatars)avatarLibrary=new window.PhotoScoutAvatars({api,request:json,prepare:prepareStudioPhoto,session:()=>({id:authUser?.id||'guest',csrf:csrfToken,epoch:taskRecoveryGeneration}),canSelect:()=>studio.open&&!studioBusy&&!studioAdding,getPlaces:avatarSelfiePlaces,onSelect:async(file,place)=>{
+if(typeof window!=='undefined'&&window.PhotoScoutAvatars)avatarLibrary=new window.PhotoScoutAvatars({api,request:json,prepare:prepareStudioPhoto,session:()=>({id:authUser?.id||'guest',csrf:csrfToken,epoch:taskRecoveryGeneration}),canSelect:()=>studio.open&&!studioBusy&&!studioAdding,getPlaces:avatarSelfiePlaces,renderPlacePreview:previewAvatarPlace,onSelect:async(file,place)=>{
  if(studioBusy||studioAdding)throw Error('Wait for the current photo upload to finish.');
  if(place)openPhotoStudio(place.spot,place.searchId);
  if(!studio.open)throw Error('Choose an existing photo location first.');
