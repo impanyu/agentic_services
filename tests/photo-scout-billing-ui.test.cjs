@@ -50,3 +50,14 @@ test('customer billing hides raw stage names, task IDs, ledger notes and pricing
  assert.doesNotMatch(text,/Recorded API|×3|×100|private-|internal-plan|multiplier/);
  assert.match(text,/Place search · 250 points reserved/);assert.match(text,/Other services/);assert.match(text,/Monthly plan · Active/);assert.match(text,/Points added/);
 });
+
+test('guest task attempts require login before wallet requests even when billing is disabled',async()=>{
+ for(const kind of ['search','portrait']){const f=boot();f.wallet.data={enabled:false};assert.equal(await f.wallet.prepare(kind),false);assert.equal(f.calls.length,0);assert.equal(f.wallet.access.open,true);assert.equal(f.wallet.accessLogin.hidden,false);assert.equal(f.root.hidden,true);f.wallet.access.close();assert.equal(f.root.hidden,false);}
+});
+test('guest search and generation entry points stop before parsing, scene changes or uploads',async()=>{
+ const source=fs.readFileSync('photo-scout-site/app.js','utf8');
+ const search=boot();const scope={pointWallet:search.wallet,serviceAvailable:true,resolving:false,pipelineBusy:false,searchBusy:false};
+ vm.runInNewContext(source.slice(source.indexOf('async function submitSearch('),source.indexOf("el('prompt-form').addEventListener('submit',submitSearch)")),scope);await scope.submitSearch();assert.equal(search.wallet.access.open,true);assert.equal(search.calls.length,0);
+ const portrait=boot();let generate;const studioScope={pointWallet:portrait.wallet,tasksReady:true,studioPrepared:'prepared',studioSpot:{name:'Selected place'},studioBusy:false,studioAdding:0,studioGenerate:{addEventListener(_,fn){generate=fn;}}};
+ vm.runInNewContext(source.slice(source.indexOf("studioGenerate.addEventListener('click'"),source.indexOf('function finishStudio(')),studioScope);await generate();assert.equal(portrait.wallet.access.open,true);assert.equal(studioScope.studioBusy,false);assert.equal(portrait.calls.length,0);
+});

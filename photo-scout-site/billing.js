@@ -14,9 +14,9 @@ window.PhotoScoutBilling=class {
   this.accessLogin=document.createElement('button');this.accessLogin.type='button';this.accessLogin.className='billing-access-login';this.accessLogin.textContent='Sign in with Google';this.accessLogin.onclick=()=>this.signIn();
   this.access.append(heading,this.accessReason,this.accessLogin);document.body.append(this.access);this.home=this.root.parentElement;
   const pageHeader=document.createElement('header');pageHeader.className='profile-page-heading';const profileTitle=document.createElement('h2');profileTitle.textContent='Profile';const back=document.createElement('button');back.type='button';back.textContent='Back';back.onclick=()=>this.menu.open=false;pageHeader.append(profileTitle,back);this.home.prepend(pageHeader);
-  this.access.addEventListener('close',()=>{this.home.append(this.root);});
+  this.access.addEventListener('close',()=>{this.root.hidden=false;this.home.append(this.root);});
  }
- openAccess(reason){this.accessReason.textContent=reason;this.accessLogin.hidden=Boolean(this.session().id);this.menu.open=false;this.access.append(this.root);if(!this.access.open)this.access.showModal();}
+ openAccess(reason){this.root.hidden=!this.session().id;this.accessReason.textContent=reason;this.accessLogin.hidden=Boolean(this.session().id);this.menu.open=false;this.access.append(this.root);if(!this.access.open)this.access.showModal();}
  finishSignIn(){if(this.access.open)this.access.close();this.menu.open=false;}
  headers(){return {'Content-Type':'application/json','X-CSRF-Token':this.session().csrf||''};}
  async load(before){
@@ -28,7 +28,9 @@ window.PhotoScoutBilling=class {
  }
  reset(){this.epoch++;this.data=null;this.render();this.load();}
  taskOptions(kind){return {creditLimitPoints:kind==='search'?this.searchLimit:this.portraitLimit};}
+ requireSignIn(kind){if(this.session().id)return true;this.openAccess(kind==='portrait'?'Sign in to generate your photo. Your selected people and settings stay here.':'Sign in to search for photo spots. Your search stays here.');return false;}
  async prepare(kind){
+  if(!this.requireSignIn(kind))return false;
   if(!this.data)await this.load();
   if(!this.data)throw Error('Could not load your point balance. Please retry.');
   if(!this.data.enabled)return;
