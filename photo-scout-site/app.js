@@ -94,6 +94,7 @@ async function switchMapStyle(style){
   const response=await fetch('https://tiles.openfreemap.org/styles/'+mapStyles[style]);
   if(!response.ok)throw Error('Map style unavailable');
   const preparedStyle=await response.json();
+  if(style==='minimal')for(const layer of preparedStyle.layers){const source=layer['source-layer'];if(layer.type==='background')layer.paint={...layer.paint,'background-color':'#f3f0e9'};else if(layer.type==='fill'&&source==='water')layer.paint={...layer.paint,'fill-color':'#dce7eb'};else if(layer.type==='fill'&&source==='park')layer.paint={...layer.paint,'fill-color':'#e1e9dd'};}
   if(generation!==mapStyleGeneration||abandoned)return;
   originalLayerVisibility=new Map(preparedStyle.layers.map(l=>[l.id,l.layout?.visibility||'visible']));
   for(const l of preparedStyle.layers){const group=mapDetailGroup(l);if(group&&(!mapDetails[group]||(group==='roadNames'&&!mapDetails.roads)))l.layout={...l.layout,visibility:'none'};}
