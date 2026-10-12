@@ -195,7 +195,7 @@ final class ScoutViewController: UIViewController, WKNavigationDelegate, WKUIDel
                     });
                     if (!response.ok) throw new Error('Sign-in exchange failed');
                     return true;
-                    """, arguments: ["code": code, "verifier": verifier], in: nil, contentWorld: .page) { [weak self] result in
+                    """, arguments: ["code": code, "verifier": verifier], in: nil, in: .page) { [weak self] result in
                         switch result {
                         case .success: self?.webView.reload()
                         case .failure: self?.alert("Sign-in could not finish. Please try again.")

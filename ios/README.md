@@ -15,9 +15,9 @@ reimplementation or an offline copy of the website.
    Capabilities. The default bundle identifier is `net.aisoup.photoscout`; change
    it if your team requires a different identifier. Keep the callback URL scheme
    and server callback constant aligned if changing that scheme.
-4. Deploy the backend changes in `accounts.py` and `native_auth.py` before testing
-   Google login. Existing Google web OAuth credentials and HTTPS callback URLs
-   are reused; no API key or OAuth secret belongs in the app.
+4. Native login backend changes were deployed on 2026-10-12. Existing Google web
+   OAuth credentials and HTTPS callback URLs are reused; no API key or OAuth secret
+   belongs in the app. A real Apple-device Google login still needs manual verification.
 
 ```sh
 xcodebuild -project ios/PhotoScout.xcodeproj -scheme PhotoScout \
@@ -28,7 +28,9 @@ xcodebuild -project ios/PhotoScout.xcodeproj -scheme PhotoScout \
 
 Choose a simulator name installed on your machine for the second command. A
 manual GitHub Actions workflow (`Photo Scout iOS`) builds and runs the native
-unit tests on a macOS runner when dispatched.
+unit tests on iPhone and iPad macOS runners when dispatched. It also loads the live
+website in WKWebView and uploads simulator screenshots, app bundles and test results.
+The checkout includes only `ios/`, avoiding the large website artwork assets.
 
 ## Native integration
 
@@ -63,8 +65,8 @@ Implemented source, backend integration and automated checks are in this change.
 The implementation machine has Command Line Tools but **no full Xcode / iOS SDK**.
 Swift parsing, origin-policy checks, backend tests and JavaScript bridge tests can
 run there; an iOS build, simulator run and device tests have **not** been completed.
-The new backend endpoint is **not yet deployed**. The app cannot complete native
-login against production until it is deployed.
+The native login exchange endpoint is **deployed**. Production health and invalid-code
+rejection were verified; this does not substitute for a real-device Google login.
 
 Before distributing a build, verify on iPhone and iPad:
 
@@ -81,3 +83,27 @@ is configured. Store release also requires reviewing the privacy labels against
 actual backend practices, account deletion and login requirements, and the app's
 eligibility under Apple's review guidelines. The privacy manifest is a starting
 inventory for this implementation, not a completed App Store privacy submission.
+
+## Signing and TestFlight handoff
+
+Apple Developer enrollment is pending. No usable code-signing identity is installed
+on the current Mac, and no signing secrets are configured in GitHub. Simulator
+artifacts are not installable iPhone/iPad IPA files.
+
+After membership activation:
+
+1. Sign in to the enrolled Apple account in Xcode Settings → Accounts and select
+   the correct team. Register `net.aisoup.photoscout` and create the matching App
+   Store Connect app record under that team.
+2. On a Mac with full Xcode, run `APPLE_TEAM_ID=YOURTEAMID SCOUT_BUILD_NUMBER=1
+   ./ios/archive.sh`. Increase the build number for later uploads. The script
+   creates a signed Release archive and does not upload or publish it.
+3. Open `ios/build/PhotoScout.xcarchive` in Xcode Organizer, validate the archive,
+   then Distribute App → App Store Connect → Upload.
+4. Wait for processing, complete the applicable encryption/privacy/beta information,
+   then add internal testers. External testing may require Apple's beta review.
+5. Verify the manual device checks above before requesting App Store review.
+
+Never commit signing certificates, private keys, provisioning profiles, or Apple
+account credentials. Membership identity verification and payment must be completed
+in Apple's own interface.
