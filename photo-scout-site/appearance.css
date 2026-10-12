@@ -108,3 +108,9 @@
 .photo-app .profile-identity .profile-settings{margin:6px 0 0;padding:0;border:0}
 .photo-app .profile-identity .profile-settings>button{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 14px;margin:0;border:1px solid var(--scout-edge);border-radius:10px;background:#f4f5f7;color:#555c67;font-size:14px;font-weight:500;cursor:pointer}
 .photo-app .profile-identity .profile-settings[hidden],.photo-app #account-logout[hidden]{display:none}
+
+/* Provider choices share the same size and focus treatment. */
+.billing-access-login,.billing-access-apple{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;min-height:48px;margin-top:12px;padding:12px 16px;border-radius:12px;font-size:16px;font-weight:500;cursor:pointer}
+.billing-access-login{background:white;border:1px solid #d9dde3;color:#343941}.billing-access-apple{background:#111;border:1px solid #111;color:white}
+.billing-access-login:disabled,.billing-access-apple:disabled{opacity:.45;cursor:default}.billing-access-login[hidden],.billing-access-apple[hidden],.auth-provider-note[hidden]{display:none}
+.auth-provider-icon{display:inline-flex}.auth-provider-icon svg{display:block;width:20px;height:20px}.auth-provider-note{font-size:13px;color:#686d76;text-align:center;line-height:1.5}.billing-access-login:focus-visible,.billing-access-apple:focus-visible{outline:2px solid #70529b;outline-offset:3px}

@@ -1,6 +1,9 @@
 /* UI messages only: never translate API enums, user input or provider attribution. */
 window.PhotoScoutMessages={
   "zh-Hans": {
+    "Sign in with Apple": "通过 Apple 登录",
+    "Apple sign-in is coming soon.": "Apple 登录即将开放。",
+    "Sign in to Photo Scout.": "登录 Photo Scout。",
     "6 / 6 reference photos · All selected people will appear together.": "6 / 6 张参考图 · 将所有选中的人物合成为一张合影",
     "5 / 6 reference photos · All selected people will appear together.": "5 / 6 张参考图 · 将所有选中的人物合成为一张合影",
     "4 / 6 reference photos · All selected people will appear together.": "4 / 6 张参考图 · 将所有选中的人物合成为一张合影",
@@ -476,6 +479,9 @@ window.PhotoScoutMessages={
     "Your photo and this view will be sent to OpenAI to create an AI composite. Your uploaded photo is also saved privately in Avatar Library for reuse. Processing copies are removed after completion; signed-in photos are saved permanently; guest photos are deleted after 7 days without a visit.": "你的照片和此场景会发送给 OpenAI 生成 AI 合成图。上传的照片也会私密保存到角色图库以便复用。处理副本完成后删除；登录用户的照片永久保存，访客连续 7 天未访问后删除。"
   },
   "zh-Hant": {
+    "Sign in with Apple": "透過 Apple 登入",
+    "Apple sign-in is coming soon.": "Apple 登入即將開放。",
+    "Sign in to Photo Scout.": "登入 Photo Scout。",
     "Sign in": "登入",
     "Sign out": "退出登入",
     "Map layers": "地圖圖層",

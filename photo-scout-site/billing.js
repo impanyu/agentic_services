@@ -1,22 +1,26 @@
 /* Point balances and itemized task bills; purchases settle only on the server. */
 window.PhotoScoutBilling=class {
  constructor({request,session,signIn}){
-  Object.assign(this,{request,session,signIn});this.epoch=0;this.searchLimit=250;this.portraitLimit=100;this.data=null;this.busy=false;this.applePrices={};
+  Object.assign(this,{request,session,signIn});this.epoch=0;this.searchLimit=250;this.portraitLimit=100;this.data=null;this.busy=false;this.applePrices={};this.providers={google:true,apple:false};
 
   this.menu=document.getElementById('points-menu');this.root=this.menu.querySelector('.points-content');
-  this.menu.querySelector('summary').addEventListener('click',event=>{if(!this.session().id){event.preventDefault();this.signIn();}});this.menu.addEventListener('toggle',()=>{if(this.menu.open)this.load();});this.createAccessPage();this.render();
+  this.menu.querySelector('summary').addEventListener('click',event=>{if(!this.session().id){event.preventDefault();this.openAccess('Sign in to Photo Scout.');}});this.menu.addEventListener('toggle',()=>{if(this.menu.open)this.load();});this.createAccessPage();this.render();
   window.addEventListener('focus',()=>{if(this.menu.open)this.load();});
  }
  createAccessPage(){
   this.access=document.createElement('dialog');this.access.className='billing-access';this.access.setAttribute('aria-label','Account & points');
   const heading=document.createElement('header');heading.className='billing-access-heading';const title=document.createElement('h2');title.textContent='Account & points';const close=document.createElement('button');close.type='button';close.textContent='Back';close.onclick=()=>this.access.close();heading.append(title,close);
   this.accessReason=document.createElement('p');this.accessReason.className='billing-access-reason';this.accessReason.setAttribute('role','status');
-  this.accessLogin=document.createElement('button');this.accessLogin.type='button';this.accessLogin.className='billing-access-login';this.accessLogin.textContent='Sign in with Google';this.accessLogin.onclick=()=>this.signIn();
-  this.access.append(heading,this.accessReason,this.accessLogin);document.body.append(this.access);this.home=this.root.parentElement;
+  this.accessLogin=document.createElement('button');this.accessLogin.type='button';this.accessLogin.className='billing-access-login';this.accessLogin.textContent='Sign in with Google';this.accessLogin.onclick=()=>this.signIn('google');
+  this.accessApple=document.createElement('button');this.accessApple.type='button';this.accessApple.className='billing-access-apple';this.accessApple.textContent='Sign in with Apple';const appleMark=document.createElement('span');appleMark.className='auth-provider-icon';appleMark.innerHTML="<svg viewBox=\"0 0 24 24\" width=\"20\" height=\"20\" aria-hidden=\"true\" fill=\"currentColor\"><path d=\"M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701\"/></svg>";this.accessApple.prepend(appleMark);this.accessApple.onclick=()=>this.signIn('apple');
+  this.appleNote=document.createElement('p');this.appleNote.className='auth-provider-note';this.appleNote.textContent='Apple sign-in is coming soon.';this.accessTitle=title;
+  this.access.append(heading,this.accessReason,this.accessLogin,this.accessApple,this.appleNote);document.body.append(this.access);this.home=this.root.parentElement;
   const pageHeader=document.createElement('header');pageHeader.className='profile-page-heading';const profileTitle=document.createElement('h2');profileTitle.textContent='Profile';const back=document.createElement('button');back.type='button';back.textContent='Back';back.onclick=()=>this.menu.open=false;pageHeader.append(profileTitle,back);this.home.prepend(pageHeader);
   this.access.addEventListener('close',()=>{this.root.hidden=false;this.home.append(this.root);});
  }
- openAccess(reason){this.root.hidden=!this.session().id;this.accessReason.textContent=reason;this.accessLogin.hidden=Boolean(this.session().id);this.menu.open=false;this.access.append(this.root);if(!this.access.open)this.access.showModal();}
+ setAuthProviders(providers){this.providers={google:providers.google===true,apple:providers.apple===true};this.updateSignInOptions();}
+ updateSignInOptions(){const signedIn=Boolean(this.session().id),native=/PhotoScout-iOS\//.test(navigator.userAgent);this.accessLogin.hidden=this.accessApple.hidden=signedIn;this.accessLogin.disabled=!this.providers.google;this.accessApple.disabled=!this.providers.apple||(native&&!window.PhotoScoutNative?.signInProviders?.includes('apple'));this.appleNote.hidden=signedIn||!this.accessApple.disabled;}
+ openAccess(reason){this.updateSignInOptions();this.accessTitle.textContent=this.session().id?'Points & bills':'Sign in';this.access.setAttribute('aria-label',this.accessTitle.textContent);this.root.hidden=!this.session().id;this.accessReason.textContent=reason;this.accessLogin.hidden=Boolean(this.session().id);this.menu.open=false;this.access.append(this.root);if(!this.access.open)this.access.showModal();}
  finishSignIn(){if(this.access.open)this.access.close();this.menu.open=false;}
  headers(){return {'Content-Type':'application/json','X-CSRF-Token':this.session().csrf||''};}
  async load(before){
@@ -54,7 +58,7 @@ window.PhotoScoutBilling=class {
   if(!data){if(message){const retry=make('button','Retry loading points');retry.type='button';retry.onclick=()=>this.load();root.append(retry);}else root.append(make('p','Loading points…','small'));return;}
   document.querySelector('.free-tag').textContent=data.enabled?'PAY WITH POINTS':'FREE PREVIEW';
   const test=document.getElementById('test-notice');test.textContent=data.enabled?'Tasks use points. Switch tabs while they run; results and bills are saved.':'Free test. Switch tabs while it runs; completed searches are saved in this browser.';
-  this.accessLogin.hidden=Boolean(profile.id);
+  this.updateSignInOptions();
   {const balance=make('div',null,'points-balance');balance.append(make('strong',fmt(data.availablePoints)+' points available'),make('span',fmt(data.balancePoints)+' total · '+fmt(data.heldPoints)+' reserved'));root.append(balance);}
   root.append(make('p','$1 = 100 points','points-rate'));
   for(const mode of ['payment','subscription']){const section=make('section',null,'points-products');section.append(make('h4',mode==='payment'?'Buy points':'Monthly plans'));

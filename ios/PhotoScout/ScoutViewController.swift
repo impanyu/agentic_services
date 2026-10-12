@@ -136,7 +136,7 @@ final class ScoutViewController: UIViewController, WKNavigationDelegate, WKUIDel
         if action.targetFrame?.isMainFrame == false { decisionHandler(.allow); return }
         if ScoutPolicy.isLogin(url) {
             decisionHandler(.cancel)
-            signIn()
+            signIn(provider: url.path.contains("/apple/") ? "apple" : "google")
         } else if ScoutPolicy.isFirstParty(url) || url.scheme == "blob" {
             decisionHandler(action.shouldPerformDownload ? .download : .allow)
         } else {
@@ -176,7 +176,8 @@ final class ScoutViewController: UIViewController, WKNavigationDelegate, WKUIDel
 
     func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor { view.window! }
 
-    private func signIn() {
+    private func signIn(provider: String = "google") {
+        guard ["google", "apple"].contains(provider) else { return }
         guard authentication == nil else { return }
         var bytes = [UInt8](repeating: 0, count: 32)
         guard SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes) == errSecSuccess else {
@@ -185,7 +186,8 @@ final class ScoutViewController: UIViewController, WKNavigationDelegate, WKUIDel
         let encode: (Data) -> String = { $0.base64EncodedString().replacingOccurrences(of: "+", with: "-").replacingOccurrences(of: "/", with: "_").replacingOccurrences(of: "=", with: "") }
         let verifier = encode(Data(bytes))
         let proof = encode(Data(SHA256.hash(data: Data(verifier.utf8))))
-        let url = URL(string: "api/v1/auth/login?native_challenge=\(proof)", relativeTo: ScoutPolicy.home)!.absoluteURL
+        let loginPath = provider == "apple" ? "api/v1/auth/apple/login" : "api/v1/auth/login"
+        let url = URL(string: "\(loginPath)?native_challenge=\(proof)", relativeTo: ScoutPolicy.home)!.absoluteURL
         let session = ASWebAuthenticationSession(url: url, callbackURLScheme: ScoutPolicy.callbackScheme) { [weak self] callback, error in
             DispatchQueue.main.async {
                 guard let self else { return }
@@ -240,7 +242,9 @@ final class ScoutViewController: UIViewController, WKNavigationDelegate, WKUIDel
         }
         switch action {
         case "signIn":
-            signIn()
+            let provider = body["provider"] as? String ?? "google"
+            guard ["google", "apple"].contains(provider) else { replyHandler(nil, "Unsupported sign-in provider"); return }
+            signIn(provider: provider)
             replyHandler(["started": authentication != nil], nil)
         case "pointProducts":
             Task {

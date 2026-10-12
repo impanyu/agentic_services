@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 const {File} = require('node:buffer');
 const script = fs.readFileSync('ios/PhotoScout/NativeBridge.js', 'utf8');
-function boot({origin = 'https://photo-scout.aisoup.net', child = false, receive = async () => ({completed: true}), exchangeOK = true, nativeAuthReady = true} = {}) {
+function boot({origin = 'https://photo-scout.aisoup.net', child = false, receive = async () => ({completed: true}), exchangeOK = true, nativeAuthReady = true, appleAuthReady = false} = {}) {
   const calls = [];
   const events = [], requests = [];
   let accountRefreshes = 0;
@@ -15,7 +15,7 @@ function boot({origin = 'https://photo-scout.aisoup.net', child = false, receive
     async readAsDataURL(file) { this.result = `data:${file.type};base64,${Buffer.from(await file.arrayBuffer()).toString('base64')}`; this.onload(); }
   }
   const context = {window, navigator, location: {origin, reload: () => assert.fail('must preserve editor')}, File, FileReader, DOMException, Event, setTimeout, clearTimeout,
-    fetch: async (url, options) => {requests.push({url, options}); return {ok: exchangeOK,json:async()=>({nativeAuthReady})};},
+    fetch: async (url, options) => {requests.push({url, options}); return {ok: exchangeOK,json:async()=>({nativeAuthReady,providers:{apple:appleAuthReady}})};},
     loadAccount: async () => {accountRefreshes++;}, authUser: {id: 'user'}, pointWallet:{load:async()=>{},finishSignIn:()=>{events.push('close-account-page')}}};
   vm.runInNewContext(script, context);
   return {navigator, calls, window, events, requests, context, accountRefreshes: () => accountRefreshes};
@@ -90,3 +90,5 @@ test('zero location timeout does not request native permission', async () => {
 });
 
 test('native login refuses a backend missing the handoff capability',async()=>{const app=boot({nativeAuthReady:false});await assert.rejects(app.window.PhotoScoutNative.signIn());assert.equal(app.calls.length,0);const ready=boot();await ready.window.PhotoScoutNative.signIn();assert.equal(ready.calls[0].action,'signIn');});
+
+test('native Apple login selects its provider only when backend is ready',async()=>{const unavailable=boot();await assert.rejects(unavailable.window.PhotoScoutNative.signIn('apple'));assert.equal(unavailable.calls.length,0);const ready=boot({appleAuthReady:true});await ready.window.PhotoScoutNative.signIn('apple');assert.equal(ready.calls[0].provider,'apple');assert.ok(ready.window.PhotoScoutNative.signInProviders.includes('apple'));await assert.rejects(ready.window.PhotoScoutNative.signIn('unknown'));assert.equal(ready.calls.length,1);});

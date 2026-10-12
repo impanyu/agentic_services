@@ -521,7 +521,7 @@ async function loadAccount(){
  try{
   const state=await json('/photo-scout/v1/auth/me');authUser=state.user;csrfToken=state.csrfToken;
   // Reflect authentication immediately; history recovery must not delay the account icon.
-  pointWallet?.reset();
+  pointWallet?.setAuthProviders?.(state.providers||{google:state.configured,apple:false});pointWallet?.reset();
   el('account-login').disabled=!state.configured;el('account-login').textContent='Sign in';el('account-login').title=state.configured?'Sign in with Google':'Google sign-in is not configured yet';el('account-login').hidden=true;el('account-logout').hidden=!authUser;el('profile-settings').hidden=!authUser;el('account-name').textContent=authUser?authUser.name:'Sign in to save history';
   if(authUser){
    const guest=searchHistory,remote=await json('/photo-scout/v1/history'),merged=new Map(remote.items.map(h=>[h.id,h]));
@@ -541,7 +541,8 @@ async function loadAccount(){
  }catch{el('account-name').textContent='Sign in to save history';el('account-login').disabled=true;el('history-note').textContent='Sign-in is temporarily unavailable. Guest history stays in this session.';}
  refreshComments();refreshPhotoLibraryIfOpen();pointWallet?.confirmReturn();
 }
-el('account-login').addEventListener('click',()=>{el('points-menu').open=false;if(canonicalApp)localStorage.removeItem('photo-scout-legacy-signout-v1');persistHistory();if(window.PhotoScoutNative?.signIn){window.PhotoScoutNative.signIn().catch(error=>message(error.message));return;}location.href=api+apiPrefix+'/v1/auth/login';});
+function startSignIn(provider='google'){if(!['google','apple'].includes(provider))return;el('points-menu').open=false;if(canonicalApp)localStorage.removeItem('photo-scout-legacy-signout-v1');persistHistory();if(window.PhotoScoutNative?.signIn){window.PhotoScoutNative.signIn(provider).catch(error=>message(error.message));return;}location.href=api+apiPrefix+(provider==='apple'?'/v1/auth/apple/login':'/v1/auth/login');}
+el('account-login').addEventListener('click',()=>startSignIn('google'));
 el('account-logout').addEventListener('click',async()=>{try{await json('/photo-scout/v1/auth/logout',{method:'POST',headers:{'X-CSRF-Token':csrfToken}});if(canonicalApp)localStorage.setItem('photo-scout-legacy-signout-v1','1');authUser=null;csrfToken=null;pendingHistory.clear();searchHistory=[];sessionStorage.removeItem(HISTORY_KEY);el('results').hidden=true;el('toggle-results').disabled=true;renderHistory();drawHistoryMap();resetTaskRecovery();await loadAccount();await restoreTasks();await loadPublications();}catch{el('history-note').textContent='Sign-out failed. Please try again.';}});
 function stripHistoryImage(s){const copy={...s,verifiedImageAvailable:hasScoredImage(s)};delete copy.imageUrl;delete copy.streetViewReference;return copy;}
 function saveSearch(result){const id=activeSearch?.jobId||crypto.randomUUID();focusedSearchId=id;if(searchHistory.some(h=>h.id===id))return id;const context=activeSearch?.context;searchHistory.unshift({id,created:Date.now(),label:context?.query||context?.locationLabel||el('prompt-query').value.trim()||`Around ${Number(el('lat').value).toFixed(4)}, ${Number(el('lon').value).toFixed(4)}`,radius:context?.radius||Number(el('radius').value),checked:true,result:{...result,searchContext:{...(context||coordinates())}}});persistHistory();renderHistory();return id;}
@@ -1162,6 +1163,6 @@ if(typeof window!=='undefined'&&window.PhotoScoutAvatars)avatarLibrary=new windo
  if(studioSubjects.length!==count+1)throw Error(studioStatus.textContent||'Could not add this avatar.');
 }});
 
-if(window.PhotoScoutBilling){pointWallet=new window.PhotoScoutBilling({request:json,session:()=>({id:authUser?.id,name:authUser?.name,email:authUser?.email,csrf:csrfToken}),signIn:()=>el("account-login").click()});pointWallet.load();}
+if(window.PhotoScoutBilling){pointWallet=new window.PhotoScoutBilling({request:json,session:()=>({id:authUser?.id,name:authUser?.name,email:authUser?.email,csrf:csrfToken}),signIn:startSignIn});pointWallet.load();}
 
 if(window.PhotoScoutUpdates)window.PhotoScoutUpdates.start(()=>studio.open||!!activeSearch||searchBusy||studioBusy||studioAdding||Array.from(document.querySelectorAll("dialog")).some(d=>d.open)||["INPUT","TEXTAREA","SELECT"].includes(document.activeElement?.tagName)||el("prompt-query").value.trim()!=="",()=>{el("prompt-query").value="";});

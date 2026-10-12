@@ -4,10 +4,15 @@
   const send = message => window.webkit.messageHandlers.scout.postMessage(message);
   // Refresh the account in place: reloading discards File inputs and studio edits.
   window.PhotoScoutNative = Object.freeze({
-    signIn: async () => {
+    signInProviders: Object.freeze(['google','apple']),
+    signIn: async (provider='google') => {
+      if (!['google','apple'].includes(provider)) throw new Error('Unsupported sign-in provider');
       const response = await fetch('/api/v1/auth/me', {credentials:'include',cache:'no-store'});
-      if (!response.ok || !(await response.json()).nativeAuthReady) throw new Error('App sign-in is temporarily unavailable. Please try again shortly.');
-      return await send({action:'signIn'});
+      if (!response.ok) throw new Error('App sign-in is temporarily unavailable. Please try again shortly.');
+      const account = await response.json();
+      if (!account.nativeAuthReady) throw new Error('App sign-in is temporarily unavailable. Please try again shortly.');
+      if (provider==='apple' && !account.providers?.apple) throw new Error('Apple sign-in is coming soon.');
+      return await send({action:'signIn',provider});
     },
     purchasePoints: async product => {
       const response = await fetch('/api/v1/billing/apple/account', {method:'POST',credentials:'include',headers:{'Content-Type':'application/json','X-CSRF-Token':csrfToken||''}});

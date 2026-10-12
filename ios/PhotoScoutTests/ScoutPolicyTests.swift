@@ -10,6 +10,11 @@ final class ScoutPolicyTests: XCTestCase {
             XCTAssertFalse(ScoutPolicy.isFirstParty(URL(string: value)), value)
         }
     }
+    func testLoginRoutesUseFirstPartyAuthentication() {
+        XCTAssertTrue(ScoutPolicy.isLogin(URL(string: "https://photo-scout.aisoup.net/api/v1/auth/login")!))
+        XCTAssertTrue(ScoutPolicy.isLogin(URL(string: "https://photo-scout.aisoup.net/api/v1/auth/apple/login")!))
+        XCTAssertFalse(ScoutPolicy.isLogin(URL(string: "https://evil.test/api/v1/auth/apple/login")!))
+    }
     func testCallbackHasOneBoundedCode() {
         let code = String(repeating: "a", count: 43)
         XCTAssertEqual(ScoutPolicy.callbackCode(URL(string: "net.aisoup.photoscout://auth?code=\(code)")!), code)

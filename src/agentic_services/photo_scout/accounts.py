@@ -1,4 +1,4 @@
-"""Google OAuth sessions and account-owned Photo Scout search history."""
+"""Google and Apple OAuth sessions and account-owned Photo Scout search history."""
 from __future__ import annotations
 from .web_origin import allowed_web_origin, web_home, oauth_callback
 import base64
@@ -19,6 +19,7 @@ from pydantic import BaseModel, Field
 
 from .tasks import TaskStore
 from .native_auth import NativeAuth, NativeExchange
+from .apple_auth import install_apple_auth, configured as apple_configured
 
 COOKIE='photo_scout_session'
 STATE_COOKIE='photo_scout_oauth_state'
@@ -64,10 +65,28 @@ def create_accounts_router(settings,require_api):
     def cookie(response,name,value,age):
         response.set_cookie(name,value,max_age=age,httponly=True,secure=secure,samesite='lax',path='/photo-scout/v1/auth/' if name==STATE_COOKIE else '/photo-scout/')
         return response
+    def complete_login(request,user,state):
+        token=secrets.token_urlsafe(32);csrf=secrets.token_urlsafe(32)
+        previous=session(request)
+        with db() as d:
+            d.execute('DELETE FROM photo_sessions WHERE expires<?',(time.time(),))
+            family=digest(token)
+            if previous and previous['user_id']==user['id']:
+                related=d.execute('SELECT family FROM photo_session_families WHERE hash=?',(previous['hash'],)).fetchone()
+                family=related['family'] if related else previous['hash']
+                d.execute('INSERT OR IGNORE INTO photo_session_families VALUES(?,?)',(previous['hash'],family))
+            d.execute('INSERT INTO photo_sessions VALUES(?,?,?,?,?)',(digest(token),user['id'],json.dumps(user),csrf,time.time()+30*86400))
+            d.execute('INSERT INTO photo_session_families VALUES(?,?)',(digest(token),family))
+        TaskStore(settings.database_path).attach_user(request,user['id'])
+        response=cookie(RedirectResponse(native_auth.finish(state,digest(token)) or web_home(request),302),COOKIE,token,30*86400)
+        response.headers['Cache-Control']='no-store'
+        response.headers['Referrer-Policy']='no-referrer'
+        return response
+    install_apple_auth(router,db,require_api,native_auth,complete_login)
     @router.get('/photo-scout/v1/auth/me')
     def me(request:Request):
         row=session(request)
-        return JSONResponse({'configured':all(config()),'nativeAuthReady':True,'user':json.loads(row['user_json']) if row else None,'csrfToken':row['csrf'] if row else None},headers={'Cache-Control':'private, no-store'})
+        return JSONResponse({'configured':bool(all(config()) or apple_configured()),'providers':{'google':bool(all(config())),'apple':bool(apple_configured())},'nativeAuthReady':True,'user':json.loads(row['user_json']) if row else None,'csrfToken':row['csrf'] if row else None},headers={'Cache-Control':'private, no-store'})
     @router.get('/photo-scout/v1/auth/login')
     def login(request:Request,native_challenge:str=''):
         require_api(request.headers.get('authorization'))
@@ -107,22 +126,7 @@ def create_accounts_router(settings,require_api):
                 if not hmac.compare_digest(claims['nonce'],pending['nonce']) or not claims.get('email_verified'):raise ValueError('Identity not verified')
         except Exception as e:raise HTTPException(400,'Google sign-in could not be verified; please try again') from e
         user={'id':'google:'+claims['sub'],'name':str(claims.get('name') or claims.get('email') or 'Google user')[:200],'email':str(claims.get('email',''))[:320]}
-        token=secrets.token_urlsafe(32);csrf=secrets.token_urlsafe(32)
-        previous=session(request)
-        with db() as d:
-            d.execute('DELETE FROM photo_sessions WHERE expires<?',(time.time(),))
-            family=digest(token)
-            if previous and previous['user_id']==user['id']:
-                related=d.execute('SELECT family FROM photo_session_families WHERE hash=?',(previous['hash'],)).fetchone()
-                family=related['family'] if related else previous['hash']
-                d.execute('INSERT OR IGNORE INTO photo_session_families VALUES(?,?)',(previous['hash'],family))
-            d.execute('INSERT INTO photo_sessions VALUES(?,?,?,?,?)',(digest(token),user['id'],json.dumps(user),csrf,time.time()+30*86400))
-            d.execute('INSERT INTO photo_session_families VALUES(?,?)',(digest(token),family))
-        TaskStore(settings.database_path).attach_user(request,user['id'])
-        response=cookie(RedirectResponse(native_auth.finish(state,digest(token)) or web_home(request),302),COOKIE,token,30*86400)
-        response.headers['Cache-Control']='no-store'
-        response.headers['Referrer-Policy']='no-referrer'
-        return cookie(response,STATE_COOKIE,'',0)
+        return cookie(complete_login(request,user,state),STATE_COOKIE,'',0)
     @router.post('/photo-scout/v1/auth/native/exchange')
     def native_exchange(payload:NativeExchange,request:Request):
         require_api(request.headers.get('authorization'))
