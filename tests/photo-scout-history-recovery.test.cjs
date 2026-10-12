@@ -51,3 +51,9 @@ test('temporary image URLs are not required to draw a previously verified saved 
  assert.equal(ctx.hasScoredImage({score:null,verifiedImageAvailable:true}),false);
  assert.equal(ctx.hasScoredImage({score:80,verifiedImageAvailable:true,assessmentStatus:'no_verified_view'}),false);
 });
+
+test('account icon refreshes immediately while history is still loading',async()=>{
+ let resets=0;const elements=new Map(),ctx={authUser:null,csrfToken:null,pointWallet:{reset(){resets++;assert.equal(ctx.authUser.id,'alice');}},searchHistory:[],json:async url=>url.endsWith('/auth/me')?{configured:true,user:{id:'alice'},csrfToken:'test'}:new Promise(()=>{}),el:id=>{if(!elements.has(id))elements.set(id,{});return elements.get(id);}};
+ vm.runInNewContext(source.slice(source.indexOf('async function loadAccount(){'),source.indexOf("el('account-login').addEventListener")),ctx);
+ ctx.loadAccount();await tick();assert.equal(resets,1);assert.equal(ctx.authUser.id,'alice');
+});

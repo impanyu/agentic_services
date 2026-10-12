@@ -6,9 +6,9 @@
 .photo-app .map-overlay-controls>details>summary:hover,.photo-app .map-overlay-controls>.center-map:hover,.photo-app .map-overlay-controls>details[open]>summary{background:#eee5f6;color:#70479a;border:0;box-shadow:none}
 .map-overlay-controls .rail-icon,.map-overlay-controls>details>summary svg{display:block;width:22px;height:22px;flex-shrink:0}
 .map-overlay-controls .rail-icon-wrap{display:flex;align-items:center;justify-content:center;width:24px;height:24px;background:none}
-.profile-menu .profile-settings-icon{display:none}
-.profile-menu[data-authenticated=true] .profile-settings-icon{display:block}
-.profile-menu[data-authenticated=true] .profile-login-icon{display:none}
+#profile-avatar .profile-settings-icon{display:none}
+.profile-menu[data-authenticated=true] #profile-avatar .profile-settings-icon{display:block}
+.profile-menu[data-authenticated=true] #profile-avatar .profile-login-icon{display:none}
 .map-overlay-controls .rail-label{position:absolute;right:calc(100% + 15px);top:50%;display:flex;align-items:center;gap:6px;width:max-content;max-width:220px;transform:translate(4px,-50%);padding:8px 12px;border:1px solid #e8dfee;border-radius:12px;background:#fffdf8;color:#5d486f;box-shadow:0 4px 18px #30204016;font-size:13px;line-height:1.4;font-weight:550;white-space:nowrap;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .15s,transform .15s,visibility .15s}
 @media(hover:hover) and (pointer:fine){.map-overlay-controls>details>summary:hover .rail-label,.map-overlay-controls>.center-map:hover .rail-label{opacity:1;visibility:visible;transform:translate(0,-50%)}}
 .map-overlay-controls>details>summary:focus-visible .rail-label,.map-overlay-controls>.center-map:focus-visible .rail-label{opacity:1;visibility:visible;transform:translate(0,-50%)}
