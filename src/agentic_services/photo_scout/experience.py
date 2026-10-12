@@ -19,7 +19,7 @@ MIN_SAMPLES = 5
 MAX_ROWS = 1000
 MAX_HINT_BYTES = 7000
 TOOLS = frozenset('search_places search_geography search_features sample_geography sample_near_places feature_points filter_geography filter_features union intersection area_imagery point_imagery center_imagery collect_images score_images rank_results'.split())
-STAGES = frozenset('intent scoring subject-check background image-generation places-text places-details-pro places-details-ids places-photo routes-essentials streetview-tile-z0 streetview-tile-z1 static-streetview'.split())
+STAGES = frozenset('intent image-planning scoring subject-check background image-generation places-text places-details-pro places-details-ids places-photo routes-essentials streetview-tile-z0 streetview-tile-z1 static-streetview'.split())
 SCORING_FIELDS = ('checkedImages', 'candidateImages', 'cachedImages', 'downloadedImages',
                   'downloadFailedImages', 'scoringFailedImages', 'reviewedImages',
                   'reviewCachedImages', 'reviewRecoveredImages', 'matchedImages')
@@ -53,7 +53,7 @@ def code_revision():
     digest = hashlib.sha256()
     for name in ('experience.py', 'costs.py', 'intent.py', 'intent_prompt.py', 'planner.py',
                  'program.py', 'scoring.py', 'sources.py', 'osm_features.py', 'places.py',
-                 'spatial_sampling.py', 'visual_review.py', 'portraits.py', 'image_generation.py', 'score_cache.py', 'routes.py'):
+                 'spatial_sampling.py', 'visual_review.py', 'portraits.py', 'image_generation.py', 'image_plan.py', 'score_cache.py', 'routes.py'):
         digest.update((root / name).read_bytes())
     return digest.hexdigest()[:16]
 
@@ -65,7 +65,7 @@ def configuration(settings):
         'reasoning': getattr(settings, 'photo_scout_intent_reasoning', None),
         'primary': os.getenv('PHOTO_SCOUT_MODEL', 'gpt-6-luna'),
         'review': os.getenv('PHOTO_SCOUT_REVIEW_MODEL', 'gpt-6.1-sol'),
-        'image': os.getenv('PHOTO_SCOUT_IMAGE_MODEL', 'gemini-nano-banana-2.1'),
+        'image': os.getenv('PHOTO_SCOUT_IMAGE_MODEL', 'auto'),
         'provider': os.getenv('PHOTO_SCOUT_POI_PROVIDER', 'openstreetmap'),
         'batch': bounded_env('PHOTO_SCOUT_SCORING_BATCH_SIZE', 16, 32),
         'scoringConcurrency': bounded_env('PHOTO_SCOUT_SCORING_CONCURRENCY', 16, 16),

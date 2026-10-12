@@ -13,7 +13,8 @@ register_heif_opener(thumbnails=False,decode_threads=2)
 from .sources import image_data,image_host
 from .image_transport import pooled_images
 from .background_review import review_background
-from .image_generation import DEFAULT_MODEL, configuration as image_configuration, google_response, google_image
+from .image_plan import plan_image
+from .image_generation import configuration as image_configuration, google_response, google_image
 from .tasks import TaskStore, SEARCH_RETENTION, ACCOUNT_EXPIRY, prune_records
 
 logger=logging.getLogger(__name__)
@@ -328,6 +329,12 @@ def create_portrait_router(settings,require_api):
             payload=json.loads(row['payload'])
             async with asyncio.timeout(600):
                 async with AsyncOpenAI(api_key=settings.openai_api_key,timeout=550,max_retries=0) as client:
+                    stage='image_planning'
+                    image_plan=await plan_image(client,settings,payload)
+                    image_model=image_plan['selectedModel']
+                    context=tasks.context('portrait',row['id']) or {}
+                    context['generationPlan']=image_plan
+                    tasks.update_context('portrait',row['id'],context)
                     stage='subject_check'
                     try:
                         async with asyncio.timeout(90):
@@ -356,7 +363,6 @@ def create_portrait_router(settings,require_api):
                         context['backgroundPreparation']=preparation
                         tasks.update_context('portrait',row['id'],context)
                     ext='jpg' if raw.startswith(b'\xff\xd8') else 'png' if raw.startswith(b'\x89PNG') else 'webp'
-                    image_model=os.getenv('PHOTO_SCOUT_IMAGE_MODEL',DEFAULT_MODEL)
                     # New image models always preserve inputs at high fidelity.
                     legacy=image_model.startswith('gpt-image-1')
                     edit_options={'input_fidelity':'high','quality':'high'} if legacy else {'quality':'high'}

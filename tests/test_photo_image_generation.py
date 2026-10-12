@@ -82,15 +82,20 @@ def test_google_cost_counts_thinking_and_preserves_unknown_usage(tmp_path):
     asyncio.run(run())
 
 
-def test_default_google_portrait_is_delivered_with_accounting(tmp_path,monkeypatch):
+@pytest.mark.parametrize('selection',['operator','planner'])
+def test_google_portrait_is_delivered_with_accounting(tmp_path,monkeypatch,selection):
     from fastapi.testclient import TestClient
     from agentic_services.config import Settings
     from agentic_services.main import create_app
     from agentic_services.photo_scout import portraits
-    monkeypatch.delenv('PHOTO_SCOUT_IMAGE_MODEL',raising=False)
+    monkeypatch.setenv('PHOTO_SCOUT_IMAGE_MODEL',images.DEFAULT_MODEL if selection=='operator' else 'auto')
+    monkeypatch.setenv('GEMINI_API_KEY','fixture')
     raw=png()
     class Client:
-        def __init__(self,**kwargs):pass
+        def __init__(self,**kwargs):self.responses=self
+        async def parse(self,**kwargs):
+            from agentic_services.photo_scout.image_plan import ImageDecision
+            return SimpleNamespace(output_parsed=ImageDecision(model=images.DEFAULT_MODEL,reason='Suitable for requested composition.'))
         async def __aenter__(self):return self
         async def __aexit__(self,*args):pass
     async def subjects(*args):return 1
@@ -113,6 +118,9 @@ def test_default_google_portrait_is_delivered_with_accounting(tmp_path,monkeypat
     value=client.get(path,headers=auth).json()
     assert value['state']=='complete'
     assert value['context']['generationConfig']==images.configuration(images.DEFAULT_MODEL)
+    assert value['context']['generationPlan']['selectedModel']==images.DEFAULT_MODEL
+    assert value['context']['generationPlan']['selectionSource']==selection
+    assert value['context']['generationPlan']['allowRuntimeModelSwitch'] is False
     assert value['context']['costAccounting']['estimatedKnownUsd']==.047045
     assert client.get(path+'/image',headers=auth).content==raw
     with sqlite3.connect(settings.database_path) as db:
