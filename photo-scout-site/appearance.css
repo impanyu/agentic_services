@@ -181,4 +181,3 @@
 .photo-app .points-product>button:hover:not(:disabled){background:var(--scout-plum-dark);border-color:var(--scout-plum-dark)}
 /* Keep collection tabs in one row, including compact iPhones. */
 @media(max-width:480px){.photo-app .photo-library-tabs [role=tab]{flex:1 1 auto;font-size:12px;padding-inline:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3}}
-
