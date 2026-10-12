@@ -52,10 +52,10 @@ def test_group_upload_keeps_independent_references_and_cleans_private_bytes(tmp_
 
 def test_group_request_bounds_and_legacy_compatibility():
     common={'background':'url','provider':'wikimedia-commons','place':'Park'}
-    for extra in ({},{'portraits':[]},{'portrait':'x','portraits':['y']},{'portraits':['x']*7},{'portraits':['']},{'portraits':['x'*14000000]*2}):
+    for extra in ({},{'portraits':[]},{'portrait':'x','portraits':['y']},{'portraits':['x']*10},{'portraits':['']},{'portraits':['x'*14000000]*2}):
         with pytest.raises(ValueError):portraits.PortraitRequest(**common,**extra)
     assert portraits.PortraitRequest(**common,portrait='legacy').portrait=='legacy'
-    assert len(portraits.PortraitRequest(**common,portraits=['a']*6).portraits)==6
+    assert len(portraits.PortraitRequest(**common,portraits=['a']*9).portraits)==9
     raw=photo('red');assert portraits.subject_photos(raw)==[raw]
 
 

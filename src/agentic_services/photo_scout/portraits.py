@@ -56,12 +56,12 @@ def portrait_failure_message(error,diagnostics):
 
 class PortraitRequest(BaseModel):
     portrait: str = Field(default='',max_length=27000000)
-    portraits: list[str] = Field(default_factory=list,max_length=6)
+    portraits: list[str] = Field(default_factory=list,max_length=9)
 
     @model_validator(mode='after')
     def validate_references(self):
         if bool(self.portrait)==bool(self.portraits):
-            raise ValueError('Provide one portrait or 1–6 portraits')
+            raise ValueError('Provide one portrait or 1–9 portraits')
         references=self.portraits or [self.portrait]
         if any(not value for value in references) or sum(map(len,references))>27000000:
             raise ValueError('Combined photos exceed the upload limit')
@@ -108,7 +108,7 @@ def clean_subjects(references):
 def subject_photos(blob):
     if not blob.startswith(GROUP_PREFIX):return [blob]
     values=json.loads(blob[len(GROUP_PREFIX):])
-    if not isinstance(values,list) or not 1<=len(values)<=6:raise ValueError('Invalid subject references')
+    if not isinstance(values,list) or not 1<=len(values)<=9:raise ValueError('Invalid subject references')
     return [base64.b64decode(value,validate=True) for value in values]
 
 
@@ -281,6 +281,9 @@ def portrait_prompt(style,pose,posture='auto',weather='original',expression='aut
         prompt=re.sub(r'\bimage 1\b',f'subject reference images 1 through {reference_count}',prompt,flags=re.I)
         prompt=prompt.replace('the second scene','the final background scene').replace('two independent references, not two scenes to blend', 'separate subject references and one background reference, not scenes to blend')
         prompt+=f' GROUP COMPOSITION: Inputs 1 through {reference_count} are separate subject references. Input {reference_count+1} is the only destination background. Include every intended person, character or animal from EVERY subject reference in one coherent group photograph. Each reference may itself contain a group. Keep identities and facial features separate; do not average faces, merge bodies, omit a reference, or duplicate people. Preserve each subject’s own appearance, clothing and proportions, arrange everyone with visible faces where compatible with their pose, plausible spacing, shared perspective and lighting. Never turn reference photos into panels or a collage; produce one photograph.'
+    if composition=='full_body':
+        prompt=('REQUIRED OUTPUT COMPOSITION: A full-length travel portrait, photographed by another person from sufficient distance; every intended subject must be visible from the top of the head to the soles of both feet or paws. '+prompt+
+            ' FULL-BODY ACCEPTANCE REQUIREMENT: The subject reference controls identity and appearance, NOT its crop, camera distance or arm-held selfie pose. If a reference is a face, bust or waist-up selfie, reconstruct the missing torso, legs and footwear plausibly while preserving identity, anatomy and visible clothing; do not reproduce its close framing. Keep every subject entirely inside the output frame, with clear headroom and ground below the feet, and avoid foreground objects hiding the lower body. Repose an extended camera-holding arm naturally. Choose a supported placement deeper in the existing scene and a smaller, physically coherent subject scale to fit the full body; do not zoom or redesign the background. Full-body framing takes priority over style defaults and incompatible optional directions. For groups this applies to EVERY member, including the outermost people. Before returning, check complete heads, bodies, legs and both feet or paws for each subject. A face-only, chest-up, waist-up or cropped-leg image does not satisfy this request.')
     return prompt
 
 

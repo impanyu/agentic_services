@@ -9,7 +9,7 @@ window.PhotoScoutCamera=class {
   this.dialog.querySelector('[data-camera=close]').onclick=()=>{this.stop();this.dialog.close();};this.dialog.addEventListener('close',()=>{if(!this.dialog.open)this.stop();});this.dialog.addEventListener('cancel',()=>this.stop());
   this.video.addEventListener('loadeddata',()=>{this.capture.disabled=!this.video.videoWidth;});
   this.capture.onclick=()=>this.takePhoto();this.dialog.querySelector('[data-camera=native]').onclick=()=>{this.stop();this.status.textContent='Use your device camera to take a photo, or close this window to upload one.';this.native.value='';this.native.click();};
-  this.native.onchange=()=>{const file=this.native.files?.[0];if(file){this.dialog.close();this.onPhoto(file);}};
+  this.native.onchange=()=>{const file=this.native.files?.[0];if(file)this.deliverPhoto(file);};
  }
  stop(){this.generation++;for(const track of this.stream?.getTracks()||[])track.stop();this.stream=null;this.video.srcObject=null;this.capture.disabled=true;}
  async open(){
@@ -26,6 +26,18 @@ window.PhotoScoutCamera=class {
    this.status.textContent=error.name==='NotAllowedError'?'Camera access was not granted. Enable it in your browser settings, or use device camera / upload a photo.':'Could not open the camera. Use device camera or upload a photo.';
   }
  }
+ async deliverPhoto(file){
+  const generation=this.generation;this.capture.disabled=true;this.status.textContent='Adding your photo…';
+  try{
+   await this.onPhoto(file);
+   if(generation!==this.generation||!this.dialog.open)return;
+   this.stop();this.dialog.close();
+  }catch(error){
+   if(generation!==this.generation||!this.dialog.open)return;
+   this.status.textContent=error.message||'Could not add your photo. Please try again.';
+   this.capture.disabled=!this.stream||!this.video.videoWidth;
+  }
+ }
  takePhoto(){
   if(!this.stream||!this.video.videoWidth||this.capture.disabled)return;
   this.capture.disabled=true;this.status.textContent='Preparing your photo…';const generation=this.generation;
@@ -33,7 +45,7 @@ window.PhotoScoutCamera=class {
   canvas.toBlob(blob=>{
    if(generation!==this.generation||!this.dialog.open)return;
    if(!blob){this.status.textContent='Could not capture the photo. Please try again.';this.capture.disabled=false;return;}
-   this.dialog.close();this.stop();this.onPhoto(new File([blob],'selfie-camera.jpg',{type:'image/jpeg'}));
+   this.deliverPhoto(new File([blob],'selfie-camera.jpg',{type:'image/jpeg'}));
   },'image/jpeg',.92);
  }
 };

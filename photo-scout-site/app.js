@@ -627,9 +627,21 @@ studioPersonFrame.type='button';studioPersonFrame.setAttribute('aria-label','Add
 personPlaceholder.src='./selfie-placeholder.svg';personPlaceholder.alt='A person silhouette showing where your selfie goes';
 const studioSceneView=node('div',null,'studio-scene-view');studioSceneView.append(scenePreview);studioScene.append(studioSceneView,node('figcaption','Background'));studioPersonFrame.append(personPlaceholder,personPreview);studioPerson.append(studioPersonFrame,node('figcaption','People · Tap to add'));studioImages.append(studioScene,studioPerson);
 const studioIntro=node('p','For best results, upload a clear selfie or portrait showing only you or your intended group, ideally against a simple background. Avoid unrelated people, statues or busy scenery. We’ll extract the main subjects and place them in the background on the left.','studio-intro');
-const uploadLabel=node('label','Add up to 6 photos or avatars · 20 MB combined after resizing','studio-upload'),studioUpload=node('input');studioUpload.type='file';studioUpload.multiple=true;studioUpload.accept='image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif';uploadLabel.append(studioUpload);studioPersonFrame.addEventListener('click',()=>{if(!studioUpload.disabled)setStudioPhotoSourceOpen(studioPhotoSource.hidden);});
+const uploadLabel=node('label','Add up to 9 photos or avatars · 20 MB combined after resizing','studio-upload'),studioUpload=node('input');studioUpload.type='file';studioUpload.multiple=true;studioUpload.accept='image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif';uploadLabel.append(studioUpload);studioPersonFrame.addEventListener('click',()=>{if(!studioUpload.disabled)setStudioPhotoSourceOpen(studioPhotoSource.hidden);});
 const studioCameraButton=node('button','Take a photo','studio-camera-button');studioCameraButton.type='button';
-let studioCamera=null;studioCameraButton.addEventListener('click',()=>{if(studioBusy)return;studioCamera??=new PhotoScoutCamera(file=>{studioUpload.value='';addStudioPhotos([file]);});studioCamera.open();});
+let studioCamera=null;studioCameraButton.addEventListener('click',()=>{
+ if(studioBusy||studioAdding)return;
+ if(studioSubjects.length>=9){studioStatus.textContent='Remove a person before taking another photo.';return;}
+ const session=taskRecoveryGeneration,place=studioInputPlaceKey;
+ studioCamera??=new PhotoScoutCamera(()=>{});
+ studioCamera.onPhoto=async file=>{
+  if(session!==taskRecoveryGeneration||place!==studioInputPlaceKey)throw Error('The photo location changed. Close the camera and try again.');
+  const count=studioSubjects.length;studioUpload.value='';await addStudioPhotos([file]);
+  if(session!==taskRecoveryGeneration||place!==studioInputPlaceKey||studioSubjects.length!==count+1)throw Error(studioStatus.textContent||'Could not add your photo. Please try again.');
+  studioPersonPreview.scrollIntoView({block:'nearest'});
+ };
+ studioCamera.open();
+});
 const studioAvatarButton=node('button','Choose from Avatar Library','studio-camera-button');studioAvatarButton.type='button';studioAvatarButton.addEventListener('click',()=>{if(!studioBusy)avatarLibrary?.open();});uploadLabel.append(studioCameraButton,studioAvatarButton);
 const studioPhotoSource=node('div',null,'studio-photo-source');studioPhotoSource.id='studio-photo-source';studioPhotoSource.hidden=true;studioPhotoSource.setAttribute('role','group');studioPhotoSource.setAttribute('aria-label','Choose photo source');studioPerson.classList.add('studio-person-choice');studioPerson.append(studioPhotoSource);
 function setStudioPhotoSourceOpen(open){studioPhotoSource.hidden=!open;studioPersonFrame.setAttribute('aria-expanded',String(open));studioAddPerson.setAttribute('aria-expanded',String(open));if(open)studioPhotoSource.querySelector('button')?.focus();}
@@ -697,13 +709,16 @@ studioUpload.addEventListener('change',()=>{const files=Array.from(studioUpload.
 function renderStudioSubjects(){
  studioSubjectList.replaceChildren();studioPrepared=studioSubjects[0]?.data||null;
  personPreview.hidden=true;personPreview.removeAttribute('src');
- studioSubjectList.hidden=!studioSubjects.length;studioSubjectList.dataset.count=String(studioSubjects.length);studioPersonFrame.hidden=studioSubjects.length>0;
- studioAddPerson.disabled=studioBusy||studioAdding>0||studioSubjects.length>=6;studioAddPerson.textContent='＋ Add people · '+studioSubjects.length+'/6';
+ studioSubjectList.hidden=false;studioSubjectList.dataset.count=String(studioSubjects.length);studioPersonFrame.hidden=true;
+ studioAddPerson.disabled=studioBusy||studioAdding>0||studioSubjects.length>=9;studioAddPerson.textContent='＋ Add people · '+studioSubjects.length+'/9';
  for(const [index,subject] of studioSubjects.entries()){
   const card=node('div',null,'studio-subject'),image=node('img'),remove=node('button','×');image.alt='Reference '+(index+1)+': '+subject.name;
   if(subject.preview){image.src=subject.data;card.append(image);}else card.append(node('span','Photo '+(index+1)));
   card.title=subject.name;remove.title='Remove '+subject.name;remove.type='button';remove.disabled=studioBusy||studioAdding>0;remove.setAttribute('aria-label','Remove reference '+(index+1));
   remove.addEventListener('click',event=>{event.stopPropagation();if(studioBusy||studioAdding)return;studioSubjects.splice(index,1);studioUploadGeneration++;clearStudioOutput();renderStudioSubjects();});card.append(remove);studioSubjectList.append(card);
+ }
+ for(let index=studioSubjects.length;index<9;index++){
+  const empty=node('button',null,'studio-subject studio-subject-empty'),icon=node('img');empty.type='button';empty.disabled=studioBusy||studioAdding>0;empty.setAttribute('aria-label','Add person '+(index+1));icon.src='./selfie-placeholder.svg';icon.alt='';empty.append(icon);empty.addEventListener('click',()=>{if(!studioBusy&&!studioAdding)setStudioPhotoSourceOpen(true);});studioSubjectList.append(empty);
  }
  studioGenerate.disabled=!studioPrepared||studioBusy||studioAdding>0;
 }
@@ -712,7 +727,7 @@ function addStudioPhotos(files,options={}){
  studioAdding++;renderStudioSubjects();
  const work=studioSubjectQueue.then(async()=>{
   if(session!==taskRecoveryGeneration||place!==studioInputPlaceKey||studioBusy)return;
-  if(studioSubjects.length+files.length>6){studioStatus.textContent='Choose up to 6 reference photos. Remove a photo before adding more.';return;}
+  if(studioSubjects.length+files.length>9){studioStatus.textContent='Choose up to 9 reference photos. Remove a photo before adding more.';return;}
   for(const file of files){if(session!==taskRecoveryGeneration||place!==studioInputPlaceKey||studioBusy)return;if(!await acceptStudioPhoto(file,{...options,append:true}))break;}
  });
  studioSubjectQueue=work.catch(error=>{if(session===taskRecoveryGeneration&&place===studioInputPlaceKey)studioStatus.textContent=error.message;}).finally(()=>{studioAdding--;renderStudioSubjects();});
@@ -728,7 +743,7 @@ async function acceptStudioPhoto(file,{saveToLibrary=true,append=false}={}){
  studioStatus.textContent='Preparing your photo…';
  try{
   const prepared=await prepareStudioPhoto(file);if(generation!==studioUploadGeneration||session!==taskRecoveryGeneration)return false;
-  if(studioSubjects.length>=6)throw Error('Choose up to 6 reference photos.');
+  if(studioSubjects.length>=9)throw Error('Choose up to 9 reference photos.');
   if(studioSubjects.reduce((sum,item)=>sum+item.data.length,0)+prepared.data.length>27000000)throw Error('Combined photos exceed 20 MB. Remove a photo or use smaller images.');
   studioSubjects.push({...prepared,name:file.name});renderStudioSubjects();
   studioStatus.textContent=prepared.preview?'Your photo is ready. Add another person or create the group photo.':'Your phone photo will be converted securely when you submit.';

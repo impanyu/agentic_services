@@ -30,7 +30,7 @@ async def google_response(model, subject, background, background_mime, prompt):
         raise ImageProviderError('unsupported_image_model')
     parts = [{'text': prompt}]
     subjects=subject if isinstance(subject,list) else [subject]
-    if not 1<=len(subjects)<=6:raise ImageProviderError('invalid_subject_count')
+    if not 1<=len(subjects)<=9:raise ImageProviderError('invalid_subject_count')
     for raw, mime in [(photo,'image/png') for photo in subjects]+[(background,background_mime)]:
         parts.append({'inlineData': {'mimeType': mime, 'data': base64.b64encode(raw).decode()}})
     body = {'contents': [{'role': 'user', 'parts': parts}],
