@@ -13,6 +13,7 @@ register_heif_opener(thumbnails=False,decode_threads=2)
 from .sources import image_data,image_host
 from .image_transport import pooled_images
 from .background_review import review_background
+from .image_generation import DEFAULT_MODEL, configuration as image_configuration, google_response, google_image
 from .tasks import TaskStore, SEARCH_RETENTION, ACCOUNT_EXPIRY, prune_records
 
 logger=logging.getLogger(__name__)
@@ -355,28 +356,35 @@ def create_portrait_router(settings,require_api):
                         context['backgroundPreparation']=preparation
                         tasks.update_context('portrait',row['id'],context)
                     ext='jpg' if raw.startswith(b'\xff\xd8') else 'png' if raw.startswith(b'\x89PNG') else 'webp'
-                    image_model=os.getenv('PHOTO_SCOUT_IMAGE_MODEL','gpt-image-2.5-sunburst')
+                    image_model=os.getenv('PHOTO_SCOUT_IMAGE_MODEL',DEFAULT_MODEL)
                     # New image models always preserve inputs at high fidelity.
                     legacy=image_model.startswith('gpt-image-1')
                     edit_options={'input_fidelity':'high','quality':'high'} if legacy else {'quality':'high'}
                     context=tasks.context('portrait',row['id']) or {}
-                    context['generationConfig']={'model':image_model,'quality':edit_options['quality'],'size':'1024x1024'}
+                    context['generationConfig']=image_configuration(image_model)
                     tasks.update_context('portrait',row['id'],context)
                     stage='image_generation'
-                    result=await observe('image-generation',image_model,client.images.edit(model=image_model,image=[('person.png',bytes(row['photo']),'image/png'),('scene.'+ext,raw,'image/'+('jpeg' if ext=='jpg' else ext))],prompt=portrait_prompt(payload.get('style','natural'),payload['pose'],payload.get('posture','auto'),payload.get('weather','original'),payload.get('expression','auto'),place=payload['place'],scene=preparation['scene'],composition=payload.get('composition','auto')),**edit_options,size='1024x1024',output_format='png',n=1))
-                stage='decode_result'
-                generated=base64.b64decode(result.data[0].b64_json,validate=True)
+                    prompt=portrait_prompt(payload.get('style','natural'),payload['pose'],payload.get('posture','auto'),payload.get('weather','original'),payload.get('expression','auto'),place=payload['place'],scene=preparation['scene'],composition=payload.get('composition','auto'))
+                    if image_model.startswith('gemini-'):
+                        result=await observe('image-generation',image_model,google_response(image_model,bytes(row['photo']),raw,'image/'+('jpeg' if ext=='jpg' else ext),prompt))
+                        stage='decode_result'
+                        generated=google_image(result)
+                    else:
+                        result=await observe('image-generation',image_model,client.images.edit(model=image_model,image=[('person.png',bytes(row['photo']),'image/png'),('scene.'+ext,raw,'image/'+('jpeg' if ext=='jpg' else ext))],prompt=prompt,**edit_options,size='1024x1024',output_format='png',n=1))
+                        stage='decode_result'
+                        generated=base64.b64decode(result.data[0].b64_json,validate=True)
                 if not generated.startswith(b'\x89PNG') or len(generated)>25000000:raise ValueError()
             with db() as c:c.execute("UPDATE photo_portraits SET state='complete',photo=NULL,payload=NULL,output=? WHERE id=?",(generated,row['id']))
         except Exception as error:
             diagnostics=record_failure(row['id'],stage,error,started)
             message=portrait_failure_message(error,diagnostics)
             with db() as c:c.execute("UPDATE photo_portraits SET state='failed',photo=NULL,payload=NULL,error=? WHERE id=?",(message,row['id']))
-        context=tasks.context('portrait',row['id']) or {}
-        context['costAccounting']=summary()
-        elapsed=time.monotonic()-started
-        context['timings']={'processingSeconds':round(elapsed,3),
-            'queueSeconds':round(max(0,time.time()-row['created']-elapsed),3)}
-        tasks.update_context('portrait',row['id'],context)
+        finally:
+            context=tasks.context('portrait',row['id']) or {}
+            context['costAccounting']=summary()
+            elapsed=time.monotonic()-started
+            context['timings']={'processingSeconds':round(elapsed,3),
+                'queueSeconds':round(max(0,time.time()-row['created']-elapsed),3)}
+            tasks.update_context('portrait',row['id'],context)
         return True
     return router,process

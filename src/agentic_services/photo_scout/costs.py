@@ -19,6 +19,8 @@ class TaskSpend:
     counts: dict = field(default_factory=dict)
     requests: dict = field(default_factory=dict)
     latencies: dict = field(default_factory=dict)
+    observations: list = field(default_factory=list)
+    experience: dict = field(default_factory=dict)
 
 
 current = ContextVar('photo_scout_task_spend', default=None)
@@ -33,12 +35,22 @@ def tracked_task(path, kind):
     def decorate(fn):
         @wraps(fn)
         async def run(*args, **kwargs):
+            from .experience import capture, finish, outcome
             if current.get() is not None:
-                return await fn(*args, **kwargs)
+                result = await fn(*args, **kwargs)
+                capture(result)
+                return result
             token = current.set(TaskSpend(path, kind))
+            started = time.monotonic()
             try:
-                return await fn(*args, **kwargs)
+                result = await fn(*args, **kwargs)
+                capture(result)
+                return result
+            except BaseException as error:
+                outcome('cancelled' if isinstance(error, asyncio.CancelledError) else 'failed')
+                raise
             finally:
+                finish(current.get(), time.monotonic() - started)
                 current.reset(token)
         return run
     return decorate
@@ -65,6 +77,13 @@ def record(stage, model='', usage=None, status='success', quantity=1):
         # have distinct prices; do not pretend unclassified input is free.
         if 'image_tokens' in details and 'text_tokens' in details:
             estimate = (details['image_tokens']*8+details['text_tokens']*5+output_tokens*30)/1_000_000
+    elif model == 'gemini-nano-banana-2.1' and 'promptTokenCount' in usage:
+        details = usage.get('candidatesTokensDetails') or []
+        if details:
+            image_tokens = sum(d['tokenCount'] for d in details if d.get('modality') == 'IMAGE')
+            text_tokens = sum(d['tokenCount'] for d in details if d.get('modality') == 'TEXT')
+            estimate = (usage['promptTokenCount'] * 1.5 + image_tokens * 30 +
+                        (text_tokens + usage.get('thoughtsTokenCount', 0)) * 7.5) / 1_000_000
     elif stage in CALL_RATES:
         estimate = quantity*CALL_RATES[stage]
     try:
@@ -81,15 +100,26 @@ def record(stage, model='', usage=None, status='success', quantity=1):
 
 async def observe(stage, model, operation):
     started = time.monotonic()
+    response = None
+    failed = True
     try:
         response = await operation
-    except Exception:
+        failed = False
+    except BaseException:
         record(stage, model, status='failed-usage-unknown')
         raise
     finally:
         context = current.get()
         if context is not None:
-            context.latencies.setdefault(stage, []).append(time.monotonic()-started)
+            elapsed = time.monotonic()-started
+            context.latencies.setdefault(stage, []).append(elapsed)
+            usage = getattr(response, 'usage', None)
+            if hasattr(usage, 'model_dump'): usage = usage.model_dump()
+            usage = usage if isinstance(usage, dict) else {}
+            context.observations.append({'stage':stage, 'model':model, 'failed':failed,
+                'seconds':round(elapsed, 4), 'inputTokens':usage.get('input_tokens',0),
+                'outputTokens':usage.get('output_tokens',0),
+                'cachedInputTokens':(usage.get('input_tokens_details') or {}).get('cached_tokens',0)})
     record(stage, model, getattr(response, 'usage', None))
     return response
 
@@ -127,12 +157,12 @@ async def reuse_request(key, operation):
     return await context.requests[key]
 
 
-def summary():
+def summary(timeout=15):
     context = current.get()
     if context is None:
         return {}
     try:
-        with sqlite3.connect(context.path, timeout=15) as db:
+        with sqlite3.connect(context.path, timeout=timeout) as db:
             rows=db.execute('SELECT stage,sum(quantity),sum(estimated_usd),sum(estimated_usd IS NULL) '
                             'FROM photo_scout_cost_events WHERE run=? GROUP BY stage',(context.id,)).fetchall()
         return {'runId':context.id,'basis':'Standard API list prices before free tiers; not a billing statement',

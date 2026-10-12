@@ -448,13 +448,18 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
     @tracked_task(settings.database_path,'search')
     async def run(payload,allow_expired=False,task_id=None,parsed=False):
         enabled()
+        from .experience import begin as begin_experience, outcome as experience_outcome
+        begin_experience(settings,payload)
         async with lock, asyncio.timeout(660):
             started=time.monotonic();plan=None
             # Raw text and UI-only requests share one interpretation entry.
             # Already compiled programs/catalog selections are execution inputs.
             if not parsed and (payload.query.strip() or not (payload.searchProgram or payload.searchBranches or payload.selectedPoiIds is not None)):
                 payload,plan=await interpret_search(payload)
-                if payload is None:return intent_feedback(plan)
+                if payload is None:
+                    experience_outcome('feedback')
+                    return intent_feedback(plan)
+            begin_experience(settings,payload,resolved=True)
             planning_seconds=time.monotonic()-started
             retrieval_started=time.monotonic()
             async def before_score(images):
@@ -634,6 +639,8 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
         if lock.locked(): return False
         job=store.claim_preview()
         if not job: return False
+        from .experience import begin as begin_experience
+        begin_experience(settings)
         from .costs import current
         if current.get() is not None:current.get().job_id=job['id']
         context={}
@@ -661,6 +668,8 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
                 context.update({k:plan.get(k) for k in ('action','normalizedQuery','intentSummary','subjectRole','assumptions','explanation')})
                 if payload is None:
                     context['stage']='feedback';tasks.update_context('search',job['id'],context)
+                    from .experience import outcome as experience_outcome
+                    experience_outcome('feedback')
                     store.update(job['id'],state='complete',result=json.dumps(intent_feedback(plan)),error=None,lease_until=0)
                     return True
                 context['locationLabel']=plan['locations'][0]['label']
@@ -672,9 +681,13 @@ def create_photo_router(settings,require_api,verification_store,sign_receipt=Non
             result.setdefault('timings',{}).update(planningSeconds=round(planning_seconds,3),
                 pipelineSeconds=round(time.monotonic()-task_started,3),
                 queueSeconds=round(max(0,time.time()-job['created']-(time.monotonic()-task_started)),3))
+            from .experience import capture as capture_experience
+            capture_experience(result)
             store.update(job['id'],state='complete',result=json.dumps(result),error=None,lease_until=0)
         except Exception as error:
             failures=getattr(error,'source_failures',None) or getattr(error.__cause__,'source_failures',None)
+            from .experience import outcome as experience_outcome
+            experience_outcome('failed')
             if failures:
                 context['sourceFailures']=failures
                 tasks.update_context('search',job['id'],context)

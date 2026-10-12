@@ -51,7 +51,8 @@ async def _page(client,body,key):
         response.raise_for_status()
         return response.json()
     import json
-    return await reuse_request(('places-page',json.dumps(body,sort_keys=True)),fetch)
+    shared_body={**body,'textQuery':' '.join(body['textQuery'].split()).casefold()}
+    return await reuse_request(('places-page',json.dumps(shared_body,sort_keys=True)),fetch)
 
 async def geocode_address(query):
     rows=await search_text(query,limit=1)
@@ -66,7 +67,11 @@ async def geocode_address(query):
 
 async def nearby_places(lat,lon,radius,queries,*,limit=50):
     limit=max(1,min(60,limit))
-    queries=list(dict.fromkeys(q.strip() for q in queries if q.strip()))[:4]
+    unique={}
+    for query in queries:
+        cleaned=' '.join(query.split())
+        if cleaned: unique.setdefault(cleaned.casefold(),cleaned)
+    queries=list(unique.values())[:4]
     if not queries:queries=['scenic places and tourist attractions']
     # Fetch each query fairly, then continue only if its retained share or the
     # global distinct in-radius target is still missing. Never stop because a

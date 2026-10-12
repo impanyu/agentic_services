@@ -1,6 +1,7 @@
 """Persistent model assessments only; never stores image bytes or raw preferences."""
 from __future__ import annotations
 
+from copy import deepcopy
 import hashlib
 import json
 import logging
@@ -30,16 +31,33 @@ class ScoreCache:
 
     @staticmethod
     def key(row, payload, model, instructions):
-        image = {k: v for k, v in row.items() if k not in ('distanceMeters', 'poiDistanceMeters', 'author', 'explorationReason')}
+        image = {k: deepcopy(v) for k, v in row.items() if k not in ('distanceMeters', 'poiDistanceMeters', 'author', 'explorationReason')}
         if image.get('poiCandidates'):
             image['poiCandidates'] = sorted(image['poiCandidates'], key=lambda p: p['id'])
         from .streetview_tiles import profile
-        data = {'version': 2, 'subjectRole':getattr(payload,'subjectRole','scene'), 'requirements':[r.model_dump() for r in getattr(payload,'requirements',[])], 'image': image, 'model': model, 'instructions': instructions,
+        data = {'version': 3, 'subjectRole':getattr(payload,'subjectRole','scene'), 'requirements':[r.model_dump() for r in getattr(payload,'requirements',[])], 'image': image, 'model': model, 'instructions': instructions,
                 'photoStyles': sorted(payload.photoStyles or []), 'preferences': payload.preferences.strip(),
                 'geographicKinds': sorted(getattr(payload,'geographicKinds',[])),
                 'geographicCombination':getattr(payload,'geographicCombination','all'),'featureCombination':getattr(payload,'featureCombination','all'),
                 'searchProgram':payload.searchProgram.retrieval().model_dump() if getattr(payload,'searchProgram',None) else None,'searchBranches':[b.model_dump() for b in getattr(payload,'searchBranches',[])],'osmFeatures': [q.model_dump() for q in getattr(payload,'osmFeatures',[])],
                 'poiQueries': sorted(payload.poiQueries), 'scoringIntent': payload.scoringIntent.strip()}
+        # Step labels are planner-chosen identifiers, not visual conditions.
+        # Canonicalize only declared references. Keep topology, order, operators,
+        # hints, visual intents and each image's eligible paths unchanged.
+        program = data['searchProgram']
+        if program:
+            identifiers = {step['id']: f'step{i}' for i, step in enumerate(program['steps'])}
+            def refs(values):
+                return [identifiers.get(value, value) for value in values]
+            for step in program['steps']:
+                step['id'] = identifiers[step['id']]
+                step['inputs'] = refs(step['inputs'])
+            program['output'] = identifiers.get(program['output'], program['output'])
+            for requirement in data['requirements']:
+                if 'stepIds' in requirement: requirement['stepIds'] = refs(requirement['stepIds'])
+            for path in image.get('eligibleSearchPaths', []):
+                for key in ('stepIds', 'targets', 'filters'):
+                    if key in path: path[key] = refs(path[key])
         if row.get('provider')=='google-street-view':
             data['imageryProfile']=profile()
         return hashlib.sha256(json.dumps(data, sort_keys=True, separators=(',', ':')).encode()).hexdigest()

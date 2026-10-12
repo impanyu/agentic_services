@@ -69,9 +69,11 @@ from .costs import observe
 from .planning_transport import PLANNING_SECONDS, PlanningTrace, stream_plan
 
 async def parse_intent(settings,payload):
+    from .experience import begin, planner_advice
+    begin(settings,payload)
     model=getattr(settings,'photo_scout_intent_model',None) or settings.openai_model
     effort=getattr(settings,'photo_scout_intent_reasoning',None)
-    request={'model':model,'instructions':INSTRUCTIONS,
+    request={'model':model,'instructions':INSTRUCTIONS+planner_advice(settings),
         'input':json.dumps(payload.model_dump(exclude={'limit'}),ensure_ascii=False),
         'text_format':PlannerIntent,'max_output_tokens':4096,'store':False,
         'text':{'verbosity':'low'}}

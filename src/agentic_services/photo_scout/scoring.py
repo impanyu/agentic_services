@@ -166,7 +166,10 @@ image even when rejected. Set name, photo_tip and uncertainty to empty
 strings, poi_id=null, score=null, recommend=false, confidence="low". Do not spend
 output explaining composition or photography tips for a rejected image. Preserve
 one complete schema object for EVERY image. For matching images, retain the full
-normal evidence, score, photography tip and uncertainty. This changes output length
+normal evidence, score, photography tip and uncertainty. Use one concise sentence
+per evidence/reason/tip field; do not repeat the same observation across fields.
+Keep all distinct required-condition evidence and material uncertainty even when
+more detail is necessary. This changes output length
 only, not the matching criteria or scoring standards.'''
 
 

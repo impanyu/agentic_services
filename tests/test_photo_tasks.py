@@ -56,6 +56,7 @@ def test_guest_search_admitted_before_resolution_recovers_after_restart_and_keep
 
 
 def test_guest_portrait_recovery_owns_image_without_exposing_tokens_or_upload(tmp_path,monkeypatch):
+    monkeypatch.setenv('PHOTO_SCOUT_IMAGE_MODEL','gpt-image-2.5-sunburst')
     settings,app,client=setup(tmp_path,monkeypatch);client.get('/photo-scout/v1/tasks')
     buffer=io.BytesIO();Image.new('RGB',(16,16),'green').save(buffer,format='PNG');raw=buffer.getvalue()
     class Client:
@@ -124,6 +125,7 @@ def test_two_search_workers_score_independent_jobs_concurrently(tmp_path,monkeyp
 
 
 def test_two_portrait_workers_generate_concurrently_without_mixing_context(tmp_path,monkeypatch):
+    monkeypatch.setenv('PHOTO_SCOUT_IMAGE_MODEL','gpt-image-2.5-sunburst')
     settings,app,client=setup(tmp_path,monkeypatch)
     buffer=io.BytesIO();Image.new('RGB',(16,16),'green').save(buffer,format='PNG');encoded=base64.b64encode(buffer.getvalue()).decode()
     async def background(*args):return 'data:image/png;base64,'+encoded

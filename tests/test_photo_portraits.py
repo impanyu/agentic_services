@@ -8,6 +8,11 @@ from agentic_services.main import create_app
 import agentic_services.photo_scout.portraits as portraits
 
 
+@pytest.fixture(autouse=True)
+def existing_provider(monkeypatch):
+    monkeypatch.setenv('PHOTO_SCOUT_IMAGE_MODEL','gpt-image-2.5-sunburst')
+
+
 def test_failure_diagnostics_preserve_codes_without_private_content(caplog):
     import json,time
     error=RuntimeError('private prompt and uploaded image')
