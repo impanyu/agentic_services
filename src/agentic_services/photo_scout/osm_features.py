@@ -93,6 +93,21 @@ def footprint_area(element):
     area=abs(sum(a[0]*b[1]-b[0]*a[1] for a,b in zip(points,points[1:]+points[:1])))/2
     return round(area,1) if math.isfinite(area) and area>0 else None
 
+def element_position(element):
+    if element.get('type')=='node':return element
+    if element.get('center'):return element['center']
+    # Geometric Overpass output can omit center. Derive its bounding-box
+    # center instead of discarding otherwise usable mapped buildings.
+    points=list(element.get('geometry',[]))
+    for member in element.get('members',[]):
+        points.extend(member.get('geometry',[]))
+        if member.get('type')=='node':points.append(member)
+    points=[p for p in points if all(isinstance(p.get(k),(int,float)) and math.isfinite(p[k]) for k in ('lat','lon'))]
+    if not points:return {}
+    origin=points[0]['lon'];longitudes=[origin+(p['lon']-origin+180)%360-180 for p in points]
+    return {'lat':(min(p['lat'] for p in points)+max(p['lat'] for p in points))/2,
+            'lon':((min(longitudes)+max(longitudes))/2+180)%360-180}
+
 def prioritize(rows,query):
     if not query.selectionHints:return rows
     for row in rows:
@@ -132,7 +147,7 @@ def decode(data,queries,lat,lon,radius):
             for f in q.filters:
                 if f.key not in tags and not f.required:unknown.append(f.key)
                 elif f.value is not None and tags.get(f.key)!=f.value:accepted=False
-            coord=e if e.get('type')=='node' else e.get('center',{})
+            coord=element_position(e)
             if not accepted or not all(isinstance(coord.get(k),(int,float)) and math.isfinite(coord[k]) for k in ('lat','lon')):continue
             d=distance((lat,lon),(coord['lat'],coord['lon']))
             if d>radius:continue
@@ -148,7 +163,8 @@ def decode(data,queries,lat,lon,radius):
 
 async def fetch_features(lat,lon,radius,queries,database_path):
     if not queries:return [],{'status':'not_requested','provider':'openstreetmap-features'}
-    key=hashlib.sha256(json.dumps(['spatial-v2',lat,lon,radius,signature(queries)],sort_keys=True).encode()).hexdigest()
+    version='geometry-v3' if any(set(q.selectionHints)&{'large-footprint','small-footprint'} for q in queries) else 'spatial-v2'
+    key=hashlib.sha256(json.dumps([version,lat,lon,radius,signature(queries)],sort_keys=True).encode()).hexdigest()
     legacy_key=hashlib.sha256(json.dumps([lat,lon,radius,signature(queries,hints=False)],sort_keys=True).encode()).hexdigest()
     legacy=None
     with sqlite3.connect(database_path) as db:

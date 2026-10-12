@@ -94,3 +94,10 @@ and another succeeds, with partial coverage reported. A required spatial filter,
 intersection, or wholly unavailable union fails explicitly; provider failure
 must never remove a user's required condition. Exact-query cache fallback does
 not change the subject or constraints.
+
+OSM subtype metadata can be sparse: a building-existence alternative can cover
+untyped buildings without claiming that they are homes. Footprint output may
+omit an explicit center; the decoder derives bounding-box centers from geometry.
+The derived point is an approximate discovery anchor, not an access/standing
+location or proof that a polygon contains it. Geometric-query cache versioning
+prevents reuse of results emptied by the previous center-only decoder.

@@ -102,3 +102,22 @@ def test_storeys_hint_is_soft_and_does_not_add_a_guessed_threshold():
 
 def test_nonfinite_provider_attribute_is_unknown_instead_of_a_serialized_priority():
     assert number('9'*400,'building:levels') is None
+
+
+def test_geometry_only_buildings_and_relations_keep_positions_and_radius_filter():
+    q=feature(selectionHints=['large-footprint'])
+    points=[{'lat':0,'lon':0},{'lat':0,'lon':.002},{'lat':.002,'lon':.002},{'lat':.002,'lon':0},{'lat':0,'lon':0}]
+    way={'type':'way','id':1,'tags':{'building':'yes'},'geometry':points}
+    relation={'type':'relation','id':2,'tags':{'building':'yes'},'members':[{'type':'way','geometry':points}]}
+    far={'type':'way','id':3,'tags':{'building':'yes'},'geometry':[{'lat':2,'lon':2},{'lat':2.001,'lon':2.001}]}
+    rows=decode({'elements':[way,relation,far]},[q],0,0,1000)[0]
+    assert {r['id'] for r in rows}=={'osm:way:1','osm:relation:2'}
+    assert all(r['lat']==pytest.approx(.001) and r['lon']==pytest.approx(.001) for r in rows)
+    assert next(r for r in rows if r['id']=='osm:way:1')['footprintAreaMeters2']>0
+
+
+def test_geometry_position_handles_dateline_without_moving_building_to_greenwich():
+    from agentic_services.photo_scout.osm_features import element_position
+    p=element_position({'type':'way','geometry':[{'lat':0,'lon':179.999},{'lat':.002,'lon':-179.999}]})
+    assert abs(p['lon'])==pytest.approx(180)
+    assert p['lat']==pytest.approx(.001)

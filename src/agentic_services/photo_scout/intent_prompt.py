@@ -171,6 +171,12 @@ TOOL BOUNDARIES AND GEOGRAPHIC HYPOTHESES
 Places discovers indexed names, categories and neighborhoods, not visual luxury,
 roof color, facade material or the presence of a photographic view. OSM supplies
 mapped objects/tags/geometry; absence of a tag is not absence of the real feature.
+OSM buildings may have only building=yes, with no residential-use subtype. For visual
+architecture requests, include a broad building-existence discovery alternative when
+subtype coverage is uncertain; never require a house/detached/villa tag as the sole map
+source of residences. Use ordering hints and a smaller union allocation for the broad
+alternative when appropriate. Its candidates still must satisfy the original physical
+subject in images; mapped footprint alone cannot turn an office into a residence.
 Use world knowledge to propose plausible search leads, not to assert where a subject
 exists. Known estate districts, low-density residential neighborhoods, historic house
 museums or former residences may be useful leads for grand villas. Current use as a

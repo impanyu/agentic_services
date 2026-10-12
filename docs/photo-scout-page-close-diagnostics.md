@@ -81,3 +81,26 @@ verification that either neighborhood contains matching villas.
 
 Local regression validation: 441 Python tests and 156 frontend/domain tests
 passed. These counts cover scoped suites, not every test in the repository.
+
+## Geometry-output coverage correction
+
+The final guided-residential search `ps_b1725f5b2bcca13746a19479b8d0403b`
+completed after tab closure with one queue claim, 21.696 s planning, 7.185 s
+retrieval and 57.166 s scoring (86.067 s pipeline). It delivered four locations
+from 331 checked images. It actually executed `sample_near_places`. Its hinted
+OSM house groups decoded empty, prompting a raw-output inspection rather than
+assuming no mapped homes existed.
+
+A fresh production-network 1 km building probe returned 1200 objects, all with
+geometry and none with center. The previous decoder required center and silently
+lost these objects. The corrected decoder derives bounding-box centers from way
+and relation geometry, preserves circular scope filtering and handles dateline
+longitude wrapping. The fresh probe now decodes 120 bounded candidates with
+known footprints. Footprint query cache keys are versioned so the faulty empty
+results are not reused. This demonstrates corrected raw-geometry ingestion;
+it is not a fresh full villa-search recall measurement.
+
+The planner also now includes broad building-existence alternatives when
+residential subtype coverage is uncertain, using them as discovery clues subject
+to the same visual residential requirement. Regression totals after this fix:
+443 scoped Python tests and the previously passing 156 frontend/domain tests.
