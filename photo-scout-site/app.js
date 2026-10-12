@@ -687,6 +687,21 @@ const studioPending=node('div',null,'studio-job-progress');studioPending.hidden=
 const studioLibraryStatus=node('p','Uploaded photos are automatically saved privately in Avatar Library → My uploads.','small studio-library-status');studioLibraryStatus.setAttribute('role','status');studioLibraryStatus.setAttribute('aria-live','polite');
 studio.append(studioTop,studioPlace,studioPending,studioIntro,studioImages,uploadLabel,studioLibraryStatus,studioStyles,studioOptions,poseLabel,studioNote,studioGenerate,studioStatus,studioResult,studioSave,studioDownload,studioSaveHint);document.body.append(studio);
 // This separate map layer survives shortlist/history redraws and dialog closure.
+const savedSelfieLayer=L.layerGroup().addTo(map);
+overlayControl.addOverlay(savedSelfieLayer,'My photos');
+let savedSelfieMapSignature=null;
+function syncSavedPhotoMap(){
+ const photos=taskRecords.filter(t=>t.kind==='portrait'&&t.state==='complete'&&Number.isFinite(t.context?.poi?.lat)&&Number.isFinite(t.context?.poi?.lon)).sort((a,b)=>b.created-a.created);
+ const signature=JSON.stringify(photos.map(t=>[t.id,t.context.poi.lat,t.context.poi.lon,t.context.name]));
+ if(signature===savedSelfieMapSignature)return;savedSelfieMapSignature=signature;savedSelfieLayer.clearLayers();
+ const groups=new Map();for(const task of photos){const p=task.context.poi,key=p.lat.toFixed(6)+','+p.lon.toFixed(6);if(!groups.has(key))groups.set(key,[]);groups.get(key).push(task);}
+ for(const group of groups.values()){
+  const latest=group[0],pos=latest.context.poi,icon=node('span',null,'saved-selfie-map-icon'),image=node('img');image.alt='';image.src=api+apiPrefix+'/v1/portraits/'+encodeURIComponent(latest.id)+'/thumbnail';image.decoding='async';image.addEventListener('error',()=>{image.hidden=true;icon.classList.add('thumbnail-unavailable');});icon.append(image);if(group.length>1)icon.append(node('span',String(group.length),'saved-selfie-map-count'));
+  const popup=node('div',null,'saved-selfie-map-popup');popup.append(node('strong',latest.context.name||'My photos'));
+  for(const task of group){const button=node('button',null,'saved-selfie-map-entry'),thumb=node('img');button.type='button';thumb.alt='';thumb.loading='lazy';thumb.src=api+apiPrefix+'/v1/portraits/'+encodeURIComponent(task.id)+'/thumbnail';button.append(thumb,node('span',new Date(task.created*1000).toLocaleString()));button.addEventListener('click',()=>viewSavedPhoto(task));popup.append(button);}
+  L.marker([pos.lat,pos.lon],{title:(latest.context.name||'My photo')+' · '+group.length+' photo'+(group.length===1?'':'s'),zIndexOffset:1000,icon:L.divIcon({className:'saved-selfie-map-pin',html:icon,iconSize:[44,44],iconAnchor:[22,44],popupAnchor:[0,-44]})}).addTo(savedSelfieLayer).bindPopup(popup,{autoPan:false,keepInView:false});
+ }
+}
 const selfieActivityLayer=L.layerGroup().addTo(map);
 const studioTask=node('button',null,'selfie-task');studioTask.type='button';studioTask.hidden=true;studioTask.setAttribute('aria-live','polite');
 const studioTaskSpark=node('span','✦','selfie-task-spark'),studioTaskCopy=node('span',null,'selfie-task-copy'),studioTaskLabel=node('strong'),studioTaskPlace=node('small');studioTaskCopy.append(studioTaskLabel,studioTaskPlace);studioTask.append(studioTaskSpark,studioTaskCopy);document.querySelector('.map-stage').append(studioTask);L.DomEvent.disableClickPropagation(studioTask);studioTask.addEventListener('click',()=>{if(taskRecords.some(t=>t.kind==='portrait'&&['queued','checking','running'].includes(t.state))){if(studio.open)studio.close();el('photo-history').open=true;}else studio.showModal();});
@@ -966,7 +981,7 @@ function syncStudioProgress(){
  const icon=node('span',pending?'✦':task.state==='complete'?'✓':'!','studio-progress-icon'),copy=node('div');copy.append(node('strong',title),node('p',pending?'You can close this window. Generation continues in the background.':task.error||(task.state==='complete'?'Open your finished photo below.':'Please try again.'),'small'));const view=node('button',pending?'View progress':'View photo');view.type='button';view.addEventListener('click',()=>viewSavedPhoto(task));studioPending.replaceChildren(icon,copy,view);
 }
 function syncPortraitActivities(){
- syncStudioProgress();
+ syncSavedPhotoMap();syncStudioProgress();
  const photos=taskRecords.filter(t=>t.kind==='portrait'&&['queued','checking','running'].includes(t.state));
  selfieActivityLayer.clearLayers();studioActivityMarker=null;if(!photos.length){studioTask.hidden=true;return;}
  studioTask.hidden=false;studioTask.dataset.state='running';studioTaskSpark.textContent='✦';studioTaskLabel.textContent=photos.length===1?'Selfie in progress · History':photos.length+' selfies in progress · History';studioTaskPlace.textContent=photos.length===1?photos[0].context?.name||'Photo studio':'View each task’s progress';studioTask.setAttribute('aria-label',studioTaskLabel.textContent);
@@ -978,7 +993,7 @@ function resetTaskRecovery(){avatarLibrary?.reset();
  photoLibraryGeneration++;el('photo-library-items').replaceChildren();selectPhotoLibraryTab('mine');
  if(studioCamera?.dialog.open)studioCamera.dialog.close();studioCamera?.stop();
  if(savedPhoto.open)savedPhoto.close();if(portraitProgress.open)portraitProgress.close();
- focusedSearchId=null;selectedPoiView=null;lastRemovedPoi=null;lastRemovedHistory=null;removedHistoryItems.clear();poiViewOverrides.clear();selfieViewOverrides.clear();for(const save of cameraSaves.values()){clearTimeout(save.timer);save.payload=null;}cameraSaves.clear();for(const timer of cameraRefreshes.values())clearTimeout(timer);cameraRefreshes.clear();studioSearchId=null;taskRecoveryGeneration++;hydratedSearches.clear();clearTimeout(taskRefreshTimer);taskRecords=[];hiddenPoisBySearch.clear();displayedResult=null;displayedSearchId=null;tasksReady=false;activeSearch=null;pollGeneration++;searchBusy=false;studioBusy=false;studioJob=null;clearTimeout(studioTimer);clearStudioOutput();studioPrepared=null;studioFile=null;studioSubjects=[];renderStudioSubjects();studioInputPlaceKey=null;studioUploadGeneration++;studioUpload.value='';studioCameraButton.disabled=studioPersonFrame.disabled=studioUpload.disabled=false;studioPose.disabled=false;studioStyles.disabled=false;studioOptions.disabled=false;studioGenerate.disabled=true;personPreview.hidden=true;personPreview.removeAttribute('src');studioTask.hidden=true;selfieActivityLayer.clearLayers();renderHistory();updateSubmitState();
+ focusedSearchId=null;selectedPoiView=null;lastRemovedPoi=null;lastRemovedHistory=null;removedHistoryItems.clear();poiViewOverrides.clear();selfieViewOverrides.clear();for(const save of cameraSaves.values()){clearTimeout(save.timer);save.payload=null;}cameraSaves.clear();for(const timer of cameraRefreshes.values())clearTimeout(timer);cameraRefreshes.clear();studioSearchId=null;taskRecoveryGeneration++;hydratedSearches.clear();clearTimeout(taskRefreshTimer);taskRecords=[];hiddenPoisBySearch.clear();displayedResult=null;displayedSearchId=null;tasksReady=false;activeSearch=null;pollGeneration++;searchBusy=false;studioBusy=false;studioJob=null;clearTimeout(studioTimer);clearStudioOutput();studioPrepared=null;studioFile=null;studioSubjects=[];renderStudioSubjects();studioInputPlaceKey=null;studioUploadGeneration++;studioUpload.value='';studioCameraButton.disabled=studioPersonFrame.disabled=studioUpload.disabled=false;studioPose.disabled=false;studioStyles.disabled=false;studioOptions.disabled=false;studioGenerate.disabled=true;personPreview.hidden=true;personPreview.removeAttribute('src');studioTask.hidden=true;selfieActivityLayer.clearLayers();savedSelfieLayer.clearLayers();savedSelfieMapSignature=null;renderHistory();updateSubmitState();
 }
 // Bounded parallel recovery; paint each available group without waiting for a slow report.
 async function restoreCompletedSearches(tasks,generation){

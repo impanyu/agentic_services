@@ -123,3 +123,12 @@
 .billing-access-login{background:white;border:1px solid #d9dde3;color:#343941}.billing-access-apple{background:#111;border:1px solid #111;color:white}
 .billing-access-login:disabled,.billing-access-apple:disabled{opacity:.45;cursor:default}.billing-access-login[hidden],.billing-access-apple[hidden],.auth-provider-note[hidden]{display:none}
 .auth-provider-icon{display:inline-flex}.auth-provider-icon svg{display:block;width:20px;height:20px}.auth-provider-note{font-size:13px;color:#686d76;text-align:center;line-height:1.5}.billing-access-login:focus-visible,.billing-access-apple:focus-visible{outline:2px solid #70529b;outline-offset:3px}
+
+/* Private completed selfies appear automatically at their recorded location. */
+.saved-selfie-map-icon{position:relative;display:block;width:44px;height:44px;padding:3px;border:2px solid #fff;border-radius:12px;background:#70529b;box-shadow:0 2px 10px #20203040}
+.saved-selfie-map-icon>img{display:block;width:100%;height:100%;object-fit:cover;border-radius:7px}
+.saved-selfie-map-count{position:absolute;right:-6px;top:-6px;min-width:19px;height:19px;display:grid;place-items:center;padding:0 3px;border:2px solid #fff;border-radius:12px;background:#70529b;color:#fff;font:600 10px/1 sans-serif}
+.saved-selfie-map-icon.thumbnail-unavailable::after{content:"";display:block;width:20px;height:16px;margin:8px auto;border:2px solid white;border-radius:4px}
+.saved-selfie-map-popup{display:grid;gap:8px;max-height:300px;overflow:auto;min-width:190px}
+.saved-selfie-map-entry{display:flex;align-items:center;gap:10px;width:100%;padding:6px;border:1px solid #e1e4e9;border-radius:10px;background:white;color:#555c67;text-align:left;font-size:12px;cursor:pointer}
+.saved-selfie-map-entry img{width:44px;height:44px;object-fit:cover;border-radius:6px;flex:none}
