@@ -246,7 +246,9 @@ def test_google_image_development_requests_continue_past_existing_count(tmp_path
 def test_google_sampling_deduplicates_nearby_camera_points(monkeypatch):
     from agentic_services.photo_scout.sources import google_streetview,google_sampling_spacing,diverse_sample
     monkeypatch.setenv('PHOTO_SCOUT_GOOGLE_API_KEY','secret-fixture')
-    positions=iter([(0,0),(0.0001,0),(0.003,0),(0,-0.003),(0,0.0001)])
+    anchors=[(0,0),(0.0001,0),(0.003,0),(0,-0.003),(0,0.0001)]
+    monkeypatch.setattr('agentic_services.photo_scout.sources.google_query_points',lambda *args:anchors)
+    positions=iter(anchors)
     def handler(request):
         lat,lon=next(positions,(0,0))
         return httpx.Response(200,json={'status':'OK','pano_id':f'pano_{lat}_{lon}'.replace('.','_'),
@@ -568,7 +570,7 @@ def test_fixed_pipeline_reports_partial_failures(tmp_path,monkeypatch):
     result=asyncio.run(visual.explore(settings,ExploreRequest(lat=0,lon=0),_scoring_rows(),{}))
     assert len(result['spots'])==11 and result['inspectedImages']==11
     assert all(s['recommend'] is False for s in result['spots'])
-    assert result['scoring']=={'checkedImages':11,'filteredOutImages':0,'matchedImages':11,'candidateImages':13,'downloadedImages':12,'scoredImages':11,'downloadFailedImages':1,'scoringFailedImages':1,'batches':3,'cachedImages':0,'newlyScoredImages':11,'uniqueImageLoads':13,'duplicateImageLoadsAvoided':0}
+    assert result['scoring']=={'reviewedImages':0,'reviewRecoveredImages':0,'reviewCachedImages':0,'checkedImages':11,'filteredOutImages':0,'matchedImages':11,'candidateImages':13,'downloadedImages':12,'scoredImages':11,'downloadFailedImages':1,'scoringFailedImages':1,'batches':3,'cachedImages':0,'newlyScoredImages':11,'uniqueImageLoads':13,'duplicateImageLoadsAvoided':0}
     assert len(result['imageAssessments'])==11 and 'could not be scored' in result['coverage']
 
 
@@ -861,6 +863,9 @@ def test_relevance_filter_and_scoring_share_one_call_and_cache_rejections(tmp_pa
     settings=Settings(openai_api_key='test',openai_model='test',database_path=tmp_path/'db',base_url='https://api.test')
     rows=_scoring_rows()[:3]
     for row,provider in zip(rows,['wikimedia-commons','panoramax','google-street-view']):row['provider']=provider
+    rows[1]['imageUrl']='https://provider.test/private?key=must-not-persist'
+    rows[0]['poiCandidates']=[rows[0]['poi']]
+    rows[2]['imageUrl']='google-streetview://audit-pano/0/0/120'
     calls=[]
     async def image(url):return 'data:image/jpeg;base64,/9j/dGVzdA=='
     async def parse(**kw):
@@ -879,6 +884,11 @@ def test_relevance_filter_and_scoring_share_one_call_and_cache_rejections(tmp_pa
     assert len(result['poiResults'])==1 and result['poiResults'][0]['score']==8
     rejected=[a for a in result['imageAssessments'] if not a['matches_request']]
     assert len(rejected)==2 and all(a['score'] is None and not a['eligibleForRecommendation'] and a['exclusionReason'] for a in rejected)
+    audit={a['image_id']:a for a in result['imageAssessments']}
+    assert audit[rows[0]['id']]['candidatePoiIds']==[rows[0]['poi']['id']]
+    assert audit[rows[1]['id']]['lat']==rows[1]['lat']
+    assert audit[rows[2]['id']]['streetViewReference']=='google-streetview://audit-pano/0/0/120'
+    assert 'must-not-persist' not in json.dumps(result['imageAssessments'])
     second=asyncio.run(visual.explore(settings,payload,rows,{}))
     assert len(calls)==1 and second['scoring']['cachedImages']==3
     assert second['scoring']['filteredOutImages']==2

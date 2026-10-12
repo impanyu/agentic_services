@@ -104,6 +104,64 @@ def test_nonfinite_provider_attribute_is_unknown_instead_of_a_serialized_priorit
     assert number('9'*400,'building:levels') is None
 
 
+@pytest.mark.parametrize('key,value',[('building','house / detached'),('building','house】a？No,'),('amenity','cafe OR restaurant'),('highway','primary|secondary')])
+def test_classification_values_reject_expressions_and_generation_debris(key,value):
+    with pytest.raises(ValidationError,match='literal lowercase identifier'):
+        TagFilter(key=key,value=value)
+
+
+def test_classification_guard_keeps_unknown_identifiers_existence_and_free_text():
+    assert TagFilter(key='building',value='uncommon_local_subtype').value=='uncommon_local_subtype'
+    assert TagFilter(key='building',value=None).value is None
+    assert TagFilter(key='name',value='咖啡 / Coffee').value=='咖啡 / Coffee'
+    assert TagFilter(key='operator',value='AC/DC & Co.').value=='AC/DC & Co.'
+
+
+def test_feature_groups_share_single_query_caches_across_planner_regrouping(tmp_path,monkeypatch):
+    import agentic_services.photo_scout.osm_features as module
+    calls=[]
+    async def get(client,url,params,**kwargs):
+        query=params['data'];calls.append(query)
+        assert not ('"house"' in query and '"detached"' in query)
+        value='house' if '"house"' in query else 'detached'
+        return {'elements':[node(1 if value=='house' else 2,building=value)]}
+    monkeypatch.setattr(module,'get_json',get)
+    queries=[OSMFeatureQuery(label=v,filters=[TagFilter(key='building',value=v)]) for v in ['house','detached']]
+    groups,status=asyncio.run(fetch_features(0,0,100,queries,tmp_path/'db'))
+    assert status['status']=='ok' and status['groupCounts']==[1,1] and len(calls)==2
+    assert groups[0][0]['osmTags']['building']=='house'
+    assert groups[1][0]['osmTags']['building']=='detached'
+    _,status=asyncio.run(fetch_features(0,0,100,list(reversed(queries)),tmp_path/'db'))
+    assert status['cached'] and len(calls)==2
+
+
+def test_failed_feature_group_retains_aligned_alternatives_with_explicit_partial_status(tmp_path,monkeypatch):
+    import agentic_services.photo_scout.osm_features as module
+    async def get(client,url,params,**kwargs):
+        if '"detached"' in params['data']:raise ValueError('Incomplete source')
+        return {'elements':[node(1,building='house')]}
+    monkeypatch.setattr(module,'get_json',get)
+    queries=[OSMFeatureQuery(label=v,filters=[TagFilter(key='building',value=v)]) for v in ['house','detached']]
+    groups,status=asyncio.run(fetch_features(0,0,100,queries,tmp_path/'db'))
+    assert len(groups[0])==1 and groups[1]==[] and status['status']=='partial'
+    assert [s['status'] for s in status['queryStatuses']]==['ok','unavailable']
+
+
+@pytest.mark.parametrize('combination',['all','any'])
+def test_executor_uses_partial_alternatives_only_for_or(combination):
+    from types import SimpleNamespace
+    from agentic_services.photo_scout.program import Tools
+    q=feature();groups=[[{'id':'known','lat':0,'lon':0}],[]]
+    async def provider(*args):return groups,{'status':'partial'}
+    tool=SimpleNamespace(p=SimpleNamespace(lat=0,lon=0,radius=100),providers=SimpleNamespace(osm_features=None),
+        database=None,statuses={},provider=provider,optional_source=lambda step:False)
+    step=SimpleNamespace(id='features',osmFeatures=[q,q],combination=combination)
+    result=asyncio.run(Tools.search_features(tool,step,[]))
+    assert result.unavailable==(combination=='all')
+    assert result.groups==(groups if combination=='any' else [])
+    assert tool.statuses['features']['status']=='partial'
+
+
 def test_geometry_only_buildings_and_relations_keep_positions_and_radius_filter():
     q=feature(selectionHints=['large-footprint'])
     points=[{'lat':0,'lon':0},{'lat':0,'lon':.002},{'lat':.002,'lon':.002},{'lat':.002,'lon':0},{'lat':0,'lon':0}]

@@ -281,6 +281,10 @@ async def google_streetview(client, lat, lon, radius, targets=None, area_samplin
         except (KeyError,TypeError,ValueError): continue
         if not math.isfinite(lat2) or not math.isfinite(lon2) or abs(lat2)>85 or abs(lon2)>180: continue
         if distance((lat,lon),(lat2,lon2))>radius: continue
+        # Provider metadata occasionally resolves outside its requested radius.
+        # Keep the actual camera near the queried anchor, not merely in the city.
+        lookup_radius=50 if center_priority and index==0 else min(200,max(50,radius//3))
+        if distance(points[index],(lat2,lon2))>lookup_radius:continue
         if center_priority and index==0 and distance((lat,lon),(lat2,lon2))>50:continue
         if pano in seen:
             if target_rows[index] is not None:

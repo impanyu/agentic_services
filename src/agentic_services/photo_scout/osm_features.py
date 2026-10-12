@@ -10,8 +10,20 @@ from .spatial_sampling import spread_points
 class TagFilter(BaseModel):
     model_config=ConfigDict(extra='forbid')
     key:str=Field(min_length=1,max_length=80,pattern=r'^[A-Za-z0-9_:.-]+$')
-    value:str|None=Field(default=None,max_length=160)
+    value:str|None=Field(default=None,max_length=160,
+        description='One literal OSM value, matched by exact equality; null means key exists. Never put alternatives or search syntax here. OR values require separate feature queries with combination=any.')
     required:bool=True
+
+    @model_validator(mode='after')
+    def literal_classification(self):
+        # These keys contain machine classifications, unlike names/operators
+        # and other free-text tags. Do not query generation debris as an exact
+        # subtype and silently report that no mapped objects exist.
+        classification_keys={'building','building:use','highway','amenity','leisure',
+            'tourism','landuse','natural','water','waterway','artwork_type','man_made'}
+        if self.key in classification_keys and self.value is not None and not re.fullmatch(r'[a-z0-9_]+(?:[;:.-][a-z0-9_]+)*',self.value):
+            raise ValueError('Unfinished retrieval parameter: classification tags require a literal lowercase identifier, not alternatives, prose or generation debris; use separate feature queries for OR')
+        return self
 
 class NumericFilter(BaseModel):
     model_config=ConfigDict(extra='forbid')
@@ -118,6 +130,7 @@ def prioritize(rows,query):
                 rank.append((0,-area if hint=='large-footprint' else area) if area else (1,0))
             else:rank.append((0,-levels) if levels is not None else (1,0))
         row['selectionPriority']=rank
+        row['selectionHints']=list(query.selectionHints)
     return rows
 
 def signature(queries,*,hints=True):
@@ -162,8 +175,26 @@ def decode(data,queries,lat,lon,radius):
     return groups
 
 async def fetch_features(lat,lon,radius,queries,database_path):
+    # Feature groups are independently decoded predicates. Fetch/cache them
+    # independently too: combining dense city-wide geometry queries can exceed
+    # Overpass's execution budget and makes cache reuse depend on planner grouping.
+    if len(queries)<=1:return await _fetch_feature_group(lat,lon,radius,queries,database_path)
+    if len(queries)>6:raise ValueError('At most six feature queries per source')
+    results=await asyncio.gather(*(_fetch_feature_group(lat,lon,radius,[q],database_path) for q in queries))
+    statuses=[status for _,status in results]
+    available=sum(s.get('status')=='ok' for s in statuses)
+    status={'status':'ok' if available==len(statuses) else 'partial' if available else 'unavailable',
+        'provider':'openstreetmap-features','bounded':True,'queryStatuses':statuses}
+    # Retain alignment and explicit failure status. Only an OR executor may use
+    # successful alternatives; a missing required AND group must fail closed.
+    if not available:return [],status
+    groups=[group[0] if s.get('status')=='ok' else [] for group,s in results]
+    return groups,{**status,'cached':all(s.get('cached',False) for s in statuses),'groupCounts':[len(g) for g in groups]}
+
+
+async def _fetch_feature_group(lat,lon,radius,queries,database_path):
     if not queries:return [],{'status':'not_requested','provider':'openstreetmap-features'}
-    version='geometry-v3' if any(set(q.selectionHints)&{'large-footprint','small-footprint'} for q in queries) else 'spatial-v2'
+    version='priority-v4' if any(q.selectionHints for q in queries) else 'spatial-v2'
     key=hashlib.sha256(json.dumps([version,lat,lon,radius,signature(queries)],sort_keys=True).encode()).hexdigest()
     legacy_key=hashlib.sha256(json.dumps([lat,lon,radius,signature(queries,hints=False)],sort_keys=True).encode()).hexdigest()
     legacy=None

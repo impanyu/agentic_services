@@ -4,7 +4,7 @@ import asyncio
 import json
 import logging
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Literal
 
 from openai import AsyncOpenAI
@@ -83,6 +83,20 @@ Center/radius constraints are already executed geometrically; do not reject imag
 because their pixels cannot prove a street address, city or numeric search radius. Retrieval hints are not
 proof of visual fit and are not extra hard requirements. If a mood is preferred in this
 ledger, weak aesthetic fit must not reject an otherwise matching image.
+Discovery instructions describing how to find/sample candidates are not additional
+visual requirements. Evaluate the requested subject, not whether pixels prove the
+retrieval strategy. Separate physical form from current use, ownership and access:
+a building used by an institution can retain the requested residential architecture;
+a converted industrial building can retain industrial form. Conversely, a name or
+current use cannot establish an absent architectural form. Describe visible massing,
+materials and details before deciding a category; do not infer non-residential form
+solely from flags, a fence, signage, official ownership or formal landscaping.
+Apply qualitative appearance words to observable features without inventing a narrower
+architectural style, a minimum floor count, or a requirement for ornate decoration.
+Scale, materials, proportions and grounds can jointly support an appearance judgment;
+plain contemporary architecture is not automatically ordinary. Required appearance
+still needs positive visual support. Keep doubtful details explicit, and reject when
+the required form or appearance is unsupported.
 Reject clear subject/category mismatches or clear conflicts with explicit visual
 requirements or required mood. A beautiful landscape is not a coffee shop or motel.
 For an explicitly requested brand, named business or landmark, require visual
@@ -194,6 +208,7 @@ class ScoringOutput:
     fresh: list
     batches: list
     model: str
+    reviews: dict = field(default_factory=dict)
 
 
 @pooled_images
@@ -221,7 +236,7 @@ async def assess_images(settings,payload,rows,statuses=None):
         else:
             missing.append(row)
     batch_size=max(1,min(32,int(os.getenv('PHOTO_SCOUT_SCORING_BATCH_SIZE','16'))))
-    aliases={row['id']:str(i) for i,row in enumerate(missing)}
+    aliases={row['id']:str(i) for i,row in enumerate(rows)}
     batches=[missing[i:i+batch_size] for i in range(0,len(missing),batch_size)]
     batch_slots=asyncio.Semaphore(max(1,min(16,int(os.getenv('PHOTO_SCOUT_SCORING_CONCURRENCY','16')))));download_slots=asyncio.Semaphore(max(1,min(64,int(os.getenv('PHOTO_SCOUT_IMAGE_DOWNLOAD_CONCURRENCY','32')))))
     downloads={}
@@ -236,7 +251,7 @@ async def assess_images(settings,payload,rows,statuses=None):
         if url not in downloads:downloads[url]=asyncio.create_task(load_image(url))
         return row,await downloads[url]
     async with AsyncOpenAI(api_key=settings.openai_api_key,timeout=180,max_retries=0) as client:
-        async def score_loaded(usable,retry=True):
+        async def score_loaded(usable,retry=True,scoring_model=model,scoring_keys=keys):
             from collections import Counter
             content=[{'type':'input_text','text':json.dumps({
                 'request':{'subjectRole':getattr(payload,'subjectRole','scene'),'requirements':[r.model_dump() for r in getattr(payload,'requirements',[])],'scoringIntent':payload.scoringIntent.strip(),'poiQueries':payload.poiQueries,'geographicKinds':payload.geographicKinds,'geographicCombination':getattr(payload,'geographicCombination','all'),'featureCombination':getattr(payload,'featureCombination','all'),'searchProgram':payload.searchProgram.model_dump() if getattr(payload,'searchProgram',None) else None,'searchBranches':[b.model_dump() for b in getattr(payload,'searchBranches',[])],'osmFeatures':[q.model_dump() for q in payload.osmFeatures],'preferences':payload.preferences.strip(),'photoStyles':sorted(payload.photoStyles or [])},
@@ -247,14 +262,14 @@ async def assess_images(settings,payload,rows,statuses=None):
             response=None;valid=[];usages=[];requests=1
             try:
                 async with batch_slots:
-                    response=await observe('scoring',model,client.responses.parse(model=model,instructions=INSTRUCTIONS+'\n'+OUTPUT_FORMAT,
+                    response=await observe('scoring',scoring_model,client.responses.parse(model=scoring_model,instructions=INSTRUCTIONS+'\n'+OUTPUT_FORMAT,
                         input=[{'role':'user','content':content}],text_format=VisualBatch,
-                        **({'reasoning':{'effort':'low'}} if model.startswith('gpt-6') else {}),
+                        **({'reasoning':{'effort':'low'}} if scoring_model.startswith('gpt-6') else {}),
                         max_output_tokens=max(12000,len(usable)*900),store=False))
                 output=response.output_parsed
                 expected={aliases[r['id']]:r['id'] for r,_ in usable};counts=Counter(a.image_id for a in output.assessments) if output else {}
                 valid=[a.model_copy(update={'image_id':expected[a.image_id]}) for a in output.assessments if a.image_id in expected and counts[a.image_id]==1] if output else []
-                cache.put([(keys[a.image_id],a.model_dump()) for a in valid if next(r for r in rows if r['id']==a.image_id).get('cacheable',True)])
+                cache.put([(scoring_keys[a.image_id],a.model_dump()) for a in valid if next(r for r in rows if r['id']==a.image_id).get('cacheable',True)])
             except Exception as error:
                 fields=[(e['loc'],e['type']) for e in error.errors(include_input=False,include_url=False)] if isinstance(error,ValidationError) else []
                 logging.getLogger(__name__).warning('Photo Scout batch scoring failed: %s; images=%s fields=%s request_id=%s',type(error).__name__,len(usable),fields,getattr(error,'request_id',None))
@@ -263,7 +278,7 @@ async def assess_images(settings,payload,rows,statuses=None):
             if remaining and retry:
                 # Release the model slot before recovery; retry only missing views,
                 # once, in smaller parallel groups, reusing downloaded image bytes.
-                recovery=await asyncio.gather(*(score_loaded(remaining[i:i+8],False) for i in range(0,len(remaining),8)))
+                recovery=await asyncio.gather(*(score_loaded(remaining[i:i+8],False,scoring_model,scoring_keys) for i in range(0,len(remaining),8)))
                 valid.extend(a for group in recovery for a in group['assessments'])
                 usages.extend(u for group in recovery for u in group['usages'])
                 requests+=sum(group['modelRequests'] for group in recovery)
@@ -276,10 +291,41 @@ async def assess_images(settings,payload,rows,statuses=None):
         async with asyncio.timeout(600):
             results=await asyncio.gather(*(score_batch(batch) for batch in batches))
             if results:results[0].update(uniqueImageLoads=len(downloads),duplicateImageLoadsAvoided=len(missing)-len(downloads))
-    fresh=[a for result in results for a in result['assessments']]
+        fresh=[a for result in results for a in result['assessments']]
+        primary={a.image_id:a for a in cached+fresh};reviews={}
+        review_model=os.getenv('PHOTO_SCOUT_REVIEW_MODEL','gpt-6.1-sol')
+        if review_model and review_model!=model:
+            from .visual_review import review_candidates
+            selected=review_candidates(rows,list(primary.values()))
+            review_keys={r['id']:cache.key(r,payload,review_model,INSTRUCTIONS) for r in selected}
+            saved=cache.get_many(review_keys[r['id']] for r in selected if r.get('cacheable',True))
+            reviewed=[];pending=[];review_cached=set()
+            for row in selected:
+                try:
+                    a=ImageAssessment.model_validate(saved.get(review_keys[row['id']]))
+                    if a.image_id!=row['id']:raise ValueError('Wrong review image')
+                    reviewed.append(a);review_cached.add(a.image_id)
+                except ValueError:pending.append(row)
+            if pending:
+                try:
+                    async with asyncio.timeout(60):
+                        loaded=await asyncio.gather(*(download(r) for r in pending))
+                        usable=[(r,data) for r,data in loaded if data]
+                        checks=await asyncio.gather(*(score_loaded(usable[i:i+batch_size],False,review_model,review_keys) for i in range(0,len(usable),batch_size)))
+                    reviewed.extend(a for check in checks for a in check['assessments'])
+                    # Review reuses downloaded pixels, not additional candidate images.
+                    for check in checks:results.append({**check,'downloaded':0,'downloadFailed':0,'scoringFailed':0})
+                except TimeoutError:
+                    logging.getLogger(__name__).warning('Photo Scout bounded visual review timed out; retaining primary assessments')
+            for a in reviewed:
+                reviews[a.image_id]={'model':review_model,'cached':a.image_id in review_cached,
+                    'original':primary[a.image_id].model_dump(),'recovered':a.matches_request}
+            replacements={a.image_id:a for a in reviewed}
+            cached=[a for a in cached if a.image_id not in replacements]+[a for a in reviewed if a.image_id in review_cached]
+            fresh=[a for a in fresh if a.image_id not in replacements]+[a for a in reviewed if a.image_id not in review_cached]
     assessments=cached+fresh
     if not assessments: raise ValueError('No images could be scored; retry the search')
-    return ScoringOutput(rows,assessments,cached,fresh,results,model)
+    return ScoringOutput(rows,assessments,cached,fresh,results,model,reviews)
 
 
 def apply_center_priority(payload,items):
@@ -328,6 +374,10 @@ def rank_assessments(payload,output,statuses):
         'The scored images do not support a suitable recommendation'+(f' for {mood}.' if mood else '.'))
     by_id={r['id']:r for r in rows}
     audit=[{**a.model_dump(),'provider':by_id[a.image_id]['provider'],
+        **({'review':output.reviews[a.image_id]} if a.image_id in output.reviews else {}),
+        **{k:by_id[a.image_id][k] for k in ('lat','lon','imageryProfile') if k in by_id[a.image_id]},
+        'candidatePoiIds':[p['id'] for p in by_id[a.image_id].get('poiCandidates',[])],
+        **({'streetViewReference':by_id[a.image_id]['imageUrl']} if by_id[a.image_id]['provider']=='google-street-view' and by_id[a.image_id].get('imageUrl','').startswith('google-streetview://') else {}),
         'viewHeadingDegrees':by_id[a.image_id].get('viewHeadingDegrees'),
         'viewPitchDegrees':by_id[a.image_id].get('viewPitchDegrees'),
         'scoreFromCache':a.image_id in {c.image_id for c in cached},
@@ -341,7 +391,7 @@ def rank_assessments(payload,output,statuses):
     return {'topLimit':len(spots),'spots':spots,'poiResults':poi_results,'summary':summary,'sources':statuses,
         'inspectedImages':len(assessments),'inspectedImageSources':sorted({by_id[a.image_id]['provider'] for a in assessments}),
         'imageAssessments':audit,'analysisMethod':'fixed-batch-scoring',
-        'scoring':{'checkedImages':len(assessments),'filteredOutImages':filtered_out,'matchedImages':len(scored),'candidateImages':len(rows),'downloadedImages':downloaded,'scoredImages':len(scored),'cachedImages':len(cached),'uniqueImageLoads':sum(r.get('uniqueImageLoads',0) for r in results),'duplicateImageLoadsAvoided':sum(r.get('duplicateImageLoadsAvoided',0) for r in results),'newlyScoredImages':sum(a.matches_request for a in fresh),
+        'scoring':{'reviewedImages':len(output.reviews),'reviewRecoveredImages':sum(r['recovered'] for r in output.reviews.values()),'reviewCachedImages':sum(r['cached'] for r in output.reviews.values()),'checkedImages':len(assessments),'filteredOutImages':filtered_out,'matchedImages':len(scored),'candidateImages':len(rows),'downloadedImages':downloaded,'scoredImages':len(scored),'cachedImages':len(cached),'uniqueImageLoads':sum(r.get('uniqueImageLoads',0) for r in results),'duplicateImageLoadsAvoided':sum(r.get('duplicateImageLoadsAvoided',0) for r in results),'newlyScoredImages':sum(a.matches_request for a in fresh),
             'downloadFailedImages':failed_downloads,'scoringFailedImages':failed_scoring,'batches':len(results)},
         'coverage':f'Checked {len(assessments)} of {len(rows)} sampled images; {filtered_out} excluded for not matching your request; {len(scored)} scored ({len(cached)} cached checks);  {failed_downloads} downloads failed; {failed_scoring} images could not be scored. Subjective scores, not complete nearby coverage.',
         'model':model,'usage':{'requests':sum(r.get('modelRequests',int(bool(r['downloaded']))) for r in results),

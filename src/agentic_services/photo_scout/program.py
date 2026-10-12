@@ -214,7 +214,8 @@ class Tools:
         p=self.p
         groups,status=await self.provider(self.providers.osm_features,p.lat,p.lon,p.radius,s.osmFeatures,self.database)
         self.statuses[s.id]=status
-        if status.get('status')!='ok':
+        usable_partial=status.get('status')=='partial' and s.combination=='any' and any(groups)
+        if status.get('status')!='ok' and not usable_partial:
             if self.optional_source(s):return Features([],s.osmFeatures,s.combination)
             return Features([],s.osmFeatures,s.combination,unavailable=True)
         return Features(groups,s.osmFeatures,s.combination)

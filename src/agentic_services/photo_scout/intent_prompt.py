@@ -141,6 +141,9 @@ with any if expressing multiple highway values). Do not broaden footbridge to ge
 bridge. Stairs highway=steps. Intersections kind=intersection,filters=[],numericFilters=[].
 Other queries kind=tagged, English label, proximityMeters=150 by default (30 for junctions).
 Tag filters have key,value (null means existence),required. Category tags required=true;
+Each value is ONE exact literal tag value, not an expression: never encode alternative
+values as 'house / detached', 'cafe OR restaurant', pipes or regexes. Use separate
+OSM feature query objects with combination=any for alternative values of the same key.
 secondary mapped material/colour may use required=false to preserve unannotated unknowns,
 then confirm in pixels. Numeric filters use key,minimum,maximum: explicit height uses
 height meters; unspecified high-rise can use building existence + selectionHints
@@ -171,12 +174,18 @@ TOOL BOUNDARIES AND GEOGRAPHIC HYPOTHESES
 Places discovers indexed names, categories and neighborhoods, not visual luxury,
 roof color, facade material or the presence of a photographic view. OSM supplies
 mapped objects/tags/geometry; absence of a tag is not absence of the real feature.
-OSM buildings may have only building=yes, with no residential-use subtype. For visual
-architecture requests, include a broad building-existence discovery alternative when
-subtype coverage is uncertain; never require a house/detached/villa tag as the sole map
-source of residences. Use ordering hints and a smaller union allocation for the broad
-alternative when appropriate. Its candidates still must satisfy the original physical
-subject in images; mapped footprint alone cannot turn an office into a residence.
+Choose fallbacks for the actual coverage gap. Unknown subtype and any subtype are
+different: OSM building=yes means unspecified type, whereas building existence also
+retrieves explicitly tagged parking/industrial/retail buildings. When subtype-specific
+sources already cover the target, use building=yes as an unknown-subtype alternative,
+not an unrestricted size-ranked building source that favors known unrelated uses.
+For a truly unrestricted architecture request, building existence remains useful.
+Keep useful subtype and unknown-subtype sources as OR alternatives; neither missing
+tags nor large footprints prove appearance. Allocate the finite candidate budget to
+plausible subjects, retain geographic exploration, and use sampling near verified
+geographic leads when a subject is poorly indexed rather than repeatedly broadening
+business keywords. Discovery rationale belongs in explanation/assumptions; visualIntent
+states actual visible conditions, not instructions such as 'prioritize footprints'.
 Use world knowledge to propose plausible search leads, not to assert where a subject
 exists. Known estate districts, low-density residential neighborhoods, historic house
 museums or former residences may be useful leads for grand villas. Current use as a
