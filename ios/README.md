@@ -96,16 +96,19 @@ Before distributing a build, verify on iPhone and iPad:
 - Share cancellation/success, Download to Files and iPad popover behavior.
 - Background a running search/composition, return, and recover its result.
 
-No signing team, provisioning profile, TestFlight upload or App Store submission
-is configured. Store release also requires reviewing the privacy labels against
+A local Personal Team development certificate and device profile are configured;
+Photo Scout was installed and launched on the owner's iPhone on 2026-10-12.
+The selected map/selfie icon was built, installed and launched in the same device
+update. This is not proof of complete real-device functional testing.
+No TestFlight upload or App Store submission is configured. Store release also requires reviewing the privacy labels against
 actual backend practices, account deletion and login requirements, and the app's
 eligibility under Apple's review guidelines. The privacy manifest is a starting
 inventory for this implementation, not a completed App Store privacy submission.
 
 ## Signing and TestFlight handoff
 
-Apple Developer enrollment is pending. No usable code-signing identity is installed
-on the current Mac, and no signing secrets are configured in GitHub. Simulator
+Organization enrollment is pending. A local Apple Development signing identity is
+installed for Personal Team testing; no signing secrets are configured in GitHub. Simulator
 artifacts are not installable iPhone/iPad IPA files.
 
 Personal-device debugging does not require paid membership or an App Store release.
@@ -132,3 +135,31 @@ For TestFlight, after membership activation:
 Never commit signing certificates, private keys, provisioning profiles, or Apple
 account credentials. Membership identity verification and payment must be completed
 in Apple's own interface.
+
+## Remaining work reviewed on 2026-10-12
+
+- Complete physical-device checks above: Google login, upload/camera and multi-person
+  composition, approximate/denied location, photo saving/sharing, background recovery,
+  keyboard and rotation. Automated simulator tests and a device launch are partial evidence.
+- Add in-app account deletion with associated server-side data cleanup. The current
+  privacy page only directs deletion requests to contact support; account routes provide
+  login/logout, not account deletion.
+- Review login guideline 4.8: primary account authentication currently uses Google.
+  Add an equivalent privacy-preserving login option (typically Sign in with Apple)
+  unless a documented exception applies.
+- Add community reporting, user blocking, moderation and operational handling.
+  Current publication routes allow comments/reactions and owner deletion but do not
+  provide report/block endpoints; comment posting has rate limits, not content filtering.
+- Update privacy disclosure and consent for configured AI image providers, including
+  Google/Gemini. The current photo-studio privacy paragraph describes OpenAI only.
+  Reconcile retention, third-party sharing, consent, privacy manifest and App Store labels.
+- Fix native location-denial guidance in `photo-scout-site/location.js`: it currently
+  tells iPhone users to enable Safari website permissions instead of Photo Scout permissions.
+- Before public distribution, verify rights for the chosen Totoro character icon and
+  bundled avatar artwork; use licensed assets or an original character if needed.
+- Finish organization membership, distribution signing, TestFlight, store screenshots,
+  review access/instructions and age rating. Review hybrid-app functionality under 4.2;
+  native integrations alone do not guarantee acceptance. If paid digital features are
+  enabled in iOS, review the applicable storefront payment requirements before shipping.
+
+Review reference: https://developer.apple.com/app-store/review/guidelines/
