@@ -1064,7 +1064,7 @@ if(window.ResizeObserver)new window.ResizeObserver(refreshMapViewport).observe(e
 
 // Explicit publication creates a public snapshot; private histories stay private.
 const publicationLayer=L.layerGroup().addTo(map);
-overlayControl.addOverlay(publicationLayer,'Published places & selfies');
+overlayControl.addOverlay(publicationLayer,"Others' places & photos");
 const savedPhotoPublish=node('div',null,'publication-actions');savedPhotoActions.append(savedPhotoPublish);
 const publicationDialog=node('dialog',null,'photo-studio publication-dialog');publicationDialog.setAttribute('aria-label','Publication link');document.body.append(publicationDialog);
 function showPublicationLink(item){
@@ -1108,8 +1108,12 @@ function renderPublications(){
  row.append(copy,actions);root.append(row);}
 }
 function publishedSelfieIcon(item){return L.divIcon({className:'published-selfie-pin',html:'<span><img src="'+api+apiPrefix+'/v1/publications/'+encodeURIComponent(item.id)+'/thumbnail" alt=""><b>✦</b></span>',iconSize:[48,58],iconAnchor:[24,55],popupAnchor:[0,-48]});}
+function visibleCommunityPublications(){
+ const ownedIds=new Set([...ownPublications.values()].map(item=>item.id));
+ return publicationItems.filter(item=>item.checked!==false&&!item.mine&&!ownedIds.has(item.id));
+}
 function drawPublications(){
- publicationLayer.clearLayers();for(const item of publicationItems.filter(i=>i.checked!==false)){const spots=item.kind==='photo'?[item.context]:item.result?.spots||[];for(const [index,spot] of spots.entries()){const pos=spot?.poi;if(!pos||![pos.lat,pos.lon].every(Number.isFinite))continue;
+ publicationLayer.clearLayers();for(const item of visibleCommunityPublications()){const spots=item.kind==='photo'?[item.context]:item.result?.spots||[];for(const [index,spot] of spots.entries()){const pos=spot?.poi;if(!pos||![pos.lat,pos.lon].every(Number.isFinite))continue;
  const marker=L.marker([pos.lat,pos.lon],{zIndexOffset:item.kind==='photo'?1100:0,title:(item.kind==='photo'?'Published AI selfie · ':'Published place · ')+spot.name,icon:item.kind==='photo'?publishedSelfieIcon(item):photographerIcon(spot,index)}).addTo(publicationLayer);
  if(item.kind==='photo')marker.on('click',()=>openPublication(item));else{const popup=node('div',null,'photo-popup');popup.append(node('strong',spot.name),node('p',spot.score+'/100 · '+photoBearing(spot).label),popupPhotoPreview(spot,'public:'+item.id));marker.photoSpot=spot;marker.searchId='public:'+item.id;marker.photoIndex=index;const view=node('button','View published place');view.type='button';view.addEventListener('click',()=>openPublication(item));popup.append(view,link('Share ↗',item.url),commentSection('place','public:'+item.id,spot,item,true));marker.bindPopup(popup,{autoPan:false,keepInView:false}).on('popupopen',()=>loadPopupPhoto(popup));}
  }}
