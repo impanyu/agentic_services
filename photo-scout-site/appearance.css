@@ -1,5 +1,5 @@
 /* Shared visual system. Icons are Lucide; geometry is bundled in index.html. */
-:root{--scout-plum:#70529b;--scout-plum-dark:#563b7c;--scout-text-color:#24262b;--scout-muted:#686d76;--scout-surface:#fff;--scout-soft:#f4f5f7;--scout-edge:#e6e8ec;--scout-elevation:0 12px 40px #17212c18,0 2px 8px #17212c08}
+:root{--scout-plum:#70529b;--scout-plum-dark:#563b7c;--scout-text-color:#24262b;--scout-muted:#686d76;--scout-surface:#fff;--scout-soft:#f4f5f7;--scout-edge:#e6e8ec;--scout-tint:#f3eef8;--scout-tint-edge:#dcd0eb;--scout-danger:#a23c45;--scout-danger-soft:#fff4f4;--scout-control-radius:12px;--scout-elevation:0 12px 40px #17212c18,0 2px 8px #17212c08}
 .photo-app{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--scout-text-color);background:#f3f0e9;letter-spacing:0}
 .photo-app button,.photo-app input,.photo-app select,.photo-app textarea{font-family:inherit;letter-spacing:0}
 .ui-icon{display:block;width:20px;height:20px;flex-shrink:0}
@@ -132,3 +132,53 @@
 .saved-photo-gallery{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:8px 0 12px;font-size:12px;color:#686d76}.saved-photo-gallery[hidden]{display:none}.saved-photo-gallery button{min-height:36px;padding:6px 10px;border:1px solid #e1e4e9;border-radius:9px;background:#f7f6fa;color:#55466b;font-size:12px;cursor:pointer}.saved-photo-gallery button:disabled{opacity:.4;cursor:default}
 
 .saved-photo-actions>.studio-save,.saved-photo-actions>a.studio-save:visited{color:#fff;background:var(--scout-plum)}
+
+/* Consistent action hierarchy across location, photo, avatar and account panels. */
+.photo-app :is(.compose-photo,.studio-generate,.studio-save,.studio-download){background:var(--scout-plum);color:#fff;border:1px solid var(--scout-plum);box-shadow:none;font-weight:500;text-align:center;text-decoration:none}
+.photo-app :is(.compose-photo,.studio-generate,.studio-save,.studio-download):hover:not(:disabled):not([aria-disabled="true"]){background:var(--scout-plum-dark);border-color:var(--scout-plum-dark);color:#fff}
+.photo-app :is(.popup-shortlist,.publish-button,.avatar-name-form button,.saved-photo-nav a,.saved-photo-gallery button){background:var(--scout-tint);border:1px solid var(--scout-tint-edge);color:var(--scout-plum-dark);box-shadow:none;font-weight:500;text-decoration:none}
+.photo-app :is(.popup-shortlist,.publish-button,.avatar-name-form button,.saved-photo-nav a,.saved-photo-gallery button):hover:not(:disabled){background:#e9e0f3;border-color:#c9b8de;color:var(--scout-plum-dark)}
+.photo-app :is(.remove-poi,.history-remove,.avatar-remove){background:var(--scout-danger-soft);color:var(--scout-danger);border-color:#efd5d7;box-shadow:none}
+.photo-app :is(.remove-poi,.history-remove,.avatar-remove):hover:not(:disabled){background:#fce8e9}
+.photo-app :is(.studio-generate,.studio-save,.studio-download,.compose-photo,.avatar-name-form button,.photo-studio .publish-button,.photo-popup .popup-actions>button){min-height:44px;border-radius:var(--scout-control-radius);font-size:14px;line-height:20px}
+.photo-app :is(.photo-studio,.billing-access){background:var(--scout-surface);color:var(--scout-text-color);border-color:var(--scout-edge)}
+.photo-app :is(.studio-heading,.billing-access-heading){background:var(--scout-surface);border-bottom:1px solid var(--scout-edge)}
+.photo-app :is(.studio-heading,.billing-access-heading) h2{font-size:22px;line-height:1.25;font-weight:600;letter-spacing:-.025em;overflow-wrap:anywhere}
+.photo-app :is(.studio-heading,.billing-access-heading,.profile-page-heading) button{min-height:44px;padding:10px 14px;border:1px solid var(--scout-edge);border-radius:10px;background:var(--scout-soft);color:#454b55;box-shadow:none;font-size:13px;white-space:nowrap;flex-shrink:0}
+.photo-app :is(.saved-photo-background,.saved-photo-params){background:#f8f9fb;border-color:var(--scout-edge);border-radius:14px;color:var(--scout-text-color)}
+.photo-app :is(.saved-photo-background,.avatar-selfie-options) h3{font-size:17px;line-height:1.4;font-weight:600;color:var(--scout-text-color)}
+.photo-app :is(.saved-photo-background p,.avatar-detail .small,.avatar-status,.studio-save-hint,.studio-status){color:var(--scout-muted);font-size:13px;line-height:1.55;overflow-wrap:anywhere}
+.photo-app .saved-photo-background .photo-place-link{color:var(--scout-plum-dark);font-size:15px;line-height:1.5}
+.photo-app :is(.avatar-name-form input,.avatar-selfie-options select,.studio-upload textarea,.studio-options-grid select){border-color:var(--scout-edge);background:#f8f9fb;color:var(--scout-text-color);border-radius:10px;font-size:16px;min-height:44px}
+.photo-app .avatar-detail-image{background:#f5f3f8;border-radius:16px}
+.photo-app .avatar-detail-intro{font-size:15px;line-height:1.55;color:#343941}
+.photo-app .avatar-name-form label{font-size:14px;color:#555c67}
+.photo-app .studio-style{background:#fff;border-color:var(--scout-edge);color:#454b55;font-size:13px;min-height:40px}
+.photo-app .studio-style:has(input:checked){background:var(--scout-tint);border-color:#baa3d4;color:var(--scout-plum-dark)}
+.photo-app .studio-styles p:last-child{font-size:13px;color:var(--scout-muted)}
+.photo-app .points-product{gap:12px}.photo-app .points-product button{min-height:44px;max-width:42%;white-space:normal;line-height:1.4}
+.photo-app .points-content .small,.photo-app .points-rate{color:var(--scout-muted);font-size:13px;line-height:1.55}
+.photo-app .points-bills td{color:#454b55;line-height:1.5}
+.photo-app .points-status{color:var(--scout-danger)}
+.photo-app .social-actions button{background:var(--scout-soft);border-color:var(--scout-edge);color:#555c67;font-weight:500}
+.photo-app .social-actions button[aria-pressed="true"]{background:var(--scout-tint);border-color:var(--scout-tint-edge);color:var(--scout-plum-dark)}
+.photo-app .comment-form button,.photo-app .comment-login{background:var(--scout-plum);color:#fff;border-radius:10px;min-height:44px;font-weight:500}
+.photo-app .comment-form textarea{border-color:var(--scout-edge);background:#f8f9fb;color:var(--scout-text-color)}
+.photo-app :is(.history-item strong,.photo-history-copy strong){line-height:1.45;overflow-wrap:anywhere}
+.photo-app .photo-history-copy,.photo-app .history-copy,.photo-app .history-item>span{min-width:0}
+.photo-app .billing-access-reason{font-size:15px;line-height:1.55;color:var(--scout-muted)}
+.photo-app :is(button,a,input,select,textarea,summary):focus-visible{outline:2px solid var(--scout-plum);outline-offset:3px}
+@media(max-width:760px){
+ .photo-app :is(.studio-heading,.billing-access-heading) h2{font-size:20px}
+ .photo-app .photo-studio{padding:18px;border-radius:20px}
+ .photo-app .studio-heading{margin:-18px -18px 0;padding:12px 18px}
+ .photo-app .saved-photo-gallery button{min-height:40px}
+ .photo-app .avatar-name-form{gap:8px}.photo-app .avatar-name-form button{padding-inline:12px;font-size:13px}
+}
+@media(prefers-reduced-motion:reduce){.photo-app :is(button,a,.avatar-pick){transition:none}}
+
+.photo-app .points-product>button{background:var(--scout-plum);color:#fff;border-color:var(--scout-plum)}
+.photo-app .points-product>button:hover:not(:disabled){background:var(--scout-plum-dark);border-color:var(--scout-plum-dark)}
+/* Keep collection tabs in one row, including compact iPhones. */
+@media(max-width:480px){.photo-app .photo-library-tabs [role=tab]{flex:1 1 auto;font-size:12px;padding-inline:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3}}
+
