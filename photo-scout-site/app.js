@@ -632,9 +632,9 @@ const studioCameraButton=node('button','Take a photo','studio-camera-button');st
 let studioCamera=null;studioCameraButton.addEventListener('click',()=>{if(studioBusy)return;studioCamera??=new PhotoScoutCamera(file=>{studioUpload.value='';addStudioPhotos([file]);});studioCamera.open();});
 const studioAvatarButton=node('button','Choose from Avatar Library','studio-camera-button');studioAvatarButton.type='button';studioAvatarButton.addEventListener('click',()=>{if(!studioBusy)avatarLibrary?.open();});uploadLabel.append(studioCameraButton,studioAvatarButton);
 const studioPhotoSource=node('div',null,'studio-photo-source');studioPhotoSource.id='studio-photo-source';studioPhotoSource.hidden=true;studioPhotoSource.setAttribute('role','group');studioPhotoSource.setAttribute('aria-label','Choose photo source');studioPerson.classList.add('studio-person-choice');studioPerson.append(studioPhotoSource);
-function setStudioPhotoSourceOpen(open){studioPhotoSource.hidden=!open;studioPersonFrame.setAttribute('aria-expanded',String(open));if(open)studioPhotoSource.querySelector('button')?.focus();}
+function setStudioPhotoSourceOpen(open){studioPhotoSource.hidden=!open;studioPersonFrame.setAttribute('aria-expanded',String(open));studioAddPerson.setAttribute('aria-expanded',String(open));if(open)studioPhotoSource.querySelector('button')?.focus();}
 for(const [label,action] of [['Upload photo',()=>studioUpload.click()],['Take a photo',()=>studioCameraButton.click()],['Choose from Avatar Library',()=>studioAvatarButton.click()]]){const button=node('button',label);button.type='button';button.addEventListener('click',()=>{setStudioPhotoSourceOpen(false);if(!studioBusy)action();});studioPhotoSource.append(button);}
-studio.addEventListener('click',event=>{if(!studioPerson.contains(event.target))setStudioPhotoSourceOpen(false);});studio.addEventListener('keydown',event=>{if(event.key==='Escape'&&!studioPhotoSource.hidden){event.preventDefault();event.stopPropagation();setStudioPhotoSourceOpen(false);studioPersonFrame.focus();}});studio.addEventListener('close',()=>setStudioPhotoSourceOpen(false));
+studio.addEventListener('click',event=>{if(!studioPerson.contains(event.target))setStudioPhotoSourceOpen(false);});studio.addEventListener('keydown',event=>{if(event.key==='Escape'&&!studioPhotoSource.hidden){event.preventDefault();event.stopPropagation();setStudioPhotoSourceOpen(false);(studioSubjects.length?studioAddPerson:studioPersonFrame).focus();}});studio.addEventListener('close',()=>setStudioPhotoSourceOpen(false));
 
 let studioStyle='natural',studioAdjustedView=null,studioSearchId=null;
 const studioStyles=node('fieldset',null,'studio-styles'),studioStyleLegend=node('legend','Photo style'),studioStyleGrid=node('div',null,'studio-style-grid'),studioStyleHint=node('p','Relaxed pose, soft smile, your original outfit.','small');
@@ -652,7 +652,8 @@ const studioFramingHint=node('p',null,'small');function updateStudioFramingHint(
 const poseLabel=node('label','Additional directions (optional)','studio-upload'),studioPose=node('textarea');studioPose.maxLength=500;studioPose.placeholder='For example: standing naturally, full body, a relaxed smile';poseLabel.append(studioPose);
 const studioNote=node('p','Your photo and this view will be sent to OpenAI to create an AI composite. Your uploaded photo is also saved privately in Avatar Library for reuse. Processing copies are removed after completion; signed-in photos are saved permanently; guest photos are deleted after 7 days without a visit.','small');
 const studioSubjectList=node('div',null,'studio-subject-list');studioSubjectList.setAttribute('aria-label','People and avatars in this photo');
-const studioSubjectCount=node('p','0 / 6 reference photos · Add a selfie or avatar for each person.','small');
+const studioPersonPreview=node('div',null,'studio-person-preview');studioPersonFrame.replaceWith(studioPersonPreview);studioPersonPreview.append(studioPersonFrame,studioSubjectList);
+const studioAddPerson=node('button','＋ Add people','studio-add-person');studioAddPerson.type='button';studioAddPerson.setAttribute('aria-controls','studio-photo-source');studioAddPerson.setAttribute('aria-expanded','false');studioAddPerson.addEventListener('click',()=>{if(!studioBusy&&!studioAdding)setStudioPhotoSourceOpen(studioPhotoSource.hidden);});studioPerson.querySelector('figcaption').replaceChildren(studioAddPerson);
 const studioGenerate=node('button','Create my photo · Free test','studio-generate');studioGenerate.type='button';studioGenerate.disabled=true;
 const studioStatus=node('p',null,'studio-status');studioStatus.setAttribute('role','status');studioStatus.setAttribute('aria-live','polite');
 const studioResult=node('img',null,'studio-result');studioResult.alt='AI-generated travel photo';studioResult.hidden=true;
@@ -661,7 +662,7 @@ const studioSaveHint=node('p',null,'studio-save-hint small');studioSaveHint.setA
 const studioDownload=node('a','Download PNG','studio-download');studioDownload.hidden=true;studioDownload.download='photo-scout-ai-photo.png';
 const studioPending=node('div',null,'studio-job-progress');studioPending.hidden=true;studioPending.setAttribute('role','status');studioPending.setAttribute('aria-live','polite');
 const studioLibraryStatus=node('p','Uploaded photos are automatically saved privately in Avatar Library → My uploads.','small studio-library-status');studioLibraryStatus.setAttribute('role','status');studioLibraryStatus.setAttribute('aria-live','polite');
-studio.append(studioTop,studioPlace,studioPending,studioIntro,studioImages,uploadLabel,studioSubjectCount,studioSubjectList,studioLibraryStatus,studioStyles,studioOptions,poseLabel,studioNote,studioGenerate,studioStatus,studioResult,studioSave,studioDownload,studioSaveHint);document.body.append(studio);
+studio.append(studioTop,studioPlace,studioPending,studioIntro,studioImages,uploadLabel,studioLibraryStatus,studioStyles,studioOptions,poseLabel,studioNote,studioGenerate,studioStatus,studioResult,studioSave,studioDownload,studioSaveHint);document.body.append(studio);
 // This separate map layer survives shortlist/history redraws and dialog closure.
 const selfieActivityLayer=L.layerGroup().addTo(map);
 const studioTask=node('button',null,'selfie-task');studioTask.type='button';studioTask.hidden=true;studioTask.setAttribute('aria-live','polite');
@@ -695,13 +696,14 @@ studioFraming.addEventListener('change',()=>{
 studioUpload.addEventListener('change',()=>{const files=Array.from(studioUpload.files);studioUpload.value='';addStudioPhotos(files);});
 function renderStudioSubjects(){
  studioSubjectList.replaceChildren();studioPrepared=studioSubjects[0]?.data||null;
- personPreview.hidden=!studioSubjects[0]?.preview;if(studioPrepared)personPreview.src=studioPrepared;else personPreview.removeAttribute('src');
- studioSubjectCount.textContent=studioSubjects.length+' / 6 reference photos · All selected people will appear together.';
+ personPreview.hidden=true;personPreview.removeAttribute('src');
+ studioSubjectList.hidden=!studioSubjects.length;studioSubjectList.dataset.count=String(studioSubjects.length);studioPersonFrame.hidden=studioSubjects.length>0;
+ studioAddPerson.disabled=studioBusy||studioAdding>0||studioSubjects.length>=6;studioAddPerson.textContent='＋ Add people · '+studioSubjects.length+'/6';
  for(const [index,subject] of studioSubjects.entries()){
-  const card=node('div',null,'studio-subject'),image=node('img'),remove=node('button','Remove');image.alt='Reference '+(index+1)+': '+subject.name;
+  const card=node('div',null,'studio-subject'),image=node('img'),remove=node('button','×');image.alt='Reference '+(index+1)+': '+subject.name;
   if(subject.preview){image.src=subject.data;card.append(image);}else card.append(node('span','Photo '+(index+1)));
-  card.append(node('span',subject.name));remove.type='button';remove.disabled=studioBusy||studioAdding>0;remove.setAttribute('aria-label','Remove reference '+(index+1));
-  remove.addEventListener('click',()=>{if(studioBusy||studioAdding)return;studioSubjects.splice(index,1);studioUploadGeneration++;clearStudioOutput();renderStudioSubjects();});card.append(remove);studioSubjectList.append(card);
+  card.title=subject.name;remove.title='Remove '+subject.name;remove.type='button';remove.disabled=studioBusy||studioAdding>0;remove.setAttribute('aria-label','Remove reference '+(index+1));
+  remove.addEventListener('click',event=>{event.stopPropagation();if(studioBusy||studioAdding)return;studioSubjects.splice(index,1);studioUploadGeneration++;clearStudioOutput();renderStudioSubjects();});card.append(remove);studioSubjectList.append(card);
  }
  studioGenerate.disabled=!studioPrepared||studioBusy||studioAdding>0;
 }

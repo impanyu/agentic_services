@@ -250,5 +250,18 @@ html:has(body.photo-app),body.photo-app{height:100%;overflow:hidden}.photo-app m
 
 .route-result-sort{display:flex;align-items:center;gap:12px;margin:14px 0;color:#675572;font-size:13px}.route-result-sort select{flex:1;min-width:0;border:1px solid #ddcfe8;border-radius:12px;padding:10px;background:#f6f0fa;color:#543968}
 
-.studio-subject-list{display:flex;gap:10px;overflow-x:auto;padding:4px 0 12px}.studio-subject{flex:0 0 104px;display:flex;flex-direction:column;gap:5px;min-width:0}.studio-subject img{width:104px;height:104px;object-fit:cover;border-radius:12px}.studio-subject>span{font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.studio-subject button{font-size:12px;padding:5px}
-.studio-subject button{border:1px solid #dfd0ef;border-radius:8px;background:#f3edf9;color:#634781;cursor:pointer}.studio-subject button:disabled{opacity:.5;cursor:default}
+/* Reference photos occupy the original person preview, with independent remove controls. */
+.studio-person-preview{position:relative;height:180px;border-radius:15px;overflow:hidden;background:#f1ecf5}
+.studio-person-preview .studio-person-frame{width:100%}
+.studio-subject-list{position:absolute;inset:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:minmax(0,1fr);gap:3px;padding:3px}
+.studio-subject-list[data-count="1"]{grid-template-columns:1fr}
+.studio-subject-list[data-count="5"],.studio-subject-list[data-count="6"]{grid-template-columns:repeat(3,minmax(0,1fr))}
+.studio-subject{position:relative;min-width:0;min-height:0;overflow:hidden;border-radius:10px;background:#e6ddee;display:flex;align-items:center;justify-content:center}
+.studio-subject img{width:100%;height:100%;object-fit:contain}
+.studio-subject>span{font-size:12px;padding:6px}
+.studio-subject button{position:absolute;top:3px;right:3px;width:32px;height:32px;padding:0;border:1px solid #ddd;border-radius:50%;background:#fffffff2;color:#38264c;font-size:24px;line-height:1;cursor:pointer}
+.studio-subject button:disabled{opacity:.5;cursor:default}
+.studio-add-person{border:0;background:transparent;color:#6c438c;font:inherit;min-height:36px;padding:4px 8px;cursor:pointer}
+.studio-add-person:disabled{opacity:.5;cursor:default}
+.studio-subject-list[hidden],.studio-person-frame[hidden]{display:none}
+@media(max-width:600px){.studio-person-preview{height:150px}.studio-person-preview .studio-person-frame,.studio-person-preview .studio-person-frame>img{height:150px}}
