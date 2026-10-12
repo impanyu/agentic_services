@@ -6,6 +6,7 @@ import hashlib
 import hmac
 import json
 import os
+import re
 import secrets
 import sqlite3
 import time
@@ -17,6 +18,7 @@ from fastapi.responses import JSONResponse, RedirectResponse
 from pydantic import BaseModel, Field
 
 from .tasks import TaskStore
+from .native_auth import NativeAuth, NativeExchange
 
 COOKIE='photo_scout_session'
 STATE_COOKIE='photo_scout_oauth_state'
@@ -47,6 +49,7 @@ def create_accounts_router(settings,require_api):
         d.execute('CREATE TABLE IF NOT EXISTS photo_session_families (hash TEXT PRIMARY KEY, family TEXT NOT NULL)')
         d.execute('CREATE TABLE IF NOT EXISTS photo_removed_items (owner TEXT NOT NULL, kind TEXT NOT NULL, job TEXT NOT NULL, PRIMARY KEY(owner,kind,job))')
         d.execute('CREATE TABLE IF NOT EXISTS photo_account_history (user_id TEXT NOT NULL, id TEXT NOT NULL, created INTEGER NOT NULL, record TEXT NOT NULL, PRIMARY KEY(user_id,id))')
+    native_auth=NativeAuth(db)
     def session(request):
         require_api(request.headers.get('authorization'))
         token=request.cookies.get(COOKIE,'')
@@ -66,8 +69,10 @@ def create_accounts_router(settings,require_api):
         row=session(request)
         return JSONResponse({'configured':all(config()),'user':json.loads(row['user_json']) if row else None,'csrfToken':row['csrf'] if row else None},headers={'Cache-Control':'private, no-store'})
     @router.get('/photo-scout/v1/auth/login')
-    def login(request:Request):
+    def login(request:Request,native_challenge:str=''):
         require_api(request.headers.get('authorization'))
+        if native_challenge and not re.fullmatch(r'[A-Za-z0-9_-]{43}',native_challenge):
+            raise HTTPException(400,'Invalid native sign-in challenge')
         client,secret=config()
         if not client or not secret:raise HTTPException(503,'Google sign-in is not configured yet')
         state=secrets.token_urlsafe(32);verifier=secrets.token_urlsafe(48);nonce=secrets.token_urlsafe(32)
@@ -75,6 +80,7 @@ def create_accounts_router(settings,require_api):
             d.execute('DELETE FROM photo_oauth_states WHERE expires<?',(time.time(),))
             d.execute('INSERT INTO photo_oauth_states VALUES(?,?,?,?)',(digest(state),verifier,nonce,time.time()+600))
         challenge=base64.urlsafe_b64encode(hashlib.sha256(verifier.encode()).digest()).decode().rstrip('=')
+        if native_challenge:native_auth.begin(state,native_challenge)
         url='https://accounts.google.com/o/oauth2/v2/auth?'+urlencode({'client_id':client,'redirect_uri':oauth_callback(request),'response_type':'code','scope':'openid email profile','state':state,'nonce':nonce,'code_challenge':challenge,'code_challenge_method':'S256','prompt':'select_account'})
         return cookie(RedirectResponse(url,status_code=302),STATE_COOKIE,state,600)
     @router.get('/photo-scout/v1/auth/callback')
@@ -87,7 +93,7 @@ def create_accounts_router(settings,require_api):
             pending=d.execute('SELECT * FROM photo_oauth_states WHERE hash=? AND expires>?',(digest(state),time.time())).fetchone()
             d.execute('DELETE FROM photo_oauth_states WHERE hash=?',(digest(state),))
         if not pending:raise HTTPException(400,'Sign-in expired; please try again')
-        if error:return cookie(RedirectResponse(web_home(request)+'?login=cancelled',302),STATE_COOKIE,'',0)
+        if error:return cookie(RedirectResponse(native_auth.finish(state) or web_home(request)+'?login=cancelled',302),STATE_COOKIE,'',0)
         client,secret=config()
         if not code or len(code)>4000:raise HTTPException(400,'Missing sign-in code')
         try:
@@ -113,8 +119,18 @@ def create_accounts_router(settings,require_api):
             d.execute('INSERT INTO photo_sessions VALUES(?,?,?,?,?)',(digest(token),user['id'],json.dumps(user),csrf,time.time()+30*86400))
             d.execute('INSERT INTO photo_session_families VALUES(?,?)',(digest(token),family))
         TaskStore(settings.database_path).attach_user(request,user['id'])
-        response=cookie(RedirectResponse(web_home(request),302),COOKIE,token,30*86400)
+        response=cookie(RedirectResponse(native_auth.finish(state,digest(token)) or web_home(request),302),COOKIE,token,30*86400)
+        response.headers['Cache-Control']='no-store'
+        response.headers['Referrer-Policy']='no-referrer'
         return cookie(response,STATE_COOKIE,'',0)
+    @router.post('/photo-scout/v1/auth/native/exchange')
+    def native_exchange(payload:NativeExchange,request:Request):
+        require_api(request.headers.get('authorization'))
+        if not allowed_web_origin(request.headers.get('origin')):
+            raise HTTPException(403,'Invalid native sign-in origin')
+        token,user=native_auth.exchange(payload)
+        TaskStore(settings.database_path).attach_user(request,user)
+        return cookie(JSONResponse({'ok':True},headers={'Cache-Control':'no-store'}),COOKIE,token,30*86400)
     @router.post('/photo-scout/v1/auth/logout')
     def logout(request:Request):
         row=user_session(request,True)

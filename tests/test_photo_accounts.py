@@ -72,7 +72,8 @@ def test_history_retains_all_account_records_and_validates_views(tmp_path,monkey
 
 
 @pytest.mark.parametrize("canonical",[False,True])
-def test_google_callback_verifies_signature_audience_nonce_and_creates_session(tmp_path,monkeypatch,canonical):
+@pytest.mark.parametrize("native",[False,True])
+def test_google_callback_verifies_signature_audience_nonce_and_creates_session(tmp_path,monkeypatch,canonical,native):
     import base64
     from urllib.parse import parse_qs,urlsplit
     from cryptography.hazmat.primitives.asymmetric import rsa
@@ -85,6 +86,8 @@ def test_google_callback_verifies_signature_audience_nonce_and_creates_session(t
     numbers=private.public_key().public_numbers()
     encode=lambda v:base64.urlsafe_b64encode(v.to_bytes((v.bit_length()+7)//8,'big')).decode().rstrip('=')
     jwk={'kty':'RSA','kid':'fixture','use':'sig','alg':'RS256','n':encode(numbers.n),'e':encode(numbers.e)}
+    from agentic_services.photo_scout.native_auth import challenge
+    verifier='v'*43
     active={'nonce':'','aud':'client'}
     def handler(request):
         if request.url.path.endswith('/token'):
@@ -95,7 +98,7 @@ def test_google_callback_verifies_signature_audience_nonce_and_creates_session(t
     real=httpx.AsyncClient
     monkeypatch.setattr(accounts.httpx,'AsyncClient',lambda **kw:real(transport=httpx.MockTransport(handler)))
     def start():
-        response=client.get('/photo-scout/v1/auth/login',follow_redirects=False)
+        response=client.get('/photo-scout/v1/auth/login',params={'native_challenge':challenge(verifier)} if native else {},follow_redirects=False)
         state=parse_qs(urlsplit(response.headers['location']).query)['state'][0]
         with sqlite3.connect(path) as db:active['nonce']=db.execute('SELECT nonce FROM photo_oauth_states WHERE hash=?',(hashlib.sha256(state.encode()).hexdigest(),)).fetchone()[0]
         return state
@@ -104,14 +107,24 @@ def test_google_callback_verifies_signature_audience_nonce_and_creates_session(t
     state=start();active['aud']='client';active['nonce']='wrong-nonce'
     assert client.get('/photo-scout/v1/auth/callback',params={'state':state,'code':'fixture'},follow_redirects=False).status_code==400
     state=start()
-    assert client.get('/photo-scout/v1/auth/callback',params={'state':state,'code':'fixture'},follow_redirects=False).status_code==302
+    response=client.get('/photo-scout/v1/auth/callback',params={'state':state,'code':'fixture'},follow_redirects=False)
+    assert response.status_code==302
+    if native:
+        assert response.headers['location'].startswith('net.aisoup.photoscout://auth?code=')
+        code=parse_qs(urlsplit(response.headers['location']).query)['code'][0]
+        assert client.post('/photo-scout/v1/auth/native/exchange',json={'code':code,'verifier':verifier},headers={'Origin':'https://photo-scout.aisoup.net'}).status_code==200
     me=client.get('/photo-scout/v1/auth/me').json()
     assert me['user']['id']=='google:verified-user' and me['csrfToken']
     state=start()
-    assert client.get('/photo-scout/v1/auth/callback',params={'state':state,'code':'fixture'},follow_redirects=False).status_code==302
+    response=client.get('/photo-scout/v1/auth/callback',params={'state':state,'code':'fixture'},follow_redirects=False)
+    assert response.status_code==302
+    if native:
+        assert response.headers['location'].startswith('net.aisoup.photoscout://auth?code=')
+        code=parse_qs(urlsplit(response.headers['location']).query)['code'][0]
+        assert client.post('/photo-scout/v1/auth/native/exchange',json={'code':code,'verifier':verifier},headers={'Origin':'https://photo-scout.aisoup.net'}).status_code==200
     with sqlite3.connect(path) as db:
         families=db.execute('SELECT DISTINCT family FROM photo_session_families').fetchall()
-        assert len(families)==1 and db.execute('SELECT COUNT(*) FROM photo_session_families').fetchone()[0]==2
+        assert len(families)==1 and db.execute('SELECT COUNT(*) FROM photo_session_families').fetchone()[0]==(4 if native else 2)
 
 def test_removed_history_does_not_return_after_stale_browser_sync(tmp_path,monkeypatch):
     client,path=fixture(tmp_path,monkeypatch);headers=seed(client,path,'alice')

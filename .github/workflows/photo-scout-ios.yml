@@ -1,0 +1,54 @@
+name: Photo Scout iOS
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build-and-test:
+    runs-on: macos-15
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        device: [iPhone, iPad]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select simulator
+        env:
+          DEVICE_FAMILY: ${{ matrix.device }}
+        run: |
+          xcodebuild -version
+          xcrun simctl list devices available -j > "$RUNNER_TEMP/devices.json"
+          python3 - <<'PY'
+          import json, os
+          with open(os.environ['RUNNER_TEMP'] + '/devices.json') as f:
+              devices = json.load(f)['devices']
+          device = next(d for runtime, entries in devices.items() if 'iOS' in runtime for d in entries if d['name'].startswith(os.environ['DEVICE_FAMILY']))
+          with open(os.environ['GITHUB_ENV'], 'a') as f:
+              f.write('SCOUT_SIMULATOR=' + device['udid'] + '\n')
+          print(device['name'])
+          PY
+      - name: Build and test
+        run: >-
+          xcodebuild -project ios/PhotoScout.xcodeproj -scheme PhotoScout
+          -destination "platform=iOS Simulator,id=$SCOUT_SIMULATOR"
+          -derivedDataPath "$RUNNER_TEMP/DerivedData"
+          -resultBundlePath "$RUNNER_TEMP/PhotoScout.xcresult"
+          CODE_SIGNING_ALLOWED=NO test
+      - name: Launch app and capture simulator
+        run: |
+          xcrun simctl boot "$SCOUT_SIMULATOR" || true
+          xcrun simctl bootstatus "$SCOUT_SIMULATOR" -b
+          xcrun simctl install "$SCOUT_SIMULATOR" "$RUNNER_TEMP/DerivedData/Build/Products/Debug-iphonesimulator/PhotoScout.app"
+          xcrun simctl launch "$SCOUT_SIMULATOR" net.aisoup.photoscout
+          sleep 20
+          mkdir -p "$RUNNER_TEMP/ios-artifacts"
+          xcrun simctl io "$SCOUT_SIMULATOR" screenshot "$RUNNER_TEMP/ios-artifacts/${{ matrix.device }}.png"
+          ditto -c -k --sequesterRsrc --keepParent "$RUNNER_TEMP/DerivedData/Build/Products/Debug-iphonesimulator/PhotoScout.app" "$RUNNER_TEMP/ios-artifacts/PhotoScout-simulator.zip"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: PhotoScout-${{ matrix.device }}
+          path: |
+            ${{ runner.temp }}/PhotoScout.xcresult
+            ${{ runner.temp }}/ios-artifacts/

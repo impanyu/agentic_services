@@ -14,3 +14,9 @@ data/*.db-*
 
 # Public browser Maps key, provisioned with referrer restrictions on the VM.
 photo-scout-site/google-maps-config.js
+
+# Xcode local state and build products.
+ios/**/xcuserdata/
+ios/DerivedData/
+ios/build/
+*.xcresult/
