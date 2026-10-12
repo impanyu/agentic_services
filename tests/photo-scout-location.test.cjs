@@ -33,7 +33,7 @@ test('denied permission never retries or substitutes a default location',()=>{
 function pageFixture(statusResponses,permissionOptions={}){
  const elements=new Map(),requests=[],moves=[],circles=[],timers=[];let created=0;
  const defaults={lat:'41.8827',lon:'-87.6233',radius:'1000',limit:'3'};
- function element(id){if(!elements.has(id))elements.set(id,{value:defaults[id]||'',options:defaults[id]?[{value:defaults[id]}]:[],selectedOptions:[{textContent:'1 km'}],textContent:'',dataset:{},showModal(){this.open=true;},close(){this.open=false;},removeAttribute(name){delete this[name];},listeners:{},addEventListener(type,fn){this.listeners[type]=fn;},setAttribute(){},querySelectorAll(){return [];},replaceChildren(){},append(){},classList:{add(){},remove(){}},reportValidity(){return true;},scrollIntoView(){}});return elements.get(id);}
+ function element(id){if(!elements.has(id))elements.set(id,{value:defaults[id]||'',options:defaults[id]?[{value:defaults[id]}]:[],selectedOptions:[{textContent:'1 km'}],textContent:'',dataset:{},style:{},replaceWith(){},prepend(){},showModal(){this.open=true;},close(){this.open=false;},removeAttribute(name){delete this[name];},listeners:{},addEventListener(type,fn){this.listeners[type]=fn;},setAttribute(){},querySelector(){return element("nested"+(++created));},querySelectorAll(){return [];},replaceChildren(){},append(){},classList:{add(){},remove(){}},reportValidity(){return true;},scrollIntoView(){}});return elements.get(id);}
  const layer=()=>({addOverlay(){return this;},addTo(){return this;},on(){return this;},once(){return this;},setLatLng(p){this.position=p;return this;},setRadius(radius){this.radius=radius;return this;},clearLayers(){this.clears=(this.clears||0)+1;},bindPopup(content){this.popup=content;return this;},openPopup(){this.opened=true;return this;},bindTooltip(content){this.tooltip=content;return this;},setTooltipContent(content){this.tooltip=content;return this;},getLayers(){return [];},getBounds(){return this.position;},getContainer(){return {};}});
  const map={setView(position,zoom){this.focus={position,zoom};return this;},on(){},hasLayer(){return true;},removeLayer(){},fitBounds(bounds){moves.push(bounds);}};
  const L={map:()=>map,control:{zoom:()=>layer(),layers:()=>layer()},tileLayer:()=>layer(),marker:(p,options)=>{const m=layer();m.options=options;m.position=p;return m;},layerGroup:()=>layer(),circle:()=>{const c=layer();circles.push(c);return c;},divIcon:options=>options,DomEvent:{disableClickPropagation(){},disableScrollPropagation(){}}};
@@ -49,6 +49,7 @@ function pageFixture(statusResponses,permissionOptions={}){
  let release;const payloads=[];context.fetch=async(url,options)=>{if(options?.method==='POST'){payloads.push(JSON.parse(options.body));return new Promise(resolve=>{release=()=>resolve({ok:true,json:async()=>({id:'photo-a'})});});}return {ok:true,json:async()=>({items:[]})};};
  vm.runInNewContext('tasksReady=true;studioFraming.parentElement={};studioSearchId="search-a";studioSpot={name:"Place A",provider:"wikimedia-commons",imageUrl:"https://example.com/shared.jpg",poi:{id:"a",lat:41,lon:-96}};resetStudioInputForPlace(studioSpot);studioPrepared="portrait-a";studioSubjects=[{data:"portrait-a",preview:true,name:"A"}];personPreview.hidden=false',context);
  const pending=vm.runInNewContext('studioGenerate.listeners.click()',context);
+ await new Promise(resolve=>setImmediate(resolve));assert.equal(typeof release,'function','the first portrait request is in flight');
  vm.runInNewContext('openPhotoStudio({name:"Place B",provider:"wikimedia-commons",imageUrl:"https://example.com/shared.jpg",poi:{id:"b",lat:40,lon:-96}},"search-b")',context);
  const before=vm.runInNewContext('({place:studioSpot.name,prepared:studioPrepared,previewHidden:personPreview.hidden,status:studioStatus.textContent})',context);
  release();await pending;const after=vm.runInNewContext('({place:studioSpot.name,prepared:studioPrepared,status:studioStatus.textContent,disabled:studioGenerate.disabled})',context);return {before,after,payloads};
@@ -306,7 +307,7 @@ test('pressing the search button leaves expanded settings stable until submit',(
  assert.equal(menu.open,false);
  context.closeMenusOutside({closest:()=>null});
  assert.equal(controls.open,false,'an ordinary outside click still closes settings');
- assert.equal(collapsed,2);
+ assert.equal(collapsed,0,'the embedded layer list does not need a separate collapse');
 });
 
 test('reload hydrates existing Commons history from the backend without rerunning a search',async()=>{

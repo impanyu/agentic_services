@@ -96,11 +96,11 @@ test('a cold renderer downloads in the background after the simple map starts',a
  assert.match(f.scripts[1].src,/leaflet-maplibre-gl.js$/);f.scripts[1].onload();await f.resolve();assert.equal(f.vectors.length,1);
 });
 
-test('mobile viewport changes reveal retained raster until vector tiles are ready again',async()=>{
+test('map gestures retain the painted vector canvas while keeping raster recovery available',async()=>{
  const f=loadingFixture();await f.resolve();const vector=f.vectors[0],preview=f.rasters[1];preview.events.tileload();vector.gl.events.load();vector.gl.events.idle();
  assert.ok(f.layers.includes(preview),'the raster safety net must remain after the first frame');
- f.mapEvents.movestart();assert.equal(vector.gl.canvas.style.opacity,'0');
- vector.gl.areTilesLoaded=()=>false;vector.gl.events.idle();assert.equal(vector.gl.canvas.style.opacity,'0');
+ f.mapEvents.movestart();assert.equal(vector.gl.canvas.style.opacity,'1');
+ vector.gl.areTilesLoaded=()=>false;vector.gl.events.idle();assert.equal(vector.gl.canvas.style.opacity,'1');
  vector.gl.areTilesLoaded=()=>true;vector.gl.events.idle();assert.equal(vector.gl.canvas.style.opacity,'1');
  f.mapEvents.movestart();f.timers.filter(t=>t.delay===6000).at(-1).fn();assert.ok(f.layers.includes(preview));assert.ok(!f.layers.includes(vector));
 });

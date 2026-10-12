@@ -181,3 +181,5 @@
 .photo-app .points-product>button:hover:not(:disabled){background:var(--scout-plum-dark);border-color:var(--scout-plum-dark)}
 /* Keep collection tabs in one row, including compact iPhones. */
 @media(max-width:480px){.photo-app .photo-library-tabs [role=tab]{flex:1 1 auto;font-size:12px;padding-inline:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3}}
+/* These almost-opaque surfaces do not need a live blur of the moving WebGL map. */
+.photo-app .map-brand,.photo-app .scout-dock,.photo-app .map-overlay-controls>details>summary,.photo-app .map-overlay-controls>.center-map,.photo-app .map-overlay-controls .history-menu,.photo-app .map-overlay-controls .map-tools,.photo-app .map-overlay-controls .map-detail-menu{backdrop-filter:none;-webkit-backdrop-filter:none}

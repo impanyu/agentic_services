@@ -107,7 +107,7 @@ async function switchMapStyle(style){
   // does not guarantee WebGL can paint the next mobile viewport.
   const painted=()=>{if(generation!==mapStyleGeneration||abandoned)return;if(gl.areTilesLoaded&&!gl.areTilesLoaded())return;gl.getCanvas().style.opacity='1';ready();};
   gl.on('idle',painted);
-  vectorMoveHandler=()=>{if(generation!==mapStyleGeneration||abandoned)return;gl.getCanvas().style.opacity='0';clearTimeout(mapLoadTimer);mapLoadTimer=setTimeout(()=>fallback('Map graphics did not recover.'),6000);};
+  vectorMoveHandler=()=>{if(generation!==mapStyleGeneration||abandoned)return;clearTimeout(mapLoadTimer);mapLoadTimer=setTimeout(()=>fallback('Map graphics did not recover.'),6000);};
   map.on?.('movestart',vectorMoveHandler);
   gl.on('error',()=>fallback('The selected basemap is unavailable.'));
   gl.on('webglcontextlost',()=>fallback('Map graphics were interrupted.'));
@@ -1025,13 +1025,14 @@ async function restoreCompletedSearches(tasks,generation){
 }
 async function restoreTasks(){
  if(taskRefreshBusy)return;taskRefreshBusy=true;const generation=taskRecoveryGeneration,initial=!tasksReady;let changed=false;
+ const taskRowSignature=()=>JSON.stringify(taskRecords.map(t=>[t.id,t.kind,t.created,t.state,t.context?.stage,t.context?.query,t.context?.name,t.context?.locationLabel,t.error]));const previousRows=taskRowSignature();
  try{
   const visiting=!document.hidden;const data=await json('/photo-scout/v1/tasks'+(visiting?'?visit=true':''));if(visiting){try{sessionStorage.setItem(HISTORY_KEY+'-last-visit',String(Date.now()));}catch{}}if(generation!==taskRecoveryGeneration)return;tasksReady=true;data.items=data.items.filter(t=>!removedHistoryItems.has(t.kind+':'+t.id));
   const incomingHidden=new Map(Object.entries(data.hiddenPois||{}).map(([id,keys])=>[id,new Set(keys)]));
   if(JSON.stringify([...incomingHidden].map(([id,keys])=>[id,[...keys]]))!==JSON.stringify([...hiddenPoisBySearch].map(([id,keys])=>[id,[...keys]]))){hiddenPoisBySearch=incomingHidden;changed=true;refreshDisplayedShortlist();}
   const returned=new Set(data.items.map(t=>t.kind+':'+t.id));taskRecords=[...data.items,...taskRecords.filter(t=>t.localPending&&!returned.has(t.kind+':'+t.id))].sort((a,b)=>b.created-a.created);
   changed=(await restoreCompletedSearches(taskRecords,generation))||changed;if(generation!==taskRecoveryGeneration)return;
-  searchHistory.sort((a,b)=>b.created-a.created);if(changed){persistHistory();drawHistoryMap();}renderHistory();syncPortraitActivities();refreshVisiblePlaceSelfies();
+  searchHistory.sort((a,b)=>b.created-a.created);if(changed){persistHistory();drawHistoryMap();}if(initial||changed||taskRowSignature()!==previousRows)renderHistory();syncPortraitActivities();refreshVisiblePlaceSelfies();
   if(initial&&!activeSearch){const task=taskRecords.find(t=>t.kind==='search'&&['queued','running'].includes(t.state));if(task){activeSearch={jobId:task.id,context:task.context};applyTaskContext(task.context);activeSearch.draft=searchDraft();}}
   const focus=taskRecords.find(t=>t.kind==='search'&&t.id===activeSearch?.jobId);
   if(focus){
@@ -1057,7 +1058,8 @@ window.addEventListener('pagehide',()=>recordPageLeave('page_left'));
 document.addEventListener('visibilitychange',()=>{if(document.hidden)recordPageLeave('page_hidden');});
 
 
-function refreshMapViewport(){if(document.hidden)return;map.invalidateSize?.({pan:false});if(vectorLayer){vectorMoveHandler?.();const gl=vectorLayer.getMaplibreMap();gl.resize?.();gl.triggerRepaint?.();}}
+let mapViewportRefreshPending=false;
+function refreshMapViewport(){if(document.hidden||mapViewportRefreshPending)return;mapViewportRefreshPending=true;requestAnimationFrame(()=>{mapViewportRefreshPending=false;if(document.hidden)return;map.invalidateSize?.({pan:false});if(vectorLayer){vectorMoveHandler?.();const gl=vectorLayer.getMaplibreMap();gl.resize?.();gl.triggerRepaint?.();}});}
 window.addEventListener('resize',refreshMapViewport);window.addEventListener('pageshow',refreshMapViewport);
 document.addEventListener('visibilitychange',refreshMapViewport);
 if(window.ResizeObserver)new window.ResizeObserver(refreshMapViewport).observe(el('map'));
@@ -1113,7 +1115,9 @@ function visibleCommunityPublications(){
  return publicationItems.filter(item=>item.checked!==false&&!item.mine&&!ownedIds.has(item.id));
 }
 function drawPublications(){
- publicationLayer.clearLayers();for(const item of visibleCommunityPublications()){const spots=item.kind==='photo'?[item.context]:item.result?.spots||[];for(const [index,spot] of spots.entries()){const pos=spot?.poi;if(!pos||![pos.lat,pos.lon].every(Number.isFinite))continue;
+ const items=visibleCommunityPublications(),signature=JSON.stringify(items.map(item=>[item.id,item.kind]));
+ if(publicationLayer.scoutContentSignature===signature)return;publicationLayer.scoutContentSignature=signature;
+ publicationLayer.clearLayers();for(const item of items){const spots=item.kind==='photo'?[item.context]:item.result?.spots||[];for(const [index,spot] of spots.entries()){const pos=spot?.poi;if(!pos||![pos.lat,pos.lon].every(Number.isFinite))continue;
  const marker=L.marker([pos.lat,pos.lon],{zIndexOffset:item.kind==='photo'?1100:0,title:(item.kind==='photo'?'Published AI selfie · ':'Published place · ')+spot.name,icon:item.kind==='photo'?publishedSelfieIcon(item):photographerIcon(spot,index)}).addTo(publicationLayer);
  if(item.kind==='photo')marker.on('click',()=>openPublication(item));else{const popup=node('div',null,'photo-popup');popup.append(node('strong',spot.name),node('p',spot.score+'/100 · '+photoBearing(spot).label),popupPhotoPreview(spot,'public:'+item.id));marker.photoSpot=spot;marker.searchId='public:'+item.id;marker.photoIndex=index;const view=node('button','View published place');view.type='button';view.addEventListener('click',()=>openPublication(item));popup.append(view,link('Share ↗',item.url),commentSection('place','public:'+item.id,spot,item,true));marker.bindPopup(popup,{autoPan:false,keepInView:false}).on('popupopen',()=>loadPopupPhoto(popup));}
  }}

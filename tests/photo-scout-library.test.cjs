@@ -5,7 +5,7 @@ function fixture(){
  const el=id=>{if(!elements.has(id))elements.set(id,node('div'));return elements.get(id);};
  const tabs=['mine','liked','saved','commented'].map(tab=>{const b=node('button');b.dataset.photoTab=tab;return b;});
  const context={el,node,document:{querySelectorAll:()=>tabs},json:path=>new Promise((resolve,reject)=>requests.push({path,resolve,reject})),authUser:{name:'Alice'},URLSearchParams,Date,api:'https://api.test',apiPrefix:'/photo-scout',openPublication:item=>opened.push(item)};
- const source=readFileSync('photo-scout-site/app.js','utf8');vm.runInNewContext(source.slice(source.indexOf("let photoLibraryTab='mine'")),context);
+ const source=readFileSync('photo-scout-site/app.js','utf8');vm.runInNewContext(source.slice(source.indexOf("let photoLibraryTab='mine'"),source.indexOf('function previewAvatarPlace(')),context);
  return {context,el,tabs,requests,opened};
 }
 const settle=()=>new Promise(resolve=>setImmediate(resolve));
