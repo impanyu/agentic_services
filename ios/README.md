@@ -67,11 +67,16 @@ Apple references: [system authentication](https://developer.apple.com/documentat
 ## Validation and release status
 
 Implemented source, backend integration and automated checks are in this change.
-The implementation machine has Command Line Tools but **no full Xcode / iOS SDK**.
-Remote CI uses Xcode 26.3 and iOS 26 simulators. Both iPhone and iPad builds and
+The local Mac now has Xcode 27.0 (27A266a) and the iOS 27 SDK installed. An unsigned
+physical-device target build passed locally on 2026-10-12. This verifies compilation,
+not installation or execution on a physical device.
+The app uses the UIScene window lifecycle required by the iOS 27 SDK. Local iOS 27
+simulator tests passed on iPhone and iPad (5 tests each), and the iPhone app launch
+was visually checked. JavaScript bridge regression: 8 passed.
+Remote CI uses Xcode 26.3 and iOS 26 simulators. The earlier iPhone and iPad builds and
 XCTest runs passed on 2026-10-12, including loading the production website in
-WKWebView with its native bridge. Backend regression: 570 passed; JavaScript
-bridge: 4 passed. Physical-device tests have **not** been completed.
+WKWebView with its native bridge. Earlier backend regression: 570 passed.
+Physical-device tests have **not** been completed.
 
 Build evidence: https://github.com/impanyu/agentic_services/actions/runs/38294090954
 
@@ -103,7 +108,14 @@ Apple Developer enrollment is pending. No usable code-signing identity is instal
 on the current Mac, and no signing secrets are configured in GitHub. Simulator
 artifacts are not installable iPhone/iPad IPA files.
 
-After membership activation:
+Personal-device debugging does not require paid membership or an App Store release.
+Sign in under Xcode Settings → Apple Accounts, connect and trust the iPhone, enable
+Developer Mode on the device, and select the Personal Team under Signing & Capabilities.
+Use a unique development bundle identifier if the production identifier is unavailable.
+Free provisioning expires after seven days and requires rebuilding/reinstalling.
+See [Apple's account overview](https://developer.apple.com/help/account/basics/about-your-developer-account).
+
+For TestFlight, after membership activation:
 
 1. Sign in to the enrolled Apple account in Xcode Settings → Accounts and select
    the correct team. Register `net.aisoup.photoscout` and create the matching App
