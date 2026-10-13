@@ -191,3 +191,9 @@
 @media(max-width:760px){.photo-history-row .history-remove{padding:6px 8px;font-size:12px;min-width:0}.photo-history-row .photo-history-copy small{font-size:12px}}
 
 .photo-app .map-notice .location-settings{display:block;margin-top:8px;padding:8px 12px;min-height:36px;border:0;border-radius:10px;background:#70529b;color:#fff;font-size:12px;font-weight:600;cursor:pointer}
+
+/* The Shortlist viewport owns its size; neither image loading nor GPU buffer
+   resizing may change the card layout during a gesture. */
+.photo-app .card .spot-image-link.street-view-preview{height:170px;isolation:isolate;background:#eef0f3}
+.photo-app .card .spot-image-link.street-view-preview>img{position:absolute;inset:0;width:100%;height:100%;aspect-ratio:auto;object-fit:cover;transform:none}
+@media(max-width:760px){.photo-app .card .spot-image-link.street-view-preview{height:auto;aspect-ratio:16/10}}
