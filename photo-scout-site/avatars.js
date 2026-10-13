@@ -1,7 +1,7 @@
 /* Shared private-library UI, with an explicit selection for each selfie scene. */
 window.PhotoScoutAvatars=class {
- constructor({api,request,prepare,onSelect,session,canSelect,getPlaces,renderPlacePreview}){
-  Object.assign(this,{api,request,prepare,onSelect,session,canSelect,getPlaces,renderPlacePreview});this.generation=0;this.items=[];this.presetItems=[];this.tab='presets';this.query='';this.category='all';this.visualStyle='all';this.loaded=false;this.presetNames={};this.observers=new Map();
+ constructor({api,request,prepare,onSelect,session,canSelect,getPlaces,renderPlacePreview,isSignedIn=()=>true,requireSignIn}){
+  Object.assign(this,{api,request,prepare,onSelect,session,canSelect,getPlaces,renderPlacePreview,isSignedIn,requireSignIn});this.generation=0;this.items=[];this.presetItems=[];this.tab='presets';this.query='';this.category='all';this.visualStyle='all';this.loaded=false;this.presetNames={};this.observers=new Map();
   this.menu=document.getElementById('avatar-library');this.panel=this.menu.querySelector('.avatar-content');this.dialog=document.createElement('dialog');this.dialog.className='photo-studio avatar-picker';this.dialog.setAttribute('aria-label','Choose an avatar');document.body.append(this.dialog);
   this.detailGeneration=0;this.details=document.createElement('dialog');this.details.className='photo-studio avatar-detail';this.details.setAttribute('aria-label','Avatar details');this.details.addEventListener('close',()=>{this.detailGeneration++;});document.body.append(this.details);
   this.menu.addEventListener('toggle',()=>{if(this.menu.open){this.tab='presets';this.query='';this.category='all';this.visualStyle='all';this.load(this.panel);}});this.dialog.addEventListener('close',()=>{this.generation++;});this.render(this.panel);
@@ -69,9 +69,9 @@ window.PhotoScoutAvatars=class {
   searches.value=groups.keys().next().value||'';
   const populatePlaces=()=>{select.replaceChildren();for(const place of groups.get(searches.value)?.places||[]){const option=make('option',place.label);option.value=place.value;select.append(option);}select.value=select.children[0]?.value||'';};
   populatePlaces();
-  const use=make('button','Use this avatar · Take a selfie','compose-photo');use.type='button';use.disabled=!select.children.length;
+  const use=make('button','Use this avatar · Take a selfie','compose-photo');use.type='button';use.disabled=!select.children.length&&this.isSignedIn();
   if(!select.children.length){select.hidden=true;section.append(make('p','No saved photo locations yet. Search for a place on the map first, then return here.','small'));}
-  use.onclick=async()=>{if(!current())return;use.disabled=true;save.disabled=true;status.textContent='Preparing your avatar…';try{const file=await this.avatarFile(item,mine);if(!current())return;const place=select.value==='current'?null:places[Number(select.value)];if(!place&&!this.canSelect?.())throw Error('The current selfie is unavailable. Choose another location.');await this.onSelect(file,place);if(!current())return;dialog.close();if(root===this.dialog)this.dialog.close();else this.menu.open=false;}catch(error){if(current())status.textContent=error.message;}finally{use.disabled=!select.children.length;save.disabled=false;}};
+  use.onclick=async()=>{if(!current()||this.requireSignIn?.()===false)return;use.disabled=true;save.disabled=true;status.textContent='Preparing your avatar…';try{const file=await this.avatarFile(item,mine);if(!current())return;const place=select.value==='current'?null:places[Number(select.value)];if(!place&&!this.canSelect?.())throw Error('The current selfie is unavailable. Choose another location.');await this.onSelect(file,place);if(!current())return;dialog.close();if(root===this.dialog)this.dialog.close();else this.menu.open=false;}catch(error){if(current())status.textContent=error.message;}finally{use.disabled=!select.children.length&&this.isSignedIn();save.disabled=false;}};
   const preview=make('section',null,'avatar-place-preview');preview.setAttribute('aria-label','Selected photo location');
   const updatePreview=()=>{preview.replaceChildren();if(!select.children.length||!this.renderPlacePreview){preview.hidden=true;return;}preview.hidden=false;this.renderPlacePreview(select.value==='current'?null:places[Number(select.value)],preview);};
   select.addEventListener('change',updatePreview);

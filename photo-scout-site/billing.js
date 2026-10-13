@@ -32,7 +32,7 @@ window.PhotoScoutBilling=class {
  }
  reset(){this.epoch++;this.data=null;this.render();this.load();}
  taskOptions(kind){return {creditLimitPoints:kind==='search'?this.searchLimit:this.portraitLimit};}
- requireSignIn(kind){if(this.session().id)return true;this.openAccess(kind==='portrait'?'Sign in to generate your photo. Your selected people and settings stay here.':'Sign in to search for photo spots. Your search stays here.');return false;}
+ requireSignIn(kind){if(this.session().id)return true;this.openAccess(kind==='selfie'?'Sign in to take a selfie.':kind==='portrait'?'Sign in to generate your photo. Your selected people and settings stay here.':'Sign in to search for photo spots. Your search stays here.');return false;}
  async prepare(kind){
   if(!this.requireSignIn(kind))return false;
   if(!this.data)await this.load();
