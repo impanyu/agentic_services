@@ -33,7 +33,7 @@ let originalLayerVisibility=new Map();
 function mapDetailGroup(layer){const source=layer['source-layer']||'';if(source==='transportation_name')return 'roadNames';if(layer.type==='symbol')return 'names';if(['transportation','aeroway'].includes(source))return 'roads';if(source==='building')return 'buildings';if(['park','landcover','landuse'].includes(source))return 'greenery';if(source==='boundary')return 'boundaries';return null;}
 function applyMapDetails(){if(!vectorLayer||!vectorReady)return;const gl=vectorLayer.getMaplibreMap();for(const layer of gl.getStyle().layers){const group=mapDetailGroup(layer);if(!group)continue;const show=mapDetails[group]&&(group!=='roadNames'||mapDetails.roads);gl.setLayoutProperty(layer.id,'visibility',show?(originalLayerVisibility.get(layer.id)||'visible'):'none');}}
 L.DomEvent.disableClickPropagation(el('map-details'));L.DomEvent.disableScrollPropagation(el('map-details'));
-document.querySelectorAll('[data-map-detail]').forEach(input=>input.addEventListener('change',()=>{mapDetails[input.dataset.mapDetail]=input.checked;if(['aerial','topographic'].includes(activeMapStyle))switchMapStyle('minimal');else applyMapDetails();}));
+document.querySelectorAll('[data-map-detail]').forEach(input=>input.addEventListener('change',()=>{mapDetails[input.dataset.mapDetail]=input.checked;if(!vectorReady||['aerial','topographic'].includes(activeMapStyle))switchMapStyle(['aerial','topographic'].includes(activeMapStyle)?'minimal':activeMapStyle);else applyMapDetails();}));
 let vectorRuntime=null;
 function loadVectorRuntime(){
  if(window.maplibregl&&L.maplibreGL)return Promise.resolve();
@@ -44,7 +44,7 @@ function loadVectorRuntime(){
  return vectorRuntime;
 }
 const mapStyles={streets:'liberty',minimal:'positron',night:'dark',bright:'bright'};
-async function switchMapStyle(style){
+async function switchMapStyle(style,{startup=false}={}){
  clearTimeout(mapLoadTimer);clearTimeout(previewTimer);if(vectorMoveHandler){map.off?.('movestart',vectorMoveHandler);vectorMoveHandler=null;}vectorReady=false;activeMapStyle=style;document.body.dataset.mapStyle=style;const generation=++mapStyleGeneration;
  document.querySelectorAll('[data-map-style]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mapStyle===style)));
  el('map-notice').textContent='Loading map…';
@@ -86,6 +86,7 @@ async function switchMapStyle(style){
   layer.on('tileerror',()=>fallback('This U.S. basemap is unavailable here.'));
   layer.addTo(map);return;
  }
+ if(startup&&window.PhotoScoutStartup){clearTimeout(mapLoadTimer);await window.PhotoScoutStartup.mapIdle(800);if(generation!==mapStyleGeneration||abandoned)return;mapLoadTimer=setTimeout(()=>fallback('The selected basemap took too long to load.'),12000);}
  try{await loadVectorRuntime();}catch{fallback('The selected map renderer is unavailable.');return;}
  if(generation!==mapStyleGeneration||abandoned)return;
  if(!window.maplibregl||!L.maplibreGL||(typeof window.maplibregl.supported==='function'&&!window.maplibregl.supported())){fallback('This browser cannot use the selected basemap.');return;}
@@ -98,6 +99,7 @@ async function switchMapStyle(style){
   if(generation!==mapStyleGeneration||abandoned)return;
   originalLayerVisibility=new Map(preparedStyle.layers.map(l=>[l.id,l.layout?.visibility||'visible']));
   for(const l of preparedStyle.layers){const group=mapDetailGroup(l);if(group&&(!mapDetails[group]||(group==='roadNames'&&!mapDetails.roads)))l.layout={...l.layout,visibility:'none'};}
+  if(startup&&window.PhotoScoutStartup){clearTimeout(mapLoadTimer);await window.PhotoScoutStartup.mapIdle();if(generation!==mapStyleGeneration||abandoned)return;mapLoadTimer=setTimeout(()=>fallback('The selected basemap took too long to load.'),12000);}
   const layer=L.maplibreGL({style:preparedStyle,attribution:'<a href="https://openfreemap.org/">OpenFreeMap</a> · <a href="https://openmaptiles.org/">OpenMapTiles</a> · © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',interactive:false});vectorLayer=layer;layer.addTo(map);
   const gl=layer.getMaplibreMap();
   gl.getContainer().style.zIndex='2';gl.getCanvas().style.opacity='0';
@@ -129,7 +131,7 @@ document.addEventListener('keydown',event=>{if(event.key==='Escape'){for(const m
 
 if(window.ResizeObserver)new window.ResizeObserver(entries=>{document.body.style.setProperty('--scout-dock-height',entries[0].target.getBoundingClientRect().height+'px');}).observe(document.querySelector('.scout-dock'));
 document.querySelectorAll('[data-map-style]').forEach(b=>b.addEventListener('click',()=>switchMapStyle(b.dataset.mapStyle)));
-switchMapStyle('minimal');
+switchMapStyle('minimal',{startup:true});
 let selected=L.marker(INITIAL_LOCATION,{draggable:true,title:'Selected location: drag to move',icon:L.divIcon({className:'scout-pin',html:'<svg viewBox="0 0 48 56" aria-hidden="true" focusable="false"><path d="M24 50C20 45 8 31 8 20a16 16 0 1 1 32 0c0 11-12 25-16 30Z" fill="#e24b47" stroke="#fff" stroke-width="2.5" stroke-linejoin="round"/><circle cx="24" cy="20" r="6" fill="#fff"/></svg>',iconSize:[48,56],iconAnchor:[24,50]})}).addTo(map), resultPins=[];let humanFreePreview=false, serviceAvailable=false, poiCatalog=null, catalogGeneration=0, searchBusy=false, pollGeneration=0, resolving=false, pipelineBusy=false;
 const candidatePoiLayer=L.layerGroup().addTo(map),photoLocationLayer=L.layerGroup().addTo(map),otherPhotoLocationLayer=L.layerGroup().addTo(map);
 const scanLayer=L.layerGroup().addTo(map);let scanTimer=null,scanIndex=0,scanDot=null,scanRunning=false;
@@ -663,7 +665,7 @@ function createPoiPanel(spot,{searchId=null,label='',publication=null,onView=nul
 }
 function drawHistoryMap({fit=false}={}){photoLocationLayer.clearLayers();otherPhotoLocationLayer.clearLayers();candidatePoiLayer.clearLayers();resultPins=[];for(const h of searchHistory.filter(h=>h.checked).sort((a,b)=>Number(a.id===focusedSearchId)-Number(b.id===focusedSearchId))){const focused=h.id===focusedSearchId;for(const [i,originalSpot] of allPoiViews(h.result,h.id).entries()){const s={...originalSpot,...poiViewOverrides.get(h.id+':'+poiHistoryKey(originalSpot))};const pos=s.poi;if(!pos||!Number.isFinite(pos.lat)||!Number.isFinite(pos.lon))continue;const b=photoBearing(s);let popup;const buildPopup=()=>{if(popup)return popup;popup=createPoiPanel(s,{searchId:h.id,label:h.label,onView:()=>{showShortlist();render(h.result,{save:false,mapUpdate:false,historyId:h.id});el('photo-spot-'+String(i+1))?.scrollIntoView({block:'nearest',behavior:'smooth'});}});return popup;};const marker=L.marker([pos.lat,pos.lon],{title:`${s.name} · ${b.label} · ${h.label}`,icon:focused?photographerIcon(s,i):directionDot(s)}).addTo(focused?photoLocationLayer:otherPhotoLocationLayer).bindPopup(buildPopup,{autoPan:false,keepInView:false}).on('popupopen',()=>{selectedPoiView={marker,popup,spot:s,searchId:h.id,index:i};loadPopupPhoto(popup);refreshVisiblePlaceSelfies();for(const box of popup.querySelectorAll('.place-selfies'))refreshPlaceSelfies(box);}).on('popupclose',()=>{if(selectedPoiView?.marker===marker)selectedPoiView=null;});marker.photoSpot=s;marker.searchId=h.id;resultPins.push(marker);}}if(fit&&resultPins.length)map.fitBounds(L.featureGroup(resultPins).getBounds().pad(.2),{paddingTopLeft:[40,80],paddingBottomRight:[40,250],maxZoom:16});}
 el('history-all').addEventListener('change',()=>{for(const h of searchHistory)h.checked=el('history-all').checked;persistSearchMapSelection();persistHistory();renderHistory();drawHistoryMap({fit:true});});
-try{const legacy=localStorage.getItem(HISTORY_KEY);if(legacy&&!sessionStorage.getItem(HISTORY_KEY))sessionStorage.setItem(HISTORY_KEY,legacy);localStorage.removeItem(HISTORY_KEY);const lastVisit=Number(sessionStorage.getItem(HISTORY_KEY+'-last-visit'));if(lastVisit&&lastVisit<Date.now()-7*86400000)sessionStorage.removeItem(HISTORY_KEY);const saved=JSON.parse(sessionStorage.getItem(HISTORY_KEY)||'[]');if(Array.isArray(saved))searchHistory=restoreSearchMapVisibility(saved.filter(h=>h&&typeof h.id==='string'&&typeof h.label==='string'&&h.result&&Array.isArray(h.result.spots)));}catch{}renderHistory();drawHistoryMap();loadAccount().finally(()=>restoreTasks());
+try{const legacy=localStorage.getItem(HISTORY_KEY);if(legacy&&!sessionStorage.getItem(HISTORY_KEY))sessionStorage.setItem(HISTORY_KEY,legacy);localStorage.removeItem(HISTORY_KEY);const lastVisit=Number(sessionStorage.getItem(HISTORY_KEY+'-last-visit'));if(lastVisit&&lastVisit<Date.now()-7*86400000)sessionStorage.removeItem(HISTORY_KEY);const saved=JSON.parse(sessionStorage.getItem(HISTORY_KEY)||'[]');if(Array.isArray(saved))searchHistory=restoreSearchMapVisibility(saved.filter(h=>h&&typeof h.id==='string'&&typeof h.label==='string'&&h.result&&Array.isArray(h.result.spots)));}catch{}renderHistory();drawHistoryMap();Promise.resolve(window.PhotoScoutStartup?.afterPaint()).then(()=>loadAccount()).finally(()=>restoreTasks());
 window.addEventListener('photo-scout-preferences-migrated',()=>{try{const saved=JSON.parse(sessionStorage.getItem(HISTORY_KEY)||localStorage.getItem(HISTORY_KEY)||'[]');if(Array.isArray(saved)){const merged=new Map(saved.filter(h=>h&&typeof h.id==='string'&&typeof h.label==='string'&&h.result&&Array.isArray(h.result.spots)).map(h=>[h.id,h]));for(const h of searchHistory)merged.set(h.id,h);searchHistory=restoreSearchMapVisibility([...merged.values()]).sort((a,b)=>b.created-a.created);renderHistory();drawHistoryMap();}}catch{}});
 
 // The photo studio keeps personal uploads and generated images out of search history.
