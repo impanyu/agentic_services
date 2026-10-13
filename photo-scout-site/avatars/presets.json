@@ -12627,6 +12627,161 @@
       "featured": true,
       "imageUrl": "./avatars/characters/regional-virat-kohli.png",
       "thumbnailUrl": "./avatars/thumbnails/regional-virat-kohli.webp"
+    },
+    {
+      "id": "preset:style-balance-krtek",
+      "name": "Krtek",
+      "category": "Animation & games",
+      "visualStyle": "Pixel art",
+      "aliases": [
+        "小鼹鼠",
+        "鼹鼠的故事"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/style-balance-krtek.png",
+      "thumbnailUrl": "./avatars/thumbnails/style-balance-krtek.webp"
+    },
+    {
+      "id": "preset:style-balance-gromit",
+      "name": "Gromit",
+      "category": "Animation & games",
+      "visualStyle": "Clay stop-motion",
+      "aliases": [
+        "格罗米特",
+        "超级无敌掌门狗"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/style-balance-gromit.png",
+      "thumbnailUrl": "./avatars/thumbnails/style-balance-gromit.webp"
+    },
+    {
+      "id": "preset:style-balance-moomintroll",
+      "name": "Moomintroll",
+      "category": "Storybook & fantasy",
+      "visualStyle": "Plush & felt",
+      "aliases": [
+        "姆明",
+        "姆明谷",
+        "木民"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/style-balance-moomintroll.png",
+      "thumbnailUrl": "./avatars/thumbnails/style-balance-moomintroll.webp"
+    },
+    {
+      "id": "preset:style-balance-pucky",
+      "name": "Pucky",
+      "category": "Designer toys",
+      "visualStyle": "Vinyl toy",
+      "aliases": [
+        "毕奇",
+        "PUCKY"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/style-balance-pucky.png",
+      "thumbnailUrl": "./avatars/thumbnails/style-balance-pucky.webp"
+    },
+    {
+      "id": "preset:style-balance-sweet-bean",
+      "name": "Sweet Bean",
+      "category": "Designer toys",
+      "visualStyle": "Paper cut",
+      "aliases": [
+        "甜豆",
+        "SweetBean"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/style-balance-sweet-bean.png",
+      "thumbnailUrl": "./avatars/thumbnails/style-balance-sweet-bean.webp"
+    },
+    {
+      "id": "preset:style-balance-thumbelina",
+      "name": "Thumbelina",
+      "category": "Fairy tales",
+      "visualStyle": "Watercolor",
+      "aliases": [
+        "拇指姑娘"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/style-balance-thumbelina.png",
+      "thumbnailUrl": "./avatars/thumbnails/style-balance-thumbelina.webp"
+    },
+    {
+      "id": "preset:style-balance-baba-yaga",
+      "name": "Baba Yaga",
+      "category": "Fairy tales",
+      "visualStyle": "Chinese ink",
+      "aliases": [
+        "芭芭雅嘎",
+        "巴巴雅嘎"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/style-balance-baba-yaga.png",
+      "thumbnailUrl": "./avatars/thumbnails/style-balance-baba-yaga.webp"
+    },
+    {
+      "id": "preset:style-balance-puss-in-boots",
+      "name": "Puss in Boots",
+      "category": "Fairy tales",
+      "visualStyle": "Black & white",
+      "aliases": [
+        "穿靴子的猫"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/style-balance-puss-in-boots.png",
+      "thumbnailUrl": "./avatars/thumbnails/style-balance-puss-in-boots.webp"
+    },
+    {
+      "id": "preset:style-balance-anansi",
+      "name": "Anansi",
+      "category": "Mythology",
+      "visualStyle": "Pixel art",
+      "aliases": [
+        "阿南西",
+        "蜘蛛神"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/style-balance-anansi.png",
+      "thumbnailUrl": "./avatars/thumbnails/style-balance-anansi.webp"
+    },
+    {
+      "id": "preset:style-balance-garuda",
+      "name": "Garuda",
+      "category": "Mythology",
+      "visualStyle": "Watercolor",
+      "aliases": [
+        "迦楼罗",
+        "金翅大鹏"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/style-balance-garuda.png",
+      "thumbnailUrl": "./avatars/thumbnails/style-balance-garuda.webp"
+    },
+    {
+      "id": "preset:style-balance-hestia",
+      "name": "Hestia",
+      "category": "Mythology",
+      "visualStyle": "Black & white",
+      "aliases": [
+        "赫斯提亚",
+        "灶神"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/style-balance-hestia.png",
+      "thumbnailUrl": "./avatars/thumbnails/style-balance-hestia.webp"
+    },
+    {
+      "id": "preset:style-balance-sekhmet",
+      "name": "Sekhmet",
+      "category": "Mythology",
+      "visualStyle": "Paper craft",
+      "aliases": [
+        "塞赫麦特",
+        "狮首女神"
+      ],
+      "featured": true,
+      "imageUrl": "./avatars/characters/style-balance-sekhmet.png",
+      "thumbnailUrl": "./avatars/thumbnails/style-balance-sekhmet.webp"
     }
   ]
 }

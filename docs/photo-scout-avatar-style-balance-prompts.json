@@ -1,0 +1,137 @@
+{
+  "date": "2026-10-12",
+  "provider": "built-in imagegen",
+  "items": [
+    {
+      "slug": "style-balance-krtek",
+      "name": "Krtek",
+      "category": "Animation & games",
+      "visualStyle": "Pixel art",
+      "aliases": [
+        "小鼹鼠",
+        "鼹鼠的故事"
+      ],
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout avatar for travel-photo compositing. Subject: Krtek, the familiar friendly Czech cartoon mole, a single small black mole with grey tummy, round red nose, three short hairs, big friendly eyes and rounded paws. Style/medium: polished retro pixel art with clearly visible crisp square pixels, limited 16-color palette and gentle pixel shading; preserve his recognizable simple cartoon design. Composition: one entire full-body character centered on a genuinely transparent background, upright relaxed pose, all feet visible, generous transparent margin on every edge. No scene, pedestal, shadow background, text, label, border, watermark or other characters. This is an AI-imagined character interpretation, not official artwork."
+    },
+    {
+      "slug": "style-balance-gromit",
+      "name": "Gromit",
+      "category": "Animation & games",
+      "visualStyle": "Clay stop-motion",
+      "aliases": [
+        "格罗米特",
+        "超级无敌掌门狗"
+      ],
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout avatar for compositing into travel photographs. Generate one single recognizable AI-imagined interpretation, entire full-body subject centered on genuine transparency, all feet and accessories visible with generous empty margins. Preserve distinctive anatomy and signature colors. No scene, floor, pedestal, background shadow, words, labels, borders, watermarks or additional characters. Subject: Gromit from Wallace and Gromit, intelligent gentle cream-colored dog with long brown floppy ears, large black oval nose and expressive raised eyebrows, standing as one whole recognizable character with front paws gently clasped. Medium: handcrafted clay stop-motion puppet, subtle fingerprints and sculpted clay details, soft studio lighting, faithful familiar proportions."
+    },
+    {
+      "slug": "style-balance-moomintroll",
+      "name": "Moomintroll",
+      "category": "Storybook & fantasy",
+      "visualStyle": "Plush & felt",
+      "aliases": [
+        "姆明",
+        "姆明谷",
+        "木民"
+      ],
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout avatar for compositing into travel photographs. Generate one single recognizable AI-imagined interpretation, entire full-body subject centered on genuine transparency, all feet and accessories visible with generous empty margins. Preserve distinctive anatomy and signature colors. No scene, floor, pedestal, background shadow, words, labels, borders, watermarks or additional characters. Subject: Moomintroll, familiar friendly white round-bodied Moomin with rounded hippo-like snout, small upright ears and long tail, standing upright with a gentle smile. Medium: a tactile plush-and-felt interpretation, velvety white fabric, visible stitching and stuffed toy softness; recognizable silhouette, not a real hippopotamus."
+    },
+    {
+      "slug": "style-balance-pucky",
+      "name": "Pucky",
+      "category": "Designer toys",
+      "visualStyle": "Vinyl toy",
+      "aliases": [
+        "毕奇",
+        "PUCKY"
+      ],
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout avatar for compositing into travel photographs. Generate one single recognizable AI-imagined interpretation, entire full-body subject centered on genuine transparency, all feet and accessories visible with generous empty margins. Preserve distinctive anatomy and signature colors. No scene, floor, pedestal, background shadow, words, labels, borders, watermarks or additional characters. Subject: a recognizable Pucky little forest elf designer-toy interpretation, tiny pudgy childlike fantasy figure in a rounded pale pastel mushroom-shaped hood, rosy cheeks and whimsical sleepy eyes, tiny hands and boots. Medium: premium matte pastel vinyl art toy with simple rounded sculpted volumes and delicate painted facial details. One figure, no stand."
+    },
+    {
+      "slug": "style-balance-sweet-bean",
+      "name": "Sweet Bean",
+      "category": "Designer toys",
+      "visualStyle": "Paper cut",
+      "aliases": [
+        "甜豆",
+        "SweetBean"
+      ],
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout avatar for compositing into travel photographs. Generate one single recognizable AI-imagined interpretation, entire full-body subject centered on genuine transparency, all feet and accessories visible with generous empty margins. Preserve distinctive anatomy and signature colors. No scene, floor, pedestal, background shadow, words, labels, borders, watermarks or additional characters. Subject: Sweet Bean, a cute recognizable little designer-toy child with round cheeks, short brown bob hair, sleepy closed curved eyes, wearing a yellow raincoat hood and tiny rain boots. Medium: layered cut-paper reinterpretation with visible colored paper layers and delicate crisp cut edges, flat graphic shapes with subtle paper depth, cheerful pastel colors."
+    },
+    {
+      "slug": "style-balance-thumbelina",
+      "name": "Thumbelina",
+      "category": "Fairy tales",
+      "visualStyle": "Watercolor",
+      "aliases": [
+        "拇指姑娘"
+      ],
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout avatar for compositing into travel photographs. Generate one single recognizable AI-imagined interpretation, entire full-body subject centered on genuine transparency, all feet and accessories visible with generous empty margins. Preserve distinctive anatomy and signature colors. No scene, floor, pedestal, background shadow, words, labels, borders, watermarks or additional characters. Subject: Thumbelina from the classic fairy tale, a tiny cheerful young fairy-tale woman with blonde hair, petal-shaped pink dress and delicate translucent butterfly wings, holding one small flower. Medium: expressive transparent watercolor washes and fine pen accents, visible watercolor pigment edges and delicate hand-painted detail. Whole tiny heroine, not standing on a flower or background object."
+    },
+    {
+      "slug": "style-balance-baba-yaga",
+      "name": "Baba Yaga",
+      "category": "Fairy tales",
+      "visualStyle": "Chinese ink",
+      "aliases": [
+        "芭芭雅嘎",
+        "巴巴雅嘎"
+      ],
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout avatar for compositing into travel photographs. Generate one single recognizable AI-imagined interpretation, entire full-body subject centered on genuine transparency, all feet and accessories visible with generous empty margins. Preserve distinctive anatomy and signature colors. No scene, floor, pedestal, background shadow, words, labels, borders, watermarks or additional characters. Subject: Baba Yaga from Slavic folklore, recognizable elderly forest witch with long crooked nose, wispy white hair, burgundy kerchief, patched earth-tone skirt and worn boots, holding a wooden walking stick. Benign whimsical expression. Medium: clearly hand-painted Chinese ink and restrained red/ochre wash, expressive brush edges and sparse dry-brush texture. One standing whole witch, no house or mortar."
+    },
+    {
+      "slug": "style-balance-puss-in-boots",
+      "name": "Puss in Boots",
+      "category": "Fairy tales",
+      "visualStyle": "Black & white",
+      "aliases": [
+        "穿靴子的猫"
+      ],
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout avatar for compositing into travel photographs. Generate one single recognizable AI-imagined interpretation, entire full-body subject centered on genuine transparency, all feet and accessories visible with generous empty margins. Preserve distinctive anatomy and signature colors. No scene, floor, pedestal, background shadow, words, labels, borders, watermarks or additional characters. Subject: the classic fairy-tale Puss in Boots, one charming upright cat adventurer in oversized tall boots, broad feathered hat, short cape and belt, one paw tipping the hat. Medium: black-and-white vintage storybook woodcut with strong graphic linework and hand-cut hatching, pure monochrome, unmistakable cat anatomy. Use the original fairy-tale interpretation rather than a movie costume copy."
+    },
+    {
+      "slug": "style-balance-anansi",
+      "name": "Anansi",
+      "category": "Mythology",
+      "visualStyle": "Pixel art",
+      "aliases": [
+        "阿南西",
+        "蜘蛛神"
+      ],
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout avatar for compositing into travel photographs. Generate one single recognizable AI-imagined interpretation, entire full-body subject centered on genuine transparency, all feet and accessories visible with generous empty margins. Preserve distinctive anatomy and signature colors. No scene, floor, pedestal, background shadow, words, labels, borders, watermarks or additional characters. Subject: Anansi, the West African folklore spider storyteller, interpreted as one friendly whimsical spider with exactly eight legs, warm black-and-gold markings, expressive large eyes, small patterned ochre shawl and one simple rolled story scroll. Medium: crisp limited-palette pixel art, visible square pixel edges and carefully stepped silhouettes, charming and readable at thumbnail size. Entire spider and all eight legs visible."
+    },
+    {
+      "slug": "style-balance-garuda",
+      "name": "Garuda",
+      "category": "Mythology",
+      "visualStyle": "Chinese ink",
+      "aliases": [
+        "迦楼罗",
+        "金翅大鹏"
+      ],
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout avatar for compositing into travel photographs. Generate one single recognizable AI-imagined interpretation, entire full-body subject centered on genuine transparency, all feet and accessories visible with generous empty margins. Preserve distinctive anatomy and signature colors. No scene, floor, pedestal, background shadow, words, labels, borders, watermarks or additional characters. Subject: Garuda, mythological golden eagle-like humanoid guardian with hooked eagle beak, red-gold wings, a simple gold crown, human torso and two bird talon feet, standing with wings partially open. Medium: expressive Chinese ink brushwork with restrained gold and vermilion pigment washes, distinctly painterly feather strokes. Powerful benevolent expression, no deity rider, no pedestal, exactly one guardian."
+    },
+    {
+      "slug": "style-balance-hestia",
+      "name": "Hestia",
+      "category": "Mythology",
+      "visualStyle": "Black & white",
+      "aliases": [
+        "赫斯提亚",
+        "灶神"
+      ],
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout avatar for compositing into travel photographs. Generate one single recognizable AI-imagined interpretation, entire full-body subject centered on genuine transparency, all feet and accessories visible with generous empty margins. Preserve distinctive anatomy and signature colors. No scene, floor, pedestal, background shadow, words, labels, borders, watermarks or additional characters. Subject: Hestia, Greek hearth goddess, a serene adult woman in flowing ancient Greek chiton and simple head veil, holding a small oil lamp in one hand. Medium: elegant monochrome charcoal and chalk drawing, visible soft charcoal strokes, refined shading and clean silhouette. Full body standing, both sandaled feet visible, no surrounding architecture."
+    },
+    {
+      "slug": "style-balance-sekhmet",
+      "name": "Sekhmet",
+      "category": "Mythology",
+      "visualStyle": "Paper craft",
+      "aliases": [
+        "塞赫麦特",
+        "狮首女神"
+      ],
+      "prompt": "Use case: stylized-concept. Asset type: Photo Scout avatar for compositing into travel photographs. Generate one single recognizable AI-imagined interpretation, entire full-body subject centered on genuine transparency, all feet and accessories visible with generous empty margins. Preserve distinctive anatomy and signature colors. No scene, floor, pedestal, background shadow, words, labels, borders, watermarks or additional characters. Subject: Sekhmet, ancient Egyptian lioness-headed goddess, golden lioness head with sun disk crown, a red fitted ancient Egyptian dress and broad turquoise-and-gold collar, standing with one ankh held at her side. Medium: sculptural folded-paper craft with angular paper planes, visible folds and layered cut-paper geometric mane, rich red, gold and turquoise colors. Entire single goddess and both feet visible, no plinth."
+    }
+  ]
+}

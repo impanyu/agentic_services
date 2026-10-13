@@ -1,0 +1,175 @@
+{
+  "date": "2026-10-12",
+  "provider": "built-in imagegen",
+  "review": "All twelve outputs visually reviewed for complete subject, alpha transparency, distinct visual medium and no duplicate character in the visible catalog.",
+  "items": [
+    {
+      "slug": "style-balance-krtek",
+      "name": "Krtek",
+      "category": "Animation & games",
+      "visualStyle": "Pixel art",
+      "aliases": [
+        "小鼹鼠",
+        "鼹鼠的故事"
+      ],
+      "state": "complete",
+      "featured": true,
+      "sourceArtifact": "exec-2bf0e7a9-9f9c-4c99-bda0-5d7f0caf5bc5.png",
+      "reviewReason": "Accepted after visual review."
+    },
+    {
+      "slug": "style-balance-gromit",
+      "name": "Gromit",
+      "category": "Animation & games",
+      "visualStyle": "Clay stop-motion",
+      "aliases": [
+        "格罗米特",
+        "超级无敌掌门狗"
+      ],
+      "state": "complete",
+      "featured": true,
+      "sourceArtifact": "exec-c1d75b0a-8ff2-4961-ad3a-ba13d7a589ce.png",
+      "reviewReason": "Accepted after visual review."
+    },
+    {
+      "slug": "style-balance-moomintroll",
+      "name": "Moomintroll",
+      "category": "Storybook & fantasy",
+      "visualStyle": "Plush & felt",
+      "aliases": [
+        "姆明",
+        "姆明谷",
+        "木民"
+      ],
+      "state": "complete",
+      "featured": true,
+      "sourceArtifact": "exec-23b7690f-9f78-493b-9ffa-352fdf9b8819.png",
+      "reviewReason": "Accepted after visual review."
+    },
+    {
+      "slug": "style-balance-pucky",
+      "name": "Pucky",
+      "category": "Designer toys",
+      "visualStyle": "Vinyl toy",
+      "aliases": [
+        "毕奇",
+        "PUCKY"
+      ],
+      "state": "complete",
+      "featured": true,
+      "sourceArtifact": "exec-2e67d64b-caf9-4a3f-8602-a1fa1d6ba445.png",
+      "reviewReason": "Accepted after visual review."
+    },
+    {
+      "slug": "style-balance-sweet-bean",
+      "name": "Sweet Bean",
+      "category": "Designer toys",
+      "visualStyle": "Paper cut",
+      "aliases": [
+        "甜豆",
+        "SweetBean"
+      ],
+      "state": "complete",
+      "featured": true,
+      "sourceArtifact": "exec-3f23a993-bf3b-4265-88d9-cd5ddccc4be5.png",
+      "reviewReason": "Accepted after visual review."
+    },
+    {
+      "slug": "style-balance-thumbelina",
+      "name": "Thumbelina",
+      "category": "Fairy tales",
+      "visualStyle": "Watercolor",
+      "aliases": [
+        "拇指姑娘"
+      ],
+      "state": "complete",
+      "featured": true,
+      "sourceArtifact": "exec-29317f1c-14f7-46b0-8bef-51135179482c.png",
+      "reviewReason": "Accepted after visual review."
+    },
+    {
+      "slug": "style-balance-baba-yaga",
+      "name": "Baba Yaga",
+      "category": "Fairy tales",
+      "visualStyle": "Chinese ink",
+      "aliases": [
+        "芭芭雅嘎",
+        "巴巴雅嘎"
+      ],
+      "state": "complete",
+      "featured": true,
+      "sourceArtifact": "exec-1c617942-14b8-4579-a3de-e2e575c3a2c2.png",
+      "reviewReason": "Accepted after visual review."
+    },
+    {
+      "slug": "style-balance-puss-in-boots",
+      "name": "Puss in Boots",
+      "category": "Fairy tales",
+      "visualStyle": "Black & white",
+      "aliases": [
+        "穿靴子的猫"
+      ],
+      "state": "complete",
+      "featured": true,
+      "sourceArtifact": "exec-47367531-e18c-43c5-8e03-99bf2a976965.png",
+      "reviewReason": "Accepted after visual review."
+    },
+    {
+      "slug": "style-balance-anansi",
+      "name": "Anansi",
+      "category": "Mythology",
+      "visualStyle": "Pixel art",
+      "aliases": [
+        "阿南西",
+        "蜘蛛神"
+      ],
+      "state": "complete",
+      "featured": true,
+      "sourceArtifact": "exec-59eca445-39fa-4fa5-8483-d6683fc3d1ae.png",
+      "reviewReason": "Accepted after visual review."
+    },
+    {
+      "slug": "style-balance-garuda",
+      "name": "Garuda",
+      "category": "Mythology",
+      "visualStyle": "Watercolor",
+      "aliases": [
+        "迦楼罗",
+        "金翅大鹏"
+      ],
+      "requestedVisualStyle": "Chinese ink",
+      "state": "complete",
+      "featured": true,
+      "sourceArtifact": "exec-291147cd-222c-4dad-b3a3-ef96066ec3fd.png",
+      "reviewReason": "Accepted as Watercolor; requested Chinese ink was not achieved."
+    },
+    {
+      "slug": "style-balance-hestia",
+      "name": "Hestia",
+      "category": "Mythology",
+      "visualStyle": "Black & white",
+      "aliases": [
+        "赫斯提亚",
+        "灶神"
+      ],
+      "state": "complete",
+      "featured": true,
+      "sourceArtifact": "exec-ae01a824-66a0-4ed2-9655-8b2e9f0887e2.png",
+      "reviewReason": "Accepted after visual review."
+    },
+    {
+      "slug": "style-balance-sekhmet",
+      "name": "Sekhmet",
+      "category": "Mythology",
+      "visualStyle": "Paper craft",
+      "aliases": [
+        "塞赫麦特",
+        "狮首女神"
+      ],
+      "state": "complete",
+      "featured": true,
+      "sourceArtifact": "exec-19aa0659-74ff-41a9-9ba9-4d6c87cee987.png",
+      "reviewReason": "Accepted after visual review."
+    }
+  ]
+}
