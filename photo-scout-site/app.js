@@ -1154,17 +1154,8 @@ function publishButton(kind,id,spot){
  }catch(error){message(error.message);if(savedPhoto.open)savedPhotoStatus.textContent=error.message;}finally{button.disabled=false;syncPublishButtons();}};return button;
 }
 async function loadPublications(more=false){
- try{const [data,mine]=await Promise.all([json('/photo-scout/v1/publications'+(more&&publicationCursor?'?before='+publicationCursor:'')),json('/photo-scout/v1/publications/mine')]);ownPublications=new Map(mine.items.map(item=>[publicationKey(item.kind,item.sourceId,item.poiId),item]));syncPublishButtons();const selection=new Map(publicationItems.map(item=>[item.id,item.checked]));const incoming=data.items.map(item=>({...item,checked:selection.get(item.id)!==false}));publicationItems=more?[...publicationItems,...incoming]:incoming;publicationCursor=data.nextBefore;renderPublications();drawPublications();refreshComments();}
- catch{el('published-items').replaceChildren(node('p','Could not load public items. Reopen this menu to retry.','small'));}
-}
-function renderPublications(){
- el('published-more').hidden=!publicationCursor;const root=el('published-items');root.replaceChildren();
- if(!publicationItems.some(item=>item.kind!=='photo'))root.append(node('p','No public searches or places yet.','small'));
- for(const item of publicationItems.filter(item=>item.kind!=='photo')){const row=node('div',null,'history-item'),copy=node('span',null,'history-copy'),check=node('input');check.type='checkbox';check.checked=item.checked!==false;check.setAttribute('aria-label','Show publication: '+item.title);check.addEventListener('change',()=>{item.checked=check.checked;drawPublications();});
- const text=node('span');text.append(node('strong',item.title),node('span','Published ✓','publication-badge'),node('small',item.kind==='photo'?'AI selfie':item.kind==='place'?'Photo place':'Search · '+(item.result?.spots?.length||0)+' places'));copy.append(check,text);
- const actions=node('div',null,'history-entry-actions'),view=node('button','View');view.type='button';view.addEventListener('click',()=>openPublication(item));actions.append(view,link('Share ↗',item.url));
- if(item.mine){const withdraw=node('button','Unpublish');withdraw.type='button';withdraw.addEventListener('click',async()=>{withdraw.disabled=true;try{await json('/photo-scout/v1/publications/withdraw',{method:'POST',headers:{'Content-Type':'application/json',...(csrfToken?{'X-CSRF-Token':csrfToken}:{})},body:JSON.stringify({id:item.id})});if(displayedSearchId==='public:'+item.id){el('results').hidden=true;displayedResult=null;}if(savedPhoto.dataset.publication===item.id)savedPhoto.close();await loadPublications();}catch(error){withdraw.disabled=false;message(error.message);}});actions.append(withdraw);}
- row.append(copy,actions);root.append(row);}
+ try{const [data,mine]=await Promise.all([json('/photo-scout/v1/publications'+(more&&publicationCursor?'?before='+publicationCursor:'')),json('/photo-scout/v1/publications/mine')]);ownPublications=new Map(mine.items.map(item=>[publicationKey(item.kind,item.sourceId,item.poiId),item]));syncPublishButtons();const selection=new Map(publicationItems.map(item=>[item.id,item.checked]));const incoming=data.items.map(item=>({...item,checked:selection.get(item.id)!==false}));publicationItems=more?[...publicationItems,...incoming]:incoming;publicationCursor=data.nextBefore;drawPublications();refreshComments();}
+ catch{/* Keep existing public map markers if refresh fails. */}
 }
 function publishedSelfieIcon(item){return L.divIcon({className:'published-selfie-pin',html:'<span><img src="'+api+apiPrefix+'/v1/publications/'+encodeURIComponent(item.id)+'/thumbnail" alt=""><b>✦</b></span>',iconSize:[48,58],iconAnchor:[24,55],popupAnchor:[0,-48]});}
 function visibleCommunityPublications(){
@@ -1184,11 +1175,11 @@ async function openPublication(item){
  try{const data=await json('/photo-scout/v1/publications/'+encodeURIComponent(item.id));
   if(data.kind==='photo'){await viewSavedPhoto({id:data.id,state:'complete',context:data.context,created:data.created},data);}
   else{render(data.result,{save:false,mapUpdate:false,historyId:'public:'+data.id,publication:data});const spots=data.result.spots||[],coords=spots.filter(s=>s.poi).map(s=>[s.poi.lat,s.poi.lon]);if(coords.length)map.fitBounds(L.latLngBounds(coords).pad(.25),{paddingTopLeft:[30,80],paddingBottomRight:[30,160],maxZoom:16});if(item.poiId){const index=spots.findIndex(s=>poiHistoryKey(s)===item.poiId);if(index>=0){focusMapSpot(spots[index],{openPopup:false});el('photo-spot-'+String(index+1))?.scrollIntoView({block:'nearest'});}}if(!spots.length)message('This published search has no photo places.');}
-  const existing=publicationItems.find(p=>p.id===data.id);if(existing)existing.checked=true;else publicationItems.push(data);(data.kind==='photo'?publishedPhotoLayer:publicationLayer).addTo(map);renderPublications();drawPublications();
+  const existing=publicationItems.find(p=>p.id===data.id);if(existing)existing.checked=true;else publicationItems.push(data);(data.kind==='photo'?publishedPhotoLayer:publicationLayer).addTo(map);drawPublications();
  }catch(error){message(error.message);}
 }
 el('search-history').addEventListener('toggle',()=>{if(el('search-history').open)window.PhotoScoutHistoryMap?.hydrate(el('history-items'));});
-for(const id of ['search-history','photo-history'])el(id).addEventListener('toggle',()=>{if(el(id).open)loadPublications();});el('published-more').addEventListener('click',()=>loadPublications(true));
+for(const id of ['search-history','photo-history'])el(id).addEventListener('toggle',()=>{if(el(id).open)loadPublications();});
 loadPublications().then(()=>{if(sharedPublicationId)openPublication({id:sharedPublicationId});});
 
 // First visits start in the Bay Area; returning visits resume their last map view.
