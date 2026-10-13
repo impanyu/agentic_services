@@ -17,12 +17,22 @@ def person_key(name):
     return {'fukuzawa yukichi': 'yukichi fukuzawa'}.get(key, key)
 
 
+def style_key(style):
+    key = (style or '').strip().casefold()
+    # Photographic labels alone do not establish a different visual treatment.
+    return {'photorealistic likeness': 'photorealistic',
+            'fashion editorial': 'photorealistic'}.get(key, key)
+
+
 def install(root, report, minimum):
     catalog_path = root / 'avatars' / 'presets.json'
     catalog = json.loads(catalog_path.read_text())
     items = catalog['items']
     known_ids = {item['id'] for item in items}
     known_people = {person_key(item['name']) for item in items}
+    known_styles = {}
+    for item in items:
+        known_styles.setdefault(person_key(item['name']), set()).add(style_key(item.get('visualStyle')))
     seen = {hashlib.sha256((root / item['imageUrl'][2:]).read_bytes()).hexdigest()
             for item in items}
     added, rejected = [], []
@@ -33,9 +43,13 @@ def install(root, report, minimum):
         identifier = 'preset:' + row['slug']
         if identifier in known_ids:
             continue
-        if person_key(row['name']) in known_people:
-            rejected.append({'name': row['name'], 'reason': 'duplicate_character'})
-            continue
+        person, style = person_key(row['name']), style_key(row.get('visualStyle'))
+        if person in known_styles:
+            reason = ('duplicate_character_style' if style and style in known_styles[person]
+                      else 'style_review_required' if not style or '' in known_styles[person] else None)
+            if reason:
+                rejected.append({'name': row['name'], 'reason': reason})
+                continue
         path = root / 'avatars' / 'characters' / (row['slug'] + '.png')
         try:
             digest = hashlib.sha256(path.read_bytes()).hexdigest()
@@ -65,7 +79,8 @@ def install(root, report, minimum):
             'imageUrl': './avatars/characters/' + row['slug'] + '.png',
             'thumbnailUrl': './avatars/thumbnails/' + row['slug'] + '.webp'})
         known_ids.add(identifier)
-        known_people.add(person_key(row['name']))
+        known_people.add(person)
+        known_styles.setdefault(person, set()).add(style)
         seen.add(digest)
     if len(known_people) < minimum:
         raise ValueError(f'Only {len(known_people)} distinct characters; need {minimum}. '

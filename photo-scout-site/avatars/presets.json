@@ -20,7 +20,8 @@
         "小叮当"
       ],
       "category": "Cartoons",
-      "thumbnailUrl": "./avatars/thumbnails/doraemon.webp"
+      "thumbnailUrl": "./avatars/thumbnails/doraemon.webp",
+      "visualStyle": "Cel animation"
     },
     {
       "id": "preset:totoro",
@@ -30,7 +31,19 @@
         "龙猫"
       ],
       "category": "Cartoons",
-      "thumbnailUrl": "./avatars/thumbnails/totoro.webp"
+      "thumbnailUrl": "./avatars/thumbnails/totoro.webp",
+      "visualStyle": "Cel animation"
+    },
+    {
+      "id": "preset:totoro-plush",
+      "name": "Totoro · Plush",
+      "category": "Cartoons",
+      "visualStyle": "Plush & felt",
+      "aliases": [
+        "龙猫"
+      ],
+      "imageUrl": "./avatars/characters/totoro-plush.png",
+      "thumbnailUrl": "./avatars/thumbnails/totoro-plush.webp"
     },
     {
       "id": "preset:sun-wukong",
@@ -41,7 +54,20 @@
         "齐天大圣"
       ],
       "category": "Chinese classics",
-      "thumbnailUrl": "./avatars/thumbnails/sun-wukong.webp"
+      "thumbnailUrl": "./avatars/thumbnails/sun-wukong.webp",
+      "visualStyle": "3D animation"
+    },
+    {
+      "id": "preset:monkey-king-ink",
+      "name": "Monkey King · Ink",
+      "category": "Chinese classics",
+      "visualStyle": "Chinese ink",
+      "aliases": [
+        "孙悟空",
+        "齐天大圣"
+      ],
+      "imageUrl": "./avatars/characters/monkey-king-ink.png",
+      "thumbnailUrl": "./avatars/thumbnails/monkey-king-ink.webp"
     },
     {
       "id": "preset:sherlock",
@@ -51,7 +77,19 @@
         "福尔摩斯"
       ],
       "category": "Storybook",
-      "thumbnailUrl": "./avatars/thumbnails/sherlock.webp"
+      "thumbnailUrl": "./avatars/thumbnails/sherlock.webp",
+      "visualStyle": "Photorealistic"
+    },
+    {
+      "id": "preset:sherlock-clay",
+      "name": "Sherlock Holmes · Clay",
+      "category": "Storybook",
+      "visualStyle": "Clay stop-motion",
+      "aliases": [
+        "福尔摩斯"
+      ],
+      "imageUrl": "./avatars/characters/sherlock-clay.png",
+      "thumbnailUrl": "./avatars/thumbnails/sherlock-clay.webp"
     },
     {
       "id": "preset:tom-cat",
@@ -234,7 +272,19 @@
       "aliases": [
         "雅典娜"
       ],
-      "thumbnailUrl": "./avatars/thumbnails/athena.webp"
+      "thumbnailUrl": "./avatars/thumbnails/athena.webp",
+      "visualStyle": "Photorealistic"
+    },
+    {
+      "id": "preset:athena-oil",
+      "name": "Athena · Oil painting",
+      "category": "Mythology",
+      "visualStyle": "Oil painting",
+      "aliases": [
+        "雅典娜"
+      ],
+      "imageUrl": "./avatars/characters/athena-oil.png",
+      "thumbnailUrl": "./avatars/thumbnails/athena-oil.webp"
     },
     {
       "id": "preset:mad-hatter",
@@ -357,7 +407,19 @@
       "aliases": [
         "小王子"
       ],
-      "thumbnailUrl": "./avatars/thumbnails/little-prince.webp"
+      "thumbnailUrl": "./avatars/thumbnails/little-prince.webp",
+      "visualStyle": "3D animation"
+    },
+    {
+      "id": "preset:little-prince-watercolor",
+      "name": "The Little Prince · Watercolor",
+      "imageUrl": "./avatars/characters/little-prince-watercolor.png",
+      "thumbnailUrl": "./avatars/thumbnails/little-prince-watercolor.webp",
+      "aliases": [
+        "小王子"
+      ],
+      "visualStyle": "Watercolor",
+      "category": "Storybook"
     },
     {
       "id": "preset:frankenstein",
@@ -688,7 +750,8 @@
         "奥黛丽赫本"
       ],
       "synthetic": true,
-      "thumbnailUrl": "./avatars/thumbnails/audrey-hepburn.webp"
+      "thumbnailUrl": "./avatars/thumbnails/audrey-hepburn.webp",
+      "visualStyle": "Photorealistic"
     },
     {
       "id": "preset:bruce-lee",
@@ -711,7 +774,19 @@
         "卓别林"
       ],
       "synthetic": true,
-      "thumbnailUrl": "./avatars/thumbnails/charlie-chaplin.webp"
+      "thumbnailUrl": "./avatars/thumbnails/charlie-chaplin.webp",
+      "visualStyle": "Photorealistic"
+    },
+    {
+      "id": "preset:chaplin-silent-film",
+      "name": "Charlie Chaplin · Silent film",
+      "category": "Screen icons",
+      "visualStyle": "Black & white",
+      "aliases": [
+        "卓别林"
+      ],
+      "imageUrl": "./avatars/characters/chaplin-silent-film.png",
+      "thumbnailUrl": "./avatars/thumbnails/chaplin-silent-film.webp"
     },
     {
       "id": "preset:albert-einstein",
@@ -723,7 +798,8 @@
         "爱因斯坦"
       ],
       "synthetic": true,
-      "thumbnailUrl": "./avatars/thumbnails/albert-einstein.webp"
+      "thumbnailUrl": "./avatars/thumbnails/albert-einstein.webp",
+      "visualStyle": "Photorealistic"
     },
     {
       "id": "preset:nikola-tesla",
@@ -1898,7 +1974,19 @@
         "铁臂阿童木"
       ],
       "category": "Anime",
-      "thumbnailUrl": "./avatars/thumbnails/astro-boy.webp"
+      "thumbnailUrl": "./avatars/thumbnails/astro-boy.webp",
+      "visualStyle": "Cel animation"
+    },
+    {
+      "id": "preset:astro-boy-pixel",
+      "name": "Astro Boy · Pixel art",
+      "category": "Anime",
+      "visualStyle": "Pixel art",
+      "aliases": [
+        "铁臂阿童木"
+      ],
+      "imageUrl": "./avatars/characters/astro-boy-pixel.png",
+      "thumbnailUrl": "./avatars/thumbnails/astro-boy-pixel.webp"
     },
     {
       "id": "preset:vegeta",

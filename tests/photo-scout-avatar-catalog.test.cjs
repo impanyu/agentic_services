@@ -1,7 +1,7 @@
 const {test}=require('node:test');const assert=require('node:assert/strict');const fs=require('node:fs');const vm=require('node:vm');
 test('preset catalog has at least 1000 characters with lightweight local thumbnails',()=>{
  const items=JSON.parse(fs.readFileSync('photo-scout-site/avatars/presets.json')).items;
- assert.ok(items.length>=1000);assert.equal(new Set(items.map(x=>x.name.split(' · ')[0].toLowerCase())).size,items.length);assert.equal(new Set(items.map(x=>x.id)).size,items.length);
+ assert.ok(items.length>=1000);assert.ok(new Set(items.map(x=>x.name.split(' · ')[0].toLowerCase())).size>=1000);assert.equal(new Set(items.map(x=>x.name.split(' · ')[0].toLowerCase()+'|'+(x.visualStyle||'unspecified'))).size,items.length);assert.equal(new Set(items.map(x=>x.id)).size,items.length);
  for(const item of items){for(const url of [item.imageUrl,item.thumbnailUrl]){assert.match(url,/^\.\/avatars\/(characters|thumbnails)\/[\w-]+\.(png|webp)$/);assert.ok(fs.existsSync('photo-scout-site/'+url.slice(2)),item.name);}assert.ok(fs.statSync('photo-scout-site/'+item.thumbnailUrl.slice(2)).size<100000,item.name);}
 });
 test('avatar detail opens before selecting its full image for a selfie',async()=>{
@@ -42,3 +42,5 @@ test('guest avatar selfie action remains available and prompts login before fetc
  class Node{constructor(){this.children=[];this.style={};this.value='';}append(...v){this.children.push(...v);}prepend(...v){this.children.unshift(...v);}replaceChildren(...v){this.children=v;}setAttribute(k,v){this[k]=v;}addEventListener(k,fn){this[k]=fn;}querySelector(){return new Node();}close(){}showModal(){this.open=true;}}
  const menu=new Node(),c={window:{},document:{getElementById:()=>menu,createElement:()=>new Node(),body:new Node()}};vm.runInNewContext(fs.readFileSync('photo-scout-site/avatars.js','utf8'),c);let prompts=0,images=0;const a=new c.window.PhotoScoutAvatars({api:'',request:async()=>({items:[]}),session:()=>({id:'guest',epoch:0}),isSignedIn:()=>false,requireSignIn:()=>{prompts++;return false;},getPlaces:()=>[]});a.avatarFile=async()=>{images++;};a.showDetails({id:'preset',name:'Totoro',imageUrl:'./avatar.png'},menu,false);const descendants=n=>[n,...n.children.flatMap(descendants)],use=descendants(a.details).find(n=>n.textContent==='Use this avatar · Take a selfie');assert.equal(use.disabled,false);await use.onclick();assert.equal(prompts,1);assert.equal(images,0);
 });
+
+test('Totoro retains both cel and plush treatments while pose-only duplicates stay hidden',()=>{const items=JSON.parse(fs.readFileSync('photo-scout-site/avatars/presets.json')).items;assert.deepEqual(items.filter(x=>x.name.split(' · ')[0]==='Totoro').map(x=>x.visualStyle),['Cel animation','Plush & felt']);for(const id of ['einstein-documentary','hepburn-editorial','doraemon-cel','monkey-king-3d'])assert.ok(!items.some(x=>x.id==='preset:'+id));});

@@ -62,3 +62,50 @@ def test_alternative_name_order_is_one_person():
     module = installer()
     assert module.person_key('Fukuzawa Yukichi') == module.person_key('Yukichi Fukuzawa')
     assert module.person_key('Albert Einstein · Documentary') == module.person_key('Albert Einstein')
+
+
+def add_variant(tmp_path, report, slug, style):
+    image = Image.open(tmp_path / 'avatars/characters/test-person.png')
+    image.putpixel((25, 25), (20, 90, 160, 255))
+    image.save(tmp_path / f'avatars/characters/{slug}.png')
+    report.write_text(json.dumps({'items': [{'name': 'Test person · Variant', 'slug': slug,
+        'category': 'World history', 'visualStyle': style, 'state': 'complete'}]}))
+
+
+def test_same_character_with_different_medium_is_preserved(tmp_path):
+    catalog, report = setup(tmp_path)
+    module = installer()
+    module.install(tmp_path, report, 1)
+    add_variant(tmp_path, report, 'clay-person', 'Clay stop-motion')
+    result = module.install(tmp_path, report, 1)
+    assert result['added'] == 1
+    assert result['total'] == 2 and result['distinctCharacters'] == 1
+    assert [item['visualStyle'] for item in json.loads(catalog.read_text())['items']] == ['Watercolor', 'Clay stop-motion']
+
+
+def test_same_character_and_medium_does_not_gain_a_pose_variant(tmp_path):
+    catalog, report = setup(tmp_path)
+    module = installer()
+    module.install(tmp_path, report, 1)
+    add_variant(tmp_path, report, 'another-pose', 'Watercolor')
+    result = module.install(tmp_path, report, 1)
+    assert result['added'] == 0
+    assert result['rejected'][0]['reason'] == 'duplicate_character_style'
+
+
+def test_unknown_existing_medium_requires_review_instead_of_name_only_deletion(tmp_path):
+    catalog, report = setup(tmp_path)
+    module = installer()
+    module.install(tmp_path, report, 1)
+    data = json.loads(catalog.read_text())
+    del data['items'][0]['visualStyle']
+    catalog.write_text(json.dumps(data))
+    add_variant(tmp_path, report, 'clay-person', 'Clay stop-motion')
+    result = module.install(tmp_path, report, 1)
+    assert result['rejected'][0]['reason'] == 'style_review_required'
+    assert result['total'] == 1
+
+
+def test_photographic_genre_names_are_not_distinct_media():
+    module = installer()
+    assert module.style_key('Photorealistic likeness') == module.style_key('Fashion editorial') == module.style_key('Photorealistic')
