@@ -104,3 +104,27 @@ test('map gestures retain the painted vector canvas while keeping raster recover
  vector.gl.areTilesLoaded=()=>true;vector.gl.events.idle();assert.equal(vector.gl.canvas.style.opacity,'1');
  f.mapEvents.movestart();f.timers.filter(t=>t.delay===6000).at(-1).fn();assert.ok(f.layers.includes(preview));assert.ok(!f.layers.includes(vector));
 });
+
+test('rendered frames clear recovery deadlines without waiting for tiles or idle',async()=>{
+ const f=loadingFixture();await f.resolve();const vector=f.vectors[0];vector.gl.events.load();vector.gl.events.idle();
+ vector.gl.areTilesLoaded=()=>false;
+ for(let i=0;i<12;i++){
+  f.mapEvents.movestart();const deadline=f.timers.at(-1);assert.equal(deadline.delay,6000);
+  vector.gl.events.render();assert.equal(deadline.cleared,true);
+ }
+ assert.ok(f.layers.includes(vector));assert.equal(f.el('map-notice').textContent,'');
+});
+
+test('movement and partial rendering cannot replace the first viewport deadline',async()=>{
+ const f=loadingFixture();await f.resolve();const deadline=f.timers.filter(t=>t.delay===12000).at(-1);
+ f.mapEvents.movestart();f.vectors[0].gl.events.render();assert.equal(deadline.cleared,false);
+ deadline.fn();assert.ok(!f.layers.includes(f.vectors[0]));assert.match(f.el('map-notice').textContent,/took too long/);
+});
+
+test('late rendered frames from an old style cannot clear the new recovery timer',async()=>{
+ const f=loadingFixture();await f.resolve();const old=f.vectors[0];old.gl.events.load();old.gl.events.idle();
+ const change=f.context.switchMapStyle('night');await f.resolve(1);await change;
+ const current=f.vectors[1];current.gl.events.load();current.gl.events.idle();f.mapEvents.movestart();
+ const deadline=f.timers.at(-1);old.gl.events.render();assert.equal(deadline.cleared,false);
+ deadline.fn();assert.ok(!f.layers.includes(current));assert.match(f.el('map-notice').textContent,/did not recover/);
+});

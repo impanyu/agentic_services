@@ -109,7 +109,12 @@ async function switchMapStyle(style,{startup=false}={}){
   // does not guarantee WebGL can paint the next mobile viewport.
   const painted=()=>{if(generation!==mapStyleGeneration||abandoned)return;if(gl.areTilesLoaded&&!gl.areTilesLoaded())return;gl.getCanvas().style.opacity='1';ready();};
   gl.on('idle',painted);
-  vectorMoveHandler=()=>{if(generation!==mapStyleGeneration||abandoned)return;clearTimeout(mapLoadTimer);mapLoadTimer=setTimeout(()=>fallback('Map graphics did not recover.'),6000);};
+  // Once visible, a rendered frame proves the renderer is responding even
+  // while tiles are pending or a gesture prevents idle. Keep the stricter
+  // first-paint deadline until the initial viewport is ready.
+  let recoveryPending=false;
+  gl.on('render',()=>{if(generation!==mapStyleGeneration||abandoned||!recoveryPending)return;recoveryPending=false;clearTimeout(mapLoadTimer);});
+  vectorMoveHandler=()=>{if(generation!==mapStyleGeneration||abandoned||gl.getCanvas().style.opacity!=='1')return;recoveryPending=true;clearTimeout(mapLoadTimer);mapLoadTimer=setTimeout(()=>fallback('Map graphics did not recover.'),6000);};
   map.on?.('movestart',vectorMoveHandler);
   gl.on('error',()=>fallback('The selected basemap is unavailable.'));
   gl.on('webglcontextlost',()=>fallback('Map graphics were interrupted.'));
