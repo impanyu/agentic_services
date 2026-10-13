@@ -276,9 +276,12 @@ function applyStudioView(view,framing='current'){
  if(id){const key=poiHistoryKey(studioSpot);selfieViewOverrides.set(id+':'+key,override);const h=searchHistory.find(h=>h.id===id);if(h){h.result.selfieViews??={};h.result.selfieViews[key]=override;}}
  queueCameraSave(studioSearchId,studioSpot,view,'selfie',framing);
 }
-function applyStreetView(spot,view,searchId){
+function previewStreetViewCamera(spot,view){
  const url=new URL(spot.sourceUrl);for(const [key,value] of Object.entries(view))url.searchParams.set(key,value);
- const override={sourceUrl:url.toString(),viewHeadingDegrees:view.heading,viewPitchDegrees:view.pitch,viewFovDegrees:view.fov,viewAdjusted:true,imageUrl:null,streetViewReference:null};Object.assign(spot,override);
+ const override={sourceUrl:url.toString(),viewHeadingDegrees:view.heading,viewPitchDegrees:view.pitch,viewFovDegrees:view.fov,viewAdjusted:true,imageUrl:null,streetViewReference:null};Object.assign(spot,override);return override;
+}
+function applyStreetView(spot,view,searchId){
+ const override=previewStreetViewCamera(spot,view);
  const ownerId=ownedViewSearchId(searchId),linkedIds=new Set([searchId,ownerId]);if(ownerId)for(const p of ownPublications.values())if(p.sourceId===ownerId&&p.kind!=='photo')linkedIds.add('public:'+p.id);
  for(const id of linkedIds)if(id)poiViewOverrides.set(id+':'+poiHistoryKey(spot),override);
  if(searchId){
@@ -302,7 +305,15 @@ function refreshStreetViewPreviews(spot,searchId){
 function bindStreetViewPreview(surface,getSpot,searchId,{onChange,onCommit,isDisabled}={}){
  if(typeof window.PhotoScoutStreetView?.bind!=='function')return;
  surface.streetViewSpot=getSpot;surface.streetViewSearchId=searchId;
- surface.streetViewController=window.PhotoScoutStreetView.bind(surface,{getSpot,isDisabled:()=>Boolean(isDisabled?.()),onChange:view=>{if(onChange)onChange(view);else applyStreetView(getSpot(),view,searchId);if(!window.PhotoScoutLocalPanorama?.refresh(surface))window.PhotoScoutNativeStreetView?.refresh(surface);},onCommit:()=>{if(onCommit)onCommit();else refreshStreetViewPreviews(getSpot(),searchId);}});
+ surface.streetViewController=window.PhotoScoutStreetView.bind(surface,{
+  getSpot,isLive:()=>Boolean(window.PhotoScoutLocalPanorama?.isActive(surface)||window.PhotoScoutNativeStreetView?.isActive(surface)),isDisabled:()=>Boolean(isDisabled?.()),
+  onChange:view=>{
+   // Keep map markers, history propagation and persistence out of the live paint path.
+   if(onChange)onChange(view);else previewStreetViewCamera(getSpot(),view);
+   if(!window.PhotoScoutLocalPanorama?.refresh(surface))window.PhotoScoutNativeStreetView?.refresh(surface);
+  },
+  onCommit:()=>{if(onCommit)onCommit();else{applyStreetView(getSpot(),window.PhotoScoutStreetView.view(getSpot()),searchId);refreshStreetViewPreviews(getSpot(),searchId);}}
+ });
  // Start the reusable interactive panorama only for the surface being used.
  // Shortlist cards used to remain static until a gesture ended.
  let nativeLoading=false;
@@ -737,7 +748,7 @@ function resetStudioInputForPlace(spot){
 }
 function openPhotoStudio(spot,searchId=null){if(pointWallet&&!pointWallet.requireSignIn('selfie'))return false;studioSearchId=searchId;spot={...spot,...poiViewOverrides.get(searchId+':'+poiHistoryKey(spot))};focusMapSpot(spot,{openPopup:false});if(savedPhoto.open)savedPhoto.close();if(portraitProgress.open)portraitProgress.close();{if(!taskRecords.some(t=>t.kind==='portrait'&&['queued','checking','running'].includes(t.state)))studioTask.hidden=true;resetStudioInputForPlace(spot);const savedView=savedSelfieView(studioSearchId,spot);studioSpot={...spot,...savedView};studioFraming.value=savedView?.framing||(spot.viewAdjusted?'current':'auto');studioAdjustedView=spot.provider==='google-street-view'?window.PhotoScoutStreetView.view(studioSpot):null;if(studioAdjustedView&&!studioSpot.viewAdjusted)applyStreetView(studioSpot,{...studioAdjustedView,fov:90},null);studioSceneView.streetViewSearchId=null;studioSceneView.streetViewController?.reset();studioFraming.disabled=spot.provider!=='google-street-view';studioFraming.parentElement.hidden=spot.provider!=='google-street-view';updateStudioFramingHint();studioPlace.textContent=studioSpot.name+(photoBearing(studioSpot).heading!=null?' · '+photoBearing(studioSpot).label:'');scenePreview.removeAttribute('src');if(spot.provider==='google-street-view'||spot.imageReference)refreshThumbnail(scenePreview,studioSpot);else if(spot.imageUrl)scenePreview.src=spot.imageUrl;studioStatus.textContent='Upload a clear image of a person, cartoon character or animal. Groups are welcome; a clearly visible subject works best.';clearStudioOutput();studioGenerate.disabled=studioBusy||!studioPrepared;if(studioBusy)studioStatus.textContent='Another photo is being uploaded. This place has its own photo; you can upload it when that submission finishes.';}syncStudioProgress();studio.showModal();if(window.PhotoScoutNativeStreetView)activateNativeStreetView(studioSceneView,()=>studioSpot,null,{isDisabled:()=>studioBusy,onChange:view=>{studioAdjustedView={...view};applyStudioView(view);studioFraming.value='current';updateStudioFramingHint();studioPlace.textContent=studioSpot.name+' · '+photoBearing(studioSpot).label;}});}
 studioClose.addEventListener('click',()=>studio.close());studio.addEventListener('close',()=>{if(!studio.open)window.PhotoScoutNativeStreetView?.detach(studioSceneView);});
-bindStreetViewPreview(studioSceneView,()=>studioSpot,null,{isDisabled:()=>studioBusy,onChange:view=>{studioAdjustedView={...view};applyStudioView(view);studioFraming.value='current';updateStudioFramingHint();studioPlace.textContent=studioSpot.name+' · '+photoBearing(studioSpot).label;},onCommit:()=>refreshThumbnail(scenePreview,studioSpot)});
+bindStreetViewPreview(studioSceneView,()=>studioSpot,null,{isDisabled:()=>studioBusy,onChange:view=>{studioAdjustedView={...view};previewStreetViewCamera(studioSpot,view);studioFraming.value='current';updateStudioFramingHint();studioPlace.textContent=studioSpot.name+' · '+photoBearing(studioSpot).label;},onCommit:()=>{applyStudioView(window.PhotoScoutStreetView.view(studioSpot));if(!window.PhotoScoutLocalPanorama?.refresh(studioSceneView)&&!window.PhotoScoutNativeStreetView?.refresh(studioSceneView))refreshThumbnail(scenePreview,studioSpot);}});
 studioFraming.addEventListener('change',()=>{
  if(studioBusy||studioSpot?.provider!=='google-street-view')return;
  studioSceneView.streetViewController?.reset();
