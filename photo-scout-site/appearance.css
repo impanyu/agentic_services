@@ -189,3 +189,5 @@
 #photo-map-selection{display:flex;align-items:center;gap:8px;margin:0 0 8px;padding:8px 0 12px;color:#454b55}
 #photo-map-selection[hidden]{display:none}
 @media(max-width:760px){.photo-history-row .history-remove{padding:6px 8px;font-size:12px;min-width:0}.photo-history-row .photo-history-copy small{font-size:12px}}
+
+.photo-app .map-notice .location-settings{display:block;margin-top:8px;padding:8px 12px;min-height:36px;border:0;border-radius:10px;background:#70529b;color:#fff;font-size:12px;font-weight:600;cursor:pointer}

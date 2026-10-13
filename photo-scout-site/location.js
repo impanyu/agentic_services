@@ -15,7 +15,7 @@ window.PhotoScoutLocation={
  const request=high=>{try{geolocation.getCurrentPosition(success,error=>{
   if(finished)return;
   if(error.code!==1&&!retried){retried=true;onState({status:'pending',message:'Trying a precise device location…'});request(true);return;}
-  finish({status:'error',message:error.code===1?'Location access denied. '+settings+' The displayed map is not your detected location.':error.code===3?'Device location timed out. No location was selected. Check device Location Services or type a place below.':'Device location unavailable. No location was selected. Check Location Services or type a place below.'});
+  finish({status:'error',settingsRequired:error.code===1,message:error.code===1?'Location access denied. '+settings+' The displayed map is not your detected location.':error.code===3?'Device location timed out. No location was selected. Check device Location Services or type a place below.':'Device location unavailable. No location was selected. Check Location Services or type a place below.'});
  },{enableHighAccuracy:high,timeout:high?20000:10000,maximumAge:0});}catch{finish({status:'error',message:'Location is unavailable in this browser. Type a place below instead.'});}};
  onState({status:'pending',message:'Finding your device location… Allow location access if asked. The initial map is only a starting view.'});request(false);
  return ()=>{finished=true;clearTimeout(timer);};

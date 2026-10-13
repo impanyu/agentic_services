@@ -291,6 +291,13 @@ final class ScoutViewController: UIViewController, WKNavigationDelegate, WKUIDel
                 do { try await AppStore.showManageSubscriptions(in: scene); replyHandler(["state":"opened"], nil) }
                 catch { replyHandler(nil, "Subscription management could not open.") }
             }
+        case "openSettings":
+            guard let settings = URL(string: UIApplication.openSettingsURLString) else {
+                replyHandler(nil, "App settings are unavailable."); return
+            }
+            UIApplication.shared.open(settings, options: [:]) { opened in
+                replyHandler(["opened": opened], nil)
+            }
         case "location":
             guard locationReplies.count < 8 else { replyHandler(nil, "Location request already pending"); return }
             locationReplies.append(replyHandler)

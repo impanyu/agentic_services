@@ -75,7 +75,7 @@ async function switchMapStyle(style,{startup=false}={}){
   if(rasterLayer){if(map.hasLayer(rasterLayer))map.removeLayer(rasterLayer);rasterLayer=null;}
   el('map-notice').textContent=note+' Using the backup map. You can retry from Map layers.';
  };
- const ready=()=>{if(generation!==mapStyleGeneration)return;clearTimeout(mapLoadTimer);el('map-notice').textContent=el('location-status').dataset?.state==='error'?el('location-status').textContent:'';};
+ const ready=()=>{if(generation!==mapStyleGeneration)return;clearTimeout(mapLoadTimer);if(el('location-status').dataset?.state==='error')locationStatus(el('location-status').textContent,'error',{settingsRequired:locationSettingsRequired});else el('map-notice').textContent='';};
  // A stalled request may never emit an error. Bound the entire first render.
  mapLoadTimer=setTimeout(()=>fallback('The selected basemap took too long to load.'),12000);
  if(style==='aerial'||style==='topographic'){
@@ -158,7 +158,16 @@ function showRoute(route){const credit=Boolean(route?.geometry?.coordinates?.len
 
 function invalidatePois(){stopPoiScan();catalogGeneration++;candidatePoiLayer.clearLayers();poiCatalog=null;}
 function pick(lat,lon){locationSelectionRevision++;invalidatePois();el('lat').value=lat.toFixed(6);el('lon').value=lon.toFixed(6);selected.setLatLng([lat,lon]);syncMapSelection();saveMapVisit();}
-const locationStatus=(s,status)=>{el('location-status').textContent=s;el('map-notice').textContent=s;if(status)el('location-status').dataset.state=status};
+let returningFromLocationSettings=false,locationSettingsRequired=false;
+const locationStatus=(s,status,{settingsRequired=false}={})=>{
+ el('location-status').textContent=s;el('map-notice').textContent=s;if(status){el('location-status').dataset.state=status;locationSettingsRequired=settingsRequired;}
+ if(settingsRequired&&window.PhotoScoutNative?.openSettings){
+  const settings=node('button','Open Settings','location-settings');settings.type='button';
+  settings.onclick=async()=>{returningFromLocationSettings=true;try{await window.PhotoScoutNative.openSettings();}catch{returningFromLocationSettings=false;locationStatus('Could not open settings. Open iPhone Settings and allow Photo Scout to use your location.','error');}};
+  el('map-notice').append(settings);
+ }
+};
+window.addEventListener('focus',()=>{if(returningFromLocationSettings){returningFromLocationSettings=false;locateCurrentPosition();}});
 let locationPending=false,locationSelectionRevision=0,automaticLocationOwnsMap=false;
 function locateCurrentPosition({automatic=false}={}){
  const revision=locationSelectionRevision;
@@ -169,7 +178,7 @@ function locateCurrentPosition({automatic=false}={}){
   locationPending=state.status==='pending';
   for(const control of [button,mapButton]){control.disabled=locationPending;control.setAttribute('aria-busy',String(locationPending));}
   button.textContent=locationPending?'⌖ Locating…':state.status==='success'?'✓ Located':'⌖ Near me';
-  mapButton.textContent=locationPending?'…':'⌖';locationStatus(state.message,state.status);
+  mapButton.textContent=locationPending?'…':'⌖';locationStatus(state.message,state.status,{settingsRequired:state.settingsRequired});
  },onPosition:position=>{
   window.PhotoScoutLocation.remember(localStorage);
   if(automatic&&(revision!==locationSelectionRevision||sharedPublicationId))return;

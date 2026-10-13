@@ -5,6 +5,7 @@
   // Refresh the account in place: reloading discards File inputs and studio edits.
   window.PhotoScoutNative = Object.freeze({
     signInProviders: Object.freeze(['google','apple']),
+    openSettings: async () => { const result = await send({action:'openSettings'}); if (!result.opened) throw new Error('Could not open iPhone settings.'); return result; },
     signIn: async (provider='google') => {
       if (!['google','apple'].includes(provider)) throw new Error('Unsupported sign-in provider');
       const response = await fetch('/api/v1/auth/me', {credentials:'include',cache:'no-store'});
