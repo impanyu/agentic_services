@@ -717,7 +717,7 @@ const poseLabel=node('label','Additional directions (optional)','studio-upload')
 const studioNote=node('p','Your photo and this view will be sent to OpenAI to create an AI composite. Your uploaded photo is also saved privately in Avatar Library for reuse. Processing copies are removed after completion; signed-in photos are saved permanently; guest photos are deleted after 7 days without a visit.','small');
 const studioSubjectList=node('div',null,'studio-subject-list');studioSubjectList.setAttribute('aria-label','People and avatars in this photo');
 const studioPersonPreview=node('div',null,'studio-person-preview');studioPersonFrame.replaceWith(studioPersonPreview);studioPersonPreview.append(studioPersonFrame,studioSubjectList);
-const studioAddPerson=node('button','＋ Add people','studio-add-person');studioAddPerson.type='button';studioAddPerson.setAttribute('aria-controls','studio-photo-source');studioAddPerson.setAttribute('aria-expanded','false');studioAddPerson.addEventListener('click',()=>{if(!studioBusy&&!studioAdding)setStudioPhotoSourceOpen(studioPhotoSource.hidden);});studioPerson.querySelector('figcaption').replaceChildren(studioAddPerson);
+const studioAddPerson=node('button','＋ Up to nine people','studio-add-person');studioAddPerson.type='button';studioAddPerson.setAttribute('aria-controls','studio-photo-source');studioAddPerson.setAttribute('aria-expanded','false');studioAddPerson.addEventListener('click',()=>{if(!studioBusy&&!studioAdding)setStudioPhotoSourceOpen(studioPhotoSource.hidden);});studioPerson.querySelector('figcaption').replaceChildren(studioAddPerson);
 const studioGenerate=node('button','Create my photo · Free test','studio-generate');studioGenerate.type='button';studioGenerate.disabled=true;
 const studioStatus=node('p',null,'studio-status');studioStatus.setAttribute('role','status');studioStatus.setAttribute('aria-live','polite');
 const studioResult=node('img',null,'studio-result');studioResult.alt='AI-generated travel photo';studioResult.hidden=true;
@@ -775,7 +775,7 @@ function renderStudioSubjects(){
  studioSubjectList.replaceChildren();studioPrepared=studioSubjects[0]?.data||null;
  personPreview.hidden=true;personPreview.removeAttribute('src');
  studioSubjectList.hidden=false;studioSubjectList.dataset.count=String(studioSubjects.length);studioPersonFrame.hidden=true;
- studioAddPerson.disabled=studioBusy||studioAdding>0||studioSubjects.length>=9;studioAddPerson.textContent='＋ Add people · '+studioSubjects.length+'/9';
+ studioAddPerson.disabled=studioBusy||studioAdding>0||studioSubjects.length>=9;studioAddPerson.textContent='＋ Up to nine people';
  for(const [index,subject] of studioSubjects.entries()){
   const card=node('div',null,'studio-subject'),image=node('img'),remove=node('button','×');image.alt='Reference '+(index+1)+': '+subject.name;
   if(subject.preview){image.src=subject.data;card.append(image);}else card.append(node('span','Photo '+(index+1)));
