@@ -568,7 +568,7 @@ function removeHistoryButton(entry){
   try{
    await json('/photo-scout/v1/removed-items',{method:'POST',headers:{'Content-Type':'application/json',...(csrfToken?{'X-CSRF-Token':csrfToken}:{})},body:JSON.stringify({kind:entry.kind,id:entry.id,removed:true})});
    removedHistoryItems.add(entry.kind+':'+entry.id);lastRemovedHistory=entry;pendingHistory.delete(entry.id);
-   taskRecords=taskRecords.filter(t=>t.kind!==entry.kind||t.id!==entry.id);
+   taskRecords=taskRecords.filter(t=>t.kind!==entry.kind||t.id!==entry.id);if(entry.kind==='portrait')syncSavedPhotoMap();
    if(entry.kind==='search'){
     searchHistory=searchHistory.filter(h=>h.id!==entry.id);
     if(focusedSearchId===entry.id)focusedSearchId=null;
@@ -583,6 +583,18 @@ function removeHistoryButton(entry){
 function bindHistoryRow(row,openEntry){
  row.classList.add('history-row-open');row.addEventListener('click',event=>{if(event.target.closest('button,input,a,label,select,textarea,summary'))return;openEntry();});
 }
+let hiddenPhotoMapIds=new Set(),photoMapSelectionScope=null;
+function photoMapEligible(task){return task?.kind==='portrait'&&task.state==='complete'&&Number.isFinite(task.context?.poi?.lat)&&Number.isFinite(task.context?.poi?.lon);}
+function photoMapHiddenSet(){
+ const scope=authUser?.id||'guest';if(scope!==photoMapSelectionScope){photoMapSelectionScope=scope;try{hiddenPhotoMapIds=new Set(JSON.parse(localStorage.getItem('photo-scout-hidden-photos-v1:'+scope)||'[]'));}catch{hiddenPhotoMapIds=new Set();}}return hiddenPhotoMapIds;
+}
+function persistPhotoMapSelection(){try{localStorage.setItem('photo-scout-hidden-photos-v1:'+photoMapSelectionScope,JSON.stringify([...hiddenPhotoMapIds]));}catch{}}
+function refreshPhotoMapChecks(){
+ const hidden=photoMapHiddenSet(),photos=taskRecords.filter(photoMapEligible),shown=photos.filter(t=>!hidden.has(t.id)).length,all=el('photo-map-all');all.disabled=!photos.length;all.checked=photos.length>0&&shown===photos.length;all.indeterminate=shown>0&&shown<photos.length;
+ for(const input of el('photo-items').querySelectorAll('.photo-map-check'))input.checked=!input.disabled&&!hidden.has(input.dataset.photoId);
+}
+function setPhotoMapVisibility(id,visible){const hidden=photoMapHiddenSet();if(visible)hidden.delete(id);else hidden.add(id);persistPhotoMapSelection();syncSavedPhotoMap();refreshPhotoMapChecks();}
+function setAllPhotoMapVisibility(visible){const hidden=photoMapHiddenSet();for(const task of taskRecords.filter(photoMapEligible)){if(visible)hidden.delete(task.id);else hidden.add(task.id);}persistPhotoMapSelection();syncSavedPhotoMap();refreshPhotoMapChecks();}
 function renderHistory(){
  el('photo-retention-note').textContent=authUser?'Photos are saved permanently to your account.':'Guest photos are deleted after 7 days without a visit. Sign in to keep them permanently.';
  const root=el('history-items'),photosRoot=el('photo-items'),entries=historyEntries(),searches=entries.filter(e=>e.kind==='search'),photos=entries.filter(e=>e.kind==='portrait');root.replaceChildren();photosRoot.replaceChildren();const active=taskRecords.filter(t=>['queued','checking','running'].includes(t.state)).length;root.append(node('p',active+' / 5 active tasks','small'));el('history-count').textContent=String(searches.length);el('photo-count').textContent=String(photos.length);
@@ -595,7 +607,7 @@ function renderHistory(){
     removedHistoryItems.delete(removed.kind+':'+removed.id);lastRemovedHistory=null;
     if(removed.history&&!searchHistory.some(h=>h.id===removed.id)){searchHistory.push(removed.history);searchHistory.sort((a,b)=>b.created-a.created);persistHistory();}
     if(removed.task&&!taskRecords.some(t=>t.id===removed.id&&t.kind===removed.kind))taskRecords.push(removed.task);
-    renderHistory();drawHistoryMap();refreshVisiblePlaceSelfies();restoreTasks();
+    renderHistory();drawHistoryMap();syncSavedPhotoMap();refreshVisiblePlaceSelfies();restoreTasks();
    }catch(error){undo.disabled=false;message(error.message);}
   });notice.append(undo);(removed.kind==='portrait'?photosRoot:root).append(notice);
  }
@@ -607,7 +619,7 @@ function renderHistory(){
    const item=node('button',null,'photo-history-entry'),thumb=node('span',null,'photo-history-thumb'),copy=node('span',null,'photo-history-copy');
    thumb.setAttribute('aria-hidden','true');
    if(entry.state==='complete'){const image=node('img');image.alt='';image.loading='lazy';image.decoding='async';image.src=api+apiPrefix+'/v1/portraits/'+encodeURIComponent(entry.id)+'/thumbnail';image.addEventListener('error',()=>{image.hidden=true;thumb.textContent='📷';});thumb.append(image);}else{thumb.textContent=['queued','checking','running'].includes(entry.state)?'✦':'📷';thumb.dataset.state=entry.state;}
-   copy.append(node('strong',entry.label),publicationBadge('photo',entry.id),node('small',`${new Date(entry.created).toLocaleString()} · Selfie · ${entry.state}`));item.append(thumb,copy);item.type='button';item.dataset.state=entry.state;item.title=['queued','checking','running'].includes(entry.state)?'Selfie in progress':'View saved photo';item.addEventListener('click',()=>viewSavedTask(entry.task));const row=node('div',null,'photo-history-row');row.append(item,removeHistoryButton(entry));photosRoot.append(row);continue;
+   copy.append(node('strong',entry.label),publicationBadge('photo',entry.id),node('small',`${new Date(entry.created).toLocaleString()} · Selfie · ${entry.state}`));item.append(thumb,copy);item.type='button';item.dataset.state=entry.state;item.title=['queued','checking','running'].includes(entry.state)?'Selfie in progress':'View saved photo';item.addEventListener('click',()=>viewSavedTask(entry.task));const row=node('div',null,'photo-history-row'),check=node('input',null,'photo-map-check');check.type='checkbox';check.dataset.photoId=entry.id;check.disabled=!photoMapEligible(entry.task);check.checked=!check.disabled&&!photoMapHiddenSet().has(entry.id);check.setAttribute('aria-label','Show photo: '+entry.label);check.addEventListener('change',()=>setPhotoMapVisibility(entry.id,check.checked));row.append(check,item,removeHistoryButton(entry));photosRoot.append(row);continue;
   }
   const h=entry.history,row=node('div',null,'history-item search-history-item'),label=node('span',null,'history-copy'),area=h?.result.responseType==='feedback'?null:window.PhotoScoutHistoryMap?.area(entry);if(area&&window.PhotoScoutHistoryMap)label.append(window.PhotoScoutHistoryMap.thumbnail(area));
   if(h&&h.result.responseType!=='feedback'){const check=node('input');check.type='checkbox';check.checked=h.checked;check.setAttribute('aria-label','Show search: '+entry.label);check.addEventListener('change',()=>{h.checked=check.checked;persistHistory();renderHistory();drawHistoryMap({fit:true});});label.append(check);}
@@ -619,7 +631,7 @@ function renderHistory(){
   view.addEventListener('click',openEntry);
   const actions=node('div',null,'history-entry-actions');actions.append(view,removeHistoryButton(entry));row.append(label,actions);(entry.kind==='portrait'?photosRoot:root).append(row);
  }
- if(el('search-history').open)window.PhotoScoutHistoryMap?.hydrate(root);
+ refreshPhotoMapChecks();if(el('search-history').open)window.PhotoScoutHistoryMap?.hydrate(root);
 }
 function drawHistoryMap({fit=false}={}){photoLocationLayer.clearLayers();otherPhotoLocationLayer.clearLayers();candidatePoiLayer.clearLayers();resultPins=[];for(const h of searchHistory.filter(h=>h.checked).sort((a,b)=>Number(a.id===focusedSearchId)-Number(b.id===focusedSearchId))){const focused=h.id===focusedSearchId;for(const [i,originalSpot] of allPoiViews(h.result,h.id).entries()){const s={...originalSpot,...poiViewOverrides.get(h.id+':'+poiHistoryKey(originalSpot))};const pos=s.poi;if(!pos||!Number.isFinite(pos.lat)||!Number.isFinite(pos.lon))continue;const b=photoBearing(s);let popup;const buildPopup=()=>{if(popup)return popup;popup=node('div',null,'photo-popup');popup.append(node('strong',s.name),publicationBadge('place',h.id,s),node('p',s.score==null?'No verified image':`${s.score}/100 · ${b.label}`),node('p',h.label));const show=node('button','View place','popup-shortlist');show.type='button';const reveal=()=>{showShortlist();render(h.result,{save:false,mapUpdate:false,historyId:h.id});el('photo-spot-'+String(i+1))?.scrollIntoView({block:'nearest',behavior:'smooth'});};show.addEventListener('click',reveal);const selfie=node('button','Take a selfie here','compose-photo popup-selfie');selfie.type='button';selfie.addEventListener('click',()=>openPhotoStudio(s,h.id));const actions=node('div',null,'popup-actions');actions.append(show,publishButton('place',h.id,s),removePoiButton(s,h.id));popup.append(popupPhotoPreview(s,h.id),popupViewControls(s),actions,selfie,placeSelfies(s),commentSection('place',h.id,s,null,true));if(s.sourceUrl)popup.append(link(s.provider==='google-street-view'?'Open Street View ↗':'Open original photo ↗',s.sourceUrl));return popup;};const marker=L.marker([pos.lat,pos.lon],{title:`${s.name} · ${b.label} · ${h.label}`,icon:focused?photographerIcon(s,i):directionDot(s)}).addTo(focused?photoLocationLayer:otherPhotoLocationLayer).bindPopup(buildPopup,{autoPan:false,keepInView:false}).on('popupopen',()=>{selectedPoiView={marker,popup,spot:s,searchId:h.id,index:i};loadPopupPhoto(popup);refreshVisiblePlaceSelfies();for(const box of popup.querySelectorAll('.place-selfies'))refreshPlaceSelfies(box);}).on('popupclose',()=>{if(selectedPoiView?.marker===marker)selectedPoiView=null;});marker.photoSpot=s;marker.searchId=h.id;resultPins.push(marker);}}if(fit&&resultPins.length)map.fitBounds(L.featureGroup(resultPins).getBounds().pad(.2),{paddingTopLeft:[40,80],paddingBottomRight:[40,250],maxZoom:16});}
 el('history-all').addEventListener('change',()=>{for(const h of searchHistory)h.checked=el('history-all').checked;persistHistory();renderHistory();drawHistoryMap({fit:true});});
@@ -688,10 +700,10 @@ const studioLibraryStatus=node('p','Uploaded photos are automatically saved priv
 studio.append(studioTop,studioPlace,studioPending,studioIntro,studioImages,uploadLabel,studioLibraryStatus,studioStyles,studioOptions,poseLabel,studioNote,studioGenerate,studioStatus,studioResult,studioSave,studioDownload,studioSaveHint);document.body.append(studio);
 // This separate map layer survives shortlist/history redraws and dialog closure.
 const savedSelfieLayer=L.layerGroup().addTo(map);
-overlayControl.addOverlay(savedSelfieLayer,'My photos');
+el('photo-map-all').addEventListener('change',()=>setAllPhotoMapVisibility(el('photo-map-all').checked));
 let savedSelfieMapSignature=null;
 function syncSavedPhotoMap(){
- const photos=taskRecords.filter(t=>t.kind==='portrait'&&t.state==='complete'&&Number.isFinite(t.context?.poi?.lat)&&Number.isFinite(t.context?.poi?.lon)).sort((a,b)=>b.created-a.created);
+ const hidden=photoMapHiddenSet(),photos=taskRecords.filter(t=>photoMapEligible(t)&&!hidden.has(t.id)).sort((a,b)=>b.created-a.created);
  const signature=JSON.stringify(photos.map(t=>[t.id,t.context.poi.lat,t.context.poi.lon,t.context.name]));
  if(signature===savedSelfieMapSignature)return;savedSelfieMapSignature=signature;savedSelfieLayer.clearLayers();
  const groups=new Map();for(const task of photos){const p=task.context.poi,key=p.lat.toFixed(6)+','+p.lon.toFixed(6);if(!groups.has(key))groups.set(key,[]);groups.get(key).push(task);}
@@ -1150,7 +1162,7 @@ let photoLibraryTab='mine',photoLibraryCursor=null,photoLibraryGeneration=0;
 function selectPhotoLibraryTab(tab){
  photoLibraryTab=tab;photoLibraryGeneration++;photoLibraryCursor=null;
  for(const button of document.querySelectorAll('[data-photo-tab]')){const selected=button.dataset.photoTab===tab;button.setAttribute('aria-selected',String(selected));button.tabIndex=selected?0:-1;}
- el('photo-items').hidden=tab!=='mine';el('photo-retention-note').hidden=tab!=='mine';el('photo-library-panel').hidden=tab==='mine';el('photo-library-panel').setAttribute('aria-labelledby','photo-tab-'+tab);
+ el('photo-items').hidden=tab!=='mine';el('photo-map-selection').hidden=tab!=='mine';el('photo-retention-note').hidden=tab!=='mine';el('photo-library-panel').hidden=tab==='mine';el('photo-library-panel').setAttribute('aria-labelledby','photo-tab-'+tab);
  if(tab!=='mine')loadPhotoLibrary();
 }
 function refreshPhotoLibraryIfOpen(){if(el('photo-history').open&&photoLibraryTab!=='mine')loadPhotoLibrary();}

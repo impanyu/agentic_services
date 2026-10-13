@@ -183,3 +183,9 @@
 @media(max-width:480px){.photo-app .photo-library-tabs [role=tab]{flex:1 1 auto;font-size:12px;padding-inline:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3}}
 /* These almost-opaque surfaces do not need a live blur of the moving WebGL map. */
 .photo-app .map-brand,.photo-app .scout-dock,.photo-app .map-overlay-controls>details>summary,.photo-app .map-overlay-controls>.center-map,.photo-app .map-overlay-controls .history-menu,.photo-app .map-overlay-controls .map-tools,.photo-app .map-overlay-controls .map-detail-menu{backdrop-filter:none;-webkit-backdrop-filter:none}
+
+.photo-history-row>.photo-map-check{flex:0 0 17px;width:17px;height:17px;margin:0 3px 0 0;accent-color:var(--scout-plum)}
+.photo-history-row>.photo-history-entry{flex:1;min-width:0}
+#photo-map-selection{display:flex;align-items:center;gap:8px;margin:0 0 8px;padding:8px 0 12px;color:#454b55}
+#photo-map-selection[hidden]{display:none}
+@media(max-width:760px){.photo-history-row .history-remove{padding:6px 8px;font-size:12px;min-width:0}.photo-history-row .photo-history-copy small{font-size:12px}}
