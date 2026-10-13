@@ -1080,8 +1080,9 @@ document.addEventListener('visibilitychange',refreshMapViewport);
 if(window.ResizeObserver)new window.ResizeObserver(refreshMapViewport).observe(el('map'));
 
 // Explicit publication creates a public snapshot; private histories stay private.
-const publicationLayer=L.layerGroup().addTo(map);
-overlayControl.addOverlay(publicationLayer,"Others' places & photos");
+const publicationLayer=L.layerGroup(),publishedPhotoLayer=L.layerGroup().addTo(map);
+overlayControl.addOverlay(publicationLayer,"Others' places");
+overlayControl.addOverlay(publishedPhotoLayer,"Others' photos");
 const savedPhotoPublish=node('div',null,'publication-actions');savedPhotoActions.append(savedPhotoPublish);
 const publicationDialog=node('dialog',null,'photo-studio publication-dialog');publicationDialog.setAttribute('aria-label','Publication link');document.body.append(publicationDialog);
 function showPublicationLink(item){
@@ -1132,8 +1133,8 @@ function visibleCommunityPublications(){
 function drawPublications(){
  const items=visibleCommunityPublications(),signature=JSON.stringify(items.map(item=>[item.id,item.kind]));
  if(publicationLayer.scoutContentSignature===signature)return;publicationLayer.scoutContentSignature=signature;
- publicationLayer.clearLayers();for(const item of items){const spots=item.kind==='photo'?[item.context]:item.result?.spots||[];for(const [index,spot] of spots.entries()){const pos=spot?.poi;if(!pos||![pos.lat,pos.lon].every(Number.isFinite))continue;
- const marker=L.marker([pos.lat,pos.lon],{zIndexOffset:item.kind==='photo'?1100:0,title:(item.kind==='photo'?'Published AI selfie · ':'Published place · ')+spot.name,icon:item.kind==='photo'?publishedSelfieIcon(item):photographerIcon(spot,index)}).addTo(publicationLayer);
+ publicationLayer.clearLayers();publishedPhotoLayer.clearLayers();for(const item of items){const spots=item.kind==='photo'?[item.context]:item.result?.spots||[];for(const [index,spot] of spots.entries()){const pos=spot?.poi;if(!pos||![pos.lat,pos.lon].every(Number.isFinite))continue;
+ const marker=L.marker([pos.lat,pos.lon],{zIndexOffset:item.kind==='photo'?1100:0,title:(item.kind==='photo'?'Published AI selfie · ':'Published place · ')+spot.name,icon:item.kind==='photo'?publishedSelfieIcon(item):photographerIcon(spot,index)}).addTo(item.kind==='photo'?publishedPhotoLayer:publicationLayer);
  if(item.kind==='photo')marker.on('click',()=>openPublication(item));else{const popup=node('div',null,'photo-popup');popup.append(node('strong',spot.name),node('p',spot.score+'/100 · '+photoBearing(spot).label),popupPhotoPreview(spot,'public:'+item.id));marker.photoSpot=spot;marker.searchId='public:'+item.id;marker.photoIndex=index;const view=node('button','View published place');view.type='button';view.addEventListener('click',()=>openPublication(item));popup.append(view,link('Share ↗',item.url),commentSection('place','public:'+item.id,spot,item,true));marker.bindPopup(popup,{autoPan:false,keepInView:false}).on('popupopen',()=>loadPopupPhoto(popup));}
  }}
 }
@@ -1142,7 +1143,7 @@ async function openPublication(item){
  try{const data=await json('/photo-scout/v1/publications/'+encodeURIComponent(item.id));
   if(data.kind==='photo'){await viewSavedPhoto({id:data.id,state:'complete',context:data.context,created:data.created},data);}
   else{render(data.result,{save:false,mapUpdate:false,historyId:'public:'+data.id,publication:data});const spots=data.result.spots||[],coords=spots.filter(s=>s.poi).map(s=>[s.poi.lat,s.poi.lon]);if(coords.length)map.fitBounds(L.latLngBounds(coords).pad(.25),{paddingTopLeft:[30,80],paddingBottomRight:[30,160],maxZoom:16});if(item.poiId){const index=spots.findIndex(s=>poiHistoryKey(s)===item.poiId);if(index>=0){focusMapSpot(spots[index],{openPopup:false});el('photo-spot-'+String(index+1))?.scrollIntoView({block:'nearest'});}}if(!spots.length)message('This published search has no photo places.');}
-  const existing=publicationItems.find(p=>p.id===data.id);if(existing)existing.checked=true;else publicationItems.push(data);publicationLayer.addTo(map);renderPublications();drawPublications();
+  const existing=publicationItems.find(p=>p.id===data.id);if(existing)existing.checked=true;else publicationItems.push(data);(data.kind==='photo'?publishedPhotoLayer:publicationLayer).addTo(map);renderPublications();drawPublications();
  }catch(error){message(error.message);}
 }
 el('search-history').addEventListener('toggle',()=>{if(el('search-history').open)window.PhotoScoutHistoryMap?.hydrate(el('history-items'));});
