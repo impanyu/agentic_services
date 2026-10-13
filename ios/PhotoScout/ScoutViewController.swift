@@ -45,6 +45,8 @@ final class ScoutViewController: UIViewController, WKNavigationDelegate, WKUIDel
         webView.backgroundColor = view.backgroundColor
         webView.scrollView.contentInsetAdjustmentBehavior = .never
         webView.scrollView.bounces = false
+        // Deliver panorama and map touches immediately instead of waiting for scroll intent.
+        webView.scrollView.delaysContentTouches = false
         webView.allowsBackForwardNavigationGestures = true
         webView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(webView)
