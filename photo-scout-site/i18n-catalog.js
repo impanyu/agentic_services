@@ -1,6 +1,10 @@
 /* UI messages only: never translate API enums, user input or provider attribution. */
 window.PhotoScoutMessages={
   "zh-Hans": {
+    "Location access denied. Enable Photo Scout in iPhone Settings → Privacy & Security → Location Services. The displayed map is not your detected location.": "定位权限未开启。请在 iPhone“设置 → 隐私与安全 → 定位服务”中允许 Photo Scout 使用定位。当前地图位置并非检测到的你的位置。",
+    "Location access denied. Allow location for this website in your browser settings. The displayed map is not your detected location.": "定位权限未开启。请在浏览器设置中允许本网站使用定位。当前地图位置并非检测到的你的位置。",
+    "Device location timed out. Enable Photo Scout in iPhone Settings → Privacy & Security → Location Services. You can also choose a point on the map.": "定位超时。请在 iPhone“设置 → 隐私与安全 → 定位服务”中允许 Photo Scout 使用定位，也可以直接在地图上选点。",
+    "Device location timed out. Allow location for this website in your browser settings. You can also choose a point on the map.": "定位超时。请在浏览器设置中允许本网站使用定位，也可以直接在地图上选点。",
     "＋ Up to nine people": "＋ 最多九人",
     "Sign in with Apple": "通过 Apple 登录",
     "Apple sign-in is coming soon.": "Apple 登录即将开放。",
@@ -486,6 +490,10 @@ window.PhotoScoutMessages={
     "Your photo and this view will be sent to OpenAI to create an AI composite. Your uploaded photo is also saved privately in Avatar Library for reuse. Processing copies are removed after completion; signed-in photos are saved permanently; guest photos are deleted after 7 days without a visit.": "你的照片和此场景会发送给 OpenAI 生成 AI 合成图。上传的照片也会私密保存到角色图库以便复用。处理副本完成后删除；登录用户的照片永久保存，访客连续 7 天未访问后删除。"
   },
   "zh-Hant": {
+    "Location access denied. Enable Photo Scout in iPhone Settings → Privacy & Security → Location Services. The displayed map is not your detected location.": "定位權限未開啟。請在 iPhone「設定 → 隱私權與安全性 → 定位服務」中允許 Photo Scout 使用定位。目前地圖位置並非偵測到的你的位置。",
+    "Location access denied. Allow location for this website in your browser settings. The displayed map is not your detected location.": "定位權限未開啟。請在瀏覽器設定中允許本網站使用定位。目前地圖位置並非偵測到的你的位置。",
+    "Device location timed out. Enable Photo Scout in iPhone Settings → Privacy & Security → Location Services. You can also choose a point on the map.": "定位逾時。請在 iPhone「設定 → 隱私權與安全性 → 定位服務」中允許 Photo Scout 使用定位，也可以直接在地圖上選點。",
+    "Device location timed out. Allow location for this website in your browser settings. You can also choose a point on the map.": "定位逾時。請在瀏覽器設定中允許本網站使用定位，也可以直接在地圖上選點。",
     "＋ Up to nine people": "＋ 最多九人",
     "Sign in with Apple": "透過 Apple 登入",
     "Apple sign-in is coming soon.": "Apple 登入即將開放。",

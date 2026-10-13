@@ -6,14 +6,14 @@ const {File,Blob}=require('node:buffer');
 function fixture(){
  const timers=[],window={},states=[],positions=[];
  vm.runInNewContext(readFileSync('photo-scout-site/location.js','utf8'),{window,setTimeout:fn=>{const t={fn};timers.push(t);return t;},clearTimeout:t=>{t.cleared=true;},Number});
- return {helper:window.PhotoScoutLocation,timers,states,positions,start(geolocation){return window.PhotoScoutLocation.request({geolocation,onState:s=>states.push(s),onPosition:p=>positions.push(p)});}};
+ return {helper:window.PhotoScoutLocation,timers,states,positions,start(geolocation,options={}){return window.PhotoScoutLocation.request({geolocation,...options,onState:s=>states.push(s),onPosition:p=>positions.push(p)});}};
 }
 test('successful location updates once and ends the busy state',()=>{
  const f=fixture();f.start({getCurrentPosition(success,error,options){assert.equal(options.enableHighAccuracy,false);success({coords:{latitude:40.8,longitude:-96.7,accuracy:20}});error({code:1});}});
  assert.deepEqual(f.states.map(s=>s.status),['pending','success']);assert.equal(f.positions.length,1);assert.equal(f.timers[0].cleared,true);
 });
 test('permission denied and provider timeout produce actionable errors',()=>{
- for(const code of [1,3]){const f=fixture();f.start({getCurrentPosition(success,error){error({code});}});assert.equal(f.states.at(-1).status,'error');assert.equal(f.positions.length,0);assert.match(f.states.at(-1).message,code===1?/Safari website settings/:/timed out/);}
+ for(const code of [1,3]){const f=fixture();f.start({getCurrentPosition(success,error){error({code});}});assert.equal(f.states.at(-1).status,'error');assert.equal(f.positions.length,0);assert.match(f.states.at(-1).message,code===1?/browser settings/:/timed out/);}
 });
 test('an unanswered permission prompt ends visibly and ignores a late position',()=>{
  const f=fixture();let late;f.start({getCurrentPosition(success){late=success;}});f.timers[0].fn();late({coords:{latitude:0,longitude:0}});assert.equal(f.states.at(-1).status,'error');assert.equal(f.positions.length,0);
@@ -382,3 +382,7 @@ test('route ordering follows traveled distance while retaining the best directio
 test('switching POIs during portrait submission opens the requested scene and late completion cannot fill it',async()=>{
  const state=await pageFixture().switchDuringUpload();assert.equal(state.before.place,'Place B');assert.equal(state.before.prepared,null);assert.equal(state.before.previewHidden,true);assert.equal(state.after.place,'Place B');assert.equal(state.after.prepared,null);assert.equal(state.after.disabled,true);assert.match(state.after.status,/Upload a clear image/);assert.doesNotMatch(state.after.status,/generating|being uploaded/);assert.equal(state.payloads[0].portrait,'portrait-a');assert.equal(state.payloads[0].place,'Place A');
 });
+
+test('native app denial points to Photo Scout permission and never Safari or the old hostname',()=>{const f=fixture();f.start({getCurrentPosition(success,error){error({code:1});}},{native:true});const message=f.states.at(-1).message;assert.match(message,/Photo Scout/);assert.doesNotMatch(message,/Safari|aisoup.net/);assert.equal(f.positions.length,0);});
+test('native watchdog timeout uses app permission guidance',()=>{const f=fixture();f.start({getCurrentPosition(){}},{native:true});f.timers[0].fn();assert.match(f.states.at(-1).message,/Photo Scout/);assert.doesNotMatch(f.states.at(-1).message,/Safari/);});
+test('location status is presented once outside the compact search composer',()=>{const html=readFileSync('photo-scout-site/index.html','utf8');assert.match(html,/id="location-status" hidden/);assert.match(html,/id="map-notice" role="status"/);});

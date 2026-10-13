@@ -75,7 +75,7 @@ async function switchMapStyle(style){
   if(rasterLayer){if(map.hasLayer(rasterLayer))map.removeLayer(rasterLayer);rasterLayer=null;}
   el('map-notice').textContent=note+' Using the backup map. You can retry from Map layers.';
  };
- const ready=()=>{if(generation!==mapStyleGeneration)return;clearTimeout(mapLoadTimer);el('map-notice').textContent='';};
+ const ready=()=>{if(generation!==mapStyleGeneration)return;clearTimeout(mapLoadTimer);el('map-notice').textContent=el('location-status').dataset?.state==='error'?el('location-status').textContent:'';};
  // A stalled request may never emit an error. Bound the entire first render.
  mapLoadTimer=setTimeout(()=>fallback('The selected basemap took too long to load.'),12000);
  if(style==='aerial'||style==='topographic'){
@@ -156,7 +156,7 @@ function showRoute(route){const credit=Boolean(route?.geometry?.coordinates?.len
 
 function invalidatePois(){stopPoiScan();catalogGeneration++;candidatePoiLayer.clearLayers();poiCatalog=null;}
 function pick(lat,lon){locationSelectionRevision++;invalidatePois();el('lat').value=lat.toFixed(6);el('lon').value=lon.toFixed(6);selected.setLatLng([lat,lon]);syncMapSelection();saveMapVisit();}
-const locationStatus=(s,status)=>{el('location-status').textContent=s;if(status)el('location-status').dataset.state=status};
+const locationStatus=(s,status)=>{el('location-status').textContent=s;el('map-notice').textContent=s;if(status)el('location-status').dataset.state=status};
 let locationPending=false,locationSelectionRevision=0,automaticLocationOwnsMap=false;
 function locateCurrentPosition({automatic=false}={}){
  const revision=locationSelectionRevision;
@@ -168,7 +168,6 @@ function locateCurrentPosition({automatic=false}={}){
   for(const control of [button,mapButton]){control.disabled=locationPending;control.setAttribute('aria-busy',String(locationPending));}
   button.textContent=locationPending?'⌖ Locating…':state.status==='success'?'✓ Located':'⌖ Near me';
   mapButton.textContent=locationPending?'…':'⌖';locationStatus(state.message,state.status);
-  el('map-notice').textContent=state.message;
  },onPosition:position=>{
   window.PhotoScoutLocation.remember(localStorage);
   if(automatic&&(revision!==locationSelectionRevision||sharedPublicationId))return;
